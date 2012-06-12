@@ -575,6 +575,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\resource.h"
+				>
+			</File>
+			<File
 				RelativePath="SettingDlg.h"
 				>
 			</File>
@@ -614,5 +618,9 @@
 		</Filter>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="BZ.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

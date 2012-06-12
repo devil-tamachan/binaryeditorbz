@@ -69,6 +69,8 @@
 #define ID_FILE_SAVE_DUMPLIST           32841
 #define ID_EDIT_COPY_DUMP               32842
 #define ID_JUMP_BASE                    32844
+#define ID_32846                        32846
+#define ID_VIEW_SYNCSCROLL              32847
 #define ID_INDICATOR_INFO               0xE710
 #define ID_INDICATOR_SIZE               0xE711
 #define ID_INDICATOR_CHAR               0xE712
@@ -82,6 +84,8 @@
 #define IDS_COLOR_MARK                  61454
 #define IDS_COLOR_MISMATCH              61455
 #define IDS_COLOR_STRUCT                61456
+#define IDS_COLOR_MEMBER                61457
+#define IDS_COLOR_OVERBROTHER           61458
 #define IDS_EDIT_OVR                    61470
 #define IDS_EDIT_INS                    61471
 #define IDS_CHANGE_LANGUAGE             61500
@@ -100,7 +104,6 @@
 #define IDS_SAVEDUMP_CAPTION            61520
 #define IDS_EBCDIC_FILE                 61521
 #define IDS_STRUCT_FILE                 61522
-#define IDS_COLOR_MEMBER                61523
 #define IDS_EDIT_RO                     61524
 
 // Next default values for new objects
@@ -109,7 +112,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        145
-#define _APS_NEXT_COMMAND_VALUE         32846
+#define _APS_NEXT_COMMAND_VALUE         32848
 #define _APS_NEXT_CONTROL_VALUE         1020
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

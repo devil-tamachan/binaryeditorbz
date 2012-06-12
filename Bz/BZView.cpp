@@ -148,6 +148,8 @@ BEGIN_MESSAGE_MAP(CBZView, CTextView)
 
 	// Special registered message for Find and Replace
 //	ON_REGISTERED_MESSAGE(nMsgFindReplace, OnFindNext)
+ON_WM_VSCROLL()
+ON_WM_MOUSEWHEEL()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -423,14 +425,16 @@ void CBZView::OnDraw(CDC* pDC)
 				SetColor(TCOLOR_SELECT);
 			else if(m_pDoc->CheckMark(ofs))
 				SetColor(TCOLOR_MARK);
-			else if(p1 && ((ofs < dwTotalP1 && (*(p+ofs) != *(p1+ofs))) || ofs >= dwTotalP1))
-				SetColor(TCOLOR_MISMATCH);
 			else if(m_dwStruct && ofs >= m_dwStructTag && ofs < m_dwStruct) {
 				if(m_nMember >= 0 && ofs >= m_dwStructTag + m_nMember && ofs < m_dwStructTag + m_nMember + m_nBytes * m_nBytesLength)
 					SetColor(TCOLOR_MEMBER);
 				else
 					SetColor(TCOLOR_STRUCT);
 			}
+			else if(p1 && (ofs < dwTotalP1 && (*(p+ofs) != *(p1+ofs))))
+				SetColor(TCOLOR_MISMATCH);
+			else if(p1 && ofs >= dwTotalP1)
+				SetColor(TCOLOR_OVERBROTHER);
 			else
 				SetColor();
 			PutFormatStr("%02X", *(p + ofs++));
@@ -979,15 +983,28 @@ Error:
 
 void CBZView::MoveCaretTo(DWORD dwNewCaret)
 {
-	if(dwNewCaret <= m_dwTotal) {
-		int dy = dwNewCaret/16 - m_dwCaret/16;
-		m_dwCaret = dwNewCaret;
-		if(!DrawCaret()) {
-			ScrollBy(0, dy, !m_bBlock);
-		}
-		if(m_bBlock)
-			Invalidate(FALSE);
+	if(dwNewCaret > m_dwTotal) {
+		dwNewCaret = m_dwTotal;
 	}
+
+	int dy = dwNewCaret/16 - m_dwCaret/16;
+	m_dwCaret = dwNewCaret;
+	if(!DrawCaret()) {
+		ScrollBy(0, dy, !m_bBlock);
+	}
+	if(m_bBlock)
+		Invalidate(FALSE);
+
+	
+/*	CBZView *pActiveView = (CBZView*)(GetMainFrame()->GetActiveView());
+	if(options.bSyncScroll &&  pActiveView==this)
+	{
+		CBZView* pView1 = GetBrotherView();
+		if(pView1)
+		{
+			pView1->MoveCaretTo(this->m_dwCaret, false);
+		}
+	}*/
 }
 
 void CBZView::UpdateDocSize()
@@ -2135,4 +2152,49 @@ void CBZView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 	// TODO: Add your message handler code here and/or call default
 	TRACE("KeyUp: %X %d %X\n", nChar, nRepCnt, nFlags);
 	CTextView::OnKeyUp(nChar, nRepCnt, nFlags);
+}
+
+void CBZView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	// TODO: ここにメッセージ ハンドラ コードを追加するか、既定の処理を呼び出します。
+
+	CTextView::OnVScroll(nSBCode, nPos, pScrollBar);
+
+	CBZView *pActiveView = (CBZView*)(GetMainFrame()->GetActiveView());
+	if(options.bSyncScroll && pActiveView==this)
+	{
+		CBZView* pView1 = GetBrotherView();
+		if(pView1)
+		{
+			POINT pt = GetScrollPos();
+			pView1->ScrollToPos(pt);
+			pView1->Invalidate();
+			//pView1->OnVScroll(nSBCode, nPos, NULL);
+	//		TRACE("OnVScroll: m_dwCaret=%d\n", m_dwCaret);
+		}
+	}
+}
+
+BOOL CBZView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	// TODO: ここにメッセージ ハンドラ コードを追加するか、既定の処理を呼び出します。
+
+	BOOL ret = CTextView::OnMouseWheel(nFlags, zDelta, pt);
+
+	
+	CBZView *pActiveView = (CBZView*)(GetMainFrame()->GetActiveView());
+	if(options.bSyncScroll && pActiveView==this)
+	{
+		CBZView* pView1 = GetBrotherView();
+		if(pView1)
+		{
+			POINT pt = GetScrollPos();
+			pView1->ScrollToPos(pt);
+			pView1->Invalidate();
+			//pView1->OnVScroll(nSBCode, nPos, NULL);
+		//	TRACE("OnVScroll: m_dwCaret=%d\n", m_dwCaret);
+		}
+	}
+
+	return ret;
 }

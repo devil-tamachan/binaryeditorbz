@@ -414,6 +414,7 @@ COLORREF colorsDefault[TCOLOR_COUNT][2] = {
 	RGB_BLUE, COLOR_WINDOW | SYSCOLOR,
 	RGB_BLUE, COLOR_WINDOW | SYSCOLOR,
 	RGB_RED, COLOR_WINDOW | SYSCOLOR,
+	RGB_GREEN2, COLOR_WINDOW | SYSCOLOR,
 };
 
 static int colWidthDefault[MBRCOL_MAX] = { 26, 80, 60 };
@@ -448,8 +449,10 @@ void CBZOptions::Load()
 	bTagAll =  GetProfileInt("TagAll", FALSE);
 	bSubCursor =  GetProfileInt("SubCursor", TRUE);
 
-	if(!GetProfileBinary("Colors", colors))
-		memcpy(colors, colorsDefault, sizeof(colorsDefault));
+	memcpy(colors, colorsDefault, sizeof(colorsDefault));
+	GetProfileBinary2("Colors", colors, sizeof colors);
+//	if(!GetProfileBinary("Colors", colors))
+//		memcpy(colors, colorsDefault, sizeof(colorsDefault));
 	if(!GetProfileBinary("MemberColumns", colWidth))
 		memcpy(colWidth, colWidthDefault, sizeof(colWidthDefault));
 	if(!GetProfileBinary("PageMargin", (LPRECT)rMargin))
@@ -458,6 +461,8 @@ void CBZOptions::Load()
 	sDumpHeader = GetProfileString("DumpHeader");	// ###1.63
 	nDumpPage = GetProfileInt("DumpPage", 0);
 	bDWordAddr = GetProfileInt("DWordAddr", FALSE);
+	
+	bSyncScroll = GetProfileInt("SyncScroll", true);
 }
 
 void CBZOptions::Save()
@@ -510,6 +515,8 @@ void CBZOptions::Save()
 	WriteProfileString("DumpHeader", sDumpHeader);
 	WriteProfileInt("DumpPage", nDumpPage);
 	WriteProfileInt("DWordAddr", bDWordAddr);
+	
+	WriteProfileInt("SyncScroll", bSyncScroll);
 }
 
 /////////////////////////////////////////////////////////////////////////////

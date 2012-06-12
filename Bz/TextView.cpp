@@ -331,7 +331,7 @@ void CTextView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 
 void CTextView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
 {
-	OnScrollBar(SB_VERT, nSBCode);	
+	OnScrollBar(SB_VERT, nSBCode);
 }
 
 #define SB_WHEELUP   10

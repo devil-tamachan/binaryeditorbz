@@ -44,6 +44,18 @@ BOOL COptions::GetProfileBinary(LPCTSTR lpszEntry, LPVOID pData)
 	return FALSE;
 }
 
+BOOL COptions::GetProfileBinary2(LPCTSTR lpszEntry, LPVOID pData, unsigned int dstSize)
+{
+	LPBYTE pBuffer;
+	UINT nBytes;
+	if(AfxGetApp()->GetProfileBinary(sRegDefault, lpszEntry, &pBuffer, &nBytes)) {
+		memcpy(pData, pBuffer, min(nBytes, dstSize));
+		delete pBuffer;
+		return TRUE;
+	}
+	return FALSE;
+}
+
 BOOL COptions::WriteProfileBinary(LPCTSTR lpszEntry, LPBYTE pData, UINT nBytes)
 {
 	return AfxGetApp()->WriteProfileBinary(sRegDefault, lpszEntry, pData, nBytes);

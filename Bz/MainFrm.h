@@ -76,6 +76,8 @@ protected:
 	//}}AFX_MSG
 	afx_msg void OnViewSplit(UINT nID);
 	afx_msg void OnUpdateViewSplit(CCmdUI* pCmdUI);
+	afx_msg void OnViewSyncScroll();
+	afx_msg void OnUpdateViewSyncScroll(CCmdUI* pCmdUI);
 	afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };

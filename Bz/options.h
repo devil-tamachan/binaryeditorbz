@@ -14,6 +14,7 @@ public:
 	CString GetProfileString(LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);
 	BOOL WriteProfileString(LPCTSTR lpszEntry, LPCTSTR lpszValue);
 	BOOL GetProfileBinary(LPCTSTR lpszEntry, LPVOID pData);
+	BOOL GetProfileBinary2(LPCTSTR lpszEntry, LPVOID pData, unsigned int dstSize);
 	BOOL WriteProfileBinary(LPCTSTR lpszEntry, LPBYTE pData, UINT nBytes);
 	void LoadHistory(CString sHistName, CStringArray& sarrHist);
 	void SaveHistory(CString sHistName, CStringArray& sarrHist);

@@ -262,6 +262,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "上下に分割(&H)",                   ID_VIEW_SPLIT_H
         MENUITEM "左右に分割(&V)",                   ID_VIEW_SPLIT_V
+        MENUITEM "スクロールの同期(&V)",                ID_VIEW_SYNCSCROLL
         MENUITEM SEPARATOR
         MENUITEM "フルパス名(&P)",                   ID_VIEW_FULLPATH
         MENUITEM "サブカーソル(&R)",                  ID_VIEW_SUBCURSOR
@@ -397,8 +398,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,6,4,0
- PRODUCTVERSION 1,6,4,0
+ FILEVERSION 1,6,5,0
+ PRODUCTVERSION 1,6,5,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -414,12 +415,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "BZ MFC Application"
-            VALUE "FileVersion", "1, 6, 4, 0"
+            VALUE "FileVersion", "1, 6, 5, 0"
             VALUE "InternalName", "BZ"
             VALUE "LegalCopyright", "Copyright (c) 1996 by c.mos"
             VALUE "OriginalFilename", "BZ.EXE"
             VALUE "ProductName", "BZ Application"
-            VALUE "ProductVersion", "1, 6, 4, 0"
+            VALUE "ProductVersion", "1, 6, 5, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -443,7 +444,20 @@ STRINGTABLE
 BEGIN
     AFX_IDS_APP_TITLE       "BZ"
     AFX_IDS_IDLEMESSAGE     "Ready"
-	AFX_IDS_UNTITLED "untitled"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_UNTITLED        "untitled"
+    AFX_IDS_PREVIEW_CLOSE   "印刷プレビュー　モードを閉じます。"
+    IDS_AUTOCOLOR           "自動"
+    IDS_OTHERCOLOR          "その他..."
+    IDS_COLOR_ADDRESS       "アドレスヘッダー"
+    IDS_COLOR_ADDRESS2      "アドレスヘッダー2"
+    IDS_COLOR_TEXT          "テキスト"
+    IDS_COLOR_SELECT        "選択テキスト"
+    IDS_COLOR_MARK          "マーク位置"
+    IDS_COLOR_MISMATCH      "値が異なるバイト"
 END
 
 STRINGTABLE 
@@ -562,29 +576,17 @@ END
 
 STRINGTABLE 
 BEGIN
-    AFX_IDS_PREVIEW_CLOSE   "印刷プレビュー　モードを閉じます。"
-    IDS_AUTOCOLOR           "自動"
-    IDS_OTHERCOLOR          "その他..."
-    IDS_COLOR_ADDRESS       "アドレスヘッダー"
-    IDS_COLOR_ADDRESS2      "アドレスヘッダー2"
-    IDS_COLOR_TEXT          "テキスト"
-    IDS_COLOR_SELECT        "選択テキスト"
-    IDS_COLOR_MARK          "マーク位置"
-    IDS_COLOR_MISMATCH      "値が異なるバイト"
-END
-
-STRINGTABLE 
-BEGIN
     IDS_SAVEDUMP_CAPTION    "ダンプリストを保存"
     IDS_EBCDIC_FILE         "EBCDIC.DEF"
     IDS_STRUCT_FILE         "BZ.DEF"
-    IDS_COLOR_MEMBER        "構造体メンバ"
     IDS_EDIT_RO             "書禁"
 END
 
 STRINGTABLE 
 BEGIN
     IDS_COLOR_STRUCT        "構造体"
+    IDS_COLOR_MEMBER        "構造体メンバ"
+    IDS_COLOR_OVERBROTHER   "比較で相手より大きい"
     IDS_EDIT_OVR            "上書"
     IDS_EDIT_INS            "挿入"
 END

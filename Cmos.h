@@ -24,6 +24,7 @@
 #define RGB_BLACK	RGB(0,0,0)
 #define RGB_RED		RGB(255,0,0)
 #define RGB_GREEN	RGB(0,255,0)
+#define RGB_GREEN2	RGB(0,128,0)
 #define RGB_YELLOW	RGB(255,255,0)
 #define RGB_BLUE	RGB(0,0,255)
 #define RGB_MAGENTA	RGB(255,0,255)

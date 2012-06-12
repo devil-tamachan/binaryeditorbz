@@ -1,0 +1,159 @@
+struct RIFF {
+	DWORD	ckid;
+	dword	cksize;
+	DWORD	fccType;
+} ani , avi , mpg;
+
+struct ANIHEADER {
+	dword	cbSizeof;
+	dword	cFrames;
+	dword	cSteps;
+	dword	cx , cy;
+	dword	cBitCount , cPlanes;
+	dword	jifRate;
+	dword	fl;
+} ani;
+
+struct CURSORDIR {
+	word	cdReserved;
+	word	cdType;
+	word	cdCount;
+} cur , ani;
+
+struct CURSORDIRENTRY {
+	byte	bWidth;
+	byte	bHeight;
+	byte	bColorCount;
+	byte	bReserved;
+	word	wXHotspot;
+	word	wYHotspot;
+	dword	dwBytesInRes;
+	DWORD	dwImageOffset;
+} cur , ani;
+
+struct ICONDIR {
+	word	idReserved;
+	word	idType;
+	word	idCount;
+} ico;
+
+struct ICONDIRENTRY {
+	byte	bWidth;
+	byte	bHeight;
+	byte	bColorCount;
+	byte	bReserved;
+	word	wPlanes;
+	word	wBitCount;
+	dword	dwBytesInRes;
+	DWORD	dwImageOffset;
+} ico;
+
+struct BITMAPFILEHEADER {
+	WORD	bfType;
+	dword   bfSize;
+	word    bfReserved1;
+	word    bfReserved2;
+	dword   bfOffBits;
+} bmp;
+
+struct BITMAPINFOHEADER {
+	dword	biSize;
+	long	biWidth;
+	long	biHeight;
+	word	biPlanes;
+	word	biBitCount
+	dword	biCompression;
+	dword	biSizeImage;
+	long	biXPelsPerMeter;
+	long	biYPelsPerMeter;
+	dword	biClrUsed;
+	dword	biClrImportant;
+} bmp , ico , cur;
+
+
+struct SWF_HEADER {
+	byte	Signature [3];
+	byte	Version;
+	long	FileLength;
+	DWORD	FrameWidth;
+	DWORD	FrameHeight;
+	short	FrameRate;
+	short	FrameCount;
+} swf;
+
+struct ZIP_HEADER {
+	BYTE	signature [4];
+	WORD	version;
+	WORD	flags;
+	word	compression;
+	WORD	dos_time;
+	WORD	dos_date;
+	DWORD	crc32;
+	dword	compressed_size;
+	dword	uncompressed_size;
+	word	filename_length;
+	word	extra_field_length;
+} zip;
+
+struct METAFILEHEADER {
+	DWORD	key;
+	short	handle;
+	short	bbox_x1;
+	short	bbox_y1;
+	short	bbox_x2;
+	short	bbox_y2;
+	short	inch;
+	dword	reserved
+	WORD	checksum;
+} wmf;
+
+struct METAHEADER {
+	word	mtType;
+	word	mtHeaderSize;
+	WORD	mtVersion;
+	dword	mtSize;
+	word	mtNoObjects;
+	dword	mtMaxRecord;
+	word	mtNoParameters;
+} wmf;
+
+struct MY1HEADER {
+	double t1;
+	double t2;
+	double t3;
+} out;
+
+
+struct MY2HEADER {
+	float f3;
+	float f4;
+	qword qw1;
+	QWORD QW2;
+} out;
+
+
+
+struct MYword {
+	word w1;
+};
+
+struct MYSHORT {
+	short s1;
+};
+
+struct MYdword {
+	dword dw1;
+};
+
+struct MYLONG {
+	long l1;
+};
+
+
+struct MYFLOAT {
+	float f1;
+};
+
+struct MYDOUBLE {
+	double d1;
+};

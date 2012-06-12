@@ -57,7 +57,9 @@ private:
 	BOOL	DrawCaret();
 	DWORD	PointToOffset(CPoint pt);
 	void	CutOrCopy(CutMode mode);
-	void	MoveCaretTo(DWORD dwNewCaret);
+public:
+	void	MoveCaretTo(DWORD dwNewCaret/*, bool bFirst=true*/);
+private:
 	void	UpdateDocSize();
 	BOOL	CalcHexa(LPCSTR sExp, long& nResult);
 	int		ReadHexa(LPCSTR sHexa, LPBYTE& buffer);
@@ -163,6 +165,9 @@ protected:
 	afx_msg void OnUpdateJump(CCmdUI* pCmdUI);
 //	afx_msg LRESULT OnFindNext(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 };
 
 #ifndef _DEBUG  // debug version in BZView.cpp

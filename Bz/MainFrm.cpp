@@ -46,6 +46,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND_RANGE(ID_VIEW_SPLIT_H, ID_VIEW_SPLIT_V, OnViewSplit)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_SPLIT_H, ID_VIEW_SPLIT_V, OnUpdateViewSplit)
 	ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
+
+	ON_COMMAND(ID_VIEW_SYNCSCROLL, OnViewSyncScroll)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_SYNCSCROLL, OnUpdateViewSyncScroll)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -522,6 +525,19 @@ void CMainFrame::OnUpdateViewSubCursor(CCmdUI* pCmdUI)
 {
 	// TODO: Add your command update UI handler code here
 	pCmdUI->SetCheck(options.bSubCursor);
+}
+
+void CMainFrame::OnViewSyncScroll()
+{
+	// TODO: Add your command handler code here
+	options.bSyncScroll = !options.bSyncScroll;
+	GetActiveView()->Invalidate();
+}
+
+void CMainFrame::OnUpdateViewSyncScroll(CCmdUI* pCmdUI) 
+{
+	// TODO: Add your command update UI handler code here
+	pCmdUI->SetCheck(options.bSyncScroll);
 }
 
 void CMainFrame::OnClose() 
