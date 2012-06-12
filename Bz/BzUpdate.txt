@@ -1,3 +1,25 @@
+1.6.6 2012/06/10 (tamachan) 
+・構造体（8byteタイプ）をダブルクリックした時、GetValueに8バイト要求するため例外が出たバグを修正
+　JumpOffsetのGetValueはよくわからないがm_nBytesが8バイト以上の場合は4バイトに丸める処理を追加
+・UACを回避するためBz.defをAPPDATA\BzEditor\Bz.defに移動。
+　見つからない場合は往来の読み込み処理（Bz.exeと同ディレクトリのBz.def）
+
+1.6.5 2012/06/09 (tamachan) https://docs.google.com/open?id=0B7h5NcRw8uVCT01ROGRvUnI5cnc
+・ファイルサイズの違う比較の際、小さいサイズからはみ出した分を違う色（デフォ緑）で表示
+・同期スクロール搭載
+・NSISでインストーラー作成
+・色付けの優先度を変更
+ （...構造体→比較違い）→（...比較違い→比較はみ出し→構造体）
+
+1.6.4 2012/06/08 (tamachan) https://docs.google.com/open?id=0B7h5NcRw8uVCQlFsVlI1RGtvRkU
+・構造体へdouble, QWORD, qword, float実装
+・ファイルサイズが違っても比較できるように
+・VC2005でランタイム静的リンクしました。500kbくらいです
+たぶんバグがあります。
+MFCのCMemFileが4GBオーバーに対応するようになってGetLengthがULONGLONG(8byte)を返すようになっています。
+GetLengthを使っているところが２ヶ所あってDWORDへの切り捨てWarningが出ていました
+4GB以上はなかなか使わない＆面倒なので無視しちゃいました
+
 Bz Ver1.5	01/6/25
 
 ・VC++6.0、フラットツールバー(問題がある場合->BarState）

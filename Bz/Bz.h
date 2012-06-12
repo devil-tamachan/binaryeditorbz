@@ -8,6 +8,8 @@
 #include "resource.h"       // main symbols
 #include "options.h"
 
+#include <Shlwapi.h>
+
 /////////////////////////////////////////////////////////////////////////////
 // CBZApp:
 // See BZ.cpp for the implementation of this class
@@ -133,6 +135,7 @@ extern CBZOptions options;
 CString SeparateByComma(int num, BOOL bSigned = FALSE);
 CString SeparateByComma64(ULONGLONG num, BOOL bSigned = FALSE);
 CString GetModulePath(LPCSTR pFileName);
+CString GetStructFilePath();
 LPVOID ReadFile(LPCSTR pPath);
 void ErrorMessageBox();	// ###1.61
 

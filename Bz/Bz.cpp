@@ -264,6 +264,25 @@ CString GetModulePath(LPCSTR pFileName)
 	return sPath;
 }
 
+
+CString GetStructFilePath()
+{
+	CString sFileName, retStr;
+	sFileName.LoadString(IDS_STRUCT_FILE);
+	TCHAR szAppData[_MAX_PATH];
+	if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE, NULL, 0, szAppData)))
+	{
+		PathAppend(szAppData, _T("\\BzEditor\\"));
+		PathAppend(szAppData, sFileName);
+		retStr=szAppData;
+		if(!PathFileExists(szAppData))
+		{
+			retStr = GetModulePath(sFileName);//local file
+		}
+	}
+	return retStr;
+}
+
 LPVOID ReadFile(LPCSTR pPath)
 {
 	CFile file;
@@ -365,8 +384,9 @@ void CBZApp::OnToolsEditBZDef()
 {
 	// TODO: Add your command handler code here
 	CString sPath;
-	sPath.LoadString(IDS_STRUCT_FILE);
-	sPath = GetModulePath(sPath);
+//	sPath.LoadString(IDS_STRUCT_FILE);
+//	sPath = GetModulePath(sPath);
+	sPath = GetStructFilePath();
 
 	CString sEditorPath;
 	::FindExecutable(_T("bz.txt"), NULL, sEditorPath.GetBuffer(_MAX_PATH));	// ###1.60

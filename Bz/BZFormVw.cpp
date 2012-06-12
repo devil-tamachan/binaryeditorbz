@@ -137,8 +137,9 @@ void CBZFormView::OnInitialUpdate()
 	// TODO: Add your specialized code here and/or call the base class
 	if(!m_pDefFile && !m_bNoDefFile) {
 		CString sPath;
-		sPath.LoadString(IDS_STRUCT_FILE);
-		sPath = GetModulePath(sPath);
+	//	sPath.LoadString(IDS_STRUCT_FILE);
+	//	sPath = GetModulePath(sPath);
+		sPath = GetStructFilePath();
 		if(!(m_pDefFile = (LPSTR)ReadFile(sPath))) {
 			m_bNoDefFile = TRUE;
 			return;

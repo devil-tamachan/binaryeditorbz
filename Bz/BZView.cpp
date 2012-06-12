@@ -1141,7 +1141,11 @@ CString CBZView::GetStatusInfoText()
 				sResult.Format("%06X-%06X", BlockBegin(), BlockEnd());
 			val = BlockEnd() - BlockBegin();
 			pFmtHexa = " 0x%X(%s) bytes";
-		} else {
+
+			CString sValue;
+			sValue.Format(pFmtHexa, val, (LPCSTR)SeparateByComma(val));
+			sResult += sValue;
+		} else if(m_nBytes<=4) {
 			static TCHAR szFmtHexa[] = ": 0x%02X (%s)";
 			if(m_nColAddr > ADDRCOLUMNS)
 				sResult.Format("%04X:%04X", HIWORD(m_dwCaret), LOWORD(m_dwCaret));
@@ -1153,10 +1157,27 @@ CString CBZView::GetStatusInfoText()
 			val = GetValue(m_dwCaret, m_nBytes);
 			szFmtHexa[6] = '0'+ m_nBytes * 2;
 			pFmtHexa = szFmtHexa;
+
+			CString sValue;
+			sValue.Format(pFmtHexa, val, (LPCSTR)SeparateByComma(val));
+			sResult += sValue;
+		} else if(m_nBytes==8) {
+			if(m_nColAddr > ADDRCOLUMNS)
+				sResult.Format("%04X:%04X", HIWORD(m_dwCaret), LOWORD(m_dwCaret));
+			else
+				sResult.Format("%06X", m_dwCaret);
+#ifdef FILE_MAPPING
+			if(m_pDoc->IsOutOfMap(m_pDoc->GetDocPtr() + m_dwCaret)) return sResult;
+#endif //FILE_MAPPING
+			ULONGLONG qval = GetValue64(m_dwCaret);
+
+			CString sValue;
+			sValue.Format(_T(": 0x%016I64X (%s)"), qval, (LPCSTR)SeparateByComma64(qval));
+			sResult += sValue;
 		}
-		CString sValue;
+/*		CString sValue;
 		sValue.Format(pFmtHexa, val, (LPCSTR)SeparateByComma(val));
-		sResult += sValue;
+		sResult += sValue;*/
 	}
 	return sResult;
 }
@@ -1290,8 +1311,14 @@ void CBZView::JumpTo(DWORD dwNewCaret)
 void CBZView::OnJumpOffset() 
 {
 	// TODO: Add your command handler code here
-	int ofs = GetValue(m_dwCaret, m_nBytes);
-	ofs += m_nBytes;
+	int nBytes = m_nBytes;
+	if(m_nBytes>4)
+	{
+//		MessageBox("m_nBytes>4", "Debug", MB_OK);
+		nBytes = 4;
+	}
+	int ofs = GetValue(m_dwCaret, nBytes);
+	ofs += nBytes;
 	if(m_dwCaret + ofs <= m_dwTotal) 
 		JumpTo(m_dwCaret + ofs);
 }
@@ -2105,6 +2132,7 @@ BOOL CBZView::LoadEbcDicTable()
 	CString sPath;
 	sPath.LoadString(IDS_EBCDIC_FILE);
 	sPath = GetModulePath(sPath);
+	sPath = GetStructFilePath();
 	LPSTR pTable = (LPSTR)ReadFile(sPath);
 	if(!pTable) return FALSE;
 	LPSTR p = pTable;
