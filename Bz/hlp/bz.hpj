@@ -1,0 +1,21 @@
+; This file is maintained by HCW. Do not modify this file directly.
+
+[OPTIONS]
+HCW=0
+DBCS=Yes
+LCID=0x411 0x0 0x0 ;“ú–{Œê
+REPORT=Yes
+TITLE=Bz Help
+HLP=..\release\bz.hlp
+
+[FILES]
+.\BZ.rtf
+
+[MAP]
+#include topics.h
+
+[WINDOWS]
+main="",(,,496,360),25604,(r14876671),(r12632256),f7
+
+[CONFIG]
+BrowseButtons()

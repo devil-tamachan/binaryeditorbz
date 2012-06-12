@@ -1,0 +1,674 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Japanese resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
+#ifdef _WIN32
+LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
+#pragma code_page(932)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_BMPVIEW MENU DISCARDABLE 
+BEGIN
+    POPUP "BmpView"
+    BEGIN
+        MENUITEM "Width 128",                   ID_BMPVIEW_WIDTH128
+        MENUITEM "Width 256",                   ID_BMPVIEW_WIDTH256
+        MENUITEM SEPARATOR
+        MENUITEM "Zoom",                        ID_BMPVIEW_ZOOM
+    END
+END
+
+#endif    // Japanese resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM "Save Dump &List...",          ID_FILE_SAVE_DUMPLIST
+        MENUITEM SEPARATOR
+        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
+        MENUITEM "Page Set&up...",              ID_FILE_PAGE_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit\tCtrl+Q",               ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM "Copy &Dump List\tCtrl+D",     ID_EDIT_COPY_DUMP
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECT_ALL
+        MENUITEM SEPARATOR
+        MENUITEM "&Enter Value",                ID_EDIT_VALUE
+        POPUP "&Byte Ordering"
+        BEGIN
+            MENUITEM "&Intel",                      ID_BYTEORDER_INTEL
+            MENUITEM "M&otorola",                   ID_BYTEORDER_68K
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Read Only\tCtrl+W",          ID_EDIT_READONLY
+        MENUITEM "Read Only on &Open",          ID_EDIT_READONLYOPEN
+    END
+    POPUP "&View"
+    BEGIN
+        POPUP "&Character set"
+        BEGIN
+            MENUITEM "&Ascii",                      ID_CHAR_ASCII
+            MENUITEM "&Shift JIS",                  ID_CHAR_SJIS
+            MENUITEM "&Unicode (UTF-16)",           ID_CHAR_UNICODE
+            MENUITEM "U&nicode (UTF-8)",            ID_CHAR_UTF8
+            MENUITEM "&JIS",                        ID_CHAR_JIS
+            MENUITEM "&EUC",                        ID_CHAR_EUC
+            MENUITEM "E&BCDIC",                     ID_CHAR_EBCDIC
+            MENUITEM "EP&WING",                     ID_CHAR_EPWING
+            MENUITEM SEPARATOR
+            MENUITEM "Auto&Detect",                 ID_CHAR_AUTODETECT
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Bitmap View",                ID_VIEW_BITMAP
+        MENUITEM "Str&ucture View",             ID_VIEW_STRUCT
+        MENUITEM SEPARATOR
+        MENUITEM "Split &Horizontally",         ID_VIEW_SPLIT_H
+        MENUITEM "Split &Vertically",           ID_VIEW_SPLIT_V
+        MENUITEM SEPARATOR
+        MENUITEM "Full &Pathname",              ID_VIEW_FULLPATH
+        MENUITEM "Sub Cu&rsor",                 ID_VIEW_SUBCURSOR
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+    POPUP "&Jump"
+    BEGIN
+        MENUITEM "&Find...\tCtrl+F",            ID_JUMP_FIND
+        MENUITEM "Find &Next\tF3",              ID_JUMP_FINDNEXT
+        MENUITEM "&Compare",                    ID_JUMP_COMPARE
+        MENUITEM SEPARATOR
+        MENUITEM "&To...",                      ID_JUMP_TO
+        MENUITEM "&Offset",                     ID_JUMP_OFFSET
+        MENUITEM "Base address(&S)...",         ID_JUMP_BASE
+        MENUITEM "&Return\tCtrl+R",             ID_JUMP_RETURN
+        MENUITEM "File &Top\tCtrl+Home",        ID_JUMP_START
+        MENUITEM "File &Bottom\tCtrl+End",      ID_JUMP_END
+        MENUITEM SEPARATOR
+        MENUITEM "Mar&k\tCtrl+F2",              ID_JUMP_MARK
+        MENUITEM "&Mark Next\tF2",              ID_JUMP_MARKNEXT
+    END
+    POPUP "&Tools"
+    BEGIN
+        MENUITEM "&Font...",                    ID_VIEW_FONT
+        MENUITEM "C&olor...",                   ID_VIEW_COLOR
+        MENUITEM "&Advanced...",                ID_TOOLS_SETTING
+        MENUITEM SEPARATOR
+        POPUP "&Language..."
+        BEGIN
+            MENUITEM "&Japanese",                   ID_LANG_JPN
+            MENUITEM "&English",                    ID_LANG_ENU
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Edit BZ.DEF",                ID_TOOLS_EDITDEF
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Contents...",                ID_HELP_INDEX
+        MENUITEM SEPARATOR
+        MENUITEM "&About BZ...",                ID_APP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG1 DIALOG DISCARDABLE  0, 0, 100, 280
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Structures:",IDC_STATIC,4,3,48,8,SS_CENTERIMAGE
+    LISTBOX         IDC_LIST_TAG,4,12,92,100,WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Members:",IDC_STATIC_MEMBER,4,115,43,8,SS_CENTERIMAGE
+    CONTROL         "List1",IDC_LIST_MEMBER,"SysListView32",LVS_REPORT | 
+                    LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,4,124,92,148
+    CONTROL         "All",IDB_TAGALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    60,2,20,10
+END
+
+IDD_SETUP_COLOR DIALOG DISCARDABLE  0, 0, 174, 83
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Color Setting"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,28,64,44,14
+    PUSHBUTTON      "Cancel",IDCANCEL,76,64,44,14
+    PUSHBUTTON      "&Apply",IDAPPLY,124,64,44,14
+    LISTBOX         IDC_PARTSLIST,4,12,68,44,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Text Color:",IDC_STATIC,76,4,36,8
+    LTEXT           "Back Color:",IDC_STATIC,124,4,36,8
+    LTEXT           "Element:",IDC_STATIC,4,4,26,8
+    CTEXT           "01 23 45 67-89 AB CD EF",IDC_SAMPLE,76,32,92,24,
+                    SS_CENTERIMAGE | SS_SUNKEN
+    COMBOBOX        IDC_TEXTCOLOR,76,12,44,100,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_BACKCOLOR,124,12,44,100,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 217, 55
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About BZ"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "Binary Editor BZ Version 1.63",IDC_STATIC,40,10,119,8,
+                    SS_NOPREFIX
+    LTEXT           "Copyright (c) 1996-2004 by c.mos",IDC_STATIC,40,25,119,
+                    8
+    DEFPUSHBUTTON   "OK",IDOK,178,7,32,14,WS_GROUP
+END
+
+IDD_SETTING DIALOG DISCARDABLE  0, 0, 172, 94
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Advanced"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,4,78,44,14
+    PUSHBUTTON      "Cancel",IDCANCEL,56,78,44,14
+    PUSHBUTTON      "&Help",IDHELP,124,78,44,14
+    RTEXT           "Max size of file, opened On Memory:",IDC_STATIC,4,8,112,
+                    8
+    EDITTEXT        IDE_MAXONMEMORY,120,5,28,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "KB",IDC_STATIC,156,8,10,8
+    LTEXT           "(larger than this, will be open by File Mapping mode.)",
+                    IDC_STATIC,8,20,164,8
+    RTEXT           "View size of File Mapping:",IDC_STATIC,4,36,112,8
+    EDITTEXT        IDE_MAXMAPSIZE,120,32,28,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "MB",IDC_STATIC,156,36,11,8
+    CONTROL         "Display 32bit address always",IDB_DWORDADDR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,4,48,101,10
+    CONTROL         "Dump list is divided every ",IDC_STATIC,"Static",
+                    SS_LEFTNOWORDWRAP | WS_GROUP,4,64,80,8
+    EDITTEXT        IDE_DUMPPAGE,84,61,20,14,ES_AUTOHSCROLL
+    CONTROL         "lines.",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
+                    WS_GROUP,108,64,16,8
+END
+
+IDD_INPUT DIALOG DISCARDABLE  0, 0, 150, 51
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Start address"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,52,32,44,14
+    PUSHBUTTON      "Cancel",IDCANCEL,100,32,44,14
+    CONTROL         "Start address:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
+                    WS_GROUP,4,12,56,8
+    EDITTEXT        IDE_VALUE,64,9,48,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "reset",IDB_RESET,116,10,28,12
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\BZ.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_DIALOG1, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 93
+        TOPMARGIN, 6
+        BOTTOMMARGIN, 273
+    END
+
+    IDD_SETUP_COLOR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 167
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 76
+    END
+
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 210
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
+    END
+
+    IDD_SETTING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 165
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 87
+    END
+
+    IDD_INPUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 143
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 44
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+BEGIN
+    "A",            ID_EDIT_SELECT_ALL,     VIRTKEY, CONTROL, NOINVERT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    "D",            ID_EDIT_COPY_DUMP,      VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_JUMP_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_JUMP_RETURN,         VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    VK_END,         ID_JUMP_END,            VIRTKEY, CONTROL, NOINVERT
+    VK_F1,          ID_HELP_INDEX,          VIRTKEY, NOINVERT
+    VK_F2,          ID_JUMP_MARKNEXT,       VIRTKEY, NOINVERT
+    VK_F2,          ID_JUMP_MARK,           VIRTKEY, CONTROL, NOINVERT
+    VK_F3,          ID_JUMP_FINDNEXT,       VIRTKEY, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_HOME,        ID_JUMP_START,          VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    "W",            ID_EDIT_READONLY,       VIRTKEY, CONTROL, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR DISCARDABLE  19, 17
+BEGIN
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_EDIT_READONLY
+    BUTTON      ID_EDIT_CUT
+    BUTTON      ID_EDIT_COPY
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_VIEW_BITMAP
+    BUTTON      ID_VIEW_STRUCT
+    BUTTON      ID_VIEW_SPLIT_H
+    BUTTON      ID_VIEW_SPLIT_V
+    SEPARATOR
+    SEPARATOR
+    BUTTON      ID_JUMP_FINDNEXT
+    SEPARATOR
+    BUTTON      ID_JUMP_OFFSET
+    BUTTON      ID_JUMP_RETURN
+    BUTTON      ID_JUMP_START
+    BUTTON      ID_JUMP_END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "BZ MFC Application\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "BZ\0"
+            VALUE "LegalCopyright", "Copyright (c) 1996 by c.mos\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "BZ.EXE\0"
+            VALUE "ProductName", "BZ Application\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    IDR_MAINFRAME           "BZ\n\nBZ\n\n\nBZ.Document\nBZ Document"
+END
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "BZ"
+    AFX_IDS_IDLEMESSAGE     "Ready"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_INDICATOR_INFO       "XXXX:XXXX: 0xXXXXXXXX (0,000,000,000)bytes"
+    ID_INDICATOR_SIZE       "0,000,000,000bytes"
+    ID_INDICATOR_CHAR       "Unicode"
+    ID_INDICATOR_INS        "OVR "
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_NEW             "Create a new document\nNew"
+    ID_FILE_OPEN            "Open an existing document\nOpen"
+    ID_FILE_SAVE            "Save the active document\nSave"
+    ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
+    ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
+    ID_FILE_PRINT           "Print the active document\nPrint"
+    ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_APP_ABOUT            "About Bz"
+    ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
+    ID_HELP_INDEX           "Display help"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_CHAR_ASCII           "Ascii character set"
+    ID_CHAR_SJIS            "Shift-JIS charcter set"
+    ID_CHAR_UNICODE         "Unicode (UTF-16) character set"
+    ID_CHAR_JIS             "JIS charcter set"
+    ID_CHAR_EUC             "EUC charcter set"
+    ID_CHAR_UTF8            "Unicode (UTF-8) character set"
+    ID_CHAR_EBCDIC          "EBCDIC charcter set"
+    ID_CHAR_EPWING          "EPWING charcter set"
+    ID_CHAR_AUTODETECT      "Auto detect charcter set"
+    ID_EDIT_VALUE           "Enter value at Cursor"
+    ID_EDIT_READONLY        "Toggle Read-only mode\nRead Only"
+    ID_EDIT_READONLYOPEN    "Read-only mode after a file was opened"
+    ID_BYTEORDER_INTEL      "Byte storage order is assumed 'little endian'"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_BYTEORDER_68K        "Byte storage order is assumed 'big endian'"
+    ID_VIEW_BITMAP          "Show file content as Bitmap\nBitmap view"
+    ID_VIEW_STRUCT          "Show structure list view\nStruct view"
+    ID_VIEW_SPLIT_H         "Split view horizontally\nSplit Horz"
+    ID_VIEW_SPLIT_V         "Split view vertically\nSplit Vert"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_VIEW_FONT            "Change font"
+    ID_VIEW_COLOR           "Change Text Color"
+    ID_VIEW_FULLPATH        "Show full pathname of document"
+    ID_VIEW_SUBCURSOR       "Show cursor on Character area, too\nSub cursor"
+    ID_JUMP_FIND            "Enter Find String / Calcurate(?..)\nFind/Calc"
+    ID_JUMP_FINDNEXT        "Find Next String\nFind Next"
+    ID_JUMP_COMPARE         "Compare two file\nCompare"
+    ID_JUMP_TO              "Jump to specified address"
+    ID_JUMP_OFFSET          "Jump by current offset\nOffset"
+    ID_JUMP_RETURN          "Return to previous address\nReturn"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_JUMP_MARK            "Toggle Mark"
+    ID_JUMP_MARKNEXT        "Jump to Next Mark"
+    ID_JUMP_START           "Jump to the start of the file\nFile Start"
+    ID_JUMP_END             "Jump to the end of the file\nFile End"
+    ID_LANG_JPN             "Switch Language to Japanese"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_LANG_ENU             "Switch Language to English"
+    ID_TOOLS_EDITDEF        "Open BZ.DEF file by text editor"
+    ID_TOOLS_SETTING        "Setup Advanced option"
+    ID_FILE_SAVE_DUMPLIST   "Save the screen image as a text file\nSave Dump list"
+    ID_EDIT_COPY_DUMP       "Copy the screen image of selection and put it on the Clipboard\nCopy dump list"
+    ID_JUMP_BASE            "Set file base address."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
+    IDS_STRUCT_FILE         "BZ.DEF"
+    IDS_AUTOCOLOR           "Auto"
+    IDS_OTHERCOLOR          "Other..."
+    IDS_COLOR_ADDRESS       "Address Header"
+    IDS_COLOR_ADDRESS2      "Address Header2"
+    IDS_COLOR_TEXT          "Text"
+    IDS_COLOR_SELECT        "Text Selection"
+    IDS_COLOR_MARK          "Mark Point"
+    IDS_COLOR_MISMATCH      "Mismatch Byte"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COLOR_STRUCT        "Structure"
+    IDS_COLOR_MEMBER        "Structure Member"
+    IDS_EDIT_OVR            "OVR"
+    IDS_EDIT_INS            "INS"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_EDIT_RO             "R.O."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_CHANGE_LANGUAGE     "Please restart BZ"
+    IDS_COMPARE_OK          "No difference"
+    IDS_ALLFILTER           "All Files (*.*)"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_ERR_FILENOTFOUND    "Cannot open '%s'"
+    IDS_ERR_SYNTAX          "Syntax error '%s'"
+    IDS_ERR_MALLOC          "Fail to Allocate Memory"
+    IDS_ERR_READFILE        "Fail to Read File"
+    IDS_ERR_RANGE           "Out of Range"
+    IDS_ERR_READONLY        "Read Only"
+    IDS_ERR_FINDSTRING      "Cannot find the string/bytes"
+    IDS_ERR_MAP_RO          "On File Mapping, cannot change ReadOnly mode. \nChange [Read Only on Open] menu, and please Reopen"
+    IDS_ERR_OVER4G          "The file exceeding 4GB cannot be read to the end."
+    IDS_ERR_COPY            "Copy block too large"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_SAVEDUMP_CAPTION    "Save Dump List"
+    IDS_EBCDIC_FILE         "EBCDIC.DEF"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

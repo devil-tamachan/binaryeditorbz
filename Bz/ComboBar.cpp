@@ -1,0 +1,153 @@
+// ComboBar.cpp : implementation file
+//
+
+#include "stdafx.h"
+#include "BZ.h"
+#include "ComboBar.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CComboToolBar
+
+CComboToolBar::CComboToolBar()
+{
+}
+
+CComboToolBar::~CComboToolBar()
+{
+}
+
+
+BEGIN_MESSAGE_MAP(CComboToolBar, CToolBar)
+	//{{AFX_MSG_MAP(CComboToolBar)
+	ON_WM_SETFOCUS()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+
+BOOL CComboToolBar::CreateComboBox(UINT nID, UINT nIDNext, int width, int height)
+{
+	SetButtonInfo(CommandToIndex(nIDNext) - 1, nID, TBBS_SEPARATOR, width);
+	CRect rect;
+	GetItemRect(CommandToIndex(nID), &rect);
+	rect.bottom = rect.top + height;
+	return m_combo.Create(CBS_DROPDOWN|WS_VISIBLE|WS_TABSTOP|CBS_AUTOHSCROLL, rect, this, nID);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CComboToolBar message handlers
+
+BOOL CComboToolBar::PreTranslateMessage(MSG* pMsg) 
+{
+	if(pMsg->message == WM_KEYDOWN) {
+		CView* pView = ((CFrameWnd*)AfxGetMainWnd())->GetActiveView();
+		BOOL bCtrl  = (GetKeyState(VK_CONTROL) < 0);
+		switch (pMsg->wParam) {
+		case VK_ESCAPE:
+			pView->SetFocus();
+			return TRUE;
+		case VK_RETURN:
+			if(!m_combo.GetDroppedState()) {
+				pView->PostMessage(WM_COMMAND, ID_JUMP_FINDNEXT);
+				return TRUE;
+			}
+				break;
+		case VK_DOWN:
+			if(!m_combo.GetDroppedState()) {
+				m_combo.ShowDropDown();
+				return TRUE;
+			}
+			break;
+		case 'X':
+			if(bCtrl) {
+				m_combo.Cut();
+				return TRUE;
+			}
+			break;
+		case 'C':
+			if(bCtrl) {
+				m_combo.Copy();
+				return TRUE;
+			}
+			break;
+		case 'V':
+			if(bCtrl) {
+				m_combo.Paste();
+				return TRUE;
+			}
+			break;
+		}
+	}
+	return CToolBar::PreTranslateMessage(pMsg);
+}
+
+void CComboToolBar::OnSetFocus(CWnd* pOldWnd) 
+{
+	m_combo.SetEditSel(0,-1);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CTBComboBox
+
+CTBComboBox::CTBComboBox()
+{
+}
+
+CTBComboBox::~CTBComboBox()
+{
+}
+
+BEGIN_MESSAGE_MAP(CTBComboBox, CComboBox)
+	//{{AFX_MSG_MAP(CTBComboBox)
+	ON_WM_CREATE()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+int CTBComboBox::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CComboBox::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	LOGFONT logFont;
+	memset(&logFont, 0, sizeof(logFont));
+
+/*	::GetObject(::GetStockObject(DEFAULT_GUI_FONT), sizeof(LOGFONT), &logFont);
+	logFont.lfWeight = FW_BOLD;
+	logFont.lfHeight = -9;
+*/
+	logFont.lfHeight = -options.nComboHeight;
+	logFont.lfWeight = FW_BOLD;
+	logFont.lfCharSet = SHIFTJIS_CHARSET;
+	logFont.lfQuality = DEFAULT_QUALITY;
+	logFont.lfPitchAndFamily = VARIABLE_PITCH;
+	lstrcpyn(logFont.lfFaceName, "‚l‚r ‚oƒSƒVƒbƒN", LF_FACESIZE);
+
+	if (m_font.CreateFontIndirect(&logFont))
+		SetFont(&m_font);
+	return 0;
+}
+
+void CTBComboBox::SetText(LPCSTR s)
+{
+	SetWindowText(s);
+	int len = lstrlen(s);
+	SetEditSel(len, len);	// move caret to end
+}
+
+void CTBComboBox::AddText(LPCSTR s)
+{
+	int n = FindStringExact(-1, s);
+	if(n != CB_ERR)
+		DeleteString(n);
+	InsertString(0, s);
+	SetCurSel(0);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CTBComboBox message handlers
+
