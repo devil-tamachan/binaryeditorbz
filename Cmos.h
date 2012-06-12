@@ -15,7 +15,8 @@
 #define pt2 BottomRight()
 
 #define for_to(i,n) for (int i=0; i<(n); i++)
-#define for_to_(i,n) for (i=0; i<(n); i++)
+#define for_to_(i,n) for_to(i,n)
+//#define for_to_(i,n) for (i=0; i<(n); i++)
 #define repeat do
 #define until(cond) while(!(cond))
 

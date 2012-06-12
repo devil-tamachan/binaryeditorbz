@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
-// Used by BZres_us.rc
+// Microsoft Visual C++ generated include file.
+// Used by BZ.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -73,7 +73,6 @@
 #define ID_INDICATOR_SIZE               0xE711
 #define ID_INDICATOR_CHAR               0xE712
 #define ID_INDICATOR_INS                0xE713
-#define IDS_STRUCT_FILE                 61446
 #define IDS_AUTOCOLOR                   61447
 #define IDS_OTHERCOLOR                  61448
 #define IDS_COLOR_ADDRESS               61450
@@ -83,10 +82,8 @@
 #define IDS_COLOR_MARK                  61454
 #define IDS_COLOR_MISMATCH              61455
 #define IDS_COLOR_STRUCT                61456
-#define IDS_COLOR_MEMBER                61457
 #define IDS_EDIT_OVR                    61470
 #define IDS_EDIT_INS                    61471
-#define IDS_EDIT_RO                     61472
 #define IDS_CHANGE_LANGUAGE             61500
 #define IDS_COMPARE_OK                  61501
 #define IDS_ALLFILTER                   61502
@@ -102,6 +99,9 @@
 #define IDS_ERR_COPY                    61519
 #define IDS_SAVEDUMP_CAPTION            61520
 #define IDS_EBCDIC_FILE                 61521
+#define IDS_STRUCT_FILE                 61522
+#define IDS_COLOR_MEMBER                61523
+#define IDS_EDIT_RO                     61524
 
 // Next default values for new objects
 // 

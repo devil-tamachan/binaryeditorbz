@@ -77,6 +77,15 @@ inline int SwapDword(int val)
 	return val;
 }
 
+inline ULONGLONG SwapQword(ULONGLONG val)
+{
+	if(options.bByteOrder) {
+		val = ((val & 0xFF00000000000000ull)>>56) | ((val & 0x00FF000000000000ull)>>40) | ((val & 0x0000FF0000000000ull)>>24) | ((val & 0x000000FF00000000ull)>>8)
+			| ((val & 0x00000000FF000000ull)<<8) | ((val & 0x0000000000FF0000ull)<<24) | ((val & 0x000000000000FF00ull)<<40) | ((val & 0x00000000000000FFull)<<56);
+	}
+	return val;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CBZView
 
@@ -326,6 +335,8 @@ void CBZView::OnDraw(CDC* pDC)
 	DWORD dwEnd   = BlockEnd();
 	DWORD dwTotal = m_dwTotal;
 
+	int y;
+
 	PutBegin(pDC);
 	if(IsToFile()) {
 		DrawHeader();
@@ -363,7 +374,7 @@ void CBZView::OnDraw(CDC* pDC)
 #endif //FILE_MAPPING
 	InitCharMode(p, ofs);
 
-	for(int y = rClip.y1; y <= rClip.y2; y++) {
+	for(/*int */y = rClip.y1; y <= rClip.y2; y++) {
 		Locate(0, y);
 		if(ofs > dwTotal) break;
 		if(IsToFile() && options.nDumpPage) {
@@ -1175,6 +1186,24 @@ int CBZView::GetValue(DWORD ofs, int bytes)
 	return val;
 }
 
+ULONGLONG CBZView::GetValue64(DWORD ofs)
+{
+	LPBYTE p  = m_pDoc->GetDocPtr();
+	ULONGLONG val = 0;
+	if(p) {
+#ifdef FILE_MAPPING
+		if(m_pDoc->IsOutOfMap(p + ofs)) return 0;
+#endif //FILE_MAPPING
+		if(ofs + 8 > m_dwTotal)
+			val = 0;
+		else {
+			p += ofs;
+			val = SwapQword(*(ULONGLONG*)p);
+		}
+	}
+	return val;
+}
+
 void CBZView::SetValue(DWORD ofs, int bytes, int val)
 {
 	LPBYTE p  = m_pDoc->GetDocPtr();
@@ -1398,7 +1427,7 @@ void CBZView::OnJumpFindnext()
 				r = strncmp((LPCSTR)p1, sFind, nFind);
 				break;
 			case CTYPE_UNICODE:
-				r = _wcsnicmp((LPWORD)p1, (LPWORD)pFind, nFind);
+				r = _wcsnicmp(/*(LPWORD)*/(const wchar_t *)p1, /*(LPWORD)*/(const wchar_t *)pFind, nFind);
 				break;
 			}
 			if(!r) {
@@ -1907,7 +1936,7 @@ int CBZView::ConvertCharSet(CharSet charset, LPCSTR sFind, LPBYTE &buffer)
 		nFind = ::MultiByteToWideChar(CP_ACP, 0, sFind, -1, NULL, 0);
 		if(nFind) {
 			buffer = (LPBYTE)MemAlloc(nFind * sizeof(WORD));
-			nFind = ::MultiByteToWideChar(CP_ACP, 0, sFind, -1, (LPWORD)buffer, nFind);
+			nFind = ::MultiByteToWideChar(CP_ACP, 0, sFind, -1, (LPWSTR)buffer, nFind);
 			if(nFind) nFind--;
 			if(charset == CTYPE_UTF8) {			// ### 1.54b
 				WORD w = *((LPWORD)buffer);

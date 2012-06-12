@@ -12,10 +12,13 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define nTypes 9
+#define nTypes 13
 
 char* datatypes[nTypes] = {
-	"char", "byte", "BYTE", "short", "word", "WORD", "long", "dword", "DWORD"
+	"char", "byte", "BYTE", "short", "word", "WORD", "long", "dword", "DWORD", "double", "qword", "QWORD", "float"
+};
+
+DWORD datasizes[nTypes] = {1,1,1,2,2,2,4,4,4,8,8,8 ,4
 };
 
 static TCHAR *sMemberColLabel[MBRCOL_MAX] = { _T("+"), _T("Label"), _T("Value") };
@@ -104,7 +107,7 @@ CStructMember::CStructMember(LPSTR name, int type)
 {
 	m_name = name;
 	m_type = type;
-	m_len = m_bytes = (type == -1) ? 0 : 1<<(type/3);
+	m_len = m_bytes = (type == -1) ? 0 : datasizes[type];//1<<(type/3);
 }
 
 CStructMember::~CStructMember()
@@ -335,10 +338,11 @@ BOOL CBZFormView::InitStructList()
 			else if(isdigit(*p))
 				m_tag[iTag].m_member[iMember].m_len *= atoi(p);
 			else {
-				for_to(i, nTypes)
-					if(!strcmp(p, datatypes[i])) break;
-				if(i == nTypes) goto Error;
-				type = i;
+				int i222;
+				for(i222=0; i222<nTypes; i222++)
+					if(!strcmp(p, datatypes[i222])) break;
+				if(i222 == nTypes) goto Error;
+				type = i222;
 				mode = TK_MEMBER;
 			}
 			break;
@@ -456,13 +460,71 @@ void CBZFormView::InitListMember(int iTag)
 //			char* fval[3] = { "%d", "%u", "0x%X" };
 			int val = m_pView->GetValue(m_pView->m_dwCaret + m.m_ofs, m.m_bytes);
 			CString sVal;
+			ULONGLONG qval = 0;
+			
+		//	int type = m.m_type % 3;
+			switch(m.m_type)
+			{
+			case 0://char
+				val = (int)(char)val;
+				sVal = SeparateByComma(val, true);
+				break;
+			case 3://short
+				val = (int)(short)val;
+				sVal = SeparateByComma(val, true);
+				break;
+			case 6://long
+				sVal = SeparateByComma(val, true);
+				break;
+			case 9://double
+				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
+				sVal.Format("%f", qval);
+				break;
+			case 10://qword(digit)
+				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
+				sVal = SeparateByComma64(qval, false);
+				//sVal.Format("%I64u", qval);
+				break;
+			case 11://QWORD(hex)
+				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
+				sVal.Format("0x%016I64X", qval);
+				break;
+			case 12://float
+				sVal.Format("%f", val);
+				break;
+			case 1: // byte(unsigned char)
+			case 4: // word(unsigned short)
+			case 7: // dword(unsigned int)
+				sVal = SeparateByComma(val, false);
+				break;
+			case 2://BYTE(Hex)
+				sVal.Format("0x%02X", val);
+				break;
+			case 5://WORD(Hex)
+				sVal.Format("0x%04X", val);
+				break;
+			case 8://DWORD(Hex)
+				sVal.Format("0x%08X", val);
+				break;
+			}
+			/*
 			int type = m.m_type % 3;
 			switch(type) {
 			case 0:
 				if(m.m_type == 0) 	// char
+				{
 					val = (int)(char)val;
-				else if(m.m_type == 3)	// short
+					sVal = SeparateByComma(val, !type);
+				} else if(m.m_type == 3)	// short
+				{
 					val = (int)(short)val;
+					sVal = SeparateByComma(val, !type);
+				} else if(m.m_type == 9)	// double
+				{
+					ULONGLONG qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
+					sVal.Format("%f", qval);
+				}
+				break;
 			case 1: // unsigned
 				sVal = SeparateByComma(val, !type);
 				break;
@@ -470,6 +532,7 @@ void CBZFormView::InitListMember(int iTag)
 				sVal.Format("0x%X", val);
 				break;
 			}
+			*/
 			if(m.m_len != m.m_bytes)
 				sVal += " ...";
 			lvitem.pszText =  (LPSTR)(LPCSTR)sVal;

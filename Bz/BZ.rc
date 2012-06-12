@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -7,19 +7,18 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
+#include "afxres.rc"
 #include "afxres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Japanese resources
+// 日本語 (日本) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
-#ifdef _WIN32
 LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 #pragma code_page(932)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -27,18 +26,18 @@ LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
@@ -66,95 +65,79 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\Bz.ico"
+IDR_MAINFRAME           ICON                    "res\\Bz.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_DIALOG1 DIALOG DISCARDABLE  0, 0, 100, 280
-STYLE WS_CHILD
+IDD_DIALOG1 DIALOG 0, 0, 100, 280
+STYLE DS_SETFONT | WS_CHILD
 FONT 9, "ＭＳ Ｐゴシック"
 BEGIN
     LTEXT           "Structures:",IDC_STATIC,4,3,48,8,SS_CENTERIMAGE
     LISTBOX         IDC_LIST_TAG,4,12,92,100,WS_VSCROLL | WS_TABSTOP
     LTEXT           "Members:",IDC_STATIC_MEMBER,4,115,43,8,SS_CENTERIMAGE
-    CONTROL         "List1",IDC_LIST_MEMBER,"SysListView32",LVS_REPORT | 
-                    LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,4,124,92,148
-    CONTROL         "All",IDB_TAGALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    60,2,20,10
+    CONTROL         "List1",IDC_LIST_MEMBER,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,4,124,92,148
+    CONTROL         "All",IDB_TAGALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,2,20,10
 END
 
-IDD_SETUP_COLOR DIALOG DISCARDABLE  0, 0, 174, 83
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_SETUP_COLOR DIALOG 0, 0, 174, 83
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "カラー設定"
 FONT 9, "ＭＳ Ｐゴシック"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,28,64,44,14
     PUSHBUTTON      "キャンセル",IDCANCEL,76,64,44,14
     PUSHBUTTON      "適用(&A)",IDAPPLY,124,64,44,14
-    LISTBOX         IDC_PARTSLIST,4,12,68,44,LBS_NOINTEGRALHEIGHT | 
-                    WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_PARTSLIST,4,12,68,44,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "文字色:",IDC_STATIC,76,4,36,8
     LTEXT           "背景色:",IDC_STATIC,124,4,36,8
     LTEXT           "指定する部分:",IDC_STATIC,4,4,42,8
-    CTEXT           "01 23 45 67-89 AB CD EF",IDC_SAMPLE,76,32,92,24,
-                    SS_CENTERIMAGE | SS_SUNKEN
-    COMBOBOX        IDC_TEXTCOLOR,76,12,44,100,CBS_DROPDOWNLIST | 
-                    CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
-                    WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_BACKCOLOR,124,12,44,100,CBS_DROPDOWNLIST | 
-                    CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
-                    WS_VSCROLL | WS_TABSTOP
+    CTEXT           "01 23 45 67-89 AB CD EF",IDC_SAMPLE,76,32,92,24,SS_CENTERIMAGE | SS_SUNKEN
+    COMBOBOX        IDC_TEXTCOLOR,76,12,44,100,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_BACKCOLOR,124,12,44,100,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 217, 55
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ABOUTBOX DIALOG 0, 0, 217, 55
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Bzのバージョン情報"
 FONT 9, "ＭＳ Ｐゴシック"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "Binary Editor BZ Version 1.63",IDC_STATIC,40,10,119,8,
-                    SS_NOPREFIX
-    LTEXT           "Copyright (c) 1996-2004 by c.mos",IDC_STATIC,40,25,119,
-                    8
+    LTEXT           "Binary Editor BZ Version 1.63",IDC_STATIC,40,10,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (c) 1996-2004 by c.mos",IDC_STATIC,40,25,119,8
     DEFPUSHBUTTON   "OK",IDOK,178,7,32,14,WS_GROUP
 END
 
-IDD_SETTING DIALOG DISCARDABLE  0, 0, 187, 99
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_SETTING DIALOG 0, 0, 187, 99
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "高度な設定"
 FONT 9, "ＭＳ Ｐゴシック"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,4,80,44,14
     PUSHBUTTON      "キャンセル",IDCANCEL,52,80,44,14
-    RTEXT           "オンメモリで処理するファイルの最大サイズ:",IDC_STATIC,4,
-                    8,128,8
+    RTEXT           "オンメモリで処理するファイルの最大サイズ:",IDC_STATIC,4,8,128,8
     EDITTEXT        IDE_MAXONMEMORY,134,5,28,14,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "KB",IDC_STATIC,164,8,10,8
-    LTEXT           "（これより大きなファイルは、File Mappingモードで開きます。）",
-                    IDC_STATIC,4,20,184,8
+    LTEXT           "（これより大きなファイルは、File Mappingモードで開きます。）",IDC_STATIC,4,20,184,8
     PUSHBUTTON      "ヘルプ",IDHELP,140,80,44,14
     RTEXT           "File MappingモードのViewサイズ:",IDC_STATIC,4,36,128,8
     EDITTEXT        IDE_MAXMAPSIZE,134,33,28,14,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "MB",IDC_STATIC,164,36,11,8
-    CONTROL         "アドレスを常に8桁で表示",IDB_DWORDADDR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,50,84,10
-    CONTROL         "ダンプリストを",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
-                    WS_GROUP,8,64,40,8
+    CONTROL         "アドレスを常に8桁で表示",IDB_DWORDADDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,50,84,10
+    CONTROL         "ダンプリストを",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,8,64,40,8
     EDITTEXT        IDE_DUMPPAGE,52,61,20,14,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "行毎に区切る。(0で連続)",IDC_STATIC,76,64,76,8,
-                    SS_NOPREFIX
+    LTEXT           "行毎に区切る。(0で連続)",IDC_STATIC,76,64,76,8,SS_NOPREFIX
 END
 
-IDD_INPUT DIALOG DISCARDABLE  0, 0, 150, 51
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_INPUT DIALOG 0, 0, 150, 51
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "先頭アドレス設定"
 FONT 9, "ＭＳ Ｐゴシック"
 BEGIN
-    CONTROL         "先頭アドレス(16進):",IDC_STATIC,"Static",
-                    SS_LEFTNOWORDWRAP | WS_GROUP,4,12,56,8
+    CONTROL         "先頭アドレス(16進):",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,4,12,56,8
     EDITTEXT        IDE_VALUE,64,9,44,14,ES_AUTOHSCROLL
     PUSHBUTTON      "0に戻す",IDB_RESET,116,11,28,12
     DEFPUSHBUTTON   "OK",IDOK,52,32,44,14
@@ -168,7 +151,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
@@ -218,51 +201,51 @@ END
 // Menu
 //
 
-IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+IDR_MAINFRAME MENU
 BEGIN
     POPUP "ファイル(&F)"
     BEGIN
-        MENUITEM "新規作成(&N)\tCtrl+N",        ID_FILE_NEW
-        MENUITEM "開く(&O)...\tCtrl+O",         ID_FILE_OPEN
-        MENUITEM "上書き保存(&S)\tCtrl+S",      ID_FILE_SAVE
-        MENUITEM "名前を付けて保存(&A)...",     ID_FILE_SAVE_AS
-        MENUITEM "ダンプリストを保存(&L)...",   ID_FILE_SAVE_DUMPLIST
+        MENUITEM "新規作成(&N)\tCtrl+N",            ID_FILE_NEW
+        MENUITEM "開く(&O)...\tCtrl+O",           ID_FILE_OPEN
+        MENUITEM "上書き保存(&S)\tCtrl+S",           ID_FILE_SAVE
+        MENUITEM "名前を付けて保存(&A)...",             ID_FILE_SAVE_AS
+        MENUITEM "ダンプリストを保存(&L)...",            ID_FILE_SAVE_DUMPLIST
         MENUITEM SEPARATOR
-        MENUITEM "印刷(&P)...\tCtrl+P",         ID_FILE_PRINT
-        MENUITEM "印刷プレビュー(&V)",          ID_FILE_PRINT_PREVIEW
-        MENUITEM "ページの設定(&U)...",         ID_FILE_PAGE_SETUP
+        MENUITEM "印刷(&P)...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM "印刷プレビュー(&V)",                 ID_FILE_PRINT_PREVIEW
+        MENUITEM "ページの設定(&U)...",               ID_FILE_PAGE_SETUP
         MENUITEM SEPARATOR
-        MENUITEM "最近使ったファイル",          ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "最近使ったファイル",                   ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "Bzの終了(&X)\tCtrl+Q",        ID_APP_EXIT
+        MENUITEM "Bzの終了(&X)\tCtrl+Q",           ID_APP_EXIT
     END
     POPUP "編集(&E)"
     BEGIN
-        MENUITEM "元に戻す(&U)\tCtrl+Z",        ID_EDIT_UNDO
+        MENUITEM "元に戻す(&U)\tCtrl+Z",            ID_EDIT_UNDO
         MENUITEM SEPARATOR
-        MENUITEM "切り取り(&T)\tCtrl+X",        ID_EDIT_CUT
-        MENUITEM "コピー(&C)\tCtrl+C",          ID_EDIT_COPY
-        MENUITEM "貼り付け(&P)\tCtrl+V",        ID_EDIT_PASTE
-        MENUITEM "ダンプリストをコピー(&D)\tCtrl+D", ID_EDIT_COPY_DUMP
+        MENUITEM "切り取り(&T)\tCtrl+X",            ID_EDIT_CUT
+        MENUITEM "コピー(&C)\tCtrl+C",             ID_EDIT_COPY
+        MENUITEM "貼り付け(&P)\tCtrl+V",            ID_EDIT_PASTE
+        MENUITEM "ダンプリストをコピー(&D)\tCtrl+D",      ID_EDIT_COPY_DUMP
         MENUITEM SEPARATOR
-        MENUITEM "すべて選択(&A)\tCtrl+A",      ID_EDIT_SELECT_ALL
+        MENUITEM "すべて選択(&A)\tCtrl+A",           ID_EDIT_SELECT_ALL
         MENUITEM SEPARATOR
-        MENUITEM "値の入力(&E)",                ID_EDIT_VALUE
+        MENUITEM "値の入力(&E)",                    ID_EDIT_VALUE
         POPUP "バイトの並び(&B)"
         BEGIN
             MENUITEM "&Intel",                      ID_BYTEORDER_INTEL
             MENUITEM "&Motorola",                   ID_BYTEORDER_68K
         END
         MENUITEM SEPARATOR
-        MENUITEM "リードオンリ(&R)\tCtrl+W",    ID_EDIT_READONLY
-        MENUITEM "&読込時リードオンリ(&O)",     ID_EDIT_READONLYOPEN
+        MENUITEM "リードオンリ(&R)\tCtrl+W",          ID_EDIT_READONLY
+        MENUITEM "&読込時リードオンリ(&O)",              ID_EDIT_READONLYOPEN
     END
     POPUP "表示(&V)"
     BEGIN
         POPUP "文字コード(&C)"
         BEGIN
             MENUITEM "&Ascii",                      ID_CHAR_ASCII
-            MENUITEM "シフトJI&S",                  ID_CHAR_SJIS
+            MENUITEM "シフトJI&S",                     ID_CHAR_SJIS
             MENUITEM "&Unicode (UTF-16)",           ID_CHAR_UNICODE
             MENUITEM "U&nicode (UTF-8)",            ID_CHAR_UTF8
             MENUITEM "&JIS",                        ID_CHAR_JIS
@@ -270,59 +253,59 @@ BEGIN
             MENUITEM "E&BCDIC",                     ID_CHAR_EBCDIC
             MENUITEM "EP&WING",                     ID_CHAR_EPWING
             MENUITEM SEPARATOR
-            MENUITEM "自動認識(&D)",                ID_CHAR_AUTODETECT
+            MENUITEM "自動認識(&D)",                    ID_CHAR_AUTODETECT
         END
         MENUITEM SEPARATOR
-        MENUITEM "ビットマップ表示(&B)",        ID_VIEW_BITMAP
-        MENUITEM "構造体表示(&U)",              ID_VIEW_STRUCT
+        MENUITEM "ビットマップ表示(&B)",                ID_VIEW_BITMAP
+        MENUITEM "構造体表示(&U)",                   ID_VIEW_STRUCT
         MENUITEM SEPARATOR
-        MENUITEM "上下に分割(&H)",              ID_VIEW_SPLIT_H
-        MENUITEM "左右に分割(&V)",              ID_VIEW_SPLIT_V
+        MENUITEM "上下に分割(&H)",                   ID_VIEW_SPLIT_H
+        MENUITEM "左右に分割(&V)",                   ID_VIEW_SPLIT_V
         MENUITEM SEPARATOR
-        MENUITEM "フルパス名(&P)",              ID_VIEW_FULLPATH
-        MENUITEM "サブカーソル(&R)",            ID_VIEW_SUBCURSOR
-        MENUITEM "ツールバー(&T)",              ID_VIEW_TOOLBAR
-        MENUITEM "ステータスバー(&S)",          ID_VIEW_STATUS_BAR
+        MENUITEM "フルパス名(&P)",                   ID_VIEW_FULLPATH
+        MENUITEM "サブカーソル(&R)",                  ID_VIEW_SUBCURSOR
+        MENUITEM "ツールバー(&T)",                   ID_VIEW_TOOLBAR
+        MENUITEM "ステータスバー(&S)",                 ID_VIEW_STATUS_BAR
     END
     POPUP "移動(&J)"
     BEGIN
-        MENUITEM "検索(&F)...\tCtrl+F",         ID_JUMP_FIND
-        MENUITEM "次を検索(&N)\tF3",            ID_JUMP_FINDNEXT
-        MENUITEM "ファイルの比較(&C)",          ID_JUMP_COMPARE
+        MENUITEM "検索(&F)...\tCtrl+F",           ID_JUMP_FIND
+        MENUITEM "次を検索(&N)\tF3",                ID_JUMP_FINDNEXT
+        MENUITEM "ファイルの比較(&C)",                 ID_JUMP_COMPARE
         MENUITEM SEPARATOR
-        MENUITEM "指定アドレスへ(&A)...",       ID_JUMP_TO
-        MENUITEM "オフセットを加算(&O)",        ID_JUMP_OFFSET
-        MENUITEM "先頭アドレス設定(&S)...",     ID_JUMP_BASE
-        MENUITEM "元のアドレスへ(&R)\tCtrl+R",  ID_JUMP_RETURN
-        MENUITEM "ファイルの先頭へ(&T)\tCtrl+Home", ID_JUMP_START
-        MENUITEM "ファイルの最後へ(&B)\tCtrl+End", ID_JUMP_END
+        MENUITEM "指定アドレスへ(&A)...",              ID_JUMP_TO
+        MENUITEM "オフセットを加算(&O)",                ID_JUMP_OFFSET
+        MENUITEM "先頭アドレス設定(&S)...",             ID_JUMP_BASE
+        MENUITEM "元のアドレスへ(&R)\tCtrl+R",         ID_JUMP_RETURN
+        MENUITEM "ファイルの先頭へ(&T)\tCtrl+Home",     ID_JUMP_START
+        MENUITEM "ファイルの最後へ(&B)\tCtrl+End",      ID_JUMP_END
         MENUITEM SEPARATOR
-        MENUITEM "マーク(&K)\tCtrl+F2",         ID_JUMP_MARK
-        MENUITEM "次のマークへ(&M)\tF2",        ID_JUMP_MARKNEXT
+        MENUITEM "マーク(&K)\tCtrl+F2",            ID_JUMP_MARK
+        MENUITEM "次のマークへ(&M)\tF2",              ID_JUMP_MARKNEXT
     END
     POPUP "ツール(&T)"
     BEGIN
-        MENUITEM "フォント(&F)...",             ID_VIEW_FONT
-        MENUITEM "カラー(&O)...",               ID_VIEW_COLOR
-        MENUITEM "高度な設定(&A)...",           ID_TOOLS_SETTING
+        MENUITEM "フォント(&F)...",                 ID_VIEW_FONT
+        MENUITEM "カラー(&O)...",                  ID_VIEW_COLOR
+        MENUITEM "高度な設定(&A)...",                ID_TOOLS_SETTING
         MENUITEM SEPARATOR
         POPUP "言語(&L)..."
         BEGIN
-            MENUITEM "日本語(&J)",                  ID_LANG_JPN
-            MENUITEM "英語(&E)",                    ID_LANG_ENU
+            MENUITEM "日本語(&J)",                     ID_LANG_JPN
+            MENUITEM "英語(&E)",                      ID_LANG_ENU
         END
         MENUITEM SEPARATOR
-        MENUITEM "BZ.DEFの編集(&E)",            ID_TOOLS_EDITDEF
+        MENUITEM "BZ.DEFの編集(&E)",               ID_TOOLS_EDITDEF
     END
     POPUP "ヘルプ(&H)"
     BEGIN
-        MENUITEM "ヘルプ目次(&C)...",           ID_HELP_INDEX
+        MENUITEM "ヘルプ目次(&C)...",                ID_HELP_INDEX
         MENUITEM SEPARATOR
-        MENUITEM "&Bzのバージョン情報...",      ID_APP_ABOUT
+        MENUITEM "&Bzのバージョン情報...",              ID_APP_ABOUT
     END
 END
 
-IDR_BMPVIEW MENU DISCARDABLE 
+IDR_BMPVIEW MENU
 BEGIN
     POPUP "BmpView"
     BEGIN
@@ -339,7 +322,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+IDR_MAINFRAME ACCELERATORS
 BEGIN
     "A",            ID_EDIT_SELECT_ALL,     VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -375,14 +358,14 @@ END
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR DISCARDABLE  19, 17
+IDR_MAINFRAME TOOLBAR 19, 17
 BEGIN
     BUTTON      ID_FILE_OPEN
     BUTTON      ID_FILE_SAVE
@@ -407,7 +390,6 @@ BEGIN
 END
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -430,15 +412,13 @@ BEGIN
     BEGIN
         BLOCK "040904B0"
         BEGIN
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "BZ MFC Application\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
-            VALUE "InternalName", "BZ\0"
-            VALUE "LegalCopyright", "Copyright (c) 1996 by c.mos\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "BZ.EXE\0"
-            VALUE "ProductName", "BZ Application\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "FileDescription", "BZ MFC Application"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "BZ"
+            VALUE "LegalCopyright", "Copyright (c) 1996 by c.mos"
+            VALUE "OriginalFilename", "BZ.EXE"
+            VALUE "ProductName", "BZ Application"
+            VALUE "ProductVersion", "1, 0, 0, 1"
         END
     END
     BLOCK "VarFileInfo"
@@ -447,26 +427,24 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
 //
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "BZ\n\nBZ\n\n\nBZ.Document\nBZ Document"
 END
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_APP_TITLE       "BZ"
     AFX_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_INDICATOR_INFO       "XXXX:XXXX: 0xXXXXXXXX (0,000,000,000)bytes"
     ID_INDICATOR_SIZE       "0,000,000,000bytes"
@@ -474,7 +452,7 @@ BEGIN
     ID_INDICATOR_INS        "上書"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW             "新しいドキュメントを作成します。\n新規"
     ID_FILE_OPEN            "既存のドキュメントを開きます。\n開く"
@@ -485,14 +463,14 @@ BEGIN
     ID_FILE_PRINT_PREVIEW   "印刷プレビューを表示します。\n印刷プレビュー"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "Bzのバージョン、および著作権を表示します。\nバージョン情報"
     ID_APP_EXIT             "ドキュメントの保存を確認し、Bzを終了します。\n終了"
     ID_HELP_INDEX           "ヘルプを開きます。"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_MRU_FILE1       "このドキュメントを開きます。"
     ID_FILE_MRU_FILE2       "このドキュメントを開きます。"
@@ -506,7 +484,7 @@ BEGIN
     ID_FILE_MRU_FILE10      "このドキュメントを開きます。"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_COPY            "選択範囲をクリップボードにコピーします。\nコピー"
     ID_EDIT_CUT             "選択範囲を切り取ってクリップボードに移動します。\n切り取り"
@@ -515,13 +493,13 @@ BEGIN
     ID_EDIT_UNDO            "直前に行った操作を取り消します。\n元に戻す"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_TOOLBAR         "ツール バーの表示/非表示を切り替えます。\nツール バー"
     ID_VIEW_STATUS_BAR      "ステータス バーの表示/非表示を切り替えます。\nステータス バー"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_CHAR_ASCII           "ASCIIコードで表示します。"
     ID_CHAR_SJIS            "シフトJISコードで表示します。"
@@ -538,7 +516,7 @@ BEGIN
     ID_BYTEORDER_INTEL      "バイトの並び順をIntel系(little endian)で処理します。"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_BYTEORDER_68K        "バイトの並び順をMotorola系(big endian)で処理します。"
     ID_VIEW_BITMAP          "ファイルをビットマップで表示します。\nビットマップ"
@@ -547,7 +525,7 @@ BEGIN
     ID_VIEW_SPLIT_V         "画面を左右に分割して、ドキュメントをコピーします。\n左右分割"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_FONT            "フォントを設定します。"
     ID_VIEW_COLOR           "指定部分のカラーを設定します。"
@@ -561,7 +539,7 @@ BEGIN
     ID_JUMP_RETURN          "ジャンプする前のアドレスへ戻ります。\nリターン"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_JUMP_MARK            "カーソル位置にマークを設定/解除します。"
     ID_JUMP_MARKNEXT        "次のマークへジャンプします。"
@@ -570,7 +548,7 @@ BEGIN
     ID_LANG_JPN             "メニュー等を日本語で表示します。"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_LANG_ENU             "メニュー等を英語で表示します。"
     ID_TOOLS_EDITDEF        "BZ.DEFファイルをテキストエディタで開きます。"
@@ -580,7 +558,7 @@ BEGIN
     ID_JUMP_BASE            "ファイルの先頭アドレスを0以外に設定します。"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "印刷プレビュー　モードを閉じます。"
     IDS_STRUCT_FILE         "BZ.DEF"
@@ -594,7 +572,7 @@ BEGIN
     IDS_COLOR_MISMATCH      "値が異なるバイト"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDS_COLOR_STRUCT        "構造体"
     IDS_COLOR_MEMBER        "構造体メンバ"
@@ -602,19 +580,19 @@ BEGIN
     IDS_EDIT_INS            "挿入"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDS_EDIT_RO             "書禁"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDS_CHANGE_LANGUAGE     "言語の変更は、次回起動時から有効です."
     IDS_COMPARE_OK          "違いは見つかりません."
     IDS_ALLFILTER           "すべてのﾌｧｲﾙ (*.*)"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDS_ERR_FILENOTFOUND    "'%s'を開けません."
     IDS_ERR_SYNTAX          "文法エラー'%s'"
@@ -628,7 +606,7 @@ BEGIN
     IDS_ERR_COPY            "コピーするデータのサイズが大きすぎます。"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCSIZE          "このウィンドウのサイズを変更します。"
     AFX_IDS_SCMOVE          "このウィンドウを画面の別の位置に移動します。"
@@ -639,19 +617,19 @@ BEGIN
     AFX_IDS_SCCLOSE         "ドキュメントの保存を確認し、作業中のウィンドウを閉じます。"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCRESTORE       "ウィンドウを通常のサイズに戻します。"
     AFX_IDS_SCTASKLIST      "アプリケーションの切り替え"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDS_SAVEDUMP_CAPTION    "ダンプリストを保存"
     IDS_EBCDIC_FILE         "EBCDIC.DEF"
 END
 
-#endif    // Japanese resources
+#endif    // 日本語 (日本) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

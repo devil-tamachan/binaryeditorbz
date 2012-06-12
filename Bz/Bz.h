@@ -128,6 +128,7 @@ public:
 
 extern CBZOptions options;
 CString SeparateByComma(int num, BOOL bSigned = FALSE);
+CString SeparateByComma64(ULONGLONG num, BOOL bSigned = FALSE);
 CString GetModulePath(LPCSTR pFileName);
 LPVOID ReadFile(LPCSTR pPath);
 void ErrorMessageBox();	// ###1.61

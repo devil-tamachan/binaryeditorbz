@@ -234,6 +234,22 @@ CString SeparateByComma(int num, BOOL bSigned)
 	return sDst;
 }
 
+CString SeparateByComma64(ULONGLONG num, BOOL bSigned)
+{
+	CString sSrc;
+	sSrc.Format(bSigned ? "%I64d" : "%I64u", num);
+	TCHAR sDst[64];
+	int n = sSrc.GetLength();
+	LPCTSTR src = sSrc;
+	LPTSTR dst = sDst;
+	do {
+		*dst++ = *src++; n--;
+		if(!(n % 3) && n) *dst++ = ',';
+	} while(n > 0);
+	*dst++ = '\0';
+	return sDst;
+}
+
 CString GetModulePath(LPCSTR pFileName) 
 {
 	CString sPath;

@@ -44,6 +44,7 @@ public:
 public:
 	BOOL	GotoCaret();
 	int		GetValue(DWORD ofs, int bytes);
+	ULONGLONG GetValue64(DWORD ofs);
 	void	SetValue(DWORD ofs, int bytes, int val);
 	void	FillValue(int val);
 	void	Activate();
