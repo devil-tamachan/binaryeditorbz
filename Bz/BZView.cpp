@@ -335,6 +335,8 @@ void CBZView::OnDraw(CDC* pDC)
 	DWORD dwEnd   = BlockEnd();
 	DWORD dwTotal = m_dwTotal;
 
+	DWORD dwTotalP1 = 0;
+
 	int y;
 
 	PutBegin(pDC);
@@ -366,8 +368,11 @@ void CBZView::OnDraw(CDC* pDC)
 		dwTotal = dwEnd;
 	LPBYTE p1 = NULL;
 	CBZView* pView1 = GetBrotherView();
-	if(pView1 && (m_dwTotal == pView1->m_dwTotal))
+	if(pView1 /*&& (m_dwTotal == pView1->m_dwTotal)*/)
+	{
 		p1 = pView1->m_pDoc->GetDocPtr();
+		dwTotalP1 = pView1->m_dwTotal;
+	}
 
 #ifdef FILE_MAPPING
 		if(p && !(p = m_pDoc->QueryMapView(p, ofs))) return;
@@ -418,7 +423,7 @@ void CBZView::OnDraw(CDC* pDC)
 				SetColor(TCOLOR_SELECT);
 			else if(m_pDoc->CheckMark(ofs))
 				SetColor(TCOLOR_MARK);
-			else if(p1 && (*(p+ofs) != *(p1+ofs)))
+			else if(p1 && ((ofs < dwTotalP1 && (*(p+ofs) != *(p1+ofs))) || ofs >= dwTotalP1))
 				SetColor(TCOLOR_MISMATCH);
 			else if(m_dwStruct && ofs >= m_dwStructTag && ofs < m_dwStruct) {
 				if(m_nMember >= 0 && ofs >= m_dwStructTag + m_nMember && ofs < m_dwStructTag + m_nMember + m_nBytes * m_nBytesLength)
@@ -1693,7 +1698,8 @@ void CBZView::OnEditCopyDump()
 	CMemFile memFile(MEMFILE_GROWBY);
 	DrawToFile(&memFile);
 
-	DWORD dwSize = memFile.GetLength();
+	ULONGLONG ulSize = memFile.GetLength();
+	DWORD dwSize = (ulSize>0xffffffff) ? 0xffffffff : ulSize;
 	HGLOBAL hMemTxt = ::GlobalAlloc(GMEM_MOVEABLE, dwSize + 1);
 	LPBYTE pMemTxt  = (LPBYTE)::GlobalLock(hMemTxt);
 	memFile.SeekToBegin();

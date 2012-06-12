@@ -211,10 +211,15 @@ void CBZBmpView::OnRButtonDown(UINT nFlags, CPoint point)
 	CMenu menu;
 	menu.LoadMenu(IDR_BMPVIEW);
 	CMenu* pMenu = menu.GetSubMenu(0);
-	if(options.nBmpWidth == 128)
+	switch(options.nBmpWidth)
+	{
+	case 128:
 		pMenu->CheckMenuItem(ID_BMPVIEW_WIDTH128, MF_BYCOMMAND | MF_CHECKED);
-	if(options.nBmpWidth == 256)
+		break;
+	case 256:
 		pMenu->CheckMenuItem(ID_BMPVIEW_WIDTH256, MF_BYCOMMAND | MF_CHECKED);
+		break;
+	}
 	if(options.nBmpZoom > 1)
 		pMenu->CheckMenuItem(ID_BMPVIEW_ZOOM, MF_BYCOMMAND | MF_CHECKED);
 
