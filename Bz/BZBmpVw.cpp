@@ -40,10 +40,65 @@ BEGIN_MESSAGE_MAP(CBZBmpView, CScrollView)
 	ON_WM_RBUTTONDOWN()
 	//}}AFX_MSG_MAP
 	ON_COMMAND_RANGE(ID_BMPVIEW_WIDTH128, ID_BMPVIEW_ZOOM, OnBmpViewMode)
+	ON_WM_SETCURSOR()
+	ON_COMMAND_RANGE(ID_BMPVIEW_8BITCOLOR, ID_BMPVIEW_32BITCOLOR, OnBmpViewColorWidth)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CBZBmpView drawing
+
+/*
+void MakeBzPallet256(DWORD *pRGB)
+{
+	*pRGB++ = 0xFFFFFF;
+	for_to(i, 31) *pRGB++ = 0x00FFFF;
+	for_to_(i, 128-32) *pRGB++ = 0xFF0000;
+	for_to_(i, 128) *pRGB++ = 0x000000;
+}*/
+
+void MakeRedPallet256(DWORD *pRGB)
+{
+	for(unsigned int i=0; i<=0xff; i++)
+	{
+		*pRGB++ = 0 | (i&0xff)<<16;
+	}
+}
+
+
+void MakeSafetyPallet256(DWORD *pRGB)
+{
+	// safety pallet http://msdn.microsoft.com/en-us/library/bb250466%28VS.85%29.aspx
+	DWORD* pRGBorig = pRGB;
+
+//	*pRGB++ = 0xFFFFFF;
+	for(unsigned int r=0; r<=0xff; r+=0x33)
+		for(unsigned int g=0; g<=0xff; g+=0x33)
+			for(unsigned int b=0; b<=0xff; b+=0x33)
+				*pRGB++ = b|(g<<8)|(r<<16);
+	for(unsigned int gr=0; gr<=0xffffff; gr+=0x111111)
+		*pRGB++ = gr;
+	*pRGB++ = 0xC0C0C0;
+	*pRGB++ = 0x808080;
+	*pRGB++ = 0x800000;
+	*pRGB++ = 0x800080;
+	*pRGB++ = 0x008000;
+	*pRGB++ = 0x008080;
+	pRGBorig[255] = 0xffffff;
+//	TRACE("pallet[0]=0x%x, [255]=0x%x\n", ((DWORD*)(m_lpbi+1))[0], ((DWORD*)(m_lpbi+1))[255]);
+}
+
+void Make8bitBITMAPINFOHEADER(LPBITMAPINFOHEADER lpbi, LONG w, LONG h)
+{
+//	lpbi->biSize = sizeof(BITMAPINFOHEADER);
+	lpbi->biWidth = w;
+	lpbi->biHeight = h;
+	lpbi->biPlanes = 1;
+	lpbi->biBitCount = 8;
+	lpbi->biCompression = BI_RGB;
+	lpbi->biSizeImage = 0;
+	lpbi->biClrUsed = 0;
+	lpbi->biClrImportant = 0;
+}
 
 void CBZBmpView::OnInitialUpdate()
 {
@@ -54,24 +109,17 @@ void CBZBmpView::OnInitialUpdate()
 	if(dwTotal < (DWORD)options.nBmpWidth) return;
 
 	if(!m_lpbi) 
-		m_lpbi = (LPBITMAPINFOHEADER)MemAlloc(sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*256);
+		m_lpbi = (LPBITMAPINFOHEADER)MemAlloc(sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*256/*256pallet*/);
 
 	m_lpbi->biSize = sizeof(BITMAPINFOHEADER);
-	m_lpbi->biWidth = m_cBmp.cx = options.nBmpWidth;
+	m_cBmp.cx = options.nBmpWidth;
 	m_cBmp.cy = dwTotal / options.nBmpWidth;
-	m_lpbi->biHeight = -m_cBmp.cy;	// top-down DIB
-	m_lpbi->biPlanes = 1;
-	m_lpbi->biBitCount = 8;
-	m_lpbi->biCompression = BI_RGB;
-	m_lpbi->biSizeImage = 0;
-	m_lpbi->biClrUsed = 0;
-	m_lpbi->biClrImportant = 0;
+	Make8bitBITMAPINFOHEADER(m_lpbi, m_cBmp.cx, -m_cBmp.cy/*top-down DIB*/);
+
 
 	DWORD* pRGB = (DWORD*)(m_lpbi+1);
-	*pRGB++ = 0xFFFFFF;
-	for_to(i, 31) *pRGB++ = 0x00FFFF;
-	for_to_(i, 128-32) *pRGB++ = 0xFF0000;
-	for_to_(i, 128) *pRGB++ = 0x000000;
+	MakeSafetyPallet256(pRGB); //MakeBzPallet256(pRGB);
+//	MakeRedPallet256(pRGB);
 
 	CDC* pDC = GetDC();
 	HDC hDC = pDC->m_hDC;
@@ -222,6 +270,18 @@ void CBZBmpView::OnRButtonDown(UINT nFlags, CPoint point)
 	}
 	if(options.nBmpZoom > 1)
 		pMenu->CheckMenuItem(ID_BMPVIEW_ZOOM, MF_BYCOMMAND | MF_CHECKED);
+	switch(options.nBmpColorWidth)
+	{
+	case 8:
+		pMenu->CheckMenuItem(ID_BMPVIEW_8BITCOLOR, MF_BYCOMMAND | MF_CHECKED);
+		break;
+	case 24:
+		pMenu->CheckMenuItem(ID_BMPVIEW_24BITCOLOR, MF_BYCOMMAND | MF_CHECKED);
+		break;
+	case 32:
+		pMenu->CheckMenuItem(ID_BMPVIEW_32BITCOLOR, MF_BYCOMMAND | MF_CHECKED);
+		break;
+	}
 
 	CPoint pt;
 	GetCursorPos(&pt);
@@ -242,6 +302,32 @@ void CBZBmpView::OnBmpViewMode(UINT nID)
 	case ID_BMPVIEW_ZOOM:
 		options.nBmpZoom = (options.nBmpZoom == 1) ? 2 : 1;
 
+	}
+	GetMainFrame()->CreateClient();
+}
+
+BOOL CBZBmpView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	// TODO: ここにメッセージ ハンドラ コードを追加するか、既定の処理を呼び出します。
+//	::SetCursor(AfxGetApp()->LoadCursor(IDC_BMPPOINTER));
+//	return true;
+
+	return CScrollView::OnSetCursor(pWnd, nHitTest, message);
+}
+
+void CBZBmpView::OnBmpViewColorWidth(UINT nID)
+{
+	switch(nID)
+	{
+	case ID_BMPVIEW_8BITCOLOR:
+		options.nBmpColorWidth = 8;
+		break;
+	case ID_BMPVIEW_24BITCOLOR:
+		options.nBmpColorWidth = 24;
+		break;
+	case ID_BMPVIEW_32BITCOLOR:
+		options.nBmpColorWidth = 32;
+		break;
 	}
 	GetMainFrame()->CreateClient();
 }

@@ -283,14 +283,18 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 			}
 			break;
 		}
-		MoveWindow(rFrame);
+//		if(!IsZoomed())
+//		{
+			MoveWindow(rFrame);
+//		}
 	}
 
 	if(pActiveView)  {
 		SetActiveView(pActiveView);
 	}
 	if(bReCreate) {
-		RecalcLayout();
+//		if(!IsZoomed())
+			RecalcLayout();
 	} else
 		((CBZView*)pActiveView)->ResizeFrame();
 	return TRUE;
@@ -359,6 +363,10 @@ void CMainFrame::OnViewStruct()
 
 void CMainFrame::OnViewSplit(UINT nID) 
 {
+	/* 最大化していると最大化状態のままウィンドウサイズが調整されて変なウィンドウ（最大化できない＆サイズ変更不可）になってしまうバグの対策 */
+	options.nCmdShow=SW_SHOWNORMAL;
+	ShowWindow(options.nCmdShow);
+
 	GetSplitInfo();
 	m_nSplitView0 = m_nSplitView;
 	m_nSplitView = (m_nSplitView == nID) ? 0 : nID;

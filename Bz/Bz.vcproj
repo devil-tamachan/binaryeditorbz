@@ -600,6 +600,10 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe"
 			>
 			<File
+				RelativePath=".\res\bmppoint.cur"
+				>
+			</File>
+			<File
 				RelativePath="res\BZ.ico"
 				>
 			</File>

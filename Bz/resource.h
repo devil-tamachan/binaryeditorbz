@@ -3,6 +3,7 @@
 // Used by BZ.rc
 //
 #define IDD_ABOUTBOX                    100
+#define IDC_BMPPOINTER                  104
 #define IDR_MAINFRAME                   128
 #define IDR_BZTYPE                      129
 #define IDD_DIALOG1                     137
@@ -69,8 +70,12 @@
 #define ID_FILE_SAVE_DUMPLIST           32841
 #define ID_EDIT_COPY_DUMP               32842
 #define ID_JUMP_BASE                    32844
-#define ID_32846                        32846
 #define ID_VIEW_SYNCSCROLL              32847
+#define ID_Menu                         32848
+#define ID_VIEW_GRID1                   32849
+#define ID_BMPVIEW_8BITCOLOR            32850
+#define ID_BMPVIEW_24BITCOLOR           32851
+#define ID_BMPVIEW_32BITCOLOR           32852
 #define ID_INDICATOR_INFO               0xE710
 #define ID_INDICATOR_SIZE               0xE711
 #define ID_INDICATOR_CHAR               0xE712
@@ -86,6 +91,7 @@
 #define IDS_COLOR_STRUCT                61456
 #define IDS_COLOR_MEMBER                61457
 #define IDS_COLOR_OVERBROTHER           61458
+#define IDS_COLOR_HORIZON               61459
 #define IDS_EDIT_OVR                    61470
 #define IDS_EDIT_INS                    61471
 #define IDS_CHANGE_LANGUAGE             61500
@@ -112,7 +118,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        145
-#define _APS_NEXT_COMMAND_VALUE         32848
+#define _APS_NEXT_COMMAND_VALUE         32855
 #define _APS_NEXT_CONTROL_VALUE         1020
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

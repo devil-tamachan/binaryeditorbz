@@ -150,6 +150,8 @@ BEGIN_MESSAGE_MAP(CBZView, CTextView)
 //	ON_REGISTERED_MESSAGE(nMsgFindReplace, OnFindNext)
 ON_WM_VSCROLL()
 ON_WM_MOUSEWHEEL()
+ON_COMMAND(ID_VIEW_GRID1, &CBZView::OnViewGrid1)
+ON_UPDATE_COMMAND_UI(ID_VIEW_GRID1, &CBZView::OnUpdateViewGrid1)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -567,6 +569,37 @@ void CBZView::OnDraw(CDC* pDC)
 		}
 		PutEnd();
 		DrawCaret();
+	}
+
+	/* Grid表示 */
+	if(!IsToFile() && options.iGrid==1) {
+		int OldBkMode = pDC->GetBkMode();
+		pDC->SetBkMode(TRANSPARENT);
+		CPen redSolid(PS_SOLID, 1, options.colors[TCOLOR_HORIZON][0]/*RGB(0xe2,0x04,0x1b)*/);
+		CPen redDot(PS_SOLID, 1, options.colors[TCOLOR_HORIZON][1]/*RGB(0x3e,0xb3,0x70)*/);
+		HGDIOBJ penOld = pDC->SelectObject(redSolid);
+		CPoint ptScroll = GetScrollPos();
+		TRACE("ScrollPos=%d, %d\n", ptScroll.x, ptScroll.y);
+		TRACE("rClip=%d, %d\n", rClip.top, rClip.bottom);
+		int startLine = ptScroll.y + rClip.top;
+		int endLine = ptScroll.y + rClip.bottom;
+		int gridHeightNum = 16;
+		int startGridLine;
+		if(startLine % gridHeightNum == 0)startGridLine = startLine;
+		else startGridLine = startLine - startLine % gridHeightNum;
+		int gridLineWidth = m_cell.cx*(16*4+12);
+		int minusTop = ptScroll.y*m_cell.cy;
+		int kirikae=0;
+		for(; startGridLine <= endLine; startGridLine += gridHeightNum/2) {
+	//		TRACE("Grid: startGridLine=%d, y=%d\n", startGridLine, (startGridLine+1)*m_cell.cy);
+			if(kirikae)pDC->SelectObject(redDot);
+			else pDC->SelectObject(redSolid);
+			kirikae=!kirikae;
+			pDC->MoveTo(0, (startGridLine+1)*m_cell.cy - minusTop - 1);
+			pDC->LineTo(gridLineWidth, (startGridLine+1)*m_cell.cy - minusTop - 1);
+		}
+		pDC->SelectObject(penOld);
+		pDC->SetBkMode(OldBkMode);
 	}
 }
 
@@ -2225,4 +2258,17 @@ BOOL CBZView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	}
 
 	return ret;
+}
+
+void CBZView::OnViewGrid1()
+{
+	// TODO: ここにコマンド ハンドラ コードを追加します。
+	options.iGrid = (options.iGrid==0)?1:0;
+	Invalidate();
+}
+
+void CBZView::OnUpdateViewGrid1(CCmdUI *pCmdUI)
+{
+	// TODO: ここにコマンド更新 UI ハンドラ コードを追加します。
+	pCmdUI->SetCheck(options.iGrid==1);
 }

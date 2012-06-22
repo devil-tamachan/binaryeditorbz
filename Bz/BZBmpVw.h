@@ -47,6 +47,9 @@ protected:
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+	afx_msg void OnBmpViewColorWidth(UINT nID);
 };
 
 /////////////////////////////////////////////////////////////////////////////

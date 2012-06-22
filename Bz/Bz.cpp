@@ -435,6 +435,7 @@ COLORREF colorsDefault[TCOLOR_COUNT][2] = {
 	RGB_BLUE, COLOR_WINDOW | SYSCOLOR,
 	RGB_RED, COLOR_WINDOW | SYSCOLOR,
 	RGB_GREEN2, COLOR_WINDOW | SYSCOLOR,
+	RGB(0xe2,0x04,0x1b), RGB(0x3e,0xb3,0x70),
 };
 
 static int colWidthDefault[MBRCOL_MAX] = { 26, 80, 60 };
@@ -483,6 +484,8 @@ void CBZOptions::Load()
 	bDWordAddr = GetProfileInt("DWordAddr", FALSE);
 	
 	bSyncScroll = GetProfileInt("SyncScroll", true);
+	iGrid = GetProfileInt("Grid", 0);
+	nBmpColorWidth = GetProfileInt("BmpColorWidth", 8);
 }
 
 void CBZOptions::Save()
@@ -537,6 +540,8 @@ void CBZOptions::Save()
 	WriteProfileInt("DWordAddr", bDWordAddr);
 	
 	WriteProfileInt("SyncScroll", bSyncScroll);
+	WriteProfileInt("Grid", iGrid);
+	WriteProfileInt("BmpColorWidth", nBmpColorWidth);
 }
 
 /////////////////////////////////////////////////////////////////////////////
