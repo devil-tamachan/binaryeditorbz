@@ -66,7 +66,9 @@ Section "MainSection" SEC01
   File "data\Bzres_us.dll"
   File "data\EBCDIC.def"
   SetOutPath "$APPDATA\BzEditor"
+  SetOverwrite off
   File "data\Bz.def"
+  SetOverwrite on
   SetOutPath "$INSTDIR"
 
 SectionEnd
