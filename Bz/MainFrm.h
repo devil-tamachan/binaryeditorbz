@@ -21,6 +21,7 @@ protected:
 public:
 	BOOL m_bBmpView;
 	BOOL m_bStructView;
+	BOOL m_bInspectView;
 	UINT m_nSplitView;
 	UINT m_nSplitView0;
 	BOOL m_bCompare;
@@ -80,6 +81,9 @@ protected:
 	afx_msg void OnUpdateViewSyncScroll(CCmdUI* pCmdUI);
 	afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnViewInspect();
+	afx_msg void OnUpdateViewInspect(CCmdUI *pCmdUI);
 };
 
 #define BZ_CLASSNAME "BzEditorClass"

@@ -486,6 +486,8 @@ void CBZOptions::Load()
 	bSyncScroll = GetProfileInt("SyncScroll", true);
 	iGrid = GetProfileInt("Grid", 0);
 	nBmpColorWidth = GetProfileInt("BmpColorWidth", 8);
+
+	bInspectView = GetProfileInt("InspectView", FALSE);
 }
 
 void CBZOptions::Save()
@@ -517,7 +519,7 @@ void CBZOptions::Save()
 		break;
 	}
 	WriteProfileInt("StructView", bStructView);
-	if(bStructView)
+	if(bStructView || bInspectView)
 		WriteProfileInt("SplitStruct", xSplitStruct);
 	WriteProfileInt("ComboHeight", nComboHeight);
 	WriteProfileInt("Language", bLanguage);
@@ -542,6 +544,8 @@ void CBZOptions::Save()
 	WriteProfileInt("SyncScroll", bSyncScroll);
 	WriteProfileInt("Grid", iGrid);
 	WriteProfileInt("BmpColorWidth", nBmpColorWidth);
+
+	WriteProfileInt("InspectView", bInspectView);
 }
 
 /////////////////////////////////////////////////////////////////////////////

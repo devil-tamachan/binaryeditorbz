@@ -9,6 +9,7 @@
 #include "BZView.h"
 #include "BZBmpVw.h"
 #include "BZFormVw.h"
+#include "BZInspectView.h"
 #include "SettingDlg.h"
 
 #ifdef _DEBUG
@@ -31,10 +32,11 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_JUMP_FIND, OnJumpFind)
 	ON_COMMAND(ID_VIEW_BITMAP, OnViewBitmap)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_BITMAP, OnUpdateViewBitmap)
-	ON_COMMAND(ID_JUMP_TO, OnJumpTo)
 	ON_COMMAND(ID_VIEW_STRUCT, OnViewStruct)
-	ON_COMMAND(ID_EDIT_VALUE, OnEditValue)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_STRUCT, OnUpdateViewStruct)
+	ON_COMMAND(ID_VIEW_INSPECT, &CMainFrame::OnViewInspect)
+	ON_COMMAND(ID_JUMP_TO, OnJumpTo)
+	ON_COMMAND(ID_EDIT_VALUE, OnEditValue)
 	ON_COMMAND(ID_VIEW_FULLPATH, OnViewFullpath)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FULLPATH, OnUpdateViewFullpath)
 	ON_WM_CLOSE()
@@ -49,6 +51,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 
 	ON_COMMAND(ID_VIEW_SYNCSCROLL, OnViewSyncScroll)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_SYNCSCROLL, OnUpdateViewSyncScroll)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_INSPECT, &CMainFrame::OnUpdateViewInspect)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -69,6 +72,7 @@ CMainFrame::CMainFrame()
 	m_pSplitter = NULL;
 	m_bBmpView = FALSE;
 	m_bStructView = FALSE;
+	m_bInspectView = FALSE;
 	m_nSplitView = m_nSplitView0 = 0;
 	m_bDisableStatusInfo = FALSE;
 }
@@ -161,6 +165,7 @@ BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 	// TODO: Add your specialized code here and/or call the base class
 
 	m_bStructView = options.bStructView;
+	m_bInspectView = options.bInspectView;
 	CreateClient(pContext);
 	return TRUE; //CFrameWnd::OnCreateClient(lpcs, pContext);
 }
@@ -199,7 +204,7 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 	}
 
 	CView* pActiveView = NULL;
-	BOOL bSubView = (m_bBmpView || m_bStructView);
+	BOOL bSubView = (m_bBmpView || m_bStructView || m_bInspectView);
 
 	if(m_nSplitView) {
 		m_pSplitter = new CSplitterWnd;
@@ -218,7 +223,12 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 		for_to(i, 2) {
 			if(i) pContext->m_pCurrentDoc = pDoc2;
 			if(bSubView) {
-				m_pSplitter->CreateView(r, c, m_bBmpView ? RUNTIME_CLASS(CBZBmpView) : RUNTIME_CLASS(CBZFormView), CSize(0,0), pContext);
+				if(m_bBmpView)
+					m_pSplitter->CreateView(r, c, RUNTIME_CLASS(CBZBmpView), CSize(0,0), pContext);
+				else if(m_bInspectView)
+					m_pSplitter->CreateView(r, c, RUNTIME_CLASS(CBZInspectView), CSize(0,0), pContext);
+				else
+					m_pSplitter->CreateView(r, c, RUNTIME_CLASS(CBZFormView), CSize(0,0), pContext);
 				m_pSplitter->CreateView(r, c + 1, RUNTIME_CLASS(CBZView), CSize(0,0), pContext);
 				((CView*)m_pSplitter->GetPane(r, c))->OnInitialUpdate();
 			} else
@@ -250,7 +260,12 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 		if(bSubView) {
 			m_pSplitter = new CSplitterWnd;
 			m_pSplitter->CreateStatic(this, 1, 2);
-			m_pSplitter->CreateView(0, 0, m_bBmpView ? RUNTIME_CLASS(CBZBmpView) : RUNTIME_CLASS(CBZFormView), CSize(0,0), pContext);
+			if(m_bBmpView)
+				m_pSplitter->CreateView(0, 0, RUNTIME_CLASS(CBZBmpView), CSize(0,0), pContext);
+			else if(m_bInspectView)
+				m_pSplitter->CreateView(0, 0, RUNTIME_CLASS(CBZInspectView), CSize(0,0), pContext);
+			else
+				m_pSplitter->CreateView(0, 0, RUNTIME_CLASS(CBZFormView), CSize(0,0), pContext);
 			m_pSplitter->CreateView(0, 1, RUNTIME_CLASS(CBZView), CSize(0,0), pContext);
 			((CView*)m_pSplitter->GetPane(0, 0))->OnInitialUpdate();
 			pActiveView = (CView*)m_pSplitter->GetPane(0, 1);
@@ -260,7 +275,7 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 		}
 		pActiveView->OnInitialUpdate();
 	}
-	if(m_bStructView && m_nSplitView != ID_VIEW_SPLIT_V) {
+	if((m_bStructView||m_bInspectView) && m_nSplitView != ID_VIEW_SPLIT_V) {
 		m_pSplitter->SetColumnInfo(0, options.xSplitStruct, 0);
 	}
 
@@ -348,6 +363,7 @@ void CMainFrame::OnViewBitmap()
 	GetSplitInfo();
 	m_bBmpView = !m_bBmpView;
 	m_bStructView = FALSE;
+	m_bInspectView = FALSE;
 	CreateClient();
 }
 
@@ -357,6 +373,17 @@ void CMainFrame::OnViewStruct()
 	GetSplitInfo();
 	m_bBmpView = FALSE;
 	m_bStructView = !m_bStructView;
+	m_bInspectView = FALSE;
+	CreateClient();
+}
+
+
+void CMainFrame::OnViewInspect()
+{
+	GetSplitInfo();
+	m_bBmpView = FALSE;
+	m_bStructView = FALSE;
+	m_bInspectView = !m_bInspectView;
 	CreateClient();
 }
 
@@ -459,6 +486,11 @@ void CMainFrame::OnUpdateViewStruct(CCmdUI* pCmdUI)
 	// TODO: Add your command update UI handler code here
 	pCmdUI->SetCheck(m_bStructView);
 //	pCmdUI->Enable(!m_nSplitView);
+}
+
+void CMainFrame::OnUpdateViewInspect(CCmdUI *pCmdUI)
+{
+	pCmdUI->SetCheck(m_bInspectView);
 }
 
 void CMainFrame::OnUpdateViewSplit(CCmdUI* pCmdUI) 
@@ -587,13 +619,15 @@ void CMainFrame::GetSplitInfo()
 		options.cxFrame2 = rFrame.Width();
 		m_pSplitter->GetColumnInfo(0, nCur, nMin);
 		options.xSplit = nCur;
-		if(m_bBmpView || m_bStructView) {
+		if(m_bBmpView || m_bStructView || m_bInspectView) {
 			m_pSplitter->GetColumnInfo(1, nCur, nMin);
 			options.xSplit += nCur;
 		}
 		break;
 	}
-	if(options.bStructView = m_bStructView) {
+	options.bStructView = m_bStructView;
+	options.bInspectView = m_bInspectView;
+	if(m_bStructView || m_bInspectView) {
 		m_pSplitter->GetColumnInfo(0, nCur, nMin);
 		options.xSplitStruct = nCur;
 	}

@@ -1,61 +1,61 @@
 1.6.7 2012/06/11 (tamachan)
-�E�ő剻���Ă����Ԃŕ����\���i���E���㉺�j����ƍő剻��Ԃ̂܂܃E�B���h�E�T�C�Y����������ĕςȃE�B���h�E�i�ő剻�ł��Ȃ����T�C�Y�ύX�s�j�ɂȂ��Ă��܂��o�O�̑΍�
-�EBMP�r���[�A�[�̋����P
-�E���ƍׁX�ƏC���i�Y��Ă��܂����E�E�E�j
+・最大化している状態で分割表示（左右＆上下）すると最大化状態のままウィンドウサイズが調整されて変なウィンドウ（最大化できない＆サイズ変更不可）になってしまうバグの対策
+・BMPビューアーの強化１
+・あと細々と修正（忘れてしまった・・・）
 
 1.6.6 2012/06/10 (tamachan) 
-�E�\���́i8byte�^�C�v�j���_�u���N���b�N�������AGetValue��8�o�C�g�v�����邽�ߗ�O���o���o�O���C��
-�@JumpOffset��GetValue�͂悭�킩��Ȃ���m_nBytes��8�o�C�g�ȏ�̏ꍇ��4�o�C�g�Ɋۂ߂鏈����ǉ�
-�EUAC��������邽��Bz.def��APPDATA\BzEditor\Bz.def�Ɉړ��B
-�@������Ȃ��ꍇ�͉����̓ǂݍ��ݏ����iBz.exe�Ɠ��f�B���N�g����Bz.def�j
+・構造体（8byteタイプ）をダブルクリックした時、GetValueに8バイト要求するため例外が出たバグを修正
+　JumpOffsetのGetValueはよくわからないがm_nBytesが8バイト以上の場合は4バイトに丸める処理を追加
+・UACを回避するためBz.defをAPPDATA\BzEditor\Bz.defに移動。
+　見つからない場合は往来の読み込み処理（Bz.exeと同ディレクトリのBz.def）
 
 1.6.5 2012/06/09 (tamachan) https://docs.google.com/open?id=0B7h5NcRw8uVCT01ROGRvUnI5cnc
-�E�t�@�C���T�C�Y�̈Ⴄ��r�̍ہA�������T�C�Y����͂ݏo���������Ⴄ�F�i�f�t�H�΁j�ŕ\��
-�E�����X�N���[������
-�ENSIS�ŃC���X�g�[���[�쐬
-�E�F�t���̗D��x��ύX
- �i...�\���́���r�Ⴂ�j���i...��r�Ⴂ����r�͂ݏo�����\���́j
+・ファイルサイズの違う比較の際、小さいサイズからはみ出した分を違う色（デフォ緑）で表示
+・同期スクロール搭載
+・NSISでインストーラー作成
+・色付けの優先度を変更
+ （...構造体→比較違い）→（...比較違い→比較はみ出し→構造体）
 
 1.6.4 2012/06/08 (tamachan) https://docs.google.com/open?id=0B7h5NcRw8uVCQlFsVlI1RGtvRkU
-�E�\���̂�double, QWORD, qword, float����
-�E�t�@�C���T�C�Y������Ă���r�ł���悤��
-�EVC2005�Ń����^�C���ÓI�����N���܂����B500kb���炢�ł�
-���Ԃ�o�O������܂��B
-MFC��CMemFile��4GB�I�[�o�[�ɑΉ�����悤�ɂȂ���GetLength��ULONGLONG(8byte)��Ԃ��悤�ɂȂ��Ă��܂��B
-GetLength���g���Ă���Ƃ��낪�Q����������DWORD�ւ̐؂�̂�Warning���o�Ă��܂���
-4GB�ȏ�͂Ȃ��Ȃ��g��Ȃ����ʓ|�Ȃ̂Ŗ��������Ⴂ�܂���
+・構造体へdouble, QWORD, qword, float実装
+・ファイルサイズが違っても比較できるように
+・VC2005でランタイム静的リンクしました。500kbくらいです
+たぶんバグがあります。
+MFCのCMemFileが4GBオーバーに対応するようになってGetLengthがULONGLONG(8byte)を返すようになっています。
+GetLengthを使っているところが２ヶ所あってDWORDへの切り捨てWarningが出ていました
+4GB以上はなかなか使わない＆面倒なので無視しちゃいました
 
 Bz Ver1.5	01/6/25
 
-�EVC++6.0�A�t���b�g�c�[���o�[(��肪����ꍇ->BarState�j
-�E�����R�[�h�Ή�(EUC,JIS)
-�E�����R�[�h�����F��
-�E�J���[�ݒ�
-�E�S����
-�E���{��/�p�ꃁ�j���[�؂�ւ�
+・VC++6.0、フラットツールバー(問題がある場合->BarState）
+・文字コード対応(EUC,JIS)
+・文字コード自動認識
+・カラー設定
+・４分割
+・日本語/英語メニュー切り替え
 
-�ECopy&Paste�ŁA�Ō�̂P�o�C�g��0�ɂȂ�
-�ES-JIS�P�o�C�g����őI������������
-�E�\���̃����o�̃J�����\��
-�E�}�E�X�z�C�[���Ή�(Win98,NT4.0)
-�EM�{�^����TAB
-�E�}�[�N��BZDoc��
-�E�v���r���[��S-JIS�̕s���������͂ݏo��
-�E�v�����g�}�[�W���ݒ�
-�EIME���J�[�\���ʒu�ɁB
-�E�擪�ցA�Ō�ւ̃W�����v�@�\�̒ǉ�
-�E�ҏW�֎~�܂��̓T�C�Y���[���̎��̃��j���[��ԕ\����ύX
-�E���ׂđI���R�}���h��ǉ�
-�E�e���[�h�̉�ʈʒu��ۑ��B�\���̕\�����[�h��ۑ��B
-�E�c�[���o�[�ƃX�e�[�^�X�o�[�ƃt���p�X�̏�Ԃ�ۑ�����悤�ɕύX
-�EWin2000�ŊJ���A���O��t���ĕۑ��̃_�C�A���O���ŐV�̂��̂ɕύX
-�Ebz.def��edit
+・Copy&Pasteで、最後の１バイトが0になる
+・S-JIS１バイトずれで選択時文字化け
+・構造体メンバのカラム表示
+・マウスホイール対応(Win98,NT4.0)
+・MボタンでTAB
+・マークはBZDocに
+・プレビューでS-JISの不正文字がはみ出る
+・プリントマージン設定
+・IMEをカーソル位置に。
+・先頭へ、最後へのジャンプ機能の追加
+・編集禁止またはサイズがゼロの時のメニュー状態表示を変更
+・すべて選択コマンドを追加
+・各モードの画面位置を保存。構造体表示モードを保存。
+・ツールバーとステータスバーとフルパスの状態を保存するように変更
+・Win2000で開く、名前を付けて保存のダイアログを最新のものに変更
+・bz.defのedit
 
-�E����ȃt�@�C���̏ꍇ
-�E�\���̂̊g���q����
+・巨大なファイルの場合
+・構造体の拡張子限定
 
-���@�ύX����
-1.05  Win9x�ŃV���[�g�J�b�g�Ƀh���b�v�Ń����O�t�@�C�����ɂȂ�Ȃ���������
+◎　変更履歴
+1.05  Win9xでショートカットにドロップでロングファイル名にならない問題を解消
 
-      �E�{�^�����j���[��ǉ�
-      �A�v���P�[�V�����L�[�ŉE�{�^�����j���[�\���@�\��ǉ�
+      右ボタンメニューを追加
+      アプリケーションキーで右ボタンメニュー表示機能を追加

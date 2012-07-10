@@ -145,6 +145,30 @@ BEGIN
     PUSHBUTTON      "キャンセル",IDCANCEL,100,32,44,14
 END
 
+IDD_BZINSPECTVIEW DIALOGEX 0, 0, 100, 280
+STYLE DS_SETFONT | WS_CHILD
+FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x0
+BEGIN
+    LTEXT           "バイナリ",IDC_STATIC,7,29,25,8
+    CONTROL         "Signed",IDC_INS_SIGNED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,39,10
+    CONTROL         "Intel",IDC_INS_INTEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,53,7,40,10
+    EDITTEXT        IDE_INS_HEX,7,38,60,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "char",IDC_INS_STATIC1,7,86,14,8
+    EDITTEXT        IDE_INS_BINARY2,7,95,60,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "short",IDC_INS_STATIC2,7,112,16,8
+    EDITTEXT        IDE_INS_BINARY3,7,121,60,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "int",IDC_INS_STATIC4,7,139,8,8
+    EDITTEXT        IDE_INS_BINARY4,7,148,60,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "int64",IDC_INS_STATIC8,7,166,15,8
+    EDITTEXT        IDE_INS_BINARY5,7,175,60,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "float",IDC_INS_STATICF,7,194,14,8
+    EDITTEXT        IDE_INS_BINARY6,7,203,60,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "double",IDC_INS_STATICD,7,224,20,8
+    EDITTEXT        IDE_INS_BINARY7,7,233,60,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "8bits",IDC_STATIC,7,55,15,8
+    EDITTEXT        IDE_INS_8BITS,7,65,60,14,ES_AUTOHSCROLL | ES_READONLY
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -192,6 +216,14 @@ BEGIN
         RIGHTMARGIN, 143
         TOPMARGIN, 7
         BOTTOMMARGIN, 44
+    END
+
+    IDD_BZINSPECTVIEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 93
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 273
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -259,6 +291,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "ビットマップ表示(&B)",                ID_VIEW_BITMAP
         MENUITEM "構造体表示(&U)",                   ID_VIEW_STRUCT
+        MENUITEM "インスペクタ表示(&I)",                ID_VIEW_INSPECT
         MENUITEM SEPARATOR
         MENUITEM "上下に分割(&H)",                   ID_VIEW_SPLIT_H
         MENUITEM "左右に分割(&V)",                   ID_VIEW_SPLIT_V
@@ -404,8 +437,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,6,7,0
- PRODUCTVERSION 1,6,7,0
+ FILEVERSION 1,6,8,0
+ PRODUCTVERSION 1,6,8,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -421,12 +454,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "BZ MFC Application"
-            VALUE "FileVersion", "1, 6, 7, 0"
+            VALUE "FileVersion", "1, 6, 8, 0"
             VALUE "InternalName", "BZ"
             VALUE "LegalCopyright", "Copyright (c) 1996 by c.mos"
             VALUE "OriginalFilename", "BZ.EXE"
             VALUE "ProductName", "BZ Application"
-            VALUE "ProductVersion", "1, 6, 7, 0"
+            VALUE "ProductVersion", "1, 6, 8, 0"
         END
     END
     BLOCK "VarFileInfo"

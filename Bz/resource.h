@@ -3,6 +3,7 @@
 // Used by BZ.rc
 //
 #define IDD_ABOUTBOX                    100
+#define IDD_BZINSPECTVIEW               103
 #define IDC_BMPPOINTER                  104
 #define IDR_MAINFRAME                   128
 #define IDR_BZTYPE                      129
@@ -26,6 +27,23 @@
 #define IDE_DUMPPAGE                    1017
 #define IDE_VALUE                       1018
 #define IDB_RESET                       1019
+#define IDC_INS_UNSIGNED                1021
+#define IDC_INS_SIGNED                  1021
+#define IDC_INS_INTEL                   1022
+#define IDE_INS_HEX                     1023
+#define IDE_INS_BINARY2                 1024
+#define IDE_INS_BINARY3                 1025
+#define IDC_INS_STATIC1                 1026
+#define IDE_INS_BINARY4                 1027
+#define IDE_INS_BINARY5                 1028
+#define IDE_INS_BINARY6                 1029
+#define IDE_INS_BINARY7                 1030
+#define IDC_INS_STATIC2                 1031
+#define IDC_INS_STATIC4                 1032
+#define IDC_INS_STATIC8                 1033
+#define IDC_INS_STATICF                 1034
+#define IDC_INS_STATICD                 1035
+#define IDE_INS_8BITS                   1037
 #define ID_CHAR_ASCII                   32770
 #define ID_CHAR_SJIS                    32771
 #define ID_CHAR_UNICODE                 32772
@@ -43,8 +61,9 @@
 #define ID_BYTEORDER_68K                32784
 #define ID_VIEW_BITMAP                  32790
 #define ID_VIEW_STRUCT                  32791
-#define ID_VIEW_SPLIT_H                 32792
-#define ID_VIEW_SPLIT_V                 32793
+#define ID_VIEW_INSPECT                 32792
+#define ID_VIEW_SPLIT_H                 32794
+#define ID_VIEW_SPLIT_V                 32795
 #define ID_VIEW_FONT                    32800
 #define ID_VIEW_COLOR                   32801
 #define ID_VIEW_FULLPATH                32802
@@ -118,8 +137,8 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        145
-#define _APS_NEXT_COMMAND_VALUE         32855
-#define _APS_NEXT_CONTROL_VALUE         1020
-#define _APS_NEXT_SYMED_VALUE           101
+#define _APS_NEXT_COMMAND_VALUE         32857
+#define _APS_NEXT_CONTROL_VALUE         1036
+#define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

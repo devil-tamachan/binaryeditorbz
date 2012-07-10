@@ -131,6 +131,8 @@ public:
 	int  iGrid;
 	int  nBmpColorWidth;
 
+	BOOL bInspectView;
+
 };
 
 extern CBZOptions options;
