@@ -7,6 +7,7 @@
 #define IDC_BMPPOINTER                  104
 #define IDR_MAINFRAME                   128
 #define IDR_BZTYPE                      129
+#define IDP_OLE_INIT_FAILED             129
 #define IDD_DIALOG1                     137
 #define IDD_SETUP_COLOR                 138
 #define IDR_BMPVIEW                     141

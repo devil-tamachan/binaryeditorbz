@@ -9,6 +9,8 @@
 #include "BZView.h"
 #include <shlobj.h>
 
+#include "kb976038.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -55,19 +57,55 @@ CBZApp theApp;
 /////////////////////////////////////////////////////////////////////////////
 // CBZApp initialization
 
+
 BOOL CBZApp::InitInstance()
 {
-	// Standard initialization
-	// If you are not using these features and wish to reduce the size
-	//  of your final executable, you should remove from the following
-	//  the specific initialization routines you do not need.
+#ifdef _DEBUG
+	disableUserModeCallbackExceptionFilter();
+#endif
+
+	// アプリケーション マニフェストが visual スタイルを有効にするために、
+	// ComCtl32.dll Version 6 以降の使用を指定する場合は、
+	// Windows XP に InitCommonControlsEx() が必要です。さもなければ、ウィンドウ作成はすべて失敗します。
+	INITCOMMONCONTROLSEX InitCtrls;
+	InitCtrls.dwSize = sizeof(InitCtrls);
+	// アプリケーションで使用するすべてのコモン コントロール クラスを含めるには、
+	// これを設定します。
+	InitCtrls.dwICC = ICC_WIN95_CLASSES;
+	InitCommonControlsEx(&InitCtrls);
+
+	CWinApp::InitInstance();
+//	afxAmbientActCtx = FALSE;//0xC015000F避け。SxS周りでエラーが起きる。これは一時的な処置にしかならない。根本的な問題は解決しないらしい。どうも前の方のバージョン（インスペクタ実装前）も発生しているっぽい。MFCのバージョンが違うためなのか？
+/*インスペクタの適当なテキストボックスにカーソルを当てて、構造体表示にすると
+0xC0150010
+0xC015000F
+のどちらかがランダムで出る（出る場所は違う）
+KB976038かと思ったがどうも違うらしい。マイクロソフトのパッチを当てたが変わらず
+デバッグでブレークポイントでチミチミやると発生しない・・・
+http://social.msdn.microsoft.com/Forums/en/vcgeneral/thread/c3feab0f-601b-4ca6-beb2-8d4d615438cc
+*/
+
+	// OLE ライブラリを初期化します。
+/*	if (!AfxOleInit())
+	{
+		AfxMessageBox(IDP_OLE_INIT_FAILED);
+		return FALSE;
+	}
+	AfxEnableControlContainer();*/
+	// 標準初期化
+	// これらの機能を使わずに最終的な実行可能ファイルの
+	// サイズを縮小したい場合は、以下から不要な初期化
+	// ルーチンを削除してください。
+	// 設定が格納されているレジストリ キーを変更します。
+	// TODO: 会社名または組織名などの適切な文字列に
+	// この文字列を変更してください。
 
 	SetRegistryKey("c.mos");
-#ifdef _AFXDLL
+/*#ifdef _AFXDLL
 	Enable3dControls();			// Call this when using MFC in a shared DLL
 #else
 	Enable3dControlsStatic();	// Call this when linking to MFC statically
-#endif
+#endif*/
 
 	m_bFirstInstance = ::FindWindow(BZ_CLASSNAME, NULL) == NULL;
 
@@ -92,7 +130,7 @@ BOOL CBZApp::InitInstance()
 		m_pDocManager = new CBZDocManager;
 	m_pDocManager->AddDocTemplate(pDocTemplate);
 
-	// Parse command line for standard shell commands, DDE, file open
+	// DDE、file open など標準のシェル コマンドのコマンド ラインを解析します。
 	CCommandLineInfo cmdInfo;
 	ParseCommandLine(cmdInfo);
 //	if(!cmdInfo.m_strFileName.IsEmpty())
@@ -101,13 +139,16 @@ BOOL CBZApp::InitInstance()
 
 	m_nCmdShow = options.nCmdShow;
 
-	OnFileNew();
-	m_pMainWnd->DragAcceptFiles();
 
-	// Dispatch commands specified on the command line
+	// コマンド ラインで指定されたディスパッチ コマンドです。アプリケーションが
+	// /RegServer、/Register、/Unregserver または /Unregister で起動された場合、False を返します。
 	if (!ProcessShellCommand(cmdInfo))
 		return FALSE;
 
+	// 接尾辞が存在する場合にのみ DragAcceptFiles を呼び出してください。
+	//  SDI アプリケーションでは、ProcessShellCommand の直後にこの呼び出しが発生しなければなりません。
+	OnFileNew();
+	m_pMainWnd->DragAcceptFiles();
 	return TRUE;
 }
 

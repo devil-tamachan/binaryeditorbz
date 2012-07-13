@@ -478,12 +478,20 @@ IDC_BMPPOINTER          CURSOR                  "res\\bmppoint.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// RT_MANIFEST
+//
+
+MANIFEST_RESOURCE_ID    RT_MANIFEST             "Bz.manifest"
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
 STRINGTABLE 
 BEGIN
     IDR_MAINFRAME           "BZ\n\nBZ\n\n\nBZ.Document\nBZ Document"
+    IDP_OLE_INIT_FAILED     "OLE の初期化に失敗しました。OLE ライブラリのバージョンが正しいことを確認してください。"
 END
 
 STRINGTABLE 
