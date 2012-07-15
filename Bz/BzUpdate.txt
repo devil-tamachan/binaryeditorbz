@@ -1,4 +1,4 @@
-1.6.8 2012/XX/XX (tamachan)
+1.6.8 2012/07/16 (tamachan)
 ・KB976038対策（Vista64でSxS関連のエラー,0xC0150010, 0xC015000F）が出る。本当の原因がデバッグできないVistaのバグ。
 ・CSplitterWnd::DestroyWindow()にてoleacc.dll(Accessiblity関連)の謎のエラーで落ちるバグ修正。(XPでは発生せ
 ず、Vistaにて確認。おそらく７も発生)
