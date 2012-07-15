@@ -75,6 +75,8 @@ CMainFrame::CMainFrame()
 	m_bInspectView = FALSE;
 	m_nSplitView = m_nSplitView0 = 0;
 	m_bDisableStatusInfo = FALSE;
+
+//	EnableActiveAccessibility();
 }
 
 CMainFrame::~CMainFrame()
@@ -179,6 +181,8 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 	CDocument *pDoc;
 	CDocument *pDoc2 = NULL;
 
+	BOOL bSubView = (m_bBmpView || m_bStructView || m_bInspectView);
+
 	if(m_nSplitView && m_nSplitView0) {
 		pDoc  = ((CView*)m_pSplitter->GetPane(0, 0))->GetDocument();
 		pDoc2 = ((CView*)m_pSplitter->GetPane(m_pSplitter->GetRowCount() - 1, m_pSplitter->GetColumnCount() - 1))->GetDocument();
@@ -191,6 +195,19 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 		if(pDoc2) pDoc2->m_bAutoDelete = FALSE;
 		pContext = &context;
 		if(m_pSplitter) {
+			if(m_pSplitter->GetRowCount()>1 && m_pSplitter->GetColumnCount()>1) {
+				m_pSplitter->DeleteView(1,1);
+				m_pSplitter->DeleteView(1,0);
+				m_pSplitter->DeleteView(0,1);
+				m_pSplitter->CreateView(0,1,RUNTIME_CLASS(CWnd), CSize(0,0), pContext);//MFCXX‚Ë
+				m_pSplitter->SetActivePane(0,1);//MFCXX‚Ë
+				m_pSplitter->DeleteView(0,0);
+			} else if(m_pSplitter->GetRowCount()>1 || m_pSplitter->GetColumnCount()>1) {
+				m_pSplitter->DeleteView(m_pSplitter->GetRowCount() - 1, m_pSplitter->GetColumnCount() - 1);
+				m_pSplitter->CreateView(m_pSplitter->GetRowCount() - 1, m_pSplitter->GetColumnCount() - 1,RUNTIME_CLASS(CWnd), CSize(0,0), pContext);//MFCXX‚Ë
+				m_pSplitter->SetActivePane(m_pSplitter->GetRowCount() - 1, m_pSplitter->GetColumnCount() - 1);//MFCXX‚Ë
+				m_pSplitter->DeleteView(0,0);
+			}
 			m_pSplitter->DestroyWindow();
 			delete m_pSplitter;
 			m_pSplitter = NULL;
@@ -204,7 +221,6 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 	}
 
 	CView* pActiveView = NULL;
-	BOOL bSubView = (m_bBmpView || m_bStructView || m_bInspectView);
 
 	if(m_nSplitView) {
 		m_pSplitter = new CSplitterWnd;

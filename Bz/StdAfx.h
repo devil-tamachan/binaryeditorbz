@@ -3,9 +3,6 @@
 //		are changed infrequently
 //
 
-#define _AFX_NO_OCC_SUPPORT
-#define _AFX_NO_OLE_SUPPORT
-
 
 #define VC_EXTRALEAN		// Windows ヘッダーから使用されていない部分を除外します。
 #define WINVER 0x0501 //XP
@@ -23,7 +20,7 @@
 
 
 #ifndef _AFX_NO_OLE_SUPPORT
-#include <afxdtctl.h>		// MFC の Internet Explorer 4 コモン コントロール サポート
+//#include <afxdtctl.h>		// MFC の Internet Explorer 4 コモン コントロール サポート
 #endif
 #ifndef _AFX_NO_AFXCMN_SUPPORT
 #include <afxcmn.h>			// MFC の Windows コモン コントロール サポート
