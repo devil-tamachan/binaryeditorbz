@@ -7,6 +7,7 @@
 #include "BZDoc.h"
 #include "BZView.h"
 #include "BZFormVw.h"
+#include "BZInspectView.h"
 #include "MainFrm.h"
 #include "ColorDlg.h"
 #include "SettingDlg.h"
@@ -666,6 +667,13 @@ BOOL CBZView::DrawCaret()
 	MoveCaret(pt);
 	pt.x = ptx2;
 	MoveCaret2(pt);
+
+	
+	if(GetMainFrame() && GetMainFrame()->m_bInspectView) {
+		CBZInspectView* pView = (CBZInspectView*)GetNextWindow(GW_HWNDPREV);
+		pView->Update();
+	}
+
 	return bDraw;
 }
 
@@ -1871,6 +1879,11 @@ void CBZView::OnByteOrder(UINT nID)
 	// TODO: Add your command handler code here
 	if(nID != (UINT)options.bByteOrder + ID_BYTEORDER_INTEL)
 		options.bByteOrder = !options.bByteOrder;
+	
+	if(GetMainFrame() && GetMainFrame()->m_bInspectView) {
+		CBZInspectView* pView = (CBZInspectView*)GetNextWindow(GW_HWNDPREV);
+		pView->UpdateChecks();
+	}
 }
 
 void CBZView::OnUpdateByteOrder(CCmdUI* pCmdUI) 

@@ -12,13 +12,13 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define nTypes 13
+#define nTypes 14
 
 char* datatypes[nTypes] = {
-	"char", "byte", "BYTE", "short", "word", "WORD", "long", "dword", "DWORD", "double", "qword", "QWORD", "float"
+	"char", "byte", "BYTE", "short", "word", "WORD", "long", "dword", "DWORD", "double", "qword", "QWORD", "float", "int64"
 };
 
-DWORD datasizes[nTypes] = {1,1,1,2,2,2,4,4,4,8,8,8 ,4
+DWORD datasizes[nTypes] = {1,1,1,2,2,2,4,4,4,8,8,8 ,4,8
 };
 
 static TCHAR *sMemberColLabel[MBRCOL_MAX] = { _T("+"), _T("Label"), _T("Value") };
@@ -477,26 +477,26 @@ void CBZFormView::InitListMember(int iTag)
 			case 6://long
 				sVal = SeparateByComma(val, true);
 				break;
-			case 9://double
+			case 13://int64
 				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
-				sVal.Format("%f", qval);
-				break;
-			case 10://qword(digit)
-				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
-				sVal = SeparateByComma64(qval, false);
-				//sVal.Format("%I64u", qval);
-				break;
-			case 11://QWORD(hex)
-				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
-				sVal.Format("0x%016I64X", qval);
+				sVal = SeparateByComma64(qval, true);
 				break;
 			case 12://float
 				sVal.Format("%f", val);
+				break;
+			case 9://double
+				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
+				sVal.Format("%f", qval);
 				break;
 			case 1: // byte(unsigned char)
 			case 4: // word(unsigned short)
 			case 7: // dword(unsigned int)
 				sVal = SeparateByComma(val, false);
+				break;
+			case 10://qword(digit)
+				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
+				sVal = SeparateByComma64(qval, false);
+				//sVal.Format("%I64u", qval);
 				break;
 			case 2://BYTE(Hex)
 				sVal.Format("0x%02X", val);
@@ -506,6 +506,10 @@ void CBZFormView::InitListMember(int iTag)
 				break;
 			case 8://DWORD(Hex)
 				sVal.Format("0x%08X", val);
+				break;
+			case 11://QWORD(hex)
+				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
+				sVal.Format("0x%016I64X", qval);
 				break;
 			}
 			/*
