@@ -86,12 +86,12 @@ http://social.msdn.microsoft.com/Forums/en/vcgeneral/thread/c3feab0f-601b-4ca6-b
 */
 
 	// OLE ライブラリを初期化します。
-/*	if (!AfxOleInit())
+	if (!AfxOleInit())
 	{
 		AfxMessageBox(IDP_OLE_INIT_FAILED);
 		return FALSE;
 	}
-	AfxEnableControlContainer();*/
+	AfxEnableControlContainer();
 	// 標準初期化
 	// これらの機能を使わずに最終的な実行可能ファイルの
 	// サイズを縮小したい場合は、以下から不要な初期化
@@ -147,7 +147,8 @@ http://social.msdn.microsoft.com/Forums/en/vcgeneral/thread/c3feab0f-601b-4ca6-b
 
 	// 接尾辞が存在する場合にのみ DragAcceptFiles を呼び出してください。
 	//  SDI アプリケーションでは、ProcessShellCommand の直後にこの呼び出しが発生しなければなりません。
-	OnFileNew();
+
+//	OnFileNew();
 	m_pMainWnd->DragAcceptFiles();
 	return TRUE;
 }

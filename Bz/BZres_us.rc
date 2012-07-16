@@ -60,6 +60,10 @@ BEGIN
         MENUITEM "Width 256",                   ID_BMPVIEW_WIDTH256
         MENUITEM SEPARATOR
         MENUITEM "Zoom",                        ID_BMPVIEW_ZOOM
+        MENUITEM SEPARATOR
+        MENUITEM "8bit color",                  ID_BMPVIEW_8BITCOLOR
+        MENUITEM "24bit color",            ID_BMPVIEW_24BITCOLOR, INACTIVE
+        MENUITEM "32bit color",            ID_BMPVIEW_32BITCOLOR, INACTIVE
     END
 END
 
@@ -138,9 +142,13 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Bitmap View",                ID_VIEW_BITMAP
         MENUITEM "Str&ucture View",             ID_VIEW_STRUCT
+        MENUITEM "Inspect View",             ID_VIEW_INSPECT
         MENUITEM SEPARATOR
         MENUITEM "Split &Horizontally",         ID_VIEW_SPLIT_H
         MENUITEM "Split &Vertically",           ID_VIEW_SPLIT_V
+        MENUITEM "Sync Scroll",           ID_VIEW_SYNCSCROLL
+        MENUITEM SEPARATOR
+        MENUITEM "Grid",              ID_VIEW_GRID1
         MENUITEM SEPARATOR
         MENUITEM "Full &Pathname",              ID_VIEW_FULLPATH
         MENUITEM "Sub Cu&rsor",                 ID_VIEW_SUBCURSOR
@@ -191,8 +199,8 @@ END
 // Dialog
 //
 
-IDD_DIALOG1 DIALOG DISCARDABLE  0, 0, 100, 280
-STYLE WS_CHILD
+IDD_DIALOG1 DIALOG  0, 0, 100, 280
+STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "Structures:",IDC_STATIC,4,3,48,8,SS_CENTERIMAGE
@@ -204,8 +212,8 @@ BEGIN
                     60,2,20,10
 END
 
-IDD_SETUP_COLOR DIALOG DISCARDABLE  0, 0, 174, 83
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_SETUP_COLOR DIALOG  0, 0, 174, 83
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Color Setting"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -227,8 +235,8 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 217, 55
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ABOUTBOX DIALOG  0, 0, 217, 55
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About BZ"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -240,8 +248,8 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,178,7,32,14,WS_GROUP
 END
 
-IDD_SETTING DIALOG DISCARDABLE  0, 0, 172, 94
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_SETTING DIALOG  0, 0, 172, 94
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Advanced"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -266,8 +274,8 @@ BEGIN
                     WS_GROUP,108,64,16,8
 END
 
-IDD_INPUT DIALOG DISCARDABLE  0, 0, 150, 51
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_INPUT DIALOG  0, 0, 150, 51
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Start address"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -277,6 +285,30 @@ BEGIN
                     WS_GROUP,4,12,56,8
     EDITTEXT        IDE_VALUE,64,9,48,14,ES_AUTOHSCROLL
     PUSHBUTTON      "reset",IDB_RESET,116,10,28,12
+END
+
+IDD_BZINSPECTVIEW DIALOGEX 0, 0, 100, 342
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Hex",IDC_STATIC,7,29,25,8
+    CONTROL         "Signed",IDC_INS_SIGNED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,39,10
+    CONTROL         "Intel",IDC_INS_INTEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,53,7,40,10
+    EDITTEXT        IDE_INS_HEX,7,38,86,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "char",IDC_INS_STATIC1,7,104,48,8
+    EDITTEXT        IDE_INS_BINARY1,7,113,86,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "short",IDC_INS_STATIC2,7,130,46,8
+    EDITTEXT        IDE_INS_BINARY2,7,139,86,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "int",IDC_INS_STATIC4,7,157,54,8
+    EDITTEXT        IDE_INS_BINARY4,7,166,86,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "int64",IDC_INS_STATIC8,7,184,57,8
+    EDITTEXT        IDE_INS_BINARY8,7,193,86,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "float",IDC_INS_STATICF,7,212,14,8
+    EDITTEXT        IDE_INS_FLOAT,7,221,86,31,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_HSCROLL
+    LTEXT           "double",IDC_INS_STATICD,7,257,20,8
+    EDITTEXT        IDE_INS_DOUBLE,7,267,86,29,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_HSCROLL
+    LTEXT           "bits",IDC_STATIC,7,55,15,8
+    EDITTEXT        IDE_INS_8BITS,7,65,86,29,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | WS_HSCROLL
 END
 
 
@@ -295,7 +327,7 @@ IDR_MAINFRAME           ICON    DISCARDABLE     "res\\BZ.ico"
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
@@ -336,6 +368,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 44
     END
+
+    IDD_BZINSPECTVIEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 93
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 335
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -345,7 +385,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+IDR_MAINFRAME ACCELERATORS
 BEGIN
     "A",            ID_EDIT_SELECT_ALL,     VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -381,7 +421,7 @@ END
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR DISCARDABLE  19, 17
+IDR_MAINFRAME TOOLBAR  19, 17
 BEGIN
     BUTTON      ID_FILE_OPEN
     BUTTON      ID_FILE_SAVE
@@ -411,7 +451,7 @@ END
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
+IDR_MAINFRAME           BITMAP     "res\\Toolbar.bmp"
 
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
@@ -420,8 +460,8 @@ IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 1,6,9,0
+ PRODUCTVERSION 1,6,9,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -438,13 +478,13 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "BZ MFC Application\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "FileVersion", "1, 6, 9, 0\0"
             VALUE "InternalName", "BZ\0"
             VALUE "LegalCopyright", "Copyright (c) 1996 by c.mos\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "BZ.EXE\0"
             VALUE "ProductName", "BZ Application\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "ProductVersion", "1, 6, 9, 0\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -452,6 +492,20 @@ BEGIN
         VALUE "Translation", 0x409, 1200
     END
 END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_BMPPOINTER          CURSOR                  "res\\bmppoint.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// RT_MANIFEST
+//
+
+MANIFEST_RESOURCE_ID    RT_MANIFEST             "Bz.manifest"
 
 #endif    // !_MAC
 
@@ -461,18 +515,33 @@ END
 // String Table
 //
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "BZ\n\nBZ\n\n\nBZ.Document\nBZ Document"
+    IDP_OLE_INIT_FAILED     "OLE initialization failed.  Make sure that the OLE libraries are the correct version."
 END
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_APP_TITLE       "BZ"
     AFX_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
+BEGIN
+    AFX_IDS_UNTITLED   "untitled"
+    AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
+    IDS_AUTOCOLOR           "Auto"
+    IDS_OTHERCOLOR          "Other..."
+    IDS_COLOR_ADDRESS       "Address Header"
+    IDS_COLOR_ADDRESS2      "Address Header2"
+    IDS_COLOR_TEXT          "Text"
+    IDS_COLOR_SELECT        "Text Selection"
+    IDS_COLOR_MARK          "Mark Point"
+    IDS_COLOR_MISMATCH      "Mismatch Byte"
+END
+
+STRINGTABLE
 BEGIN
     ID_INDICATOR_INFO       "XXXX:XXXX: 0xXXXXXXXX (0,000,000,000)bytes"
     ID_INDICATOR_SIZE       "0,000,000,000bytes"
@@ -480,7 +549,7 @@ BEGIN
     ID_INDICATOR_INS        "OVR "
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
@@ -491,14 +560,14 @@ BEGIN
     ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_APP_ABOUT            "About Bz"
     ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
     ID_HELP_INDEX           "Display help"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
     ID_FILE_MRU_FILE1       "Open this document"
     ID_FILE_MRU_FILE2       "Open this document"
@@ -512,7 +581,7 @@ BEGIN
     ID_FILE_MRU_FILE10      "Open this document"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
     ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
     ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
@@ -521,13 +590,13 @@ BEGIN
     ID_EDIT_UNDO            "Undo the last action\nUndo"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
     ID_CHAR_ASCII           "Ascii character set"
     ID_CHAR_SJIS            "Shift-JIS charcter set"
@@ -544,7 +613,7 @@ BEGIN
     ID_BYTEORDER_INTEL      "Byte storage order is assumed 'little endian'"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
     ID_BYTEORDER_68K        "Byte storage order is assumed 'big endian'"
     ID_VIEW_BITMAP          "Show file content as Bitmap\nBitmap view"
@@ -553,7 +622,7 @@ BEGIN
     ID_VIEW_SPLIT_V         "Split view vertically\nSplit Vert"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
     ID_VIEW_FONT            "Change font"
     ID_VIEW_COLOR           "Change Text Color"
@@ -567,7 +636,7 @@ BEGIN
     ID_JUMP_RETURN          "Return to previous address\nReturn"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
     ID_JUMP_MARK            "Toggle Mark"
     ID_JUMP_MARKNEXT        "Jump to Next Mark"
@@ -576,7 +645,7 @@ BEGIN
     ID_LANG_JPN             "Switch Language to Japanese"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
     ID_LANG_ENU             "Switch Language to English"
     ID_TOOLS_EDITDEF        "Open BZ.DEF file by text editor"
@@ -586,41 +655,32 @@ BEGIN
     ID_JUMP_BASE            "Set file base address."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
-    AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
+    IDS_SAVEDUMP_CAPTION    "Save Dump List"
+    IDS_EBCDIC_FILE         "EBCDIC.DEF"
     IDS_STRUCT_FILE         "BZ.DEF"
-    IDS_AUTOCOLOR           "Auto"
-    IDS_OTHERCOLOR          "Other..."
-    IDS_COLOR_ADDRESS       "Address Header"
-    IDS_COLOR_ADDRESS2      "Address Header2"
-    IDS_COLOR_TEXT          "Text"
-    IDS_COLOR_SELECT        "Text Selection"
-    IDS_COLOR_MARK          "Mark Point"
-    IDS_COLOR_MISMATCH      "Mismatch Byte"
+    IDS_EDIT_RO             "R.O."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
     IDS_COLOR_STRUCT        "Structure"
     IDS_COLOR_MEMBER        "Structure Member"
+    IDS_COLOR_OVERBROTHER        "Overs"
+    IDS_COLOR_HORIZON        "Horizontal Line"
     IDS_EDIT_OVR            "OVR"
     IDS_EDIT_INS            "INS"
 END
 
-STRINGTABLE DISCARDABLE 
-BEGIN
-    IDS_EDIT_RO             "R.O."
-END
-
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
     IDS_CHANGE_LANGUAGE     "Please restart BZ"
     IDS_COMPARE_OK          "No difference"
     IDS_ALLFILTER           "All Files (*.*)"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
     IDS_ERR_FILENOTFOUND    "Cannot open '%s'"
     IDS_ERR_SYNTAX          "Syntax error '%s'"
@@ -634,7 +694,7 @@ BEGIN
     IDS_ERR_COPY            "Copy block too large"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
     AFX_IDS_SCSIZE          "Change the window size"
     AFX_IDS_SCMOVE          "Change the window position"
@@ -645,17 +705,12 @@ BEGIN
     AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE  
 BEGIN
     AFX_IDS_SCRESTORE       "Restore the window to normal size"
     AFX_IDS_SCTASKLIST      "Activate Task List"
 END
 
-STRINGTABLE DISCARDABLE 
-BEGIN
-    IDS_SAVEDUMP_CAPTION    "Save Dump List"
-    IDS_EBCDIC_FILE         "EBCDIC.DEF"
-END
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
