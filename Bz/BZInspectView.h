@@ -52,6 +52,7 @@ public:
 	CStatic m_staticBinary8;
 	void Update(void);
 	void UpdateChecks(void);
+	void _UpdateChecks(void);
 };
 
 

@@ -659,3 +659,15 @@ void CMainFrame::OnToolsSetting()
 }
 
 
+void CMainFrame::UpdateInspectViewChecks()
+{
+	if(m_bInspectView && m_nSplitView && m_nSplitView0) {
+		((CBZInspectView*)m_pSplitter->GetPane(0, 0))->_UpdateChecks();
+		((CBZInspectView*)m_pSplitter->GetPane(0, 0))->Update();
+		int r=0,c=0;
+		if(options.nSplitView==ID_VIEW_SPLIT_H)c=2;
+		else r=1;
+		((CBZInspectView*)m_pSplitter->GetPane(r, c))->_UpdateChecks();
+		((CBZInspectView*)m_pSplitter->GetPane(r, c))->Update();
+	}
+}

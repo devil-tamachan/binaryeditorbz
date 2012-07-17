@@ -84,6 +84,8 @@ protected:
 public:
 	afx_msg void OnViewInspect();
 	afx_msg void OnUpdateViewInspect(CCmdUI *pCmdUI);
+
+	void UpdateInspectViewChecks();
 };
 
 #define BZ_CLASSNAME "BzEditorClass"

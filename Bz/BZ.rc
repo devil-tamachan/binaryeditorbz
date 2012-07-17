@@ -165,7 +165,7 @@ BEGIN
     EDITTEXT        IDE_INS_FLOAT,7,221,86,31,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_HSCROLL
     LTEXT           "double",IDC_INS_STATICD,7,257,20,8
     EDITTEXT        IDE_INS_DOUBLE,7,267,86,29,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_HSCROLL
-    LTEXT           "8bits",IDC_STATIC,7,55,15,8
+    LTEXT           "bits",IDC_STATIC,7,55,12,8
     EDITTEXT        IDE_INS_8BITS,7,65,86,29,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | WS_HSCROLL
 END
 
@@ -437,8 +437,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,6,9,0
- PRODUCTVERSION 1,6,9,0
+ FILEVERSION 1,7,0,0
+ PRODUCTVERSION 1,7,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -454,12 +454,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "BZ MFC Application"
-            VALUE "FileVersion", "1, 6, 9, 0"
+            VALUE "FileVersion", "1, 7, 0, 0"
             VALUE "InternalName", "BZ"
             VALUE "LegalCopyright", "Copyright (c) 1996 by c.mos"
             VALUE "OriginalFilename", "BZ.EXE"
             VALUE "ProductName", "BZ Application"
-            VALUE "ProductVersion", "1, 6, 9, 0"
+            VALUE "ProductVersion", "1, 7, 0, 0"
         END
     END
     BLOCK "VarFileInfo"

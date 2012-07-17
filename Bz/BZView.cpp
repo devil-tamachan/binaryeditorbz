@@ -1880,10 +1880,11 @@ void CBZView::OnByteOrder(UINT nID)
 	if(nID != (UINT)options.bByteOrder + ID_BYTEORDER_INTEL)
 		options.bByteOrder = !options.bByteOrder;
 	
-	if(GetMainFrame() && GetMainFrame()->m_bInspectView) {
+/*	if(GetMainFrame() && GetMainFrame()->m_bInspectView) {
 		CBZInspectView* pView = (CBZInspectView*)GetNextWindow(GW_HWNDPREV);
 		pView->UpdateChecks();
-	}
+	}*/
+	GetMainFrame()->UpdateInspectViewChecks();
 }
 
 void CBZView::OnUpdateByteOrder(CCmdUI* pCmdUI) 

@@ -5,6 +5,7 @@
 #include "BZ.h"
 #include "BZView.h"
 #include "BZInspectView.h"
+#include "MainFrm.h"
 
 
 // CBZInspectView
@@ -85,7 +86,7 @@ void CBZInspectView::OnInitialUpdate()
 	// TODO: ここに特定なコードを追加するか、もしくは基本クラスを呼び出してください。
 	m_check_intel.SetCheck(!options.bByteOrder);
 	m_check_signed.SetCheck(m_bSigned);
-	UpdateChecks();
+	_UpdateChecks();
 
 	m_pView = (CBZView*)GetNextWindow();
 }
@@ -114,7 +115,7 @@ void CBZInspectView::OnBnClickedInsSigned()
 {
 	// TODO: ここにコントロール通知ハンドラ コードを追加します。
 	m_bSigned = !m_bSigned;
-	UpdateChecks();
+	_UpdateChecks();
 
 	if(m_bSigned)
 	{
@@ -197,6 +198,12 @@ void CBZInspectView::Update(void)
 }
 
 void CBZInspectView::UpdateChecks(void)
+{
+	GetMainFrame()->UpdateInspectViewChecks();
+}
+
+
+void CBZInspectView::_UpdateChecks(void)
 {
 	m_check_intel.SetCheck(!options.bByteOrder);
 	m_check_signed.SetCheck(m_bSigned);

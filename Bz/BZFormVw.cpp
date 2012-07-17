@@ -12,13 +12,13 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define nTypes 14
+#define nTypes 15
 
 char* datatypes[nTypes] = {
-	"char", "byte", "BYTE", "short", "word", "WORD", "long", "dword", "DWORD", "double", "qword", "QWORD", "float", "int64"
+	"char", "byte", "BYTE", "short", "word", "WORD", "long", "dword", "DWORD", "double", "qword", "QWORD", "float", "int64","int"
 };
 
-DWORD datasizes[nTypes] = {1,1,1,2,2,2,4,4,4,8,8,8 ,4,8
+DWORD datasizes[nTypes] = {1,1,1,2,2,2,4,4,4,8,8,8 ,4,8,4
 };
 
 static TCHAR *sMemberColLabel[MBRCOL_MAX] = { _T("+"), _T("Label"), _T("Value") };
@@ -475,6 +475,7 @@ void CBZFormView::InitListMember(int iTag)
 				sVal = SeparateByComma(val, true);
 				break;
 			case 6://long
+			case 14://int
 				sVal = SeparateByComma(val, true);
 				break;
 			case 13://int64
