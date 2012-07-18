@@ -16,7 +16,7 @@
 #include <afxext.h>         // MFC の拡張部分
 
 
-#include <afxdisp.h>        // MFC オートメーション クラス
+//#include <afxdisp.h>        // MFC オートメーション クラス
 
 
 #ifndef _AFX_NO_OLE_SUPPORT
