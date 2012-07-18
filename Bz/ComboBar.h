@@ -66,12 +66,18 @@ public:
 public:
 	virtual ~CComboToolBar();
 
+public:
+	void DrawGripper(CDC* pDC, const CRect& rect);//KB843490
+	void EraseNonClient();//KB843490
+	virtual void DoPaint(CDC* pDC);//KB843490
+
 	// Generated message map functions
 protected:
 	//{{AFX_MSG(CComboToolBar)
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	//}}AFX_MSG
 	afx_msg void OnSelectEndOk();
+	afx_msg void OnNcPaint();//KB843490
 
 	DECLARE_MESSAGE_MAP()
 };

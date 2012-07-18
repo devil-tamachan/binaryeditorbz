@@ -26,9 +26,56 @@ CComboToolBar::~CComboToolBar()
 BEGIN_MESSAGE_MAP(CComboToolBar, CToolBar)
 	//{{AFX_MSG_MAP(CComboToolBar)
 	ON_WM_SETFOCUS()
+	ON_WM_NCPAINT()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
+void CComboToolBar::OnNcPaint() 
+{
+	EraseNonClient();
+}
+void CComboToolBar::EraseNonClient()
+{
+
+	// Get window DC that is clipped to the non-client area.
+	CWindowDC dc(this);
+	CRect rectClient;
+	GetClientRect(rectClient);
+	CRect rectWindow;
+	GetWindowRect(rectWindow);
+	ScreenToClient(rectWindow);
+	rectClient.OffsetRect(-rectWindow.left, -rectWindow.top);
+	dc.ExcludeClipRect(rectClient);
+
+	// Draw the borders in the non-client area.
+	rectWindow.OffsetRect(-rectWindow.left, -rectWindow.top);
+	DrawBorders(&dc, rectWindow);
+
+	// Erase the parts that are not drawn.
+	dc.IntersectClipRect(rectWindow);
+	SendMessage(WM_ERASEBKGND, (WPARAM)dc.m_hDC);
+
+	// Draw the gripper in the non-client area.
+	DrawGripper(&dc, rectWindow);
+}
+
+void CComboToolBar::DoPaint(CDC* pDC)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+	// Paint inside the client area.
+	CRect rect;
+	GetClientRect(rect);
+	DrawBorders(pDC, rect);
+	DrawGripper(pDC, rect);
+}
+
+void CComboToolBar::DrawGripper(CDC* pDC, const CRect& rect)
+{
+	pDC->FillSolidRect( &rect, ::GetSysColor(COLOR_BTNFACE)); // Fill in the background.
+	CToolBar::DrawGripper(pDC,rect);
+}
 
 BOOL CComboToolBar::CreateComboBox(UINT nID, UINT nIDNext, int width, int height)
 {
