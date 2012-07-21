@@ -9,16 +9,21 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Release|Win32 = Release|Win32
+		ReleaseUPX|Win32 = ReleaseUPX|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.Debug|Win32.ActiveCfg = Debug|Win32
 		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.Debug|Win32.Build.0 = Debug|Win32
 		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.Release|Win32.ActiveCfg = Release|Win32
 		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.Release|Win32.Build.0 = Release|Win32
+		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.ReleaseUPX|Win32.ActiveCfg = ReleaseUPX|Win32
+		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.ReleaseUPX|Win32.Build.0 = ReleaseUPX|Win32
 		{87E12023-4E2C-4616-BF04-7E474EE0506E}.Debug|Win32.ActiveCfg = Debug|Win32
 		{87E12023-4E2C-4616-BF04-7E474EE0506E}.Debug|Win32.Build.0 = Debug|Win32
 		{87E12023-4E2C-4616-BF04-7E474EE0506E}.Release|Win32.ActiveCfg = Release|Win32
 		{87E12023-4E2C-4616-BF04-7E474EE0506E}.Release|Win32.Build.0 = Release|Win32
+		{87E12023-4E2C-4616-BF04-7E474EE0506E}.ReleaseUPX|Win32.ActiveCfg = ReleaseUPX|Win32
+		{87E12023-4E2C-4616-BF04-7E474EE0506E}.ReleaseUPX|Win32.Build.0 = ReleaseUPX|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
