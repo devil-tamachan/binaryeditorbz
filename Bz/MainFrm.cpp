@@ -494,7 +494,7 @@ void CMainFrame::OnUpdateViewBitmap(CCmdUI* pCmdUI)
 	// TODO: Add your command update UI handler code here
 	pCmdUI->SetCheck(m_bBmpView);
 	CBZDoc* pDoc = (CBZDoc*)(GetActiveView()->GetDocument());
-	pCmdUI->Enable(pDoc->GetDocSize() >= (DWORD)options.nBmpWidth /* && !m_nSplitView*/);
+	pCmdUI->Enable(pDoc->GetDocSize() >= (DWORD)(options.nBmpWidth * (options.nBmpColorWidth/8)) /* && !m_nSplitView*/);
 }
 
 void CMainFrame::OnUpdateViewStruct(CCmdUI* pCmdUI) 
