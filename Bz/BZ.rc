@@ -352,8 +352,8 @@ BEGIN
         MENUITEM "Zoom",                        ID_BMPVIEW_ZOOM
         MENUITEM SEPARATOR
         MENUITEM "8bit color",                  ID_BMPVIEW_8BITCOLOR
-        MENUITEM "24bit color(–¢ŽÀ‘•)",            ID_BMPVIEW_24BITCOLOR, INACTIVE
-        MENUITEM "32bit color(–¢ŽÀ‘•)",            ID_BMPVIEW_32BITCOLOR, INACTIVE
+        MENUITEM "24bit color",                 ID_BMPVIEW_24BITCOLOR
+        MENUITEM "32bit color",                 ID_BMPVIEW_32BITCOLOR
     END
 END
 

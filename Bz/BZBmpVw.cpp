@@ -93,7 +93,7 @@ void Make8bitBITMAPINFOHEADER(LPBITMAPINFOHEADER lpbi, LONG w, LONG h)
 	lpbi->biWidth = w;
 	lpbi->biHeight = h;
 	lpbi->biPlanes = 1;
-	lpbi->biBitCount = 8;
+	lpbi->biBitCount = options.nBmpColorWidth;//8;
 	lpbi->biCompression = BI_RGB;
 	lpbi->biSizeImage = 0;
 	lpbi->biClrUsed = 0;
@@ -113,7 +113,7 @@ void CBZBmpView::OnInitialUpdate()
 
 	m_lpbi->biSize = sizeof(BITMAPINFOHEADER);
 	m_cBmp.cx = options.nBmpWidth;
-	m_cBmp.cy = dwTotal / options.nBmpWidth;
+	m_cBmp.cy = dwTotal / (options.nBmpWidth * (options.nBmpColorWidth/8));
 	Make8bitBITMAPINFOHEADER(m_lpbi, m_cBmp.cx, -m_cBmp.cy/*top-down DIB*/);
 
 
@@ -159,10 +159,12 @@ void CBZBmpView::OnDraw(CDC* pDC)
 		HDC hDCSrc = ::CreateCompatibleDC(hDC);
 		HBITMAP hBmpOld = (HBITMAP)::SelectObject(hDCSrc, m_hBmp);
 		if(options.nBmpZoom == 1)
-			::BitBlt(hDC, BMPSPACE, BMPSPACE, m_cBmp.cx, m_cBmp.cy, hDCSrc, 0, 0, SRCCOPY);
+			::BitBlt(hDC, BMPSPACE/*dstX*/, BMPSPACE/*dstY*/, m_cBmp.cx/*dstW*/, m_cBmp.cy/*dstH*/
+					, hDCSrc, 0/*srcX*/, 0/*srcY*/, SRCCOPY);
 		else
-			::StretchBlt(hDC, BMPSPACE, BMPSPACE, m_cBmp.cx * options.nBmpZoom, m_cBmp.cy * options.nBmpZoom
-				 , hDCSrc, 0, 0, m_cBmp.cx, m_cBmp.cy, SRCCOPY);
+			::StretchBlt(hDC, BMPSPACE/*dstX*/, BMPSPACE/*dstY*/
+				, m_cBmp.cx * options.nBmpZoom/*dstW*/, m_cBmp.cy * options.nBmpZoom/*dstH*/
+				, hDCSrc, 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, m_cBmp.cy/*srcH*/, SRCCOPY);
 
 		::SelectObject(hDCSrc, hBmpOld);
 		::DeleteDC(hDC);
@@ -187,14 +189,16 @@ void CBZBmpView::OnDraw(CDC* pDC)
 		m_lpbi->biHeight = -nBmpHeight;
 
 		DWORD dwOffset = (rClip.top - (BMPSPACE - nSpaceTop)) * m_cBmp.cx / options.nBmpZoom;
+		dwOffset*=options.nBmpColorWidth/8;
 #ifdef FILE_MAPPING
 		pDoc->QueryMapView(pDoc->GetDocPtr(), dwOffset);
 #endif //FILE_MAPPING
 		LPBYTE lpBits = pDoc->GetDocPtr() + dwOffset;
 
-		::StretchDIBits(pDC->m_hDC, BMPSPACE, rClip.top + nSpaceTop, m_cBmp.cx * options.nBmpZoom, nBmpHeight * options.nBmpZoom
-				, 0, 0, m_cBmp.cx, nBmpHeight
-				, lpBits , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
+		::StretchDIBits(pDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
+				, m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
+				, 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, nBmpHeight/*srcH*/
+				, lpBits/*lpBits*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
 
 	}
 }
@@ -226,7 +230,7 @@ void CBZBmpView::OnLButtonDown(UINT nFlags, CPoint point)
 	point.x /= options.nBmpZoom;
 	point.y /= options.nBmpZoom;
 	if(point.x >= 0 && point.x < options.nBmpWidth && point.y >= 0) {
-		DWORD dwPtr = point.y*options.nBmpWidth + point.x;
+		DWORD dwPtr = point.y*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (point.x * (options.nBmpColorWidth/8));
 		CBZView* pView = (CBZView*)GetNextWindow();
 		if(dwPtr < pView->m_dwTotal) {
 			pView->m_dwCaret = dwPtr;

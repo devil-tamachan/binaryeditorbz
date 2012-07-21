@@ -5,7 +5,7 @@
 // CBZBmpView view
 
 // #define BMPWIDTH	128		### 1.54c
-#define BMPSPACE	8
+#define BMPSPACE	8	//margine
 
 class CBZBmpView : public CScrollView
 {
