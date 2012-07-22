@@ -526,8 +526,23 @@ void CBZOptions::Load()
 	bSyncScroll = GetProfileInt("SyncScroll", true);
 	iGrid = GetProfileInt("Grid", 0);
 	nBmpColorWidth = GetProfileInt("BmpColorWidth", 8);
+	switch(nBmpColorWidth)
+	{
+	case 8:
+	case 24:
+	case 32:
+		break;
+	default:
+		nBmpColorWidth=8;
+		break;
+	}
 
 	bInspectView = GetProfileInt("InspectView", FALSE);
+
+	if(bInspectView && bStructView)
+	{
+		bStructView=false;
+	}
 }
 
 void CBZOptions::Save()
