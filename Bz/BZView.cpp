@@ -1037,15 +1037,6 @@ void CBZView::MoveCaretTo(DWORD dwNewCaret)
 		Invalidate(FALSE);
 
 	
-/*	CBZView *pActiveView = (CBZView*)(GetMainFrame()->GetActiveView());
-	if(options.bSyncScroll &&  pActiveView==this)
-	{
-		CBZView* pView1 = GetBrotherView();
-		if(pView1)
-		{
-			pView1->MoveCaretTo(this->m_dwCaret, false);
-		}
-	}*/
 }
 
 void CBZView::UpdateDocSize()
@@ -1216,9 +1207,6 @@ CString CBZView::GetStatusInfoText()
 			sValue.Format(_T(": 0x%016I64X (%s)"), qval, (LPCSTR)SeparateByComma64(qval));
 			sResult += sValue;
 		}
-/*		CString sValue;
-		sValue.Format(pFmtHexa, val, (LPCSTR)SeparateByComma(val));
-		sResult += sValue;*/
 	}
 	return sResult;
 }
@@ -1856,19 +1844,6 @@ void CBZView::OnUpdateJumpCompare(CCmdUI* pCmdUI)
 	pCmdUI->Enable(GetMainFrame()->m_nSplitView);
 }
 
-/*
-CBZView* CBZView::GetBrotherView()
-{
-	CBZView* pView = NULL;
-	if(GetMainFrame()->m_nSplitView) {
-		pView = (CBZView*)GetWindow(GW_HWNDFIRST);
-		if(pView == this)
-			pView = (CBZView*)GetWindow(GW_HWNDLAST);
-	}
-	return pView;
-}
-*/
-
 CBZView* CBZView::GetBrotherView()
 {
 	return (CBZView*)GetMainFrame()->GetBrotherView(this);
@@ -1880,10 +1855,6 @@ void CBZView::OnByteOrder(UINT nID)
 	if(nID != (UINT)options.bByteOrder + ID_BYTEORDER_INTEL)
 		options.bByteOrder = !options.bByteOrder;
 	
-/*	if(GetMainFrame() && GetMainFrame()->m_bInspectView) {
-		CBZInspectView* pView = (CBZInspectView*)GetNextWindow(GW_HWNDPREV);
-		pView->UpdateChecks();
-	}*/
 	GetMainFrame()->UpdateInspectViewChecks();
 }
 

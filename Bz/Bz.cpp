@@ -426,8 +426,6 @@ void CBZApp::OnToolsEditBZDef()
 {
 	// TODO: Add your command handler code here
 	CString sPath;
-//	sPath.LoadString(IDS_STRUCT_FILE);
-//	sPath = GetModulePath(sPath);
 	sPath = GetStructFilePath();
 
 	CString sEditorPath;

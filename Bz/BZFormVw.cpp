@@ -137,8 +137,6 @@ void CBZFormView::OnInitialUpdate()
 	// TODO: Add your specialized code here and/or call the base class
 	if(!m_pDefFile && !m_bNoDefFile) {
 		CString sPath;
-	//	sPath.LoadString(IDS_STRUCT_FILE);
-	//	sPath = GetModulePath(sPath);
 		sPath = GetStructFilePath();
 		if(!(m_pDefFile = (LPSTR)ReadFile(sPath))) {
 			m_bNoDefFile = TRUE;
@@ -267,18 +265,6 @@ void CBZFormView::OnItemchangedListMember(NMHDR* pNMHDR, LRESULT* pResult)
 	}	
 	*pResult = 0;
 }
-
-/*
-void CBZFormView::OnSelchangeListMember() 
-{
-	// TODO: Add your control notification handler code here
-	CStructMember& m = m_tag[m_listTag.GetCurSel()].m_member[m_listMember.GetCurSel()];
-	m_pView->m_dwCaret = m_pView->m_dwStructTag + m.m_ofs;
-	m_pView->m_nBytes = m.m_bytes ? m.m_bytes : 1;
-	m_pView->GotoCaret();
-	m_pView->Activate();
-}
-*/
 
 void CBZFormView::OnDblclkListMember(NMHDR* pNMHDR, LRESULT* pResult)
 {
@@ -463,7 +449,6 @@ void CBZFormView::InitListMember(int iTag)
 			CString sVal;
 			ULONGLONG qval = 0;
 			
-		//	int type = m.m_type % 3;
 			switch(m.m_type)
 			{
 			case 0://char
@@ -513,32 +498,7 @@ void CBZFormView::InitListMember(int iTag)
 				sVal.Format("0x%016I64X", qval);
 				break;
 			}
-			/*
-			int type = m.m_type % 3;
-			switch(type) {
-			case 0:
-				if(m.m_type == 0) 	// char
-				{
-					val = (int)(char)val;
-					sVal = SeparateByComma(val, !type);
-				} else if(m.m_type == 3)	// short
-				{
-					val = (int)(short)val;
-					sVal = SeparateByComma(val, !type);
-				} else if(m.m_type == 9)	// double
-				{
-					ULONGLONG qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
-					sVal.Format("%f", qval);
-				}
-				break;
-			case 1: // unsigned
-				sVal = SeparateByComma(val, !type);
-				break;
-			case 2:
-				sVal.Format("0x%X", val);
-				break;
-			}
-			*/
+
 			if(m.m_len != m.m_bytes)
 				sVal += " ...";
 			lvitem.pszText =  (LPSTR)(LPCSTR)sVal;
