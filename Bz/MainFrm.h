@@ -86,6 +86,7 @@ public:
 	afx_msg void OnUpdateViewInspect(CCmdUI *pCmdUI);
 
 	void UpdateInspectViewChecks();
+	void DeleteSplitterWnd(CCreateContext* pContext);
 };
 
 #define BZ_CLASSNAME "BzEditorClass"

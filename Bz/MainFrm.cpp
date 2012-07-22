@@ -172,6 +172,30 @@ BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 	return TRUE; //CFrameWnd::OnCreateClient(lpcs, pContext);
 }
 
+void CMainFrame::DeleteSplitterWnd(CCreateContext* pContext)
+{
+	m_pSplitter->DeleteView(0,0);
+	m_pSplitter->CreateView(0,0,RUNTIME_CLASS(CWnd), CSize(0,0), pContext);
+	m_pSplitter->SetActivePane(0,0);
+
+	int maxRow = m_pSplitter->GetRowCount();
+	int maxCol = m_pSplitter->GetColumnCount();
+	for(int r=0; r<maxRow; r++)
+	{
+		for(int c=0; c<maxCol; c++)
+		{
+			if(r!=0 && c!=0)
+			{
+				m_pSplitter->DeleteView(r,c);
+			}
+		}
+	}
+
+	m_pSplitter->DestroyWindow();
+	delete m_pSplitter;
+	m_pSplitter = NULL;
+}
+
 BOOL CMainFrame::CreateClient(CCreateContext* pContext) 
 {
 	BOOL bReCreate = (pContext == NULL);
@@ -195,22 +219,7 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 		if(pDoc2) pDoc2->m_bAutoDelete = FALSE;
 		pContext = &context;
 		if(m_pSplitter) {
-			if(m_pSplitter->GetRowCount()>1 && m_pSplitter->GetColumnCount()>1) {
-				m_pSplitter->DeleteView(1,1);
-				m_pSplitter->DeleteView(1,0);
-				m_pSplitter->DeleteView(0,1);
-				m_pSplitter->CreateView(0,1,RUNTIME_CLASS(CWnd), CSize(0,0), pContext);//MFCXX‚Ë
-				m_pSplitter->SetActivePane(0,1);//MFCXX‚Ë
-				m_pSplitter->DeleteView(0,0);
-			} else if(m_pSplitter->GetRowCount()>1 || m_pSplitter->GetColumnCount()>1) {
-				m_pSplitter->DeleteView(m_pSplitter->GetRowCount() - 1, m_pSplitter->GetColumnCount() - 1);
-				m_pSplitter->CreateView(m_pSplitter->GetRowCount() - 1, m_pSplitter->GetColumnCount() - 1,RUNTIME_CLASS(CWnd), CSize(0,0), pContext);//MFCXX‚Ë
-				m_pSplitter->SetActivePane(m_pSplitter->GetRowCount() - 1, m_pSplitter->GetColumnCount() - 1);//MFCXX‚Ë
-				m_pSplitter->DeleteView(0,0);
-			}
-			m_pSplitter->DestroyWindow();
-			delete m_pSplitter;
-			m_pSplitter = NULL;
+			DeleteSplitterWnd(pContext);
 		} else {
 			CView *pView = GetActiveView();
 			pView->DestroyWindow();
