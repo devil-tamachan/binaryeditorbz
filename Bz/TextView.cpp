@@ -157,17 +157,36 @@ void CTextView::OnSize(UINT nType, int cx, int cy)
 
 void CTextView::InitCaret(BOOL bShow)
 {
-	if(GetFocus() == this) {
+#ifdef _DEBUG
+	TRACE("CTextView::InitCaret()\n");
+	CWnd *tw = GetFocus();
+	if(tw!=NULL)TRACE("GetFocus() = 0x%x, this->m_hWnd == 0x%x\n", (tw->m_hWnd), m_hWnd);
+	else TRACE("GetFocus() == NULL\n");
+#endif
+
+	if(GetFocus()!=NULL && GetFocus()->m_hWnd == this->m_hWnd) {
 		if(m_bIns)
+		{
 			CreateSolidCaret(2, m_cell.cy);
-		else
+		} else {
 			CreateSolidCaret(m_cell.cx, m_cell.cy);
+		}
 		MoveCaret(m_ptCaret);
 		if(bShow) {
+			GetParent()->ShowWindow(SW_SHOWNORMAL);
 			ShowCaret();
+#ifdef _DEBUG
+			TRACE("CTextView::InitCaret(): ShowCaret(0x%x)\n", m_hWnd);
+			TRACE("CTextView::InitCaret(): GetCaretBlinkTime()==%u\n", GetCaretBlinkTime());
+			TRACE("CTextView::InitCaret(): IsWindowVisible()==%s\n", this->IsWindowVisible()?"Visible":"Not visible");
+			TRACE("CTextView::InitCaret(): GetParent()->IsWindowVisible()==%s\n", this->GetParent()->IsWindowVisible()?"Visible":"Not visible");
+#endif
 			ShowCaret2();
 		}
 	}
+#ifdef _DEBUG
+	else TRACE("CTextView::InitCaret(): not focus\n");
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -413,10 +432,12 @@ void CTextView::MoveCaret(POINT pt)
 {
 //	if(pt.x == -1)
 //		TRACE("!");
+	TRACE("CTextView::MoveCaret(): x=%d, y=%d\n", pt.x, pt.y);
 	m_ptCaret = pt;
 	if(GetFocus() == this) {
 		GridToPixel(pt);
 		SetCaretPos(pt);
+		TRACE("CTextView::MoveCaret(): SetCaretPos x=%d, y=%d\n", pt.x, pt.y);
 		if(pt.x >= 0) {
 			HIMC hIMC;
 			if(hIMC = ImmGetContext(m_hWnd)) {
@@ -432,6 +453,7 @@ void CTextView::MoveCaret(POINT pt)
 
 void CTextView::OnSetFocus(CWnd* pOldWnd) 
 {
+	TRACE("CTextView::OnSetFocus\n");
 	CView::OnSetFocus(pOldWnd);
 	
 	// TODO: Add your message handler code here
@@ -440,6 +462,7 @@ void CTextView::OnSetFocus(CWnd* pOldWnd)
 
 void CTextView::OnKillFocus(CWnd* pNewWnd) 
 {
+	TRACE("CTextView::OnKillFocus\n");
 	CView::OnKillFocus(pNewWnd);
 	
 	// TODO: Add your message handler code here
