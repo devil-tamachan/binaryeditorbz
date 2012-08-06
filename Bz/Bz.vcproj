@@ -77,7 +77,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ComCtl32.lib"
+				AdditionalDependencies="ComCtl32.lib zlib127.lib"
 				OutputFile=".\Debug/Bz.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -181,7 +181,9 @@
 				OutputFile=".\Release/Bz.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Release/Bz.pdb"
+				GenerateMapFile="true"
 				SubSystem="2"
 				LargeAddressAware="2"
 				OptimizeReferences="2"
@@ -383,6 +385,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\BZAnalyzerView.cpp"
+				>
 			</File>
 			<File
 				RelativePath="BZBmpVw.cpp"
@@ -641,6 +647,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\ProgressDialog.cpp"
+				>
+			</File>
+			<File
 				RelativePath="ReadMe.txt"
 				>
 			</File>
@@ -769,6 +779,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\BZAnalyzerView.h"
+				>
+			</File>
+			<File
 				RelativePath="BZBmpVw.h"
 				>
 			</File>
@@ -810,6 +824,10 @@
 			</File>
 			<File
 				RelativePath="options.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ProgressDialog.h"
 				>
 			</File>
 			<File

@@ -170,6 +170,25 @@ BEGIN
     EDITTEXT        IDE_INS_8BITS,7,65,86,29,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | WS_HSCROLL
 END
 
+IDD_BZANALYZERVIEW DIALOGEX 0, 0, 100, 342
+STYLE DS_SETFONT | WS_CHILD
+FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "Start",IDB_ANALYZE_START,7,7,50,23
+    COMBOBOX        IDC_ANALYZE_TYPE,7,55,86,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDL_ANALYZE_RESULT,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,78,86,197
+    CONTROL         "",IDP_ANALYZE_PERCENT,"msctls_progress32",WS_BORDER,7,33,86,14
+END
+
+IDD_PROGRESSDIALOG DIALOGEX 0, 0, 163, 59
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "ダイアログ"
+FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "キャンセル",IDCANCEL,58,36,50,16
+    LTEXT           "解析中",IDC_STATIC,70,19,22,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -225,6 +244,22 @@ BEGIN
         RIGHTMARGIN, 93
         TOPMARGIN, 7
         BOTTOMMARGIN, 335
+    END
+
+    IDD_BZANALYZERVIEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 93
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 335
+    END
+
+    IDD_PROGRESSDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 156
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 52
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -293,6 +328,7 @@ BEGIN
         MENUITEM "ビットマップ表示(&B)",                ID_VIEW_BITMAP
         MENUITEM "構造体表示(&U)",                   ID_VIEW_STRUCT
         MENUITEM "インスペクタ表示(&I)",                ID_VIEW_INSPECT
+        MENUITEM "アナライザー表示(&A)",                ID_VIEW_ANALYZER
         MENUITEM SEPARATOR
         MENUITEM "上下に分割(&H)",                   ID_VIEW_SPLIT_H
         MENUITEM "左右に分割(&V)",                   ID_VIEW_SPLIT_V

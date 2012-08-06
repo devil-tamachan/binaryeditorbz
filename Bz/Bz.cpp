@@ -538,10 +538,12 @@ void CBZOptions::Load()
 	}
 
 	bInspectView = GetProfileInt("InspectView", FALSE);
+	bAnalyzerView = GetProfileInt("AnalyzerView", FALSE);
 
-	if(bInspectView && bStructView)
+	if(bInspectView && bStructView && bAnalyzerView)
 	{
 		bStructView=false;
+		bAnalyzerView=false;
 	}
 }
 
@@ -601,6 +603,8 @@ void CBZOptions::Save()
 	WriteProfileInt("BmpColorWidth", nBmpColorWidth);
 
 	WriteProfileInt("InspectView", bInspectView);
+	WriteProfileInt("AnalyzerView", bAnalyzerView);
+	
 }
 
 /////////////////////////////////////////////////////////////////////////////

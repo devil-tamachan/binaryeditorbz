@@ -22,6 +22,7 @@ public:
 	BOOL m_bBmpView;
 	BOOL m_bStructView;
 	BOOL m_bInspectView;
+	BOOL m_bAnalyzerView;
 	UINT m_nSplitView;
 	UINT m_nSplitView0;
 	BOOL m_bCompare;
@@ -87,6 +88,8 @@ public:
 
 	void UpdateInspectViewChecks();
 	void DeleteSplitterWnd(CCreateContext* pContext);
+	afx_msg void OnViewAnalyzer();
+	afx_msg void OnUpdateViewAnalyzer(CCmdUI *pCmdUI);
 };
 
 #define BZ_CLASSNAME "BzEditorClass"

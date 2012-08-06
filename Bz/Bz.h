@@ -132,6 +132,7 @@ public:
 	int  nBmpColorWidth;
 
 	BOOL bInspectView;
+	BOOL bAnalyzerView;
 
 };
 

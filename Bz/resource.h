@@ -5,6 +5,8 @@
 #define IDD_ABOUTBOX                    100
 #define IDD_BZINSPECTVIEW               103
 #define IDC_BMPPOINTER                  104
+#define IDD_BZANALYZERVIEW              105
+#define IDD_PROGRESSDIALOG              106
 #define IDR_MAINFRAME                   128
 #define IDR_BZTYPE                      129
 #define IDP_OLE_INIT_FAILED             129
@@ -44,7 +46,11 @@
 #define IDC_INS_STATIC8                 1033
 #define IDC_INS_STATICF                 1034
 #define IDC_INS_STATICD                 1035
+#define IDB_ANALYZE_START               1036
 #define IDE_INS_8BITS                   1037
+#define IDC_ANALYZE_TYPE                1037
+#define IDL_ANALYZE_RESULT              1038
+#define IDP_ANALYZE_PERCENT             1039
 #define ID_CHAR_ASCII                   32770
 #define ID_CHAR_SJIS                    32771
 #define ID_CHAR_UNICODE                 32772
@@ -96,6 +102,8 @@
 #define ID_BMPVIEW_8BITCOLOR            32850
 #define ID_BMPVIEW_24BITCOLOR           32851
 #define ID_BMPVIEW_32BITCOLOR           32852
+#define ID_Menu32857                    32857
+#define ID_VIEW_ANALYZER                32858
 #define ID_INDICATOR_INFO               0xE710
 #define ID_INDICATOR_SIZE               0xE711
 #define ID_INDICATOR_CHAR               0xE712
@@ -138,8 +146,8 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        145
-#define _APS_NEXT_COMMAND_VALUE         32857
-#define _APS_NEXT_CONTROL_VALUE         1036
-#define _APS_NEXT_SYMED_VALUE           104
+#define _APS_NEXT_COMMAND_VALUE         32859
+#define _APS_NEXT_CONTROL_VALUE         1040
+#define _APS_NEXT_SYMED_VALUE           107
 #endif
 #endif
