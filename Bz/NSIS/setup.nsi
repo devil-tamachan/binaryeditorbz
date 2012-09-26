@@ -10,9 +10,19 @@ RequestExecutionLevel admin
 !define PRODUCT_VERSION "1.7.2"
 !define PRODUCT_PUBLISHER "c.mos"
 !define PRODUCT_WEB_SITE "http://www.vcraft.jp/"
-!define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\BzEditor"
+!define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
+
+
+;--------------------------------
+;Language Selection Dialog Settings
+
+  ;Remember the installer language
+  !define MUI_LANGDLL_REGISTRY_ROOT "HKCU" 
+  !define MUI_LANGDLL_REGISTRY_KEY "Software\c.mos\BZ\MUI2" 
+  !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
+
 
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
@@ -34,11 +44,66 @@ RequestExecutionLevel admin
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
+!insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 
 ; Language files
-!insertmacro MUI_LANGUAGE "English"
-!insertmacro MUI_LANGUAGE "Japanese"
+  !insertmacro MUI_LANGUAGE "English" ;first language is the default language
+  !insertmacro MUI_LANGUAGE "French"
+  !insertmacro MUI_LANGUAGE "German"
+  !insertmacro MUI_LANGUAGE "Spanish"
+  !insertmacro MUI_LANGUAGE "SpanishInternational"
+  !insertmacro MUI_LANGUAGE "SimpChinese"
+  !insertmacro MUI_LANGUAGE "TradChinese"
+  !insertmacro MUI_LANGUAGE "Japanese"
+  !insertmacro MUI_LANGUAGE "Korean"
+  !insertmacro MUI_LANGUAGE "Italian"
+  !insertmacro MUI_LANGUAGE "Dutch"
+  !insertmacro MUI_LANGUAGE "Danish"
+  !insertmacro MUI_LANGUAGE "Swedish"
+  !insertmacro MUI_LANGUAGE "Norwegian"
+  !insertmacro MUI_LANGUAGE "NorwegianNynorsk"
+  !insertmacro MUI_LANGUAGE "Finnish"
+  !insertmacro MUI_LANGUAGE "Greek"
+  !insertmacro MUI_LANGUAGE "Russian"
+  !insertmacro MUI_LANGUAGE "Portuguese"
+  !insertmacro MUI_LANGUAGE "PortugueseBR"
+  !insertmacro MUI_LANGUAGE "Polish"
+  !insertmacro MUI_LANGUAGE "Ukrainian"
+  !insertmacro MUI_LANGUAGE "Czech"
+  !insertmacro MUI_LANGUAGE "Slovak"
+  !insertmacro MUI_LANGUAGE "Croatian"
+  !insertmacro MUI_LANGUAGE "Bulgarian"
+  !insertmacro MUI_LANGUAGE "Hungarian"
+  !insertmacro MUI_LANGUAGE "Thai"
+  !insertmacro MUI_LANGUAGE "Romanian"
+  !insertmacro MUI_LANGUAGE "Latvian"
+  !insertmacro MUI_LANGUAGE "Macedonian"
+  !insertmacro MUI_LANGUAGE "Estonian"
+  !insertmacro MUI_LANGUAGE "Turkish"
+  !insertmacro MUI_LANGUAGE "Lithuanian"
+  !insertmacro MUI_LANGUAGE "Slovenian"
+  !insertmacro MUI_LANGUAGE "Serbian"
+  !insertmacro MUI_LANGUAGE "SerbianLatin"
+  !insertmacro MUI_LANGUAGE "Arabic"
+  !insertmacro MUI_LANGUAGE "Farsi"
+  !insertmacro MUI_LANGUAGE "Hebrew"
+  !insertmacro MUI_LANGUAGE "Indonesian"
+  !insertmacro MUI_LANGUAGE "Mongolian"
+  !insertmacro MUI_LANGUAGE "Luxembourgish"
+  !insertmacro MUI_LANGUAGE "Albanian"
+  !insertmacro MUI_LANGUAGE "Breton"
+  !insertmacro MUI_LANGUAGE "Belarusian"
+  !insertmacro MUI_LANGUAGE "Icelandic"
+  !insertmacro MUI_LANGUAGE "Malay"
+  !insertmacro MUI_LANGUAGE "Bosnian"
+  !insertmacro MUI_LANGUAGE "Kurdish"
+  !insertmacro MUI_LANGUAGE "Irish"
+  !insertmacro MUI_LANGUAGE "Uzbek"
+  !insertmacro MUI_LANGUAGE "Galician"
+  !insertmacro MUI_LANGUAGE "Afrikaans"
+  !insertmacro MUI_LANGUAGE "Catalan"
+  !insertmacro MUI_LANGUAGE "Esperanto"
 
 ; MUI end ------
 
@@ -102,35 +167,39 @@ Function .onInit
   SetRegView 32
   StrCpy $INSTDIR "$PROGRAMFILES\BzEditor"
 
-  ReadRegStr $R0 HKLM \
-  "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" \
-  "UninstallString"
-  StrCmp $R0 "" done
+  !insertmacro MUI_LANGDLL_DISPLAY
+
+;  ReadRegStr $R0 HKLM \
+;  "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" \
+;  "UninstallString"
+;  StrCmp $R0 "" done
  
-  MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
-  "${PRODUCT_NAME}は既にインストールされています。$\n$\nOKボタンをクリックすると前のバージョンを先に削除します。Cancelボタンをクリックするとそのまま上書きします。" \
-  IDOK uninst
-  Abort
+;  MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
+;  "${PRODUCT_NAME}は既にインストールされています。$\n$\nOKボタンをクリックすると前のバージョンを先に削除します。Cancelボタンをクリックするとそのまま上書きします。" \
+;  IDOK uninst
+;  Abort
   
 ;Run the uninstaller
-uninst:
-  ClearErrors
-  ExecWait '$R0 _?=$INSTDIR' ;Do not copy the uninstaller to a temp file
-;  Exec $INSTDIR\uninst.exe ; instead of the ExecWait line
+;uninst:
+;  ClearErrors
+;  ExecWait '$R0 _?=$INSTDIR' ;Do not copy the uninstaller to a temp file
  
-  IfErrors no_remove_uninstaller
+;  IfErrors no_remove_uninstaller
     ;You can either use Delete /REBOOTOK in the uninstaller or add some code
     ;here to remove the uninstaller. Use a registry key to check
     ;whether the user has chosen to uninstall. If you are using an uninstaller
     ;components page, make sure all sections are uninstalled.
-  no_remove_uninstaller:
+;  no_remove_uninstaller:
   
 done:
 FunctionEnd
 
 Function un.onInit
-  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "$(^Name)を完全に削除しますがよろしいですか？" IDYES +2
-  Abort
+
+  !insertmacro MUI_UNGETLANGUAGE
+
+;  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "$(^Name)を完全に削除しますがよろしいですか？" IDYES +2
+;  Abort
 
   SetRegView 32
   StrCpy $INSTDIR "$PROGRAMFILES\BzEditor"
