@@ -212,7 +212,7 @@ void CTextView::ResizeFrame()
 //	TRACE("Client %d,%d  Frame %d,%d\n", rClient.Width(), rClient.Height(), rFrame.Width(), rFrame.Height());
 	rFrame.x2 = rClient.x1 + (m_cView.cx + 2) * m_cell.cx + GetSystemMetrics(SM_CXVSCROLL);
 	pFrame->MoveWindow(rFrame);
-	InitCaret(FALSE);
+	//InitCaret(FALSE);
 }
 
 void CTextView::SetTextSize(SIZE cTotal, int nPage)
