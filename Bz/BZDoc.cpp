@@ -195,7 +195,7 @@ LPBYTE CBZDoc::QueryMapView1(LPBYTE pBegin, DWORD dwOffset)
 		DWORD dwBegin = pBegin - m_pData;
 		VERIFY(::UnmapViewOfFile(m_pMapStart));
 		m_dwFileOffset = (p - m_pData) & FILEOFFSET_MASK;
-		m_dwMapSize = min(options.dwMaxMapSize, m_dwTotal - m_dwFileOffset);
+		m_dwMapSize = min(options.dwMaxMapSize, m_dwTotal - m_dwFileOffset); //どうもここが引っかかる。全領域をマッピングできる？CBZDoc::MapView()のブロック２をコメントアウトしたほうがいいかも。ただ32ビット＆4GBオーバー対応の際に問題になりそう by tamachan(20120907)
 		if(m_dwMapSize == 0) {	// ###1.61a
 			m_dwFileOffset = (m_dwTotal - (~FILEOFFSET_MASK + 1)) & FILEOFFSET_MASK;
 			m_dwMapSize = m_dwTotal - m_dwFileOffset;

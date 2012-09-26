@@ -233,6 +233,8 @@ void CBZFormView::OnSize(UINT nType, int cx, int cy)
 void CBZFormView::OnSelchangeListTag() 
 {
 	// TODO: Add your control notification handler code here
+	if(m_listTag.GetCount()==0)return;
+
 	int iItem = m_listTag.GetCurSel();
 	if(iItem != LB_ERR) {
 		int iTag = m_listTag.GetItemData(iItem);

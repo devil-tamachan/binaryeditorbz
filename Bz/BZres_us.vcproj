@@ -339,6 +339,10 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
+				RelativePath=".\res\bmppoint.cur"
+				>
+			</File>
+			<File
 				RelativePath="res\BZ.ico"
 				>
 			</File>
@@ -351,7 +355,15 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath=".\resource.h"
+				>
+			</File>
 		</Filter>
+		<File
+			RelativePath=".\Bz.manifest"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

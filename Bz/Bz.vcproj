@@ -178,6 +178,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="zlib127.lib"
 				OutputFile=".\Release/Bz.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

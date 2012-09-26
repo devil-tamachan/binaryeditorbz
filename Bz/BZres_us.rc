@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Japanese resources
+// ì˙ñ{åÍ resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
 #ifdef _WIN32
@@ -27,18 +27,18 @@ LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -52,7 +52,7 @@ END
 // Menu
 //
 
-IDR_BMPVIEW MENU DISCARDABLE 
+IDR_BMPVIEW MENU 
 BEGIN
     POPUP "BmpView"
     BEGIN
@@ -62,17 +62,17 @@ BEGIN
         MENUITEM "Zoom",                        ID_BMPVIEW_ZOOM
         MENUITEM SEPARATOR
         MENUITEM "8bit color",                  ID_BMPVIEW_8BITCOLOR
-        MENUITEM "24bit color",            ID_BMPVIEW_24BITCOLOR, INACTIVE
-        MENUITEM "32bit color",            ID_BMPVIEW_32BITCOLOR, INACTIVE
+        MENUITEM "24bit color",                 ID_BMPVIEW_24BITCOLOR, INACTIVE
+        MENUITEM "32bit color",                 ID_BMPVIEW_32BITCOLOR, INACTIVE
     END
 END
 
-#endif    // Japanese resources
+#endif    // ì˙ñ{åÍ resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// âpåÍ (ïƒçë) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -85,7 +85,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Menu
 //
 
-IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+IDR_MAINFRAME MENU 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -142,13 +142,14 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Bitmap View",                ID_VIEW_BITMAP
         MENUITEM "Str&ucture View",             ID_VIEW_STRUCT
-        MENUITEM "Inspect View",             ID_VIEW_INSPECT
+        MENUITEM "Inspect View",                ID_VIEW_INSPECT
+        MENUITEM "Analyzing View",                ID_VIEW_ANALYZER
         MENUITEM SEPARATOR
         MENUITEM "Split &Horizontally",         ID_VIEW_SPLIT_H
         MENUITEM "Split &Vertically",           ID_VIEW_SPLIT_V
-        MENUITEM "Sync Scroll",           ID_VIEW_SYNCSCROLL
+        MENUITEM "Sync Scroll",                 ID_VIEW_SYNCSCROLL
         MENUITEM SEPARATOR
-        MENUITEM "Grid",              ID_VIEW_GRID1
+        MENUITEM "Grid",                        ID_VIEW_GRID1
         MENUITEM SEPARATOR
         MENUITEM "Full &Pathname",              ID_VIEW_FULLPATH
         MENUITEM "Sub Cu&rsor",                 ID_VIEW_SUBCURSOR
@@ -206,10 +207,8 @@ BEGIN
     LTEXT           "Structures:",IDC_STATIC,4,3,48,8,SS_CENTERIMAGE
     LISTBOX         IDC_LIST_TAG,4,12,92,100,WS_VSCROLL | WS_TABSTOP
     LTEXT           "Members:",IDC_STATIC_MEMBER,4,115,43,8,SS_CENTERIMAGE
-    CONTROL         "List1",IDC_LIST_MEMBER,"SysListView32",LVS_REPORT | 
-                    LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,4,124,92,148
-    CONTROL         "All",IDB_TAGALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    60,2,20,10
+    CONTROL         "List1",IDC_LIST_MEMBER,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,4,124,92,148
+    CONTROL         "All",IDB_TAGALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,2,20,10
 END
 
 IDD_SETUP_COLOR DIALOG  0, 0, 174, 83
@@ -220,19 +219,13 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,28,64,44,14
     PUSHBUTTON      "Cancel",IDCANCEL,76,64,44,14
     PUSHBUTTON      "&Apply",IDAPPLY,124,64,44,14
-    LISTBOX         IDC_PARTSLIST,4,12,68,44,LBS_NOINTEGRALHEIGHT | 
-                    WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_PARTSLIST,4,12,68,44,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Text Color:",IDC_STATIC,76,4,36,8
     LTEXT           "Back Color:",IDC_STATIC,124,4,36,8
     LTEXT           "Element:",IDC_STATIC,4,4,26,8
-    CTEXT           "01 23 45 67-89 AB CD EF",IDC_SAMPLE,76,32,92,24,
-                    SS_CENTERIMAGE | SS_SUNKEN
-    COMBOBOX        IDC_TEXTCOLOR,76,12,44,100,CBS_DROPDOWNLIST | 
-                    CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
-                    WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_BACKCOLOR,124,12,44,100,CBS_DROPDOWNLIST | 
-                    CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
-                    WS_VSCROLL | WS_TABSTOP
+    CTEXT           "01 23 45 67-89 AB CD EF",IDC_SAMPLE,76,32,92,24,SS_CENTERIMAGE | SS_SUNKEN
+    COMBOBOX        IDC_TEXTCOLOR,76,12,44,100,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_BACKCOLOR,124,12,44,100,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_ABOUTBOX DIALOG  0, 0, 217, 55
@@ -241,10 +234,8 @@ CAPTION "About BZ"
 FONT 8, "MS Sans Serif"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "Binary Editor BZ Version 1.63",IDC_STATIC,40,10,119,8,
-                    SS_NOPREFIX
-    LTEXT           "Copyright (c) 1996-2004 by c.mos",IDC_STATIC,40,25,119,
-                    8
+    LTEXT           "Binary Editor BZ Version 1.63",IDC_STATIC,40,10,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (c) 1996-2004 by c.mos",IDC_STATIC,40,25,119,8
     DEFPUSHBUTTON   "OK",IDOK,178,7,32,14,WS_GROUP
 END
 
@@ -256,22 +247,17 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,4,78,44,14
     PUSHBUTTON      "Cancel",IDCANCEL,56,78,44,14
     PUSHBUTTON      "&Help",IDHELP,124,78,44,14
-    RTEXT           "Max size of file, opened On Memory:",IDC_STATIC,4,8,112,
-                    8
+    RTEXT           "Max size of file, opened On Memory:",IDC_STATIC,4,8,112,8
     EDITTEXT        IDE_MAXONMEMORY,120,5,28,14,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "KB",IDC_STATIC,156,8,10,8
-    LTEXT           "(larger than this, will be open by File Mapping mode.)",
-                    IDC_STATIC,8,20,164,8
+    LTEXT           "(larger than this, will be open by File Mapping mode.)",IDC_STATIC,8,20,164,8
     RTEXT           "View size of File Mapping:",IDC_STATIC,4,36,112,8
     EDITTEXT        IDE_MAXMAPSIZE,120,32,28,14,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "MB",IDC_STATIC,156,36,11,8
-    CONTROL         "Display 32bit address always",IDB_DWORDADDR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,4,48,101,10
-    CONTROL         "Dump list is divided every ",IDC_STATIC,"Static",
-                    SS_LEFTNOWORDWRAP | WS_GROUP,4,64,80,8
+    CONTROL         "Display 32bit address always",IDB_DWORDADDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,48,101,10
+    CONTROL         "Dump list is divided every ",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,4,64,80,8
     EDITTEXT        IDE_DUMPPAGE,84,61,20,14,ES_AUTOHSCROLL
-    CONTROL         "lines.",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
-                    WS_GROUP,108,64,16,8
+    CONTROL         "lines.",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,108,64,16,8
 END
 
 IDD_INPUT DIALOG  0, 0, 150, 51
@@ -281,15 +267,14 @@ FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,52,32,44,14
     PUSHBUTTON      "Cancel",IDCANCEL,100,32,44,14
-    CONTROL         "Start address:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
-                    WS_GROUP,4,12,56,8
+    CONTROL         "Start address:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,4,12,56,8
     EDITTEXT        IDE_VALUE,64,9,48,14,ES_AUTOHSCROLL
     PUSHBUTTON      "reset",IDB_RESET,116,10,28,12
 END
 
 IDD_BZINSPECTVIEW DIALOGEX 0, 0, 100, 342
 STYLE DS_SETFONT | WS_CHILD
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "Hex",IDC_STATIC,7,29,25,8
     CONTROL         "Signed",IDC_INS_SIGNED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,39,10
@@ -311,6 +296,25 @@ BEGIN
     EDITTEXT        IDE_INS_8BITS,7,65,86,29,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | WS_HSCROLL
 END
 
+IDD_BZANALYZERVIEW DIALOGEX 0, 0, 100, 342
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Start",IDB_ANALYZE_START,7,7,50,23
+    COMBOBOX        IDC_ANALYZE_TYPE,7,55,86,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDL_ANALYZE_RESULT,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,78,86,197
+    CONTROL         "",IDP_ANALYZE_PERCENT,"msctls_progress32",WS_BORDER,7,33,86,14
+END
+
+IDD_PROGRESSDIALOG DIALOGEX 0, 0, 163, 59
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,58,36,50,16
+    LTEXT           "Analysing",IDC_STATIC,70,19,22,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -319,7 +323,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\BZ.ico"
+IDR_MAINFRAME           ICON                    "res\\BZ.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -376,6 +380,22 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 335
     END
+
+    IDD_BZANALYZERVIEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 93
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 335
+    END
+
+    IDD_PROGRESSDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 156
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 52
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -385,7 +405,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS
+IDR_MAINFRAME ACCELERATORS 
 BEGIN
     "A",            ID_EDIT_SELECT_ALL,     VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -451,17 +471,16 @@ END
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP     "res\\Toolbar.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,6,9,0
- PRODUCTVERSION 1,6,9,0
+ FILEVERSION 1,7,1,0
+ PRODUCTVERSION 1,7,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -474,17 +493,15 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904B0"
+        BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "BZ MFC Application\0"
-            VALUE "FileVersion", "1, 6, 9, 0\0"
-            VALUE "InternalName", "BZ\0"
-            VALUE "LegalCopyright", "Copyright (c) 1996 by c.mos\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "BZ.EXE\0"
-            VALUE "ProductName", "BZ Application\0"
-            VALUE "ProductVersion", "1, 6, 9, 0\0"
+            VALUE "FileDescription", "BZ MFC Application"
+            VALUE "FileVersion", "1, 7, 1, 0"
+            VALUE "InternalName", "BZ"
+            VALUE "LegalCopyright", "Copyright (c) 1996 by c.mos"
+            VALUE "OriginalFilename", "BZ.EXE"
+            VALUE "ProductName", "BZ Application"
+            VALUE "ProductVersion", "1, 7, 1, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -492,6 +509,7 @@ BEGIN
         VALUE "Translation", 0x409, 1200
     END
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -507,29 +525,26 @@ IDC_BMPPOINTER          CURSOR                  "res\\bmppoint.cur"
 
 MANIFEST_RESOURCE_ID    RT_MANIFEST             "Bz.manifest"
 
-#endif    // !_MAC
-
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
 //
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDR_MAINFRAME           "BZ\n\nBZ\n\n\nBZ.Document\nBZ Document"
     IDP_OLE_INIT_FAILED     "OLE initialization failed.  Make sure that the OLE libraries are the correct version."
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     AFX_IDS_APP_TITLE       "BZ"
     AFX_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
-    AFX_IDS_UNTITLED   "untitled"
+    AFX_IDS_UNTITLED        "untitled"
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
     IDS_AUTOCOLOR           "Auto"
     IDS_OTHERCOLOR          "Other..."
@@ -541,7 +556,7 @@ BEGIN
     IDS_COLOR_MISMATCH      "Mismatch Byte"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     ID_INDICATOR_INFO       "XXXX:XXXX: 0xXXXXXXXX (0,000,000,000)bytes"
     ID_INDICATOR_SIZE       "0,000,000,000bytes"
@@ -549,7 +564,7 @@ BEGIN
     ID_INDICATOR_INS        "OVR "
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
@@ -567,7 +582,7 @@ BEGIN
     ID_HELP_INDEX           "Display help"
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     ID_FILE_MRU_FILE1       "Open this document"
     ID_FILE_MRU_FILE2       "Open this document"
@@ -581,7 +596,7 @@ BEGIN
     ID_FILE_MRU_FILE10      "Open this document"
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
     ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
@@ -590,13 +605,13 @@ BEGIN
     ID_EDIT_UNDO            "Undo the last action\nUndo"
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     ID_CHAR_ASCII           "Ascii character set"
     ID_CHAR_SJIS            "Shift-JIS charcter set"
@@ -613,7 +628,7 @@ BEGIN
     ID_BYTEORDER_INTEL      "Byte storage order is assumed 'little endian'"
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     ID_BYTEORDER_68K        "Byte storage order is assumed 'big endian'"
     ID_VIEW_BITMAP          "Show file content as Bitmap\nBitmap view"
@@ -622,7 +637,7 @@ BEGIN
     ID_VIEW_SPLIT_V         "Split view vertically\nSplit Vert"
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     ID_VIEW_FONT            "Change font"
     ID_VIEW_COLOR           "Change Text Color"
@@ -636,7 +651,7 @@ BEGIN
     ID_JUMP_RETURN          "Return to previous address\nReturn"
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     ID_JUMP_MARK            "Toggle Mark"
     ID_JUMP_MARKNEXT        "Jump to Next Mark"
@@ -645,7 +660,7 @@ BEGIN
     ID_LANG_JPN             "Switch Language to Japanese"
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     ID_LANG_ENU             "Switch Language to English"
     ID_TOOLS_EDITDEF        "Open BZ.DEF file by text editor"
@@ -655,7 +670,7 @@ BEGIN
     ID_JUMP_BASE            "Set file base address."
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     IDS_SAVEDUMP_CAPTION    "Save Dump List"
     IDS_EBCDIC_FILE         "EBCDIC.DEF"
@@ -663,24 +678,24 @@ BEGIN
     IDS_EDIT_RO             "R.O."
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     IDS_COLOR_STRUCT        "Structure"
     IDS_COLOR_MEMBER        "Structure Member"
-    IDS_COLOR_OVERBROTHER        "Overs"
-    IDS_COLOR_HORIZON        "Horizontal Line"
+    IDS_COLOR_OVERBROTHER   "Overs"
+    IDS_COLOR_HORIZON       "Horizontal Line"
     IDS_EDIT_OVR            "OVR"
     IDS_EDIT_INS            "INS"
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     IDS_CHANGE_LANGUAGE     "Please restart BZ"
     IDS_COMPARE_OK          "No difference"
     IDS_ALLFILTER           "All Files (*.*)"
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     IDS_ERR_FILENOTFOUND    "Cannot open '%s'"
     IDS_ERR_SYNTAX          "Syntax error '%s'"
@@ -694,7 +709,7 @@ BEGIN
     IDS_ERR_COPY            "Copy block too large"
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     AFX_IDS_SCSIZE          "Change the window size"
     AFX_IDS_SCMOVE          "Change the window position"
@@ -705,14 +720,13 @@ BEGIN
     AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
 END
 
-STRINGTABLE  
+STRINGTABLE 
 BEGIN
     AFX_IDS_SCRESTORE       "Restore the window to normal size"
     AFX_IDS_SCTASKLIST      "Activate Task List"
 END
 
-
-#endif    // English (U.S.) resources
+#endif    // âpåÍ (ïƒçë) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

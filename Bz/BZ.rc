@@ -492,7 +492,7 @@ BEGIN
         BEGIN
             VALUE "FileDescription", "BZ MFC Application"
             VALUE "FileVersion", "1, 7, 1, 0"
-            VALUE "InternalName", "BZ"
+            VALUE "InternalName", "Binary Editor BZ"
             VALUE "LegalCopyright", "Copyright (c) 1996 by c.mos"
             VALUE "OriginalFilename", "BZ.EXE"
             VALUE "ProductName", "BZ Application"
