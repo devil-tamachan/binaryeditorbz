@@ -7,7 +7,7 @@ RequestExecutionLevel admin
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "BzEditor"
-!define PRODUCT_VERSION "1.7.1"
+!define PRODUCT_VERSION "1.7.2"
 !define PRODUCT_PUBLISHER "c.mos"
 !define PRODUCT_WEB_SITE "http://www.vcraft.jp/"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\BzEditor"
@@ -94,7 +94,7 @@ SectionEnd
 
 Function un.onUninstSuccess
   HideWindow
-  MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) was successfully removed from your computer."
+  MessageBox MB_ICONINFORMATION|MB_OK "$(MUI_UNTEXT_FINISH_SUBTITLE)"
 FunctionEnd
 
 
@@ -108,8 +108,7 @@ Function .onInit
   StrCmp $R0 "" done
  
   MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
-  "${PRODUCT_NAME} is already installed. $\n$\nClick `OK` to remove the \
-  previous version or `Cancel` to cancel this upgrade." \
+  "${PRODUCT_NAME}は既にインストールされています。$\n$\nOKボタンをクリックすると前のバージョンを先に削除します。Cancelボタンをクリックするとそのまま上書きします。" \
   IDOK uninst
   Abort
   
@@ -130,7 +129,7 @@ done:
 FunctionEnd
 
 Function un.onInit
-  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Are you sure you want to completely remove $(^Name) and all of its components?" IDYES +2
+  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "$(^Name)を完全に削除しますがよろしいですか？" IDYES +2
   Abort
 
   SetRegView 32
