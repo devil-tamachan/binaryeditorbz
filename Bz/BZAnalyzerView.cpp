@@ -63,7 +63,7 @@ void CBZAnalyzerView::OnInitialUpdate()
 	// TODO: ここに特定なコードを追加するか、もしくは基本クラスを呼び出してください。
 	if(m_combo_analyzetype.GetCount()==0)
 	{
-		m_combo_analyzetype.InsertString(0, "zlib (deflate無印)");
+		m_combo_analyzetype.InsertString(0, "zlib (deflate)");
 		m_combo_analyzetype.SetCurSel(0);
 
 		m_resultList.DeleteAllItems();
@@ -72,6 +72,24 @@ void CBZAnalyzerView::OnInitialUpdate()
 	}
 	CSplitterWnd* pSplit = (CSplitter*)GetParent();
 	pSplit->SetColumnInfo(0, 180, 0);
+}
+
+__inline BOOL IsZlibDeflate(unsigned char firstChar)
+{
+	switch(firstChar)
+	{
+	case 0x08:
+	case 0x18:
+	case 0x28:
+	case 0x38:
+	case 0x48:
+	case 0x58:
+	case 0x68:
+	case 0x78:
+		return true;
+	default:
+		return false;
+	}
 }
 
 void CBZAnalyzerView::OnBnClickedAnalyzeStart()
@@ -98,6 +116,8 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 
 	for(DWORD ofs_inflateStart = 0; ofs_inflateStart < filesize; ofs_inflateStart++)
 	{
+		if(!IsZlibDeflate(*(p+ofs_inflateStart)))continue;
+
 		z_stream z = {0};
 		z.next_out = outbuf;
 		z.avail_out = outbufsize;
