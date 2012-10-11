@@ -28,7 +28,15 @@
 
 #include <afxpriv.h>
 
+#include <atlcoll.h>
+
+#define _WTL_NO_AUTOMATIC_NAMESPACE
+#include <atlapp.h>
+#include <atldlgs.h>
+
 #include "..\cmos.h"
+
+#include <imagehlp.h>
 
 
 /*

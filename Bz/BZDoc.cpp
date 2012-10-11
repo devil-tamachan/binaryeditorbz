@@ -13,7 +13,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #ifdef FILE_MAPPING
-  #define FILEOFFSET_MASK 0xFFF00000	// by 1MB
+//  #define FILEOFFSET_MASK 0xFFF00000	// by 1MB
   #define MAX_FILELENGTH  0xFFFFFFF0
 #endif //FILE_MAPPING
 
@@ -53,6 +53,10 @@ CBZDoc::CBZDoc()
 	m_dwMapSize = 0;
 #endif //FILE_MAPPING
 	m_dwBase = 0;
+
+	SYSTEM_INFO sysinfo;
+	GetSystemInfo(&sysinfo);
+	m_dwAllocationGranularity = sysinfo.dwAllocationGranularity;
 }
 
 CBZDoc::~CBZDoc()
@@ -192,12 +196,12 @@ LPBYTE CBZDoc::QueryMapView1(LPBYTE pBegin, DWORD dwOffset)
 	LPBYTE p = pBegin + dwOffset;
 	if(IsOutOfMap1(p)) {
 		if(p == m_pData + m_dwTotal && p == m_pMapStart + m_dwMapSize) return pBegin;	// ###1.61a
-		DWORD dwBegin = pBegin - m_pData;
-		VERIFY(::UnmapViewOfFile(m_pMapStart));
-		m_dwFileOffset = (p - m_pData) & FILEOFFSET_MASK;
+		DWORD dwBegin = GetFileOffsetFromFileMappingPointer(pBegin);//DWORD dwBegin = pBegin - m_pData;
+		VERIFY(::UnmapViewOfFile(m_pMapStart));//ここで書き込まれちゃうけどOK?
+		m_dwFileOffset = GetFileOffsetFromFileMappingPointer(p)/*(p - m_pDate)*/ & m_dwAllocationGranularity;
 		m_dwMapSize = min(options.dwMaxMapSize, m_dwTotal - m_dwFileOffset); //どうもここが引っかかる。全領域をマッピングできる？CBZDoc::MapView()のブロック２をコメントアウトしたほうがいいかも。ただ32ビット＆4GBオーバー対応の際に問題になりそう by tamachan(20120907)
 		if(m_dwMapSize == 0) {	// ###1.61a
-			m_dwFileOffset = (m_dwTotal - (~FILEOFFSET_MASK + 1)) & FILEOFFSET_MASK;
+			m_dwFileOffset = (m_dwTotal - (~m_dwAllocationGranularity + 1)) & m_dwAllocationGranularity;
 			m_dwMapSize = m_dwTotal - m_dwFileOffset;
 		}
 		m_pMapStart = (LPBYTE)::MapViewOfFile(m_hMapping, m_bReadOnly ? FILE_MAP_READ : FILE_MAP_WRITE, 0, m_dwFileOffset, m_dwMapSize);
@@ -207,8 +211,8 @@ LPBYTE CBZDoc::QueryMapView1(LPBYTE pBegin, DWORD dwOffset)
 			AfxPostQuitMessage(0);
 			return NULL;
 		}
-		m_pData = m_pMapStart - m_dwFileOffset;
-		pBegin = m_pData + dwBegin;
+		m_pData = m_pMapStart - m_dwFileOffset; //バグ?：仮想的なアドレス（ファイルのオフセット0にあたるメモリアドレス）を作り出している。m_pMapStart<m_dwFileOffsetだった場合、0を割ることがあるのではないだろうか？そういった場合まずい？？IsOutOfMapは正常に動きそう？ by tamachan(20121004)
+		pBegin = GetFileMappingPointerFromFileOffset(dwBegin);//pBegin = m_pData + dwBegin;
 	}
 	return pBegin;
 }

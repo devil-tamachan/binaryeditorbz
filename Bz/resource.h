@@ -51,6 +51,9 @@
 #define IDC_ANALYZE_TYPE                1037
 #define IDL_ANALYZE_RESULT              1038
 #define IDP_ANALYZE_PERCENT             1039
+#define IDB_ANALYZER_SAVE               1041
+#define IDC_BUTTON2                     1042
+#define IDB_ANALYZER_SAVEALL            1043
 #define ID_CHAR_ASCII                   32770
 #define ID_CHAR_SJIS                    32771
 #define ID_CHAR_UNICODE                 32772
@@ -147,7 +150,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        145
 #define _APS_NEXT_COMMAND_VALUE         32859
-#define _APS_NEXT_CONTROL_VALUE         1040
+#define _APS_NEXT_CONTROL_VALUE         1044
 #define _APS_NEXT_SYMED_VALUE           107
 #endif
 #endif

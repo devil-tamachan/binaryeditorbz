@@ -867,10 +867,10 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		m_bCaretOnChar = !m_bCaretOnChar;
 		break;
 	case VK_RIGHT:
-		dwNewCaret++;
+		if(dwNewCaret<m_dwTotal)dwNewCaret++;
 		break;
 	case VK_LEFT:
-		dwNewCaret--;
+		if(dwNewCaret>0)dwNewCaret--;
 		 break;
 	case VK_DOWN:
 		dwNewCaret += 16;

@@ -33,6 +33,13 @@ public:
 	CComboBox m_combo_analyzetype;
 	virtual void OnInitialUpdate();
 	afx_msg void OnBnClickedAnalyzeStart();
+	afx_msg void OnBnClickedAnalyzerSave();
+	afx_msg void OnBnClickedAnalyzerSaveall();
+
+	unsigned long GetAddress(int nItem);
+	BOOL MakeExportDirA(LPSTR pathOutputDir, LPCSTR pathDstFolder);
+	int MakeExportPathA(LPSTR pathOutput, LPCSTR pathDir, unsigned long ulStartAddr);
+	HRESULT SaveFileA(LPCSTR pathOutputDir, unsigned long ulStartAddr, LPBYTE outbuf, unsigned int outbufsize);
 };
 
 

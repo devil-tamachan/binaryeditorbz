@@ -14,12 +14,14 @@ public: // create from serialization only
 
 // Attributes
 private:
-	LPBYTE	m_pData;
+	LPBYTE	m_pData; //メモリ内のアドレス。ファイル内アドレスで0に当たるアドレスを示す。ただし部分的なファイルマッピングの場合がある。その場合m_pDataからマッピング領域が始まっているとは限らない、m_pDataは擬似的なアドレスになっている
 	DWORD	m_dwTotal;
 	LPBYTE	m_pUndo;
 	DWORD	m_dwUndo;
 	DWORD	m_dwUndoSaved;		// ###1.54
 	CDWordArray m_arrMarks;
+
+	DWORD	m_dwAllocationGranularity;
 public:
 	BOOL	m_bReadOnly;
 
@@ -29,9 +31,9 @@ public:
 	HANDLE	m_hMapping;
 	CFile*	m_pFileMapping;
 	CBZDoc* m_pDupDoc;
-	LPBYTE	m_pMapStart;	// ###1.61
-	DWORD   m_dwFileOffset;
-	DWORD	m_dwMapSize;
+	LPBYTE	m_pMapStart;	// ###1.61　マッピング領域先端（メモリ内のアドレス）
+	DWORD   m_dwFileOffset; //データファイルのマッピング開始アドレス（ファイル内のアドレス）
+	DWORD	m_dwMapSize; //データファイルのマッピングサイズ
 #endif //FILE_MAPPING
 	DWORD	m_dwBase;		// ###1.63
 
@@ -49,6 +51,9 @@ public:
 	BOOL	CheckMark(DWORD dwPtr);
 	DWORD	JumpToMark(DWORD dwPtr);
 #ifdef FILE_MAPPING
+	_inline DWORD	GetFileOffsetFromFileMappingPointer(LPBYTE pConv) { return pConv-m_pData; }
+	_inline LPBYTE	GetFileMappingPointerFromFileOffset(DWORD dwFileOffset) { return dwFileOffset+m_pData; }
+
 	BOOL	IsFileMapping() { return m_hMapping != NULL; }
 	LPBYTE  QueryMapView(LPBYTE pBegin, DWORD dwOffset) { return m_pMapStart ? QueryMapView1(pBegin, dwOffset) : pBegin; }
 	BOOL    IsOutOfMap(LPBYTE p) { return m_pMapStart ? IsOutOfMap1(p) : FALSE; }

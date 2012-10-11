@@ -22,6 +22,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="1"
+			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
 			>
