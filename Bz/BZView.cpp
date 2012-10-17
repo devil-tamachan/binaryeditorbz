@@ -877,17 +877,20 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		if(dwNewCaret < m_dwCaret) dwNewCaret = m_dwCaret;
 		break;
 	case VK_UP:
-		dwNewCaret -= 16;
+		if(dwNewCaret>=16)dwNewCaret -= 16;
 		break;
-	case VK_NEXT:
+	case VK_NEXT://PageDown
 		dwNewCaret += 16 * PAGESKIP;
 		if(dwNewCaret > m_dwTotal || dwNewCaret < m_dwCaret)
 			dwNewCaret = m_dwTotal;
 		break;
-	case VK_PRIOR:
-		dwNewCaret -= 16 * PAGESKIP;
-		if(dwNewCaret > m_dwTotal || dwNewCaret > m_dwCaret)
-			dwNewCaret = 0;
+	case VK_PRIOR://PageUp
+		if(dwNewCaret>=16 * PAGESKIP)
+		{
+			dwNewCaret -= 16 * PAGESKIP;
+			if(dwNewCaret > m_dwTotal || dwNewCaret > m_dwCaret)
+				dwNewCaret = 0;
+		} else dwNewCaret = 0;
 		break;
 	case VK_HOME:
 		if(bCtrl)	dwNewCaret = 0;
