@@ -13,7 +13,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #ifdef FILE_MAPPING
-//  #define FILEOFFSET_MASK 0xFFF00000	// by 1MB
+  //#define FILEOFFSET_MASK 0xFFF00000	// by 1MB
   #define MAX_FILELENGTH  0xFFFFFFF0
 #endif //FILE_MAPPING
 
@@ -198,10 +198,14 @@ LPBYTE CBZDoc::QueryMapView1(LPBYTE pBegin, DWORD dwOffset)
 		if(p == m_pData + m_dwTotal && p == m_pMapStart + m_dwMapSize) return pBegin;	// ###1.61a
 		DWORD dwBegin = GetFileOffsetFromFileMappingPointer(pBegin);//DWORD dwBegin = pBegin - m_pData;
 		VERIFY(::UnmapViewOfFile(m_pMapStart));//ここで書き込まれちゃうけどOK?
-		m_dwFileOffset = GetFileOffsetFromFileMappingPointer(p)/*(p - m_pDate)*/ & m_dwAllocationGranularity;
+		//m_dwFileOffset = GetFileOffsetFromFileMappingPointer(p)/*(p - m_pDate)*/ & FILEOFFSET_MASK;
+		DWORD dwTmp1 = GetFileOffsetFromFileMappingPointer(p);
+		m_dwFileOffset = dwTmp1 - (dwTmp1 % m_dwAllocationGranularity);
 		m_dwMapSize = min(options.dwMaxMapSize, m_dwTotal - m_dwFileOffset); //どうもここが引っかかる。全領域をマッピングできる？CBZDoc::MapView()のブロック２をコメントアウトしたほうがいいかも。ただ32ビット＆4GBオーバー対応の際に問題になりそう by tamachan(20120907)
 		if(m_dwMapSize == 0) {	// ###1.61a
-			m_dwFileOffset = (m_dwTotal - (~m_dwAllocationGranularity + 1)) & m_dwAllocationGranularity;
+			//m_dwFileOffset = (m_dwTotal - (~FILEOFFSET_MASK + 1)) & FILEOFFSET_MASK;
+			dwTmp1 = (m_dwTotal - m_dwAllocationGranularity);
+			m_dwFileOffset = dwTmp1 - (dwTmp1 % m_dwAllocationGranularity);
 			m_dwMapSize = m_dwTotal - m_dwFileOffset;
 		}
 		m_pMapStart = (LPBYTE)::MapViewOfFile(m_hMapping, m_bReadOnly ? FILE_MAP_READ : FILE_MAP_WRITE, 0, m_dwFileOffset, m_dwMapSize);
