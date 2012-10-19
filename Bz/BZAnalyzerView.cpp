@@ -307,10 +307,10 @@ HRESULT CBZAnalyzerView::SaveFileA(LPCSTR pathOutputDir, unsigned long ulStartAd
 		{
 			if(nextOffset>=dwTotal)goto saveerr2;
 #ifdef FILE_MAPPING
-			p = pDoc->QueryMapViewTama(nextOffset, 0x10000);
+			p = pDoc->QueryMapViewTama(nextOffset, 0x100000);
 			DWORD dwRemain = pDoc->GetMapRemain(nextOffset);
 #endif //FILE_MAPPING
-			DWORD dwSize = min(dwRemain, 4096);
+			DWORD dwSize = min(dwRemain, 0x100000);
 			z.next_in = p+nextOffset;
 			z.avail_in = dwSize;
 			nextOffset+=dwSize;
