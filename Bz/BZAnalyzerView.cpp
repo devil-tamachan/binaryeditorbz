@@ -122,6 +122,12 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 #ifdef FILE_MAPPING
 		if(p && !(p = pDoc->QueryMapViewTama(ofs_inflateStart, 1000))) return;
 		DWORD dwRemain = pDoc->GetMapRemain(ofs_inflateStart);
+		if(dwRemain==0)
+		{
+			MessageBox("FileMapping Error", "ERROR", MB_OK);
+			free(outbuf);
+			return;
+		}
 #endif //FILE_MAPPING
 		if(!IsZlibDeflate(*(p+ofs_inflateStart)))continue;
 
@@ -309,6 +315,11 @@ HRESULT CBZAnalyzerView::SaveFileA(LPCSTR pathOutputDir, unsigned long ulStartAd
 #ifdef FILE_MAPPING
 			p = pDoc->QueryMapViewTama(nextOffset, 0x100000);
 			DWORD dwRemain = pDoc->GetMapRemain(nextOffset);
+			if(dwRemain==0)
+			{
+				MessageBox("FileMapping Error", "ERROR", MB_OK);
+				goto saveerr2;
+			}
 #endif //FILE_MAPPING
 			DWORD dwSize = min(dwRemain, 0x100000);
 			z.next_in = p+nextOffset;
