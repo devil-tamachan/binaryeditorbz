@@ -193,8 +193,9 @@ BOOL CBZDoc::MapView()
 
 LPBYTE CBZDoc::QueryMapView1(LPBYTE pBegin, DWORD dwOffset)
 {
+//	TRACE("QueryMapView1 m_pData:%X, pBegin:%X, dwOffset:%X\n", m_pData, pBegin, dwOffset);
 	LPBYTE p = pBegin + dwOffset;
-	if(IsOutOfMap1(p)) {
+	//if(IsOutOfMap1(p)) {QueryMapView()内に移動
 		if(p == m_pData + m_dwTotal && p == m_pMapStart + m_dwMapSize) return pBegin;	// ###1.61a
 		DWORD dwBegin = GetFileOffsetFromFileMappingPointer(pBegin);//DWORD dwBegin = pBegin - m_pData;
 		VERIFY(::UnmapViewOfFile(m_pMapStart));//ここで書き込まれちゃうけどOK?
@@ -217,7 +218,7 @@ LPBYTE CBZDoc::QueryMapView1(LPBYTE pBegin, DWORD dwOffset)
 		}
 		m_pData = m_pMapStart - m_dwFileOffset; //バグ?：仮想的なアドレス（ファイルのオフセット0にあたるメモリアドレス）を作り出している。m_pMapStart<m_dwFileOffsetだった場合、0を割ることがあるのではないだろうか？そういった場合まずい？？IsOutOfMapは正常に動きそう？ by tamachan(20121004)
 		pBegin = GetFileMappingPointerFromFileOffset(dwBegin);//pBegin = m_pData + dwBegin;
-	}
+	//}
 	return pBegin;
 }
 

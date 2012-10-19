@@ -119,6 +119,10 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 
 	for(DWORD ofs_inflateStart = 0; ofs_inflateStart < filesize; ofs_inflateStart++)
 	{
+#ifdef FILE_MAPPING
+		if(p && !(p = pDoc->QueryMapViewTama(ofs_inflateStart, 1000))) return;
+		DWORD dwRemain = pDoc->GetMapRemain(ofs_inflateStart);
+#endif //FILE_MAPPING
 		if(!IsZlibDeflate(*(p+ofs_inflateStart)))continue;
 
 		z_stream z = {0};
@@ -140,11 +144,7 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 			//	m_resultList.SetItemText(0, 1, "5000");
 				break;
 			}*/
-#ifdef FILE_MAPPING
-			if(p && !(p = pDoc->QueryMapView(p, ofs))) return;
-			DWORD dwFind = pDoc->GetMapSize();
-#endif //FILE_MAPPING
-			DWORD dwSize = min(min(dwFind, dwSize_Nokori), 100);
+			DWORD dwSize = min(min(dwRemain, dwSize_Nokori), 100);
 			z.next_in = p+ofs;
 			z.avail_in = dwSize;
 			inflateStatus = inflate(&z, Z_NO_FLUSH);
@@ -307,18 +307,10 @@ HRESULT CBZAnalyzerView::SaveFileA(LPCSTR pathOutputDir, unsigned long ulStartAd
 		{
 			if(nextOffset>=dwTotal)goto saveerr2;
 #ifdef FILE_MAPPING
-	/*		if(!(p = pDoc->QueryMapView(p, nextOffset)))
-			{
-				MessageBox("mapping error", "Error", MB_OK);
-				goto saveerr2;
-			}
-			DWORD dwFind = pDoc->GetMapSize();
-		//	if(
-		ファイルマッピング関連の問題があるので保留
-		ファイル全体がマッピングされてないとアクセス例外がでる
-		*/
+			p = pDoc->QueryMapViewTama(nextOffset, 0x10000);
+			DWORD dwRemain = pDoc->GetMapRemain(nextOffset);
 #endif //FILE_MAPPING
-			DWORD dwSize = /*min(dwFind,*/ 4096/*)*/;
+			DWORD dwSize = min(dwRemain, 4096);
 			z.next_in = p+nextOffset;
 			z.avail_in = dwSize;
 			nextOffset+=dwSize;

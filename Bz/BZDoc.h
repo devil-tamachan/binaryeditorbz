@@ -55,13 +55,50 @@ public:
 	_inline LPBYTE	GetFileMappingPointerFromFileOffset(DWORD dwFileOffset) { return dwFileOffset+m_pData; }
 
 	BOOL	IsFileMapping() { return m_hMapping != NULL; }
-	LPBYTE  QueryMapView(LPBYTE pBegin, DWORD dwOffset) { return m_pMapStart ? QueryMapView1(pBegin, dwOffset) : pBegin; }
+	LPBYTE  QueryMapView(LPBYTE pBegin, DWORD dwOffset)
+	{
+		//return m_pMapStart ? QueryMapView1(pBegin, dwOffset) : pBegin;
+		LPBYTE p = pBegin + dwOffset;
+		if(m_pMapStart && IsOutOfMap1(p))return QueryMapView1(pBegin, dwOffset);
+		else return pBegin;
+	}
+	LPBYTE  QueryMapViewTama(DWORD dwOffset, DWORD dwSize)
+	{
+		//return m_pMapStart ? QueryMapView1(pBegin, dwOffset) : pBegin;
+		if(m_pMapStart)
+		{
+			DWORD dwNeedStart = dwOffset;
+			DWORD dwNeedLast = dwNeedStart+dwSize-1;
+			if(dwNeedLast > m_dwTotal-1)dwNeedLast=m_dwTotal-1;
+			if(IsOutOfMapTama(dwNeedStart) || IsOutOfMapTama(dwNeedLast))return QueryMapView1(m_pData, dwOffset);
+		}
+		return m_pData;
+	}
 	BOOL    IsOutOfMap(LPBYTE p) { return m_pMapStart ? IsOutOfMap1(p) : FALSE; }
 	DWORD	GetMapSize() { return m_pMapStart ? m_dwFileOffset + m_dwMapSize : m_dwTotal; }
+	DWORD	GetMapRemain(DWORD dwStart)
+	{
+		if(m_dwTotal==0)return 0;
+		if(m_pMapStart)
+		{
+			DWORD dwMapSize = m_dwFileOffset + m_dwMapSize;
+			if(m_dwFileOffset <= dwStart && dwStart < dwMapSize)return dwMapSize - dwStart;
+		} else {
+			if(m_dwTotal-1 >= dwStart)return m_dwTotal - dwStart;
+		}
+		return 0;
+	}
 private:
 	BOOL     MapView();
 	LPBYTE  QueryMapView1(LPBYTE pBegin, DWORD dwOffset);
 	BOOL    IsOutOfMap1(LPBYTE p);
+	BOOL IsOutOfMapTama(DWORD dwOffset)
+	{
+		if(m_pMapStart)
+		{
+			return (dwOffset < m_dwFileOffset || dwOffset >= m_dwFileOffset + m_dwMapSize);
+		} else return true;
+	}
 #endif //FILE_MAPPING
 
 // Overrides
