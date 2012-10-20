@@ -77,22 +77,28 @@ void CBZAnalyzerView::OnInitialUpdate()
 	pSplit->SetColumnInfo(0, 180, 0);
 }
 
-__inline BOOL IsZlibDeflate(unsigned char firstChar)
+unsigned char secondTables[8][8] = {	{0x1d, 0x5b, 0x99, 0xd7, 0x3c, 0x7a, 0xb8, 0xf6},//0x08(first)
+										{0x19, 0x57, 0x95, 0xd3, 0x38, 0x76, 0xb4, 0xf2},//0x18
+										{0x15, 0x53, 0x91, 0xcf, 0x34, 0x72, 0xb0, 0xee},//0x28
+										{0x11, 0x4f, 0x8d, 0xcb, 0x30, 0x6e, 0xac, 0xea},//0x38
+										{0x0d, 0x4b, 0x89, 0xc7, 0x2c, 0x6a, 0xa8, 0xe6},//0x48
+										{0x09, 0x47, 0x85, 0xc3, 0x28, 0x66, 0xa4, 0xe2},//0x58
+										{0x05, 0x43, 0x81, 0xde, 0x24, 0x62, 0xbf, 0xfd},//0x68
+										{0x01, 0x5e, 0x9c, 0xda, 0x3f, 0x7d, 0xbb, 0xf9} //0x78
+};
+
+__inline BOOL IsZlibDeflate(unsigned char firstChar, unsigned char secondChar)
 {
-	switch(firstChar)
+	unsigned char secondSwitch = firstChar/0x10;
+	if(firstChar % 0x10==8 && secondSwitch <= 7)
 	{
-	case 0x08:
-	case 0x18:
-	case 0x28:
-	case 0x38:
-	case 0x48:
-	case 0x58:
-	case 0x68:
-	case 0x78:
-		return true;
-	default:
-		return false;
+		unsigned char *pSecondTable = secondTables[secondSwitch];
+		for(int i = 0; i<8; i++)
+		{
+			if(pSecondTable[i]==secondChar)return true;
+		}
 	}
+	return false;
 }
 
 void CBZAnalyzerView::OnBnClickedAnalyzeStart()
@@ -117,19 +123,19 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 	LPBYTE outbuf = (LPBYTE)malloc(outbufsize);
 	int inflateStatus = Z_OK;
 
-	for(DWORD ofs_inflateStart = 0; ofs_inflateStart < filesize; ofs_inflateStart++)
+	for(DWORD ofs_inflateStart = 0; ofs_inflateStart < filesize-1; ofs_inflateStart++)
 	{
 #ifdef FILE_MAPPING
 		if(p && !(p = pDoc->QueryMapViewTama(ofs_inflateStart, 1000))) return;
 		DWORD dwRemain = pDoc->GetMapRemain(ofs_inflateStart);
-		if(dwRemain==0)
+		if(dwRemain<2)
 		{
 			MessageBox("FileMapping Error", "ERROR", MB_OK);
 			free(outbuf);
 			return;
 		}
 #endif //FILE_MAPPING
-		if(!IsZlibDeflate(*(p+ofs_inflateStart)))continue;
+		if(!IsZlibDeflate(*(p+ofs_inflateStart), *(p+ofs_inflateStart+1)))continue;
 
 		z_stream z = {0};
 		z.next_out = outbuf;
