@@ -191,14 +191,17 @@ void CBZBmpView::OnDraw(CDC* pDC)
 		DWORD dwOffset = (rClip.top - (BMPSPACE - nSpaceTop)) * m_cBmp.cx / options.nBmpZoom;
 		dwOffset*=options.nBmpColorWidth/8;
 #ifdef FILE_MAPPING
-		pDoc->QueryMapView(pDoc->GetDocPtr(), dwOffset);
+		//pDoc->QueryMapView(pDoc->GetDocPtr(), dwOffset);
+		DWORD dwIdeaSize = m_cBmp.cx * nBmpHeight * (options.nBmpColorWidth/8);
+		pDoc->QueryMapViewTama(dwOffset, dwIdeaSize);
+		ASSERT(pDoc->GetMapRemain(dwOffset) >= dwIdeaSize);
 #endif //FILE_MAPPING
 		LPBYTE lpBits = pDoc->GetDocPtr() + dwOffset;
 
 		::StretchDIBits(pDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
 				, m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
 				, 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, nBmpHeight/*srcH*/
-				, lpBits/*lpBits*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
+				, lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
 
 	}
 }
