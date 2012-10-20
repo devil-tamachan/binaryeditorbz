@@ -123,7 +123,7 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 	LPBYTE outbuf = (LPBYTE)malloc(outbufsize);
 	int inflateStatus = Z_OK;
 
-	for(DWORD ofs_inflateStart = 0; ofs_inflateStart < filesize-1; ofs_inflateStart++)
+	for(DWORD ofs_inflateStart = 0; ofs_inflateStart < filesize-1/*-2ˆÈã‚Å‚à‚¢‚¢‚©‚à*/; ofs_inflateStart++)
 	{
 #ifdef FILE_MAPPING
 		if(p && !(p = pDoc->QueryMapViewTama(ofs_inflateStart, 1000))) return;
