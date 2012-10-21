@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by BZ.rc
+// Used by BZres_us.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDD_BZINSPECTVIEW               103
@@ -113,25 +113,25 @@
 #define ID_INDICATOR_INS                0xE713
 #define IDS_AUTOCOLOR                   61447
 #define IDS_OTHERCOLOR                  61448
-#define IDS_COLOR_ADDRESS               61450
-#define IDS_COLOR_ADDRESS2              61451
-#define IDS_COLOR_TEXT                  61452
-#define IDS_COLOR_SELECT                61453
-#define IDS_COLOR_MARK                  61454
-#define IDS_COLOR_MISMATCH              61455
-#define IDS_COLOR_STRUCT                61456
-#define IDS_COLOR_MEMBER                61457
-#define IDS_COLOR_OVERBROTHER           61458
-#define IDS_COLOR_HORIZON               61459
+#define IDS_COLOR_ADDRESS               3000
+#define IDS_COLOR_ADDRESS2              3001
+#define IDS_COLOR_TEXT                  3002
+#define IDS_COLOR_SELECT                3003
+#define IDS_COLOR_MARK                  3004
+#define IDS_COLOR_MISMATCH              3005
+#define IDS_COLOR_STRUCT                3006
+#define IDS_COLOR_MEMBER                3007
+#define IDS_COLOR_OVERBROTHER           3008
+#define IDS_COLOR_HORIZON               3009
 #define IDS_EDIT_OVR                    61470
 #define IDS_EDIT_INS                    61471
 #define IDS_CHANGE_LANGUAGE             61500
 #define IDS_COMPARE_OK                  61501
 #define IDS_ALLFILTER                   61502
-#define IDS_ERR_FILENOTFOUND            61510
-#define IDS_ERR_SYNTAX                  61511
-#define IDS_ERR_MALLOC                  61512
-#define IDS_ERR_READFILE                61513
+#define IDS_ERR_FILENOTFOUND            4000
+#define IDS_ERR_SYNTAX                  4001
+#define IDS_ERR_MALLOC                  4002
+#define IDS_ERR_READFILE                4003
 #define IDS_ERR_RANGE                   61514
 #define IDS_ERR_READONLY                61515
 #define IDS_ERR_FINDSTRING              61516
