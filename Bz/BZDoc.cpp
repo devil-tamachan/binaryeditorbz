@@ -399,6 +399,11 @@ void CBZDoc::OnUpdateEditUndo(CCmdUI* pCmdUI)
 	pCmdUI->Enable(!!m_pUndo);	
 }
 
+
+//OVR
+//dwPtr-4byte(file-offset), mode(byte), data(? byte), dwBlock-4byte(これも含めた全部のバイト)
+//dwSizeはdwBlock-9。つまりdataのサイズ
+
 void CBZDoc::StoreUndo(DWORD dwPtr, DWORD dwSize, UndoMode mode)
 {
 	if(mode == UNDO_OVR && dwPtr+dwSize >= m_dwTotal)
@@ -444,6 +449,8 @@ DWORD CBZDoc::DoUndo()
 #endif //FILE_MAPPING
 	if(mode == UNDO_DEL) {
 		DeleteData(dwPtr, *((DWORD*)p));
+	} else if(mode == UNDO_OVR) {
+		memcpy(m_pData+dwPtr, p, dwSize);
 	} else {
 		InsertData(dwPtr, dwSize, mode == UNDO_INS);
 		memcpy(m_pData+dwPtr, p, dwSize);
