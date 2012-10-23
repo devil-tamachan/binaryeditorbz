@@ -352,7 +352,10 @@ DWORD CBZDoc::PasteFromClipboard(DWORD dwPtr, BOOL bIns)
 
 void CBZDoc::InsertData(DWORD dwPtr, DWORD dwSize, BOOL bIns)
 {
-	int nGlow = dwSize - (m_dwTotal - dwPtr);
+	BOOL bGlow = false;
+	DWORD nGlow = dwSize - (m_dwTotal - dwPtr);
+	if(nGlow <= dwSize/*overflow check*/ && nGlow > 0)bGlow=true;
+//	int nGlow = dwSize - (m_dwTotal - dwPtr);
 	if(!m_pData) {
 		m_pData = (LPBYTE)MemAlloc(dwSize);
 		m_dwTotal = dwSize;
@@ -360,7 +363,7 @@ void CBZDoc::InsertData(DWORD dwPtr, DWORD dwSize, BOOL bIns)
 			m_pData = (LPBYTE)MemReAlloc(m_pData, m_dwTotal+dwSize);
 			memmove(m_pData+dwPtr+dwSize, m_pData+dwPtr, m_dwTotal - dwPtr);
 			m_dwTotal += dwSize;
-	} else if(nGlow > 0) {
+	} else if(bGlow) {
 			m_pData = (LPBYTE)MemReAlloc(m_pData, m_dwTotal+nGlow);
 			m_dwTotal += nGlow;
 	}
@@ -449,8 +452,6 @@ DWORD CBZDoc::DoUndo()
 #endif //FILE_MAPPING
 	if(mode == UNDO_DEL) {
 		DeleteData(dwPtr, *((DWORD*)p));
-	} else if(mode == UNDO_OVR) {
-		memcpy(m_pData+dwPtr, p, dwSize);
 	} else {
 		InsertData(dwPtr, dwSize, mode == UNDO_INS);
 		memcpy(m_pData+dwPtr, p, dwSize);
