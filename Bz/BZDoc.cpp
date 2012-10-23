@@ -334,8 +334,9 @@ DWORD CBZDoc::PasteFromClipboard(DWORD dwPtr, BOOL bIns)
 	if(!dwSize) return 0;
 #ifdef FILE_MAPPING
 	if(IsFileMapping()) {
-		int nGlow = dwSize - (m_dwTotal - dwPtr);
-		if(nGlow > 0)
+		//int nGlow = dwSize - (m_dwTotal - dwPtr);
+		DWORD nGlow = dwSize - (m_dwTotal - dwPtr);
+		if(nGlow <= dwSize/*overflow check*/ && nGlow > 0)
 			dwSize -= nGlow;
 	}
 #endif //FILE_MAPPING
