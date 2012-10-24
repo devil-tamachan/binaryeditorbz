@@ -364,6 +364,10 @@
 			RelativePath=".\Bz.manifest"
 			>
 		</File>
+		<File
+			RelativePath=".\resource"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

@@ -21,32 +21,6 @@ LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 #pragma code_page(932)
 #endif //_WIN32
 
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-#define _AFX_NO_SPLITTER_RESOURCES
-#define _AFX_NO_OLE_RESOURCES
-#define _AFX_NO_TRACKER_RESOURCES
-#define _AFX_NO_PROPERTY_RESOURCES
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
-#ifdef _WIN32
-LANGUAGE 17, 1
-#pragma code_page(932)
-#endif
-#include "res\BZ.rc2"  // non-Microsoft Visual C++ edited resources
-#include "l.jpn\afxres.rc"         // Standard components
-#include "l.jpn\afxprint.rc"       // printing/print preview resources
-#endif
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
-
-
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Icon
@@ -95,7 +69,7 @@ CAPTION "Bzのバージョン情報"
 FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "Binary Editor BZ Version 1.7.5",IDC_STATIC,40,10,119,8,SS_NOPREFIX
+    LTEXT           "Binary Editor BZ Version 1.7.6",IDC_STATIC,40,10,119,8,SS_NOPREFIX
     LTEXT           "Copyright (c) 1996-2004 by c.mos",IDC_STATIC,40,25,119,8
     DEFPUSHBUTTON   "OK",IDOK,178,7,32,14,WS_GROUP
     LTEXT           "Mod 2012-       by devil.tamachan@gmail.com",IDC_STATIC,66,36,134,8
@@ -464,8 +438,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,7,5,0
- PRODUCTVERSION 1,7,5,0
+ FILEVERSION 1,7,6,0
+ PRODUCTVERSION 1,7,6,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -481,12 +455,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "BZ MFC Application"
-            VALUE "FileVersion", "1, 7, 5, 0"
+            VALUE "FileVersion", "1, 7, 6, 0"
             VALUE "InternalName", "Binary Editor BZ"
             VALUE "LegalCopyright", "Copyright (c) 1996 by c.mos"
             VALUE "OriginalFilename", "BZ.EXE"
             VALUE "ProductName", "BZ Application"
-            VALUE "ProductVersion", "1, 7, 5, 0"
+            VALUE "ProductVersion", "1, 7, 6, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -510,6 +484,43 @@ IDC_BMPPOINTER          CURSOR                  "res\\bmppoint.cur"
 
 MANIFEST_RESOURCE_ID    RT_MANIFEST             "Bz.manifest"
 
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 17, 1\r\n"
+    "#pragma code_page(932)\r\n"
+    "#endif\r\n"
+    "#include ""res\\BZ.rc2"" // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""l.jpn\\afxres.rc"" // Standard components\r\n"
+    "#include ""l.jpn\\afxprint.rc"" // printing/print preview resources\r\n"
+    "#endi\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
@@ -532,12 +543,18 @@ BEGIN
     AFX_IDS_PREVIEW_CLOSE   "印刷プレビュー　モードを閉じます。"
     IDS_AUTOCOLOR           "自動"
     IDS_OTHERCOLOR          "その他..."
+END
+
+STRINGTABLE 
+BEGIN
     IDS_COLOR_ADDRESS       "アドレスヘッダー"
     IDS_COLOR_ADDRESS2      "アドレスヘッダー2"
     IDS_COLOR_TEXT          "テキスト"
     IDS_COLOR_SELECT        "選択テキスト"
     IDS_COLOR_MARK          "マーク位置"
     IDS_COLOR_MISMATCH      "値が異なるバイト"
+    IDS_COLOR_STRUCT        "構造体"
+    IDS_COLOR_MEMBER        "構造体メンバ"
 END
 
 STRINGTABLE 
@@ -664,10 +681,12 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_COLOR_STRUCT        "構造体"
-    IDS_COLOR_MEMBER        "構造体メンバ"
     IDS_COLOR_OVERBROTHER   "比較で相手より大きい"
     IDS_COLOR_HORIZON       "水平線"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_EDIT_OVR            "上書"
     IDS_EDIT_INS            "挿入"
 END
@@ -685,6 +704,10 @@ BEGIN
     IDS_ERR_SYNTAX          "文法エラー'%s'"
     IDS_ERR_MALLOC          "メモリを確保できません."
     IDS_ERR_READFILE        "ファイルの読み込みでエラーが発生しました."
+END
+
+STRINGTABLE 
+BEGIN
     IDS_ERR_RANGE           "アドレスがファイルサイズを超えています."
     IDS_ERR_READONLY        "ファイルは編集禁止です."
     IDS_ERR_FINDSTRING      "文字列やバイト値が見つかりません."
@@ -712,4 +735,28 @@ END
 
 #endif    // 日本語 resources
 /////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
+#ifdef _WIN32
+LANGUAGE 17, 1
+#pragma code_page(932)
+#endif
+#include "res\BZ.rc2" // non-Microsoft Visual C++ edited resources
+#include "l.jpn\afxres.rc" // Standard components
+#include "l.jpn\afxprint.rc" // printing/print preview resources
+#endif
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
 
