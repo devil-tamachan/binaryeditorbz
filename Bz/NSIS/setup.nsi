@@ -7,7 +7,7 @@ RequestExecutionLevel admin
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "BzEditor"
-!define PRODUCT_VERSION "1.7.5"
+!define PRODUCT_VERSION "1.7.6"
 !define PRODUCT_PUBLISHER "c.mos"
 !define PRODUCT_WEB_SITE "http://www.vcraft.jp/"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"
@@ -125,11 +125,9 @@ Section "MainSection" SEC01
   SetOverwrite on
   CreateDirectory "$SMPROGRAMS\BzEditor"
   File "..\Release\Bz.exe"
-  File "data\Bz.GID"
-  File "data\Bz.HLP"
+  File "..\chm\Bz.chm"
   File "data\Bz.txt"
   File "..\Release\Bzres_us.dll"
-  File "data\EBCDIC.def"
   SetOutPath "$APPDATA\BzEditor"
   SetOverwrite off
   File "data\Bz.def"
@@ -209,11 +207,9 @@ Section Uninstall
   Delete "$INSTDIR\uninst.exe"
   Delete "$INSTDIR\Bz.exe"
 ;  Delete "$APPDATA\BzEditor\Bz.def"
-  Delete "$INSTDIR\Bz.GID"
-  Delete "$INSTDIR\Bz.HLP"
+  Delete "$INSTDIR\Bz.chm"
   Delete "$INSTDIR\Bz.txt"
   Delete "$INSTDIR\Bzres_us.dll"
-  Delete "$INSTDIR\EBCDUC.def"
 
   Delete "$SMPROGRAMS\BzEditor\Uninstall.lnk"
   Delete "$SENDTO\Bz.lnk"

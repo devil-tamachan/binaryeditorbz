@@ -1,0 +1,32 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=bz.chm
+Contents file=toc.hhc
+Default topic=html\bz0001.htm
+Display compile progress=Yes
+Index file=Index.hhk
+Language=0x411 “ú–{Œê (“ú–{)
+Title=Bz Help
+
+
+[FILES]
+html\bz0001.htm
+html\bz45f8.htm
+html\bz5v6r.htm
+html\bz6tgk.htm
+html\bz22ig.htm
+html\bz0e2b.htm
+html\bz2ilz.htm
+html\bz1j1z.htm
+html\bz1rnb.htm
+html\bz7mnb.htm
+html\bz66xv.htm
+
+[ALIAS]
+#include alias.h
+
+[MAP]
+#include topics.h
+
+[INFOTYPES]
+

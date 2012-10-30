@@ -4,7 +4,8 @@
 #include "stdafx.h"
 #include "BZ.h"
 #include "SettingDlg.h"
-#include "hlp\topics.h"
+//#include "hlp\topics.h"
+#include "chm\topics.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -64,7 +65,8 @@ void CSettingDlg::OnOK()
 void CSettingDlg::OnHelp() 
 {
 	// TODO: Add your control notification handler code here
-	AfxGetApp()->WinHelp(HID_FILEMAPPING);
+	//AfxGetApp()->WinHelp(HID_FILEMAPPING);
+	AfxGetApp()->HtmlHelp(HID_FILEMAPPING);
 }
 /////////////////////////////////////////////////////////////////////////////
 // CInputDlg dialog
