@@ -40,10 +40,11 @@
 <P class="auto-style2">構造体リストは、BZ.DEFファイルに記述します。BZ.DEFファイルは、BZ.EXEと同じディレクトリに置いてください。書式はC言語の構造体定義に似ていますが、以下の点に留意してください。</P>
 
 <UL>
-	<LI><span class="auto-style2">型名のキーワードは、次の９種です。構造体のネストはできません。</span><P>
-	<span class="auto-style2">char, short, long　　　符号つき１０進数表示</span><br class="auto-style2" />
-	<span class="auto-style2">byte, word, dword　　　符号なし１０進数表示</span><br class="auto-style2" />
-	<span class="auto-style2">BYTE, WORD, DWORD　　　符号なし１６進数表示</span></p>
+	<LI><span class="auto-style2">型名のキーワードは、次の15種です。構造体のネストはできません。</span><P>
+	<span class="auto-style2">char, short, long(int), int64　　　　符号つき１０進数表示</span><br class="auto-style2" />
+	<span class="auto-style2">byte, word, dword, qword　　　　　符号なし１０進数表示</span><br class="auto-style2" />
+	<span class="auto-style2">BYTE, WORD, DWORD, QWORD　　　符号なし１６進数表示<br>float, 
+	double　　　　　　　　　　　浮動小数点数</span></p>
 </LI>
 
 	<LI><span class="auto-style2">複数のメンバをカンマで区切る場合は、カンマの両側にスペースを入れます。</span><P class="auto-style2">(例) dword cx,cy;</P></LI>
