@@ -8,52 +8,42 @@
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="メニュー">
 		<param name="Local" value="html\bz0001.htm">
-		<param name="URL" value="html\bz0001.htm">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="はじめに">
 		<param name="Local" value="html\bz45f8.htm">
-		<param name="URL" value="html\bz45f8.htm">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="基本操作">
 		<param name="Local" value="html\bz5v6r.htm">
-		<param name="URL" value="html\bz5v6r.htm">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="少し高度な操作">
 		<param name="Local" value="html\bz6tgk.htm">
-		<param name="URL" value="html\bz6tgk.htm">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="検索ボックス">
 		<param name="Local" value="html\bz22ig.htm">
-		<param name="URL" value="html\bz22ig.htm">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="ビットマップビュー">
 		<param name="Local" value="html\bz2ilz.htm">
-		<param name="URL" value="html\bz2ilz.htm">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="ダブルウィンドウ">
 		<param name="Local" value="html\bz1j1z.htm">
-		<param name="URL" value="html\bz1j1z.htm">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="構造体リスティング">
 		<param name="Local" value="html\bz1rnb.htm">
-		<param name="URL" value="html\bz1rnb.htm">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="File Mapping">
 		<param name="Local" value="html\bz7mnb.htm">
-		<param name="URL" value="html\bz7mnb.htm">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="頒布条件、その他">
 		<param name="Local" value="html\bz66xv.htm">
-		<param name="URL" value="html\bz66xv.htm">
 		</OBJECT>
 </UL>
 </BODY></HTML>
