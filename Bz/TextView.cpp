@@ -458,6 +458,8 @@ void CTextView::OnSetFocus(CWnd* pOldWnd)
 	
 	// TODO: Add your message handler code here
 	InitCaret();
+
+	Invalidate(true);//非アクティブウィンドウの擬似カレット消去
 }
 
 void CTextView::OnKillFocus(CWnd* pNewWnd) 
@@ -468,6 +470,8 @@ void CTextView::OnKillFocus(CWnd* pNewWnd)
 	// TODO: Add your message handler code here
 	HideCaret();
 	HideCaret2();
+
+	Invalidate(true);//非アクティブウィンドウの擬似カレット描画
 }
 
 // Sub caret drawing ### 1.62

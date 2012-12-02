@@ -569,7 +569,9 @@ void CBZView::OnDraw(CDC* pDC)
 			}
 		}
 		PutEnd();
+		TRACE("GetFocus(): 0x%08x, CWnd: 0x%08x\n", GetFocus(), this);
 		if(GetFocus() != this) {
+		//if(m_bShowCaret2) {
 			POINT ptOrg = GetScrollPos();
 			DWORD dwOrg = ptOrg.y * 16;
 
@@ -596,6 +598,7 @@ void CBZView::OnDraw(CDC* pDC)
 				CRgn rgn1;
 				rgn1.CreateRectRgn(pt.x, pt.y, pt.x+m_cell.cx, pt.y+m_cell.cy);
 				InvertRgn(pDC->m_hDC, rgn1);
+				TRACE("Invert! x=%ld, y=%ld\n", pt.x, pt.y);
 			}
 		}
 		DrawCaret();
