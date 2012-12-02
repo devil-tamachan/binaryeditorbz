@@ -569,6 +569,35 @@ void CBZView::OnDraw(CDC* pDC)
 			}
 		}
 		PutEnd();
+		if(GetFocus() != this) {
+			POINT ptOrg = GetScrollPos();
+			DWORD dwOrg = ptOrg.y * 16;
+
+			RECT rClient;
+			GetClientRect(&rClient);
+			PixelToGrid(rClient);
+			DWORD dwBottom = dwOrg + (rClient.y2 - DUMP_Y) * 16;
+			DWORD dwMax = m_dwTotal + 1;
+			if(dwBottom > dwOrg && dwBottom < dwMax)	// ###1.61
+				dwMax = dwBottom;
+			POINT pt;
+			LONG ptx2 = -1;	// ###1.62
+			if(m_dwCaret < dwOrg || m_dwCaret >= dwMax) {
+			} else {
+				pt.x = (m_dwCaret - dwOrg)%16;
+				ptx2 = pt.x + CHAR_X;
+				pt.x = pt.x*3 + DUMP_X;
+				if(m_bCaretOnChar) Swap(pt.x, ptx2);
+				pt.x -= ptOrg.x;
+				ptx2 -= ptOrg.x;
+				pt.y = (m_dwCaret - dwOrg)/16 + DUMP_Y;
+
+				GridToPixel(pt);
+				CRgn rgn1;
+				rgn1.CreateRectRgn(pt.x, pt.y, pt.x+m_cell.cx, pt.y+m_cell.cy);
+				InvertRgn(pDC->m_hDC, rgn1);
+			}
+		}
 		DrawCaret();
 	}
 
