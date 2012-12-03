@@ -42,6 +42,18 @@
 		<param name="Local" value="html\bz7mnb.htm">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="インスペクタ表示">
+		<param name="Local" value="html\inspector.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="アナライザー表示">
+		<param name="Local" value="html\zlibAnalyzer.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Tips">
+		<param name="Local" value="html\tips.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="頒布条件、その他">
 		<param name="Local" value="html\bz66xv.htm">
 		</OBJECT>
