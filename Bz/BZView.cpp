@@ -569,68 +569,44 @@ void CBZView::OnDraw(CDC* pDC)
 			}
 		}
 		PutEnd();
-		if(GetFocus() != this) {
-			POINT ptOrg = GetScrollPos();
-			DWORD dwOrg = ptOrg.y * 16;
-
-			RECT rClient;
-			GetClientRect(&rClient);
-			PixelToGrid(rClient);
-			DWORD dwBottom = dwOrg + (rClient.y2 - DUMP_Y) * 16;
-			DWORD dwMax = m_dwTotal + 1;
-			if(dwBottom > dwOrg && dwBottom < dwMax)	// ###1.61
-				dwMax = dwBottom;
-			POINT pt;
-			LONG ptx2 = -1;	// ###1.62
-			if(m_dwCaret < dwOrg || m_dwCaret >= dwMax) {
-			} else {
-				pt.x = (m_dwCaret - dwOrg)%16;
-				ptx2 = pt.x + CHAR_X;
-				pt.x = pt.x*3 + DUMP_X;
-				if(m_bCaretOnChar) Swap(pt.x, ptx2);
-				pt.x -= ptOrg.x;
-				ptx2 -= ptOrg.x;
-				pt.y = (m_dwCaret - dwOrg)/16 + DUMP_Y;
-
-				GridToPixel(pt);
-				CRgn rgn1;
-				rgn1.CreateRectRgn(pt.x, pt.y, pt.x+m_cell.cx, pt.y+m_cell.cy);
-				InvertRgn(pDC->m_hDC, rgn1);
-			}
-		}
+		DrawDummyCaret(pDC);
 		DrawCaret();
 	}
 
 	/* Grid•\Ž¦ */
 	if(!IsToFile() && options.iGrid==1) {
-		int OldBkMode = pDC->GetBkMode();
-		pDC->SetBkMode(TRANSPARENT);
-		CPen redSolid(PS_SOLID, 1, options.colors[TCOLOR_HORIZON][0]/*RGB(0xe2,0x04,0x1b)*/);
-		CPen redDot(PS_SOLID, 1, options.colors[TCOLOR_HORIZON][1]/*RGB(0x3e,0xb3,0x70)*/);
-		HGDIOBJ penOld = pDC->SelectObject(redSolid);
-		CPoint ptScroll = GetScrollPos();
-		TRACE("ScrollPos=%d, %d\n", ptScroll.x, ptScroll.y);
-		TRACE("rClip=%d, %d\n", rClip.top, rClip.bottom);
-		int startLine = ptScroll.y + rClip.top;
-		int endLine = ptScroll.y + rClip.bottom;
-		int gridHeightNum = 16;
-		int startGridLine;
-		if(startLine % gridHeightNum == 0)startGridLine = startLine;
-		else startGridLine = startLine - startLine % gridHeightNum;
-		int gridLineWidth = m_cell.cx*(16*4+12);
-		int minusTop = ptScroll.y*m_cell.cy;
-		int kirikae=0;
-		for(; startGridLine <= endLine; startGridLine += gridHeightNum/2) {
-	//		TRACE("Grid: startGridLine=%d, y=%d\n", startGridLine, (startGridLine+1)*m_cell.cy);
-			if(kirikae)pDC->SelectObject(redDot);
-			else pDC->SelectObject(redSolid);
-			kirikae=!kirikae;
-			pDC->MoveTo(0, (startGridLine+1)*m_cell.cy - minusTop - 1);
-			pDC->LineTo(gridLineWidth, (startGridLine+1)*m_cell.cy - minusTop - 1);
-		}
-		pDC->SelectObject(penOld);
-		pDC->SetBkMode(OldBkMode);
+		DrawGrid(pDC, rClip);
 	}
+}
+
+void CBZView::DrawGrid(CDC* pDC, RECT& rClip)
+{
+	int OldBkMode = pDC->GetBkMode();
+	pDC->SetBkMode(TRANSPARENT);
+	CPen redSolid(PS_SOLID, 1, options.colors[TCOLOR_HORIZON][0]/*RGB(0xe2,0x04,0x1b)*/);
+	CPen redDot(PS_SOLID, 1, options.colors[TCOLOR_HORIZON][1]/*RGB(0x3e,0xb3,0x70)*/);
+	HGDIOBJ penOld = pDC->SelectObject(redSolid);
+	CPoint ptScroll = GetScrollPos();
+
+	int startLine = ptScroll.y + rClip.top;
+	int endLine = ptScroll.y + rClip.bottom;
+	int gridHeightNum = 16;
+	int startGridLine;
+	if(startLine % gridHeightNum == 0)startGridLine = startLine;
+	else startGridLine = startLine - startLine % gridHeightNum;
+	int gridLineWidth = m_cell.cx*(16*4+12);
+	int minusTop = ptScroll.y*m_cell.cy;
+	int kirikae=0;
+	for(; startGridLine <= endLine; startGridLine += gridHeightNum/2) {
+		//		TRACE("Grid: startGridLine=%d, y=%d\n", startGridLine, (startGridLine+1)*m_cell.cy);
+		if(kirikae)pDC->SelectObject(redDot);
+		else pDC->SelectObject(redSolid);
+		kirikae=!kirikae;
+		pDC->MoveTo(0, (startGridLine+1)*m_cell.cy - minusTop - 1);
+		pDC->LineTo(gridLineWidth, (startGridLine+1)*m_cell.cy - minusTop - 1);
+	}
+	pDC->SelectObject(penOld);
+	pDC->SetBkMode(OldBkMode);
 }
 
 void CBZView::PutUnicodeChar(WORD w)
@@ -662,6 +638,39 @@ void CBZView::DrawHeader()
 		PutChar();
 		for_to_(i,16)
 			PutFormatStr("%1X", i);
+	}
+}
+
+void CBZView::DrawDummyCaret(CDC* pDC)
+{
+	if(GetFocus() != this) {
+		POINT ptOrg = GetScrollPos();
+		DWORD dwOrg = ptOrg.y * 16;
+
+		RECT rClient;
+		GetClientRect(&rClient);
+		PixelToGrid(rClient);
+		DWORD dwBottom = dwOrg + (rClient.y2 - DUMP_Y) * 16;
+		DWORD dwMax = m_dwTotal + 1;
+		if(dwBottom > dwOrg && dwBottom < dwMax)	// ###1.61
+			dwMax = dwBottom;
+		POINT pt;
+		LONG ptx2 = -1;	// ###1.62
+		if(m_dwCaret < dwOrg || m_dwCaret >= dwMax) {
+		} else {
+			pt.x = (m_dwCaret - dwOrg)%16;
+			ptx2 = pt.x + CHAR_X;
+			pt.x = pt.x*3 + DUMP_X;
+			if(m_bCaretOnChar) Swap(pt.x, ptx2);
+			pt.x -= ptOrg.x;
+			ptx2 -= ptOrg.x;
+			pt.y = (m_dwCaret - dwOrg)/16 + DUMP_Y;
+
+			GridToPixel(pt);
+			CRgn rgn1;
+			rgn1.CreateRectRgn(pt.x, pt.y, pt.x+m_cell.cx, pt.y+m_cell.cy);
+			InvertRgn(pDC->m_hDC, rgn1);
+		}
 	}
 }
 

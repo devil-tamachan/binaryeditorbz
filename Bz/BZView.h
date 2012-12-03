@@ -54,6 +54,8 @@ public:
 // Implementation
 private:
 	void	DrawHeader();
+	void	DrawGrid(CDC* pDC, RECT& rClip);
+	void	DrawDummyCaret(CDC* pDC);
 	BOOL	DrawCaret();
 	DWORD	PointToOffset(CPoint pt);
 	void	CutOrCopy(CutMode mode);
