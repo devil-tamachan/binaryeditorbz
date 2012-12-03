@@ -224,6 +224,9 @@ void CBZView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		CBZFormView* pView = (CBZFormView*)GetNextWindow(GW_HWNDPREV);
 		pView->SelectTag();
 	}
+	if(GetMainFrame()) {
+		GetMainFrame()->ClearWhenLoading();
+	}
 	Invalidate();
 	InitCaret();
 	DrawCaret();

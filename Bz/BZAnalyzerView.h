@@ -36,6 +36,8 @@ public:
 	afx_msg void OnBnClickedAnalyzerSave();
 	afx_msg void OnBnClickedAnalyzerSaveall();
 
+	void Clear();
+
 	unsigned long GetAddress(int nItem);
 	BOOL MakeExportDirA(LPSTR pathOutputDir, LPCSTR pathDstFolder);
 	int MakeExportPathA(LPSTR pathOutput, LPCSTR pathDir, unsigned long ulStartAddr);

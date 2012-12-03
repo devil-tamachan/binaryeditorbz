@@ -582,6 +582,20 @@ void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 	}
 }
 
+void CMainFrame::ClearWhenLoading()
+{
+	if(m_bAnalyzerView) {
+		((CBZAnalyzerView*)m_pSplitter->GetPane(0, 0))->Clear();
+		if(m_nSplitView && m_nSplitView0)
+		{
+			int r=0,c=0;
+			if(options.nSplitView==ID_VIEW_SPLIT_H)c=2;
+			else r=1;
+			((CBZAnalyzerView*)m_pSplitter->GetPane(r, c))->Clear();
+		}
+	}
+}
+
 LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 {
 //	TRACE("Msg:%X\n", wParam);
