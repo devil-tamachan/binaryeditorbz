@@ -387,7 +387,6 @@ void CBZDoc::TouchDoc()
 {
 	SetModifiedFlag(m_dwUndo != m_dwUndoSaved);
 	GetMainFrame()->OnUpdateFrameTitle();
-	GetMainFrame()->ClearWhenLoading();
 
 /*	CString sTitle = GetTitle();
 	if(b) sTitle += " *";

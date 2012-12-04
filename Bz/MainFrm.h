@@ -44,7 +44,6 @@ public:
 public:
 	virtual ~CMainFrame();
 	virtual void OnUpdateFrameTitle(BOOL bAddToTitle = TRUE);
-	void ClearWhenLoading();
 	BOOL CreateClient(CCreateContext* pContext = NULL);
 	void GetSplitInfo();
 	void GetFrameState();

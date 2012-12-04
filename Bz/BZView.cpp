@@ -8,6 +8,7 @@
 #include "BZView.h"
 #include "BZFormVw.h"
 #include "BZInspectView.h"
+#include "BZAnalyzerView.h"
 #include "MainFrm.h"
 #include "ColorDlg.h"
 #include "SettingDlg.h"
@@ -225,7 +226,8 @@ void CBZView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		pView->SelectTag();
 	}
 	if(GetMainFrame()) {
-		GetMainFrame()->ClearWhenLoading();
+		CBZAnalyzerView* pView = (CBZAnalyzerView*)GetNextWindow(GW_HWNDPREV);
+		pView->Clear();
 	}
 	Invalidate();
 	InitCaret();
