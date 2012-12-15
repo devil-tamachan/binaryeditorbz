@@ -80,7 +80,8 @@ void CBZAnalyzerView::OnInitialUpdate()
 void CBZAnalyzerView::Clear()
 {
 	TRACE("AnalyzerClear!\n");
-	m_resultList.DeleteAllItems();
+	if(IsWindow(m_resultList.m_hWnd))
+		m_resultList.DeleteAllItems();
 }
 
 unsigned char secondTables[8+1][8] = {	{0x1d, 0x5b, 0x99, 0xd7, 0x3c, 0x7a, 0xb8, 0xf6},//0x08(first)

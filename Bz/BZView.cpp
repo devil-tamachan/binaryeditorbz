@@ -223,11 +223,13 @@ void CBZView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 	if(GetMainFrame() && GetMainFrame()->m_bStructView) {
 		CBZFormView* pView = (CBZFormView*)GetNextWindow(GW_HWNDPREV);
-		pView->SelectTag();
+		if(pView!=NULL)
+			pView->SelectTag();
 	}
 	if(GetMainFrame()) {
 		CBZAnalyzerView* pView = (CBZAnalyzerView*)GetNextWindow(GW_HWNDPREV);
-		pView->Clear();
+		if(pView!=NULL)
+			pView->Clear();
 	}
 	Invalidate();
 	InitCaret();
