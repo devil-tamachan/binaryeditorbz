@@ -2196,9 +2196,7 @@ BOOL CBZView::LoadEbcDicTable()
 	if(m_bLoadEbcDic) return m_pEbcDic != NULL;
 	m_bLoadEbcDic = TRUE;
 	CString sPath;
-	sPath.LoadString(IDS_EBCDIC_FILE);
-	sPath = GetModulePath(sPath);
-	sPath = GetStructFilePath();
+	sPath = GetStructFilePath(IDS_EBCDIC_FILE);
 	LPSTR pTable = (LPSTR)ReadFile(sPath);
 	if(!pTable) return FALSE;
 	LPSTR p = pTable;
