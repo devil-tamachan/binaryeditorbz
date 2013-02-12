@@ -24,6 +24,7 @@ CBZBmpView::CBZBmpView()
 {
 	m_hBmp = NULL;
 	m_lpbi = NULL;
+	m_bChangeSize = true;
 }
 
 CBZBmpView::~CBZBmpView()
@@ -35,6 +36,7 @@ CBZBmpView::~CBZBmpView()
 
 BEGIN_MESSAGE_MAP(CBZBmpView, CScrollView)
 	//{{AFX_MSG_MAP(CBZBmpView)
+	ON_WM_ERASEBKGND()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_VSCROLL()
 	ON_WM_RBUTTONDOWN()
@@ -42,6 +44,7 @@ BEGIN_MESSAGE_MAP(CBZBmpView, CScrollView)
 	ON_COMMAND_RANGE(ID_BMPVIEW_WIDTH128, ID_BMPVIEW_ZOOM, OnBmpViewMode)
 	ON_WM_SETCURSOR()
 	ON_COMMAND_RANGE(ID_BMPVIEW_8BITCOLOR, ID_BMPVIEW_32BITCOLOR, OnBmpViewColorWidth)
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -152,8 +155,21 @@ void CBZBmpView::OnInitialUpdate()
 	// MemFree(lpbi);
 }
 
+BOOL CBZBmpView::OnEraseBkgnd(CDC* pDC)
+{
+	return false;
+}
+
 void CBZBmpView::OnDraw(CDC* pDC)
 {
+	if(m_bChangeSize)
+	{
+		CRect cr;
+		GetClientRect(cr);
+		pDC->FillSolidRect(cr, RGB(255,255,255));
+		m_bChangeSize = false;
+	}
+
 	if(m_hBmp) {
 		HDC hDC = pDC->m_hDC;
 		HDC hDCSrc = ::CreateCompatibleDC(hDC);
@@ -337,4 +353,14 @@ void CBZBmpView::OnBmpViewColorWidth(UINT nID)
 		break;
 	}
 	GetMainFrame()->CreateClient();
+}
+
+void CBZBmpView::OnSize(UINT nType, int cx, int cy)
+{
+	CScrollView::OnSize(nType, cx, cy);
+
+	// TODO: ここにメッセージ ハンドラ コードを追加します。
+	m_bChangeSize = true;
+	Invalidate(false);
+
 }

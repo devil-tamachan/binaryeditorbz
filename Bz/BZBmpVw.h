@@ -18,6 +18,7 @@ private:
 	HBITMAP m_hBmp;
 	SIZE	m_cBmp;
 	LPBITMAPINFOHEADER m_lpbi;
+	BOOL m_bChangeSize;
 public:
 
 // Operations
@@ -42,6 +43,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CBZBmpView)
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
@@ -50,6 +52,7 @@ protected:
 public:
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnBmpViewColorWidth(UINT nID);
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 };
 
 /////////////////////////////////////////////////////////////////////////////
