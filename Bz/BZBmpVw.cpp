@@ -160,6 +160,7 @@ BOOL CBZBmpView::OnEraseBkgnd(CDC* pDC)
 
 void CBZBmpView::OnDraw(CDC* pDC)
 {
+	pDC->SetBkColor(RGB(255,255,255));
 	CMemDC pMemDC(pDC);
 	if(m_hBmp) {
 		HDC hDC = pMemDC->m_hDC;
@@ -174,7 +175,7 @@ void CBZBmpView::OnDraw(CDC* pDC)
 				, hDCSrc, 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, m_cBmp.cy/*srcH*/, SRCCOPY);
 
 		::SelectObject(hDCSrc, hBmpOld);
-		::DeleteDC(hDC);
+		//::DeleteDC(hDC);
 	} else {
 		CBZDoc* pDoc = (CBZDoc*)GetDocument();
 		ASSERT(pDoc);
@@ -209,6 +210,8 @@ void CBZBmpView::OnDraw(CDC* pDC)
 				, m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
 				, 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, nBmpHeight/*srcH*/
 				, lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
+		TRACE("OnDraw(Mem): x=%d, y=%d, w=%d, h=%d\n", BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
+				, m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/);
 
 	}
 }

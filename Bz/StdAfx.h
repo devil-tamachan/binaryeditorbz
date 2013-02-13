@@ -33,13 +33,13 @@
 #define _WTL_NO_AUTOMATIC_NAMESPACE
 #include <atlapp.h>
 #include <atldlgs.h>
+#include <atlgdi.h>
 
 #include "..\cmos.h"
 
 #include <imagehlp.h>
 
 #include "MemDC.h"
-
 
 /*
 #ifdef _UNICODE
