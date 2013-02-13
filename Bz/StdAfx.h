@@ -38,6 +38,8 @@
 
 #include <imagehlp.h>
 
+#include "MemDC.h"
+
 
 /*
 #ifdef _UNICODE

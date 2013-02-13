@@ -483,6 +483,19 @@ static int colWidthDefault[MBRCOL_MAX] = { 26, 80, 60 };
 
 void CBZOptions::Load()
 {
+	/*for(int i=0;i<TCOLOR_COUNT;i++)
+	{
+		TRACE("{ ");
+		for(int j=0;j<2;j++)
+		{
+			double r = ((double)GetRValue(colorsDefault[i][j]))/255.0;
+			double g = (double)GetGValue(colorsDefault[i][j])/255.0;
+			double b = (double)GetBValue(colorsDefault[i][j])/255.0;
+			double a = (double)(LOBYTE((colorsDefault[i][j])>>24))/255.0;
+			TRACE("{%f, %f, %f, %f}, ", r, g, b, a);
+		}
+		TRACE(" },\n");
+	}*/
 	charset = (CharSet)GetProfileInt("CharSet", CTYPE_ASCII);
 	bAutoDetect = GetProfileInt("AutoDetect", FALSE);
 	bByteOrder= GetProfileInt("ByteOrder", FALSE);

@@ -18,7 +18,6 @@ private:
 	HBITMAP m_hBmp;
 	SIZE	m_cBmp;
 	LPBITMAPINFOHEADER m_lpbi;
-	BOOL m_bChangeSize;
 public:
 
 // Operations
@@ -52,7 +51,6 @@ protected:
 public:
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnBmpViewColorWidth(UINT nID);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
 };
 
 /////////////////////////////////////////////////////////////////////////////

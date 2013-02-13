@@ -24,7 +24,6 @@ CBZBmpView::CBZBmpView()
 {
 	m_hBmp = NULL;
 	m_lpbi = NULL;
-	m_bChangeSize = true;
 }
 
 CBZBmpView::~CBZBmpView()
@@ -44,7 +43,6 @@ BEGIN_MESSAGE_MAP(CBZBmpView, CScrollView)
 	ON_COMMAND_RANGE(ID_BMPVIEW_WIDTH128, ID_BMPVIEW_ZOOM, OnBmpViewMode)
 	ON_WM_SETCURSOR()
 	ON_COMMAND_RANGE(ID_BMPVIEW_8BITCOLOR, ID_BMPVIEW_32BITCOLOR, OnBmpViewColorWidth)
-	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -162,16 +160,9 @@ BOOL CBZBmpView::OnEraseBkgnd(CDC* pDC)
 
 void CBZBmpView::OnDraw(CDC* pDC)
 {
-	if(m_bChangeSize)
-	{
-		CRect cr;
-		GetClientRect(cr);
-		pDC->FillSolidRect(cr, RGB(255,255,255));
-		m_bChangeSize = false;
-	}
-
+	CMemDC pMemDC(pDC);
 	if(m_hBmp) {
-		HDC hDC = pDC->m_hDC;
+		HDC hDC = pMemDC->m_hDC;
 		HDC hDCSrc = ::CreateCompatibleDC(hDC);
 		HBITMAP hBmpOld = (HBITMAP)::SelectObject(hDCSrc, m_hBmp);
 		if(options.nBmpZoom == 1)
@@ -189,7 +180,7 @@ void CBZBmpView::OnDraw(CDC* pDC)
 		ASSERT(pDoc);
 
 		CRect rClip;
-		pDC->GetClipBox(rClip);
+		pMemDC->GetClipBox(rClip);
 
 		// TRACE("Clip=%d, %d %dx%d\n", rClip.left, rClip.top, rClip.Width(), rClip.Height());
 
@@ -214,7 +205,7 @@ void CBZBmpView::OnDraw(CDC* pDC)
 #endif //FILE_MAPPING
 		LPBYTE lpBits = pDoc->GetDocPtr() + dwOffset;
 
-		::StretchDIBits(pDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
+		::StretchDIBits(pMemDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
 				, m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
 				, 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, nBmpHeight/*srcH*/
 				, lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
@@ -353,14 +344,4 @@ void CBZBmpView::OnBmpViewColorWidth(UINT nID)
 		break;
 	}
 	GetMainFrame()->CreateClient();
-}
-
-void CBZBmpView::OnSize(UINT nType, int cx, int cy)
-{
-	CScrollView::OnSize(nType, cx, cy);
-
-	// TODO: ここにメッセージ ハンドラ コードを追加します。
-	m_bChangeSize = true;
-	Invalidate(false);
-
 }
