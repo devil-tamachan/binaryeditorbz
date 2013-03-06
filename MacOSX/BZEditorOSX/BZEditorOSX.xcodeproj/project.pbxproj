@@ -1,0 +1,388 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		600FA8E11698968E001E7851 /* BZViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 600FA8E01698968E001E7851 /* BZViewController.xib */; };
+		601FAD73166A06F900DAEFF3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 601FAD72166A06F900DAEFF3 /* Cocoa.framework */; };
+		601FAD7D166A06F900DAEFF3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 601FAD7B166A06F900DAEFF3 /* InfoPlist.strings */; };
+		601FAD7F166A06F900DAEFF3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 601FAD7E166A06F900DAEFF3 /* main.m */; };
+		601FAD83166A06F900DAEFF3 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 601FAD81166A06F900DAEFF3 /* Credits.rtf */; };
+		601FAD86166A06FA00DAEFF3 /* Document.m in Sources */ = {isa = PBXBuildFile; fileRef = 601FAD85166A06FA00DAEFF3 /* Document.m */; };
+		601FAD89166A06FA00DAEFF3 /* BZWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 601FAD87166A06FA00DAEFF3 /* BZWindowController.xib */; };
+		601FAD8C166A06FA00DAEFF3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 601FAD8A166A06FA00DAEFF3 /* MainMenu.xib */; };
+		6021F74B1696C53900DA2B79 /* BZWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 6021F74A1696C53900DA2B79 /* BZWindow.m */; };
+		604EE0D6166E77D800D148A0 /* TextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 604EE0D5166E77D800D148A0 /* TextView.m */; };
+		604EE0D9166E780100D148A0 /* BZView.m in Sources */ = {isa = PBXBuildFile; fileRef = 604EE0D8166E780100D148A0 /* BZView.m */; };
+		60561B70169A20B300337094 /* BZViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 60561B6F169A20B300337094 /* BZViewController.m */; };
+		60561B73169B6E2C00337094 /* BZWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 60561B72169B6E2B00337094 /* BZWindowController.m */; };
+		6084EFBD16DB59E200B415AD /* BZBmpViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6084EFBB16DB59E200B415AD /* BZBmpViewController.m */; };
+		6084EFBE16DB59E200B415AD /* BZBmpViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6084EFBC16DB59E200B415AD /* BZBmpViewController.xib */; };
+		6084EFC116DB5A1400B415AD /* BZBmpView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6084EFC016DB5A1300B415AD /* BZBmpView.m */; };
+		60A43359167C8B970028D4DF /* BZOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 60A43358167C8B970028D4DF /* BZOptions.m */; };
+		60E45BFE16B637F300D0CAB0 /* BZGlobalFunc.m in Sources */ = {isa = PBXBuildFile; fileRef = 60E45BFD16B637F300D0CAB0 /* BZGlobalFunc.m */; };
+		60E45C0216B699FE00D0CAB0 /* BZEbcDic.m in Sources */ = {isa = PBXBuildFile; fileRef = 60E45C0116B699FE00D0CAB0 /* BZEbcDic.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		600FA8E01698968E001E7851 /* BZViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BZViewController.xib; sourceTree = "<group>"; };
+		601FAD6E166A06F900DAEFF3 /* BZEditorOSX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BZEditorOSX.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		601FAD72166A06F900DAEFF3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		601FAD75166A06F900DAEFF3 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		601FAD76166A06F900DAEFF3 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		601FAD77166A06F900DAEFF3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		601FAD7A166A06F900DAEFF3 /* BZEditorOSX-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "BZEditorOSX-Info.plist"; sourceTree = "<group>"; };
+		601FAD7C166A06F900DAEFF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		601FAD7E166A06F900DAEFF3 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		601FAD80166A06F900DAEFF3 /* BZEditorOSX-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BZEditorOSX-Prefix.pch"; sourceTree = "<group>"; };
+		601FAD82166A06F900DAEFF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		601FAD84166A06F900DAEFF3 /* Document.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Document.h; sourceTree = "<group>"; };
+		601FAD85166A06FA00DAEFF3 /* Document.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Document.m; sourceTree = "<group>"; };
+		601FAD88166A06FA00DAEFF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/BZWindowController.xib; sourceTree = "<group>"; };
+		601FAD8B166A06FA00DAEFF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		6021F7491696C53900DA2B79 /* BZWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZWindow.h; sourceTree = "<group>"; };
+		6021F74A1696C53900DA2B79 /* BZWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZWindow.m; sourceTree = "<group>"; };
+		604EE0D4166E77D800D148A0 /* TextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextView.h; sourceTree = "<group>"; };
+		604EE0D5166E77D800D148A0 /* TextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextView.m; sourceTree = "<group>"; };
+		604EE0D7166E780100D148A0 /* BZView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZView.h; sourceTree = "<group>"; };
+		604EE0D8166E780100D148A0 /* BZView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZView.m; sourceTree = "<group>"; };
+		60561B6E169A20B300337094 /* BZViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZViewController.h; sourceTree = "<group>"; };
+		60561B6F169A20B300337094 /* BZViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZViewController.m; sourceTree = "<group>"; };
+		60561B71169B6E2B00337094 /* BZWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZWindowController.h; sourceTree = "<group>"; };
+		60561B72169B6E2B00337094 /* BZWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZWindowController.m; sourceTree = "<group>"; };
+		6084EFBA16DB59E200B415AD /* BZBmpViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZBmpViewController.h; sourceTree = "<group>"; };
+		6084EFBB16DB59E200B415AD /* BZBmpViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZBmpViewController.m; sourceTree = "<group>"; };
+		6084EFBC16DB59E200B415AD /* BZBmpViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BZBmpViewController.xib; sourceTree = "<group>"; };
+		6084EFBF16DB5A1300B415AD /* BZBmpView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZBmpView.h; sourceTree = "<group>"; };
+		6084EFC016DB5A1300B415AD /* BZBmpView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZBmpView.m; sourceTree = "<group>"; };
+		60A43357167C8B970028D4DF /* BZOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZOptions.h; sourceTree = "<group>"; };
+		60A43358167C8B970028D4DF /* BZOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZOptions.m; sourceTree = "<group>"; };
+		60E45BFC16B637F300D0CAB0 /* BZGlobalFunc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZGlobalFunc.h; sourceTree = "<group>"; };
+		60E45BFD16B637F300D0CAB0 /* BZGlobalFunc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZGlobalFunc.m; sourceTree = "<group>"; };
+		60E45C0016B699FE00D0CAB0 /* BZEbcDic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZEbcDic.h; sourceTree = "<group>"; };
+		60E45C0116B699FE00D0CAB0 /* BZEbcDic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZEbcDic.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		601FAD6B166A06F900DAEFF3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				601FAD73166A06F900DAEFF3 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		601FAD63166A06F900DAEFF3 = {
+			isa = PBXGroup;
+			children = (
+				601FAD78166A06F900DAEFF3 /* BZEditorOSX */,
+				601FAD71166A06F900DAEFF3 /* Frameworks */,
+				601FAD6F166A06F900DAEFF3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		601FAD6F166A06F900DAEFF3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				601FAD6E166A06F900DAEFF3 /* BZEditorOSX.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		601FAD71166A06F900DAEFF3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				601FAD72166A06F900DAEFF3 /* Cocoa.framework */,
+				601FAD74166A06F900DAEFF3 /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		601FAD74166A06F900DAEFF3 /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				601FAD75166A06F900DAEFF3 /* AppKit.framework */,
+				601FAD76166A06F900DAEFF3 /* CoreData.framework */,
+				601FAD77166A06F900DAEFF3 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		601FAD78166A06F900DAEFF3 /* BZEditorOSX */ = {
+			isa = PBXGroup;
+			children = (
+				601FAD84166A06F900DAEFF3 /* Document.h */,
+				601FAD85166A06FA00DAEFF3 /* Document.m */,
+				6021F7491696C53900DA2B79 /* BZWindow.h */,
+				6021F74A1696C53900DA2B79 /* BZWindow.m */,
+				60561B71169B6E2B00337094 /* BZWindowController.h */,
+				60561B72169B6E2B00337094 /* BZWindowController.m */,
+				601FAD87166A06FA00DAEFF3 /* BZWindowController.xib */,
+				601FAD8A166A06FA00DAEFF3 /* MainMenu.xib */,
+				601FAD79166A06F900DAEFF3 /* Supporting Files */,
+				604EE0D7166E780100D148A0 /* BZView.h */,
+				604EE0D8166E780100D148A0 /* BZView.m */,
+				60561B6E169A20B300337094 /* BZViewController.h */,
+				60561B6F169A20B300337094 /* BZViewController.m */,
+				600FA8E01698968E001E7851 /* BZViewController.xib */,
+				604EE0D4166E77D800D148A0 /* TextView.h */,
+				604EE0D5166E77D800D148A0 /* TextView.m */,
+				60A43357167C8B970028D4DF /* BZOptions.h */,
+				60A43358167C8B970028D4DF /* BZOptions.m */,
+				60E45BFC16B637F300D0CAB0 /* BZGlobalFunc.h */,
+				60E45BFD16B637F300D0CAB0 /* BZGlobalFunc.m */,
+				60E45C0016B699FE00D0CAB0 /* BZEbcDic.h */,
+				60E45C0116B699FE00D0CAB0 /* BZEbcDic.m */,
+				6084EFBA16DB59E200B415AD /* BZBmpViewController.h */,
+				6084EFBB16DB59E200B415AD /* BZBmpViewController.m */,
+				6084EFBC16DB59E200B415AD /* BZBmpViewController.xib */,
+				6084EFBF16DB5A1300B415AD /* BZBmpView.h */,
+				6084EFC016DB5A1300B415AD /* BZBmpView.m */,
+			);
+			path = BZEditorOSX;
+			sourceTree = "<group>";
+		};
+		601FAD79166A06F900DAEFF3 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				601FAD7A166A06F900DAEFF3 /* BZEditorOSX-Info.plist */,
+				601FAD7B166A06F900DAEFF3 /* InfoPlist.strings */,
+				601FAD7E166A06F900DAEFF3 /* main.m */,
+				601FAD80166A06F900DAEFF3 /* BZEditorOSX-Prefix.pch */,
+				601FAD81166A06F900DAEFF3 /* Credits.rtf */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		601FAD6D166A06F900DAEFF3 /* BZEditorOSX */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 601FAD8F166A06FA00DAEFF3 /* Build configuration list for PBXNativeTarget "BZEditorOSX" */;
+			buildPhases = (
+				601FAD6A166A06F900DAEFF3 /* Sources */,
+				601FAD6B166A06F900DAEFF3 /* Frameworks */,
+				601FAD6C166A06F900DAEFF3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BZEditorOSX;
+			productName = BZEditorOSX;
+			productReference = 601FAD6E166A06F900DAEFF3 /* BZEditorOSX.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		601FAD65166A06F900DAEFF3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0450;
+				ORGANIZATIONNAME = tamachanbinary;
+			};
+			buildConfigurationList = 601FAD68166A06F900DAEFF3 /* Build configuration list for PBXProject "BZEditorOSX" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 601FAD63166A06F900DAEFF3;
+			productRefGroup = 601FAD6F166A06F900DAEFF3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				601FAD6D166A06F900DAEFF3 /* BZEditorOSX */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		601FAD6C166A06F900DAEFF3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				601FAD7D166A06F900DAEFF3 /* InfoPlist.strings in Resources */,
+				601FAD83166A06F900DAEFF3 /* Credits.rtf in Resources */,
+				601FAD89166A06FA00DAEFF3 /* BZWindowController.xib in Resources */,
+				601FAD8C166A06FA00DAEFF3 /* MainMenu.xib in Resources */,
+				600FA8E11698968E001E7851 /* BZViewController.xib in Resources */,
+				6084EFBE16DB59E200B415AD /* BZBmpViewController.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		601FAD6A166A06F900DAEFF3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				601FAD7F166A06F900DAEFF3 /* main.m in Sources */,
+				601FAD86166A06FA00DAEFF3 /* Document.m in Sources */,
+				604EE0D6166E77D800D148A0 /* TextView.m in Sources */,
+				604EE0D9166E780100D148A0 /* BZView.m in Sources */,
+				60A43359167C8B970028D4DF /* BZOptions.m in Sources */,
+				6021F74B1696C53900DA2B79 /* BZWindow.m in Sources */,
+				60561B70169A20B300337094 /* BZViewController.m in Sources */,
+				60561B73169B6E2C00337094 /* BZWindowController.m in Sources */,
+				60E45BFE16B637F300D0CAB0 /* BZGlobalFunc.m in Sources */,
+				60E45C0216B699FE00D0CAB0 /* BZEbcDic.m in Sources */,
+				6084EFBD16DB59E200B415AD /* BZBmpViewController.m in Sources */,
+				6084EFC116DB5A1400B415AD /* BZBmpView.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		601FAD7B166A06F900DAEFF3 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				601FAD7C166A06F900DAEFF3 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		601FAD81166A06F900DAEFF3 /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				601FAD82166A06F900DAEFF3 /* en */,
+			);
+			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+		601FAD87166A06FA00DAEFF3 /* BZWindowController.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				601FAD88166A06FA00DAEFF3 /* en */,
+			);
+			name = BZWindowController.xib;
+			sourceTree = "<group>";
+		};
+		601FAD8A166A06FA00DAEFF3 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				601FAD8B166A06FA00DAEFF3 /* en */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		601FAD8D166A06FA00DAEFF3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "";
+				SDKROOT = macosx10.7;
+			};
+			name = Debug;
+		};
+		601FAD8E166A06FA00DAEFF3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "";
+				SDKROOT = macosx10.7;
+			};
+			name = Release;
+		};
+		601FAD90166A06FA00DAEFF3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "BZEditorOSX/BZEditorOSX-Prefix.pch";
+				INFOPLIST_FILE = "BZEditorOSX/BZEditorOSX-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		601FAD91166A06FA00DAEFF3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "BZEditorOSX/BZEditorOSX-Prefix.pch";
+				INFOPLIST_FILE = "BZEditorOSX/BZEditorOSX-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		601FAD68166A06F900DAEFF3 /* Build configuration list for PBXProject "BZEditorOSX" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				601FAD8D166A06FA00DAEFF3 /* Debug */,
+				601FAD8E166A06FA00DAEFF3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		601FAD8F166A06FA00DAEFF3 /* Build configuration list for PBXNativeTarget "BZEditorOSX" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				601FAD90166A06FA00DAEFF3 /* Debug */,
+				601FAD91166A06FA00DAEFF3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 601FAD65166A06F900DAEFF3 /* Project object */;
+}
