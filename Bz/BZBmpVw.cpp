@@ -210,8 +210,6 @@ void CBZBmpView::OnDraw(CDC* pDC)
 				, m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
 				, 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, nBmpHeight/*srcH*/
 				, lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
-		TRACE("OnDraw(Mem): x=%d, y=%d, w=%d, h=%d\n", BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
-				, m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/);
 
 	}
 }

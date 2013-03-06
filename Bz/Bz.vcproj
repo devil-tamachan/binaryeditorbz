@@ -150,14 +150,14 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="2"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="true"
 				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile=".\Release/Bz.pch"
 				AssemblerListingLocation=".\Release/"
@@ -825,6 +825,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MemDC.h"
+				>
+			</File>
+			<File
 				RelativePath="options.h"
 				>
 			</File>
@@ -882,10 +886,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\resource"
-			>
-		</File>
 	</Files>
 	<Globals>
 		<Global
