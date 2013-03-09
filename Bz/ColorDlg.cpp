@@ -35,8 +35,8 @@ void CSetupColorDialog::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSetupColorDialog)
 	DDX_Control(pDX, IDC_PARTSLIST, m_listParts);
-	DDX_Control(pDX, IDC_TEXTCOLOR, m_cbTextColor);
-	DDX_Control(pDX, IDC_BACKCOLOR, m_cbBackColor);
+	//DDX_Control(pDX, IDC_TEXTCOLOR, m_cbTextColor);
+	//DDX_Control(pDX, IDC_BACKCOLOR, m_cbBackColor);
 	//}}AFX_DATA_MAP
 }
 
@@ -66,6 +66,8 @@ BOOL CSetupColorDialog::OnInitDialog()
 		m_listParts.AddString(sLabel);
 	}
 	m_listParts.SetCurSel(0);
+	m_cbTextColor.SubclassWindow(::GetDlgItem(m_hWnd, IDC_TEXTCOLOR));
+	m_cbBackColor.SubclassWindow(::GetDlgItem(m_hWnd, IDC_BACKCOLOR));
 	OnSelchangePartslist();
 	
 	// TODO: Add extra initialization here
