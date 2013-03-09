@@ -158,6 +158,7 @@ void CSetupColorDialog::OnSelEndOkTextColor()
 	// TODO: Add your control notification handler code here
 	int iSel = 	m_listParts.GetCurSel();
 	m_colors[iSel][0] = m_cbTextColor.GetSelColor();
+	m_cbTextColor.Invalidate();
 	GetDlgItem(IDC_SAMPLE)->Invalidate();
 }
 
@@ -166,5 +167,6 @@ void CSetupColorDialog::OnSelEndOkBackColor()
 	// TODO: Add your control notification handler code here
 	int iSel = 	m_listParts.GetCurSel();
 	m_colors[iSel][1] = m_cbBackColor.GetSelColor();
+	m_cbBackColor.Invalidate();
 	GetDlgItem(IDC_SAMPLE)->Invalidate();
 }

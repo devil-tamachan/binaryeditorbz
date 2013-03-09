@@ -126,7 +126,7 @@ public:
 			sLabel.LoadString(mode > 0 ? IDS_AUTOCOLOR : IDS_OTHERCOLOR);
 			dc.SetBkMode(TRANSPARENT);
 			WTL::CFont font;
-			font.CreatePointFont(90, "Arial");
+			font.CreatePointFont(90, "");
 			dc.SelectFont(font);
 			dc.SetTextColor(rgb ^ 0xFFFFFF);
 			dc.DrawText(sLabel, (int)sLabel.GetLength(), rcItem, DT_SINGLELINE | DT_CENTER | DT_VCENTER | DT_EXTERNALLEADING);
@@ -173,7 +173,7 @@ public:
 			CColorDialog dlgColor(m_rgbOther);
 			if(dlgColor.DoModal() == IDOK) {
 				m_rgbOther = dlgColor.GetColor();
-				UpdateWindow();
+				Invalidate();
 			}
 			return dlgColor.GetColor();
 		}

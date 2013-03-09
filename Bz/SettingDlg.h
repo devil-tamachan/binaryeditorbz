@@ -27,86 +27,147 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-#if !defined(AFX_SETTINGDLG_H__60328733_3793_4068_9A5A_3F1FC74C9F13__INCLUDED_)
-#define AFX_SETTINGDLG_H__60328733_3793_4068_9A5A_3F1FC74C9F13__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-// SettingDlg.h : header file
-//
+//#include "hlp\topics.h"
+#include "chm\topics.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CSettingDlg dialog
 
-class CSettingDlg : public CDialog
+class CSettingDlg : public CDialogImpl<CSettingDlg>
 {
-// Construction
 public:
-	CSettingDlg(CWnd* pParent = NULL);   // standard constructor
-
-// Dialog Data
-	//{{AFX_DATA(CSettingDlg)
 	enum { IDD = IDD_SETTING };
+
+	CSettingDlg() : CDialogImpl<CSettingDlg>()
+	{
+		m_dwMaxOnMemory = options.dwMaxOnMemory / 1024;
+		m_dwMaxMapSize  = options.dwMaxMapSize / (1024*1024);
+		m_bDWordAddr = options.bDWordAddr;
+		m_nDumpPage = options.nDumpPage;
+	}
+
 	UINT	m_dwMaxOnMemory;
 	UINT	m_dwMaxMapSize;
 	BOOL	m_bDWordAddr;
 	int		m_nDumpPage;
-	//}}AFX_DATA
 
+	//WTL::CEdit m_editMaxOnMemory;
+	//WTL::CEdit m_editMaxMapSize;
+	WTL::CButton m_chkDWordAddr;
+	//WTL::CEdit m_editDumpPage;
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CSettingDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
+	BEGIN_MSG_MAP(CSettingDlg)
+		MSG_WM_INITDIALOG(OnInitDialog)
+		COMMAND_ID_HANDLER_EX(IDOK, OnOK)
+		COMMAND_ID_HANDLER_EX(IDCANCEL, OnCancel)
+		COMMAND_ID_HANDLER_EX(IDHELP, OnHelp)
+	END_MSG_MAP()
 
-// Implementation
-protected:
+	BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
+	{
+		//m_editMaxOnMemory = GetDlgItem(IDE_MAXONMEMORY);
+		//m_editMaxMapSize = GetDlgItem(IDE_MAXMAPSIZE);
+		m_chkDWordAddr = GetDlgItem(IDB_DWORDADDR);
+		//m_editDumpPage = GetDlgItem(IDE_DUMPPAGE);
 
-	// Generated message map functions
-	//{{AFX_MSG(CSettingDlg)
-	virtual void OnOK();
-	afx_msg void OnHelp();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+		MyUpdateData(FALSE);
+
+		return TRUE;
+	}
+
+	void MyUpdateData(BOOL bSaveAndValidate = TRUE)
+	{
+		if(bSaveAndValidate)
+		{
+			m_dwMaxOnMemory = GetDlgItemInt(IDE_MAXONMEMORY, 0, FALSE);
+			m_dwMaxMapSize = GetDlgItemInt(IDE_MAXMAPSIZE, 0, FALSE);
+			m_bDWordAddr = m_chkDWordAddr.GetCheck() == BST_CHECKED;
+			m_nDumpPage = (int)GetDlgItemInt(IDE_DUMPPAGE);
+		} else {
+			SetDlgItemInt(IDE_MAXONMEMORY, m_dwMaxOnMemory, FALSE);
+			SetDlgItemInt(IDE_MAXMAPSIZE, m_dwMaxMapSize, FALSE);
+			m_chkDWordAddr.SetCheck(m_chkDWordAddr ? BST_CHECKED : BST_UNCHECKED);
+			SetDlgItemInt(IDE_DUMPPAGE, m_nDumpPage, TRUE);
+		}
+	}
+
+	void OnOK(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		MyUpdateData(TRUE);
+		options.dwMaxOnMemory = m_dwMaxOnMemory * 1024;
+		options.dwMaxMapSize  = m_dwMaxMapSize * (1024*1024);
+		options.bDWordAddr = m_bDWordAddr;
+		options.nDumpPage = m_nDumpPage;
+		EndDialog(nID);
+	}
+
+	void OnCancel(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		EndDialog(nID);
+	}
+
+	void OnHelp(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		//AfxGetApp()->WinHelp(HID_FILEMAPPING);
+		AfxGetApp()->HtmlHelp(HID_FILEMAPPING);
+	}
+
 };
 
 /////////////////////////////////////////////////////////////////////////////
 // CInputDlg dialog
 
-class CInputDlg : public CDialog
+class CInputDlg : public CDialogImpl<CInputDlg>
 {
-// Construction
 public:
-	CInputDlg(CWnd* pParent = NULL);   // standard constructor
-
-// Dialog Data
-	//{{AFX_DATA(CInputDlg)
 	enum { IDD = IDD_INPUT };
+
+	CInputDlg() : CDialogImpl<CInputDlg>()
+	{
+		m_sValue = _T("");
+	}
+
 	CString	m_sValue;
-	//}}AFX_DATA
+
+	BEGIN_MSG_MAP(CInputDlg)
+		MSG_WM_INITDIALOG(OnInitDialog)
+		COMMAND_ID_HANDLER_EX(IDOK, OnOK)
+		COMMAND_ID_HANDLER_EX(IDCANCEL, OnCancel)
+		COMMAND_ID_HANDLER_EX(IDB_RESET, OnReset)
+	END_MSG_MAP()
+
+	BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
+	{
+		MyUpdateData(FALSE);
+
+		return TRUE;
+	}
+
+	void MyUpdateData(BOOL bSaveAndValidate = TRUE)
+	{
+		if(bSaveAndValidate)
+		{
+			GetDlgItemText(IDE_VALUE, m_sValue);
+		} else {
+			SetDlgItemText(IDE_VALUE, m_sValue);
+		}
+	}
+
+	void OnOK(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		MyUpdateData(TRUE);
+		EndDialog(nID);
+	}
+
+	void OnCancel(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		EndDialog(nID);
+	}
 
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CInputDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
-
-// Implementation
-protected:
-
-	// Generated message map functions
-	//{{AFX_MSG(CInputDlg)
-	afx_msg void OnReset();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	void OnReset(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		m_sValue = _T("0");
+		MyUpdateData(FALSE);
+	}
 };
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_SETTINGDLG_H__60328733_3793_4068_9A5A_3F1FC74C9F13__INCLUDED_)

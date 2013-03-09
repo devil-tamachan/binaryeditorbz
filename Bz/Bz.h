@@ -170,4 +170,26 @@ CString GetStructFilePath(UINT uID);
 LPVOID ReadFile(LPCSTR pPath);
 void ErrorMessageBox();	// ###1.61
 
+
+class CAboutDlg : public CDialogImpl<CAboutDlg>
+{
+public:
+	enum { IDD = IDD_ABOUTBOX };
+
+	BEGIN_MSG_MAP(CAboutDlg)
+		COMMAND_ID_HANDLER_EX(IDOK, OnOK)
+		COMMAND_ID_HANDLER_EX(IDCANCEL, OnCancel)
+	END_MSG_MAP()
+
+	void OnOK(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		EndDialog(nID);
+	}
+
+	void OnCancel(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		EndDialog(nID);
+	}
+};
+
 /////////////////////////////////////////////////////////////////////////////

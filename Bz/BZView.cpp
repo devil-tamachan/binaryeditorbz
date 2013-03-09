@@ -1128,7 +1128,7 @@ void CBZView::OnViewFont()
 	// TODO: Add your command handler code here
 	LOGFONT logFont;
 	m_pFont->GetLogFont(&logFont);
-	CFontDialog aFontDlg(&logFont, CF_SCREENFONTS | CF_FIXEDPITCHONLY | CF_NOVERTFONTS | CF_ANSIONLY); // ###1.5
+	WTL::CFontDialog aFontDlg(&logFont, CF_SCREENFONTS | CF_FIXEDPITCHONLY | CF_NOVERTFONTS | CF_ANSIONLY); // ###1.5
 	int rDlg = aFontDlg.DoModal();
 	if(rDlg == IDOK) {
 		options.sFontName = aFontDlg.GetFaceName();
