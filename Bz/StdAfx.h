@@ -33,6 +33,10 @@
 #define _WTL_NO_AUTOMATIC_NAMESPACE
 #include <atlapp.h>
 #include <atldlgs.h>
+#include <atlgdi.h>//CDCHandle
+#include <atlctrls.h>//CComboBox
+#include <atlframe.h>//COwnerDraw
+#include <atlcrack.h>
 
 #include "..\cmos.h"
 
