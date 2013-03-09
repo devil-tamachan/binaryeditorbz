@@ -28,66 +28,150 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-
-#if !defined(AFX_COLORDLG_H__5E2AF757_A2E0_4DB2_9CB0_D9EECAE1541A__INCLUDED_)
-#define AFX_COLORDLG_H__5E2AF757_A2E0_4DB2_9CB0_D9EECAE1541A__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-// ColorDlg.h : header file
-//
-
 #include "ColorCombo.h"
 
-/////////////////////////////////////////////////////////////////////////////
-// CSetupColorDialog dialog
+#define IDS_LABEL_START  IDS_COLOR_ADDRESS
 
-class CSetupColorDialog : public CDialog
+extern COLORREF colorsDefault[TCOLOR_COUNT][2];
+COLORREF GetSystemColor(COLORREF rgb);
+
+
+
+class CSetupColorDialog : public CDialogImpl<CSetupColorDialog>
 {
-// Construction
 public:
-	CSetupColorDialog(CWnd* pParent = NULL);   // standard constructor
-
-// Dialog Data
-	//{{AFX_DATA(CSetupColorDialog)
 	enum { IDD = IDD_SETUP_COLOR };
-	CListBox	m_listParts;
+
+	CSetupColorDialog() : CDialogImpl<CSetupColorDialog>()
+	{
+		m_pSampleFont = NULL;
+	}
+
+	WTL::CListBox	m_listParts;
 	CColorCombo	m_cbTextColor;
 	CColorCombo	m_cbBackColor;
-	//}}AFX_DATA
-
-// Attributes
-public:
-	COLORREF m_colors[TCOLOR_COUNT][2];
-	CFont* m_pSampleFont;
 private:
 	CBrush m_brush;
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CSetupColorDialog)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
+public:
+	COLORREF m_colors[TCOLOR_COUNT][2];
+	CFont* m_pSampleFont;
 
-// Implementation
-protected:
+	BEGIN_MSG_MAP(CSetupColorDialog)
+		MSG_WM_INITDIALOG(OnInitDialog)
+		COMMAND_ID_HANDLER_EX(IDOK, OnOK)
+		COMMAND_ID_HANDLER_EX(IDCANCEL, OnCancel)
+		COMMAND_ID_HANDLER_EX(IDAPPLY, OnApply)
+		COMMAND_HANDLER_EX(IDC_PARTSLIST, LBN_SELCHANGE, OnSelchangePartslist)
+		//ON_WM_CTLCOLOR()
+		MESSAGE_HANDLER_EX(WM_CTLCOLORSTATIC, OnCtlColor)
+		COMMAND_HANDLER_EX(IDC_TEXTCOLOR, CBN_SELENDOK, OnSelEndOkTextColor)
+		COMMAND_HANDLER_EX(IDC_BACKCOLOR, CBN_SELENDOK, OnSelEndOkBackColor)
+	END_MSG_MAP()
 
-	// Generated message map functions
-	//{{AFX_MSG(CSetupColorDialog)
-	virtual BOOL OnInitDialog();
-	afx_msg void OnSelchangePartslist();
-	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-	virtual void OnOK();
-	afx_msg void OnSelEndOkTextColor();
-	afx_msg void OnSelEndOkBackColor();
-	afx_msg void OnApply();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
+	{
+		memcpy(m_colors, options.colors, sizeof(m_colors));
+		MyUpdateData(FALSE);
+
+		m_listParts = GetDlgItem(IDC_PARTSLIST);
+
+		CString sLabel;
+		for_to(i, TCOLOR_COUNT) {
+			sLabel.LoadString(IDS_LABEL_START + i);
+			m_listParts.AddString(sLabel);
+		}
+		m_listParts.SetCurSel(0);
+		m_cbTextColor.SubclassWindow(::GetDlgItem(m_hWnd, IDC_TEXTCOLOR));
+		m_cbBackColor.SubclassWindow(::GetDlgItem(m_hWnd, IDC_BACKCOLOR));
+		_OnSelchangePartslist();
+
+		return TRUE;
+	}
+
+	void MyUpdateData(BOOL bSaveAndValidate = TRUE)
+	{
+		if(bSaveAndValidate)
+		{
+			//GetDlgItemText(IDE_VALUE, m_sValue);
+		} else {
+			//SetDlgItemText(IDE_VALUE, m_sValue);
+		}
+	}
+
+	void OnOK(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		MyUpdateData(TRUE);
+		memcpy(options.colors, m_colors, sizeof(m_colors));
+		EndDialog(nID);
+	}
+	void OnApply(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		memcpy(options.colors, m_colors, sizeof(m_colors));
+		AfxGetMainWnd()->Invalidate(TRUE);
+	}
+
+	void OnCancel(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		EndDialog(nID);
+	}
+
+	void OnSelchangePartslist(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		_OnSelchangePartslist();
+	}
+
+	void _OnSelchangePartslist()
+	{
+		// TODO: Add your control notification handler code here
+		int iSel = 	m_listParts.GetCurSel();
+		if(iSel == LB_ERR) return;
+
+		m_cbTextColor.SetSelColor(m_colors[iSel][0], colorsDefault[iSel][0]);
+		m_cbBackColor.SetSelColor(m_colors[iSel][1], colorsDefault[iSel][1]);
+		::InvalidateRect(GetDlgItem(IDC_SAMPLE), NULL, TRUE);
+	}
+
+	LRESULT OnCtlColor(UINT uMsg, WPARAM wParam, LPARAM lParam)
+	//HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
+	{
+		HBRUSH hbr;
+		WTL::CDCHandle dc((HDC)wParam);
+
+		if((HWND)lParam == GetDlgItem(IDC_SAMPLE))
+		{
+			int iSel = 	m_listParts.GetCurSel();
+			if(iSel != LB_ERR) {
+				COLORREF rgbText = GetSystemColor(m_colors[iSel][0]);
+				COLORREF rgbBack = GetSystemColor(m_colors[iSel][1]);
+				COLORREF rgbBG = GetSystemColor(m_colors[TCOLOR_TEXT][1]);
+				if(m_brush.m_hObject)
+					m_brush.DeleteObject();
+				m_brush.CreateSolidBrush(rgbBG);
+				hbr = (HBRUSH)m_brush;
+				dc.SetTextColor(rgbText);
+				dc.SetBkColor(rgbBack);
+				dc.SelectFont(*m_pSampleFont);
+			}
+			return (LRESULT)hbr;
+		}
+
+		SetMsgHandled(FALSE);
+		return 0;
+	}
+	void OnSelEndOkTextColor(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		int iSel = 	m_listParts.GetCurSel();
+		m_colors[iSel][0] = m_cbTextColor.GetSelColor();
+		m_cbTextColor.Invalidate();
+		::InvalidateRect(GetDlgItem(IDC_SAMPLE), NULL, TRUE);
+	}
+
+	void OnSelEndOkBackColor(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+		int iSel = 	m_listParts.GetCurSel();
+		m_colors[iSel][1] = m_cbBackColor.GetSelColor();
+		m_cbBackColor.Invalidate();
+		::InvalidateRect(GetDlgItem(IDC_SAMPLE), NULL, TRUE);
+	}
 };
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_COLORDLG_H__5E2AF757_A2E0_4DB2_9CB0_D9EECAE1541A__INCLUDED_)
