@@ -44,7 +44,6 @@ class CColorCombo : public CWindowImpl<CColorCombo, WTL::CComboBox>, public WTL:
 
 	BEGIN_MSG_MAP(CColorCombo)
 		CHAIN_MSG_MAP(WTL::COwnerDraw<CColorCombo>)
-		//MSG_WM_PAINT(OnPaint)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
 		MSG_WM_ERASEBKGND(OnEraseBkgnd)
 		DEFAULT_REFLECTION_HANDLER()
@@ -57,20 +56,14 @@ public:
 	COLORREF m_rgbOther;
 
 	LRESULT OnPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
-	//void OnPaint(WTL::CDCHandle /*dc*/)
 	{
 		DefWindowProc();
-		//SetMsgHandled(FALSE);
-
 		COMBOBOXINFO cmbInfo = {0};
 		cmbInfo.cbSize = sizeof(COMBOBOXINFO);
 		GetComboBoxInfo(&cmbInfo);
 		CRect rect(cmbInfo.rcItem);
 		InvalidateRect(rect, 0);
-        //CRect rect(0,0,30,30);
-        //GetClientRect(rect);
 		WTL::CPaintDC dc(m_hWnd);
-
 		_DrawItem(GetCurSel(), dc, rect, FALSE);
 
 		return 0;
