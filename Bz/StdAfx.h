@@ -37,6 +37,8 @@
 #include <atlctrls.h>//CComboBox
 #include <atlframe.h>//COwnerDraw
 #include <atlcrack.h>
+#include <atlmisc.h>
+#include <atlddx.h>
 
 #include "..\cmos.h"
 

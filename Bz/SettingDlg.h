@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /////////////////////////////////////////////////////////////////////////////
 // CSettingDlg dialog
 
-class CSettingDlg : public CDialogImpl<CSettingDlg>
+class CSettingDlg : public CDialogImpl<CSettingDlg>, public WTL::CWinDataExchange<CSettingDlg>
 {
 public:
 	enum { IDD = IDD_SETTING };
@@ -51,11 +51,6 @@ public:
 	BOOL	m_bDWordAddr;
 	int		m_nDumpPage;
 
-	//WTL::CEdit m_editMaxOnMemory;
-	//WTL::CEdit m_editMaxMapSize;
-	WTL::CButton m_chkDWordAddr;
-	//WTL::CEdit m_editDumpPage;
-
 	BEGIN_MSG_MAP(CSettingDlg)
 		MSG_WM_INITDIALOG(OnInitDialog)
 		COMMAND_ID_HANDLER_EX(IDOK, OnOK)
@@ -63,37 +58,23 @@ public:
 		COMMAND_ID_HANDLER_EX(IDHELP, OnHelp)
 	END_MSG_MAP()
 
+	BEGIN_DDX_MAP(CSettingDlg)
+		DDX_UINT(IDE_MAXONMEMORY, m_dwMaxOnMemory)
+		DDX_UINT(IDE_MAXMAPSIZE, m_dwMaxMapSize)
+		DDX_CHECK(IDB_DWORDADDR, m_bDWordAddr);
+		DDX_INT(IDE_DUMPPAGE, m_nDumpPage)
+	END_DDX_MAP()
+
 	BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 	{
-		//m_editMaxOnMemory = GetDlgItem(IDE_MAXONMEMORY);
-		//m_editMaxMapSize = GetDlgItem(IDE_MAXMAPSIZE);
-		m_chkDWordAddr = GetDlgItem(IDB_DWORDADDR);
-		//m_editDumpPage = GetDlgItem(IDE_DUMPPAGE);
-
-		MyUpdateData(FALSE);
-
+		DoDataExchange(DDX_LOAD);
 		return TRUE;
-	}
-
-	void MyUpdateData(BOOL bSaveAndValidate = TRUE)
-	{
-		if(bSaveAndValidate)
-		{
-			m_dwMaxOnMemory = GetDlgItemInt(IDE_MAXONMEMORY, 0, FALSE);
-			m_dwMaxMapSize = GetDlgItemInt(IDE_MAXMAPSIZE, 0, FALSE);
-			m_bDWordAddr = m_chkDWordAddr.GetCheck() == BST_CHECKED;
-			m_nDumpPage = (int)GetDlgItemInt(IDE_DUMPPAGE);
-		} else {
-			SetDlgItemInt(IDE_MAXONMEMORY, m_dwMaxOnMemory, FALSE);
-			SetDlgItemInt(IDE_MAXMAPSIZE, m_dwMaxMapSize, FALSE);
-			m_chkDWordAddr.SetCheck(m_chkDWordAddr ? BST_CHECKED : BST_UNCHECKED);
-			SetDlgItemInt(IDE_DUMPPAGE, m_nDumpPage, TRUE);
-		}
 	}
 
 	void OnOK(UINT uNotifyCode, int nID, CWindow wndCtl)
 	{
-		MyUpdateData(TRUE);
+		DoDataExchange(DDX_SAVE);
+
 		options.dwMaxOnMemory = m_dwMaxOnMemory * 1024;
 		options.dwMaxMapSize  = m_dwMaxMapSize * (1024*1024);
 		options.bDWordAddr = m_bDWordAddr;
@@ -117,7 +98,7 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 // CInputDlg dialog
 
-class CInputDlg : public CDialogImpl<CInputDlg>
+class CInputDlg : public CDialogImpl<CInputDlg>, public WTL::CWinDataExchange<CInputDlg>
 {
 public:
 	enum { IDD = IDD_INPUT };
@@ -127,7 +108,7 @@ public:
 		m_sValue = _T("");
 	}
 
-	CString	m_sValue;
+	WTL::CString	m_sValue;
 
 	BEGIN_MSG_MAP(CInputDlg)
 		MSG_WM_INITDIALOG(OnInitDialog)
@@ -136,26 +117,20 @@ public:
 		COMMAND_ID_HANDLER_EX(IDB_RESET, OnReset)
 	END_MSG_MAP()
 
+	BEGIN_DDX_MAP(CInputDlg)
+		DDX_TEXT(IDE_VALUE, m_sValue)
+	END_DDX_MAP()
+
 	BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 	{
-		MyUpdateData(FALSE);
+		DoDataExchange(DDX_LOAD);
 
 		return TRUE;
 	}
 
-	void MyUpdateData(BOOL bSaveAndValidate = TRUE)
-	{
-		if(bSaveAndValidate)
-		{
-			GetDlgItemText(IDE_VALUE, m_sValue);
-		} else {
-			SetDlgItemText(IDE_VALUE, m_sValue);
-		}
-	}
-
 	void OnOK(UINT uNotifyCode, int nID, CWindow wndCtl)
 	{
-		MyUpdateData(TRUE);
+		DoDataExchange(DDX_SAVE);
 		EndDialog(nID);
 	}
 
@@ -168,6 +143,6 @@ public:
 	void OnReset(UINT uNotifyCode, int nID, CWindow wndCtl)
 	{
 		m_sValue = _T("0");
-		MyUpdateData(FALSE);
+		DoDataExchange(DDX_LOAD);
 	}
 };
