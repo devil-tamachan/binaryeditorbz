@@ -37,7 +37,7 @@ COLORREF GetSystemColor(COLORREF rgb);
 
 
 
-class CSetupColorDialog : public CDialogImpl<CSetupColorDialog>
+class CSetupColorDialog : public CDialogImpl<CSetupColorDialog>, public WTL::CWinDataExchange<CSetupColorDialog>
 {
 public:
 	enum { IDD = IDD_SETUP_COLOR };
@@ -69,12 +69,15 @@ public:
 		COMMAND_HANDLER_EX(IDC_BACKCOLOR, CBN_SELENDOK, OnSelEndOkBackColor)
 	END_MSG_MAP()
 
+	BEGIN_DDX_MAP(CSetupColorDialog)
+		DDX_CONTROL_HANDLE(IDC_PARTSLIST, m_listParts);
+	END_DDX_MAP()
+
 	BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 	{
 		memcpy(m_colors, options.colors, sizeof(m_colors));
-		MyUpdateData(FALSE);
 
-		m_listParts = GetDlgItem(IDC_PARTSLIST);
+		DoDataExchange(DDX_LOAD);
 
 		CString sLabel;
 		for_to(i, TCOLOR_COUNT) {
@@ -89,19 +92,9 @@ public:
 		return TRUE;
 	}
 
-	void MyUpdateData(BOOL bSaveAndValidate = TRUE)
-	{
-		if(bSaveAndValidate)
-		{
-			//GetDlgItemText(IDE_VALUE, m_sValue);
-		} else {
-			//SetDlgItemText(IDE_VALUE, m_sValue);
-		}
-	}
-
 	void OnOK(UINT uNotifyCode, int nID, CWindow wndCtl)
 	{
-		MyUpdateData(TRUE);
+		DoDataExchange(DDX_SAVE);
 		memcpy(options.colors, m_colors, sizeof(m_colors));
 		EndDialog(nID);
 	}
