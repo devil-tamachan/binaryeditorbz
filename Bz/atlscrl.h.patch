@@ -1,0 +1,33 @@
+--- /wtl81_12085/Include/atlscrl.h 2013-03-12 23:31:24.000000000 +0400
++++ /wtl81_12085/Include/atlscrl.h 2013-03-12 23:31:24.000000000 +0400
+@@ -590,7 +590,8 @@
+if(pT->AdjustScrollOffset(x, y))
+{
+// Children will be moved in SetScrollOffset, if needed
+-	pT->ScrollWindowEx(m_ptOffset.x - x, m_ptOffset.y - y, (m_uScrollFlags & ~SCRL_SCROLLCHILDREN));
++	ATLTRACE("m_ptOffset.x = %d, x = %d, diff=%d\n", m_ptOffset.x, x, m_ptOffset.x - x);
++	pT->ScrollWindowEx(-(m_ptOffset.x - x), -(m_ptOffset.y - y), (m_uScrollFlags & ~SCRL_SCROLLCHILDREN));
+SetScrollOffset(x, y, FALSE);
+}
+@@ -795,10 +796,13 @@
+if(bUpdate && cxyScroll != 0)
+{
+pT->SetScrollPos(nType, cxyOffset, TRUE);
+-	if(nType == SB_VERT)
++	if(nType == SB_VERT){
+pT->ScrollWindowEx(0, cxyScroll, m_uScrollFlags);
+-	else
++	ATLTRACE("x=0, y=%d\n", cxyScroll);
++	}else{
+pT->ScrollWindowEx(cxyScroll, 0, m_uScrollFlags);
++	ATLTRACE("x=%d, y=0\n", cxyScroll);
++	}
+}
+}
+@@ -828,6 +832,7 @@
+x = (cxMax >= 0) ? cxMax : 0;
+else if(x < 0)
+x = 0;
++	ATLTRACE("cxMax=%d, m_sizeAll.cx=%d, m_sizeClient.cx=%d\n", cxMax, m_sizeAll.cx, m_sizeClient.cx);
+int cyMax = m_sizeAll.cy - m_sizeClient.cy;
+if(y > cyMax)
