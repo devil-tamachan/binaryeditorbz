@@ -230,6 +230,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code here.
+        NSLog(@"TextView::initWithFrame()");
         [self MyInitTextView];
     }
     

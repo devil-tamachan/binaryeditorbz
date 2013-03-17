@@ -88,9 +88,11 @@ static BOOL g_isNewWindow = TRUE;
 {
     NSLog(@"makeWindowControllers");
     NSWindow *activeWindow = [self GetActiveWindow];
-    if (!g_isNewWindow && activeWindow) {
+    NSWindowController *activeWindowController;
+    if (activeWindow) activeWindowController = activeWindow.windowController;
+    if (!g_isNewWindow && activeWindowController) {
         //recycle window
-        [self addWindowController:activeWindow.windowController];
+        [self addWindowController:activeWindowController];
     } else {
         //new window
         BZWindowController *mainWindowController = [[BZWindowController alloc] initWithWindowNibName:@"BZWindowController"];

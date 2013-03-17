@@ -24,6 +24,7 @@
 		6084EFBE16DB59E200B415AD /* BZBmpViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6084EFBC16DB59E200B415AD /* BZBmpViewController.xib */; };
 		6084EFC116DB5A1400B415AD /* BZBmpView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6084EFC016DB5A1300B415AD /* BZBmpView.m */; };
 		60A43359167C8B970028D4DF /* BZOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 60A43358167C8B970028D4DF /* BZOptions.m */; };
+		60CEA64316F647BC00EF0E59 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 60CEA64216F647BC00EF0E59 /* AppDelegate.m */; };
 		60E45BFE16B637F300D0CAB0 /* BZGlobalFunc.m in Sources */ = {isa = PBXBuildFile; fileRef = 60E45BFD16B637F300D0CAB0 /* BZGlobalFunc.m */; };
 		60E45C0216B699FE00D0CAB0 /* BZEbcDic.m in Sources */ = {isa = PBXBuildFile; fileRef = 60E45C0116B699FE00D0CAB0 /* BZEbcDic.m */; };
 /* End PBXBuildFile section */
@@ -61,6 +62,8 @@
 		6084EFC016DB5A1300B415AD /* BZBmpView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZBmpView.m; sourceTree = "<group>"; };
 		60A43357167C8B970028D4DF /* BZOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZOptions.h; sourceTree = "<group>"; };
 		60A43358167C8B970028D4DF /* BZOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZOptions.m; sourceTree = "<group>"; };
+		60CEA64116F647BC00EF0E59 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		60CEA64216F647BC00EF0E59 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		60E45BFC16B637F300D0CAB0 /* BZGlobalFunc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZGlobalFunc.h; sourceTree = "<group>"; };
 		60E45BFD16B637F300D0CAB0 /* BZGlobalFunc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZGlobalFunc.m; sourceTree = "<group>"; };
 		60E45C0016B699FE00D0CAB0 /* BZEbcDic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZEbcDic.h; sourceTree = "<group>"; };
@@ -118,6 +121,8 @@
 		601FAD78166A06F900DAEFF3 /* BZEditorOSX */ = {
 			isa = PBXGroup;
 			children = (
+				60CEA64116F647BC00EF0E59 /* AppDelegate.h */,
+				60CEA64216F647BC00EF0E59 /* AppDelegate.m */,
 				601FAD84166A06F900DAEFF3 /* Document.h */,
 				601FAD85166A06FA00DAEFF3 /* Document.m */,
 				6021F7491696C53900DA2B79 /* BZWindow.h */,
@@ -240,6 +245,7 @@
 				60E45C0216B699FE00D0CAB0 /* BZEbcDic.m in Sources */,
 				6084EFBD16DB59E200B415AD /* BZBmpViewController.m in Sources */,
 				6084EFC116DB5A1400B415AD /* BZBmpView.m in Sources */,
+				60CEA64316F647BC00EF0E59 /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -29,10 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #import "BZWindowController.h"
 
-@interface BZWindowController ()
-
-@end
-
 @implementation BZWindowController
 
 - (id)initWithWindow:(NSWindow *)window

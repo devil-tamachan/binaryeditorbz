@@ -36,11 +36,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     self = [super init];
     if (self) {
         // Add your subclass-specific initialization here.
+        NSLog(@"BZWindow::init()");
+        /* Don't called this
         m_bBmpView = m_bStructView = m_bInspectView = m_bAnalyzerView = FALSE;
         m_nSplitView = m_nSplitView0 = SPLIT_NONE;
-        m_isActiveView1 = TRUE;
+        m_isActiveView1 = TRUE;*/
     }
     return self;
+}
+
+- (void)awakeFromNib
+{
+    NSLog(@"BZWindow::awakeFromNib");
+    m_bBmpView = m_bStructView = m_bInspectView = m_bAnalyzerView = FALSE;
+    m_nSplitView = m_nSplitView0 = SPLIT_NONE;
+    m_isActiveView1 = TRUE;
 }
 /*
 - (BOOL)acceptsFirstResponder
