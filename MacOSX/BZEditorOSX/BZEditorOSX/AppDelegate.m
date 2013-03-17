@@ -36,11 +36,12 @@
     // Insert code here to initialize your application
 }
 
-/*
+
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)sender hasVisibleWindows:(BOOL)flag
 {
     [Document setIsNewWindow:TRUE];
-    return YES;
-}*/
+    [[NSDocumentController sharedDocumentController] newDocument:self];
+    return NO;
+}
 
 @end

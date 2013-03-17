@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     self = [super init];
     if (self) {
         // Add your subclass-specific initialization here.
-        NSLog(@"BZWindow::init()");
+        NSAssert(NO, @"BZWindow::init()");
         /* Don't called this
         m_bBmpView = m_bStructView = m_bInspectView = m_bAnalyzerView = FALSE;
         m_nSplitView = m_nSplitView0 = SPLIT_NONE;
