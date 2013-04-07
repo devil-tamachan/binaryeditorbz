@@ -1614,38 +1614,24 @@ void CBZView::OnJumpFindnext()
 	if(pFind) MemFree(pFind);
 }
 
-static LPBYTE MemScanByte(LPCVOID p, BYTE c, DWORD len)
+static LPBYTE MemScanByte(BYTE *p, BYTE c, DWORD len)
 {
-	LPBYTE q = NULL;
-	__asm {
-		mov	edi, p
-		mov	ecx, len
-		mov	al, c
-		repne scasb
-		jnz Done
-		dec edi
-		mov q, edi
-	Done:
+	BYTE *p2 = p+len;
+	for(;p<p2;p++)
+	{
+		if(*p==c)return p;
 	}
-	return q;
+	return 0;
 }
 
-static LPWORD MemScanWord(LPCVOID p, WORD c, DWORD len)
+static LPWORD MemScanWord(WORD * p, WORD c, DWORD len)
 {
-	LPWORD q = NULL;
-	__asm {
-		mov edi, p
-		mov ecx, len
-		shr	ecx,1
-		mov ax, c
-		repne scasw
-		jnz Done
-		dec edi
-		dec	edi
-		mov q, edi
-	Done:
+	WORD *p2 = (WORD*)(((BYTE*)p)+len);
+	for(;p<p2;p++)
+	{
+		if(*p==c)return p;
 	}
-	return q;
+	return 0;
 }
 
 static DWORD MemCompByte(LPCVOID p1, LPCVOID p2, DWORD len)
