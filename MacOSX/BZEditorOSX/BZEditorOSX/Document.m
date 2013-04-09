@@ -238,6 +238,11 @@ static BOOL g_isNewWindow = TRUE;
     return (p < m_pMapStart || p >= (m_pMapStart + m_dwMapSize));
 }
 
+- (__uint64_t)GetMapSize
+{
+    return m_pMapStart ? m_dwFileOffset+m_dwMapSize : m_dwTotal;
+}
+
 -(__uint8_t *)QueryMapView:(__uint8_t *)pBegin dwOffset:(__uint64_t)dwOffset
 {
     __uint8_t *p = pBegin + dwOffset;

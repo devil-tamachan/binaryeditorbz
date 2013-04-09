@@ -20,6 +20,7 @@
 		604EE0D9166E780100D148A0 /* BZView.m in Sources */ = {isa = PBXBuildFile; fileRef = 604EE0D8166E780100D148A0 /* BZView.m */; };
 		60561B70169A20B300337094 /* BZViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 60561B6F169A20B300337094 /* BZViewController.m */; };
 		60561B73169B6E2C00337094 /* BZWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 60561B72169B6E2B00337094 /* BZWindowController.m */; };
+		605D2C4216F9290300173F5D /* BZOnMac2.icns in Resources */ = {isa = PBXBuildFile; fileRef = 605D2C4116F9290300173F5D /* BZOnMac2.icns */; };
 		6084EFBD16DB59E200B415AD /* BZBmpViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6084EFBB16DB59E200B415AD /* BZBmpViewController.m */; };
 		6084EFBE16DB59E200B415AD /* BZBmpViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6084EFBC16DB59E200B415AD /* BZBmpViewController.xib */; };
 		6084EFC116DB5A1400B415AD /* BZBmpView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6084EFC016DB5A1300B415AD /* BZBmpView.m */; };
@@ -55,6 +56,7 @@
 		60561B6F169A20B300337094 /* BZViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZViewController.m; sourceTree = "<group>"; };
 		60561B71169B6E2B00337094 /* BZWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZWindowController.h; sourceTree = "<group>"; };
 		60561B72169B6E2B00337094 /* BZWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZWindowController.m; sourceTree = "<group>"; };
+		605D2C4116F9290300173F5D /* BZOnMac2.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = BZOnMac2.icns; path = ../../BZOnMac2.icns; sourceTree = "<group>"; };
 		6084EFBA16DB59E200B415AD /* BZBmpViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZBmpViewController.h; sourceTree = "<group>"; };
 		6084EFBB16DB59E200B415AD /* BZBmpViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZBmpViewController.m; sourceTree = "<group>"; };
 		6084EFBC16DB59E200B415AD /* BZBmpViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BZBmpViewController.xib; sourceTree = "<group>"; };
@@ -121,6 +123,7 @@
 		601FAD78166A06F900DAEFF3 /* BZEditorOSX */ = {
 			isa = PBXGroup;
 			children = (
+				605D2C4116F9290300173F5D /* BZOnMac2.icns */,
 				60CEA64116F647BC00EF0E59 /* AppDelegate.h */,
 				60CEA64216F647BC00EF0E59 /* AppDelegate.m */,
 				601FAD84166A06F900DAEFF3 /* Document.h */,
@@ -223,6 +226,7 @@
 				601FAD8C166A06FA00DAEFF3 /* MainMenu.xib in Resources */,
 				600FA8E11698968E001E7851 /* BZViewController.xib in Resources */,
 				6084EFBE16DB59E200B415AD /* BZBmpViewController.xib in Resources */,
+				605D2C4216F9290300173F5D /* BZOnMac2.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

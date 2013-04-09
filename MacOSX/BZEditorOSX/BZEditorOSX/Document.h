@@ -70,6 +70,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 - (__uint8_t*) QueryMapView:(__uint8_t*)pBegin dwOffset:(__uint64_t)dwOffset;
 - (__uint8_t*) QueryMapView1:(__uint8_t*)pBegin dwOffset:(__uint64_t)dwOffset;
 - (BOOL) IsOutOfMap1:(__uint8_t*)p;
+- (__uint64_t) GetMapSize;
 
 - (__uint64_t) GetFileOffsetFromFileMappingPointer:(__uint8_t*)pConv;
 - (__uint8_t*) GetFileMappingPointerFromFileOffset:(__uint64_t)dwFileOffset;

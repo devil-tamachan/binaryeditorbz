@@ -31,6 +31,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 @implementation BZWindow
 
+@synthesize m_findBox;
+
 - (id)init
 {
     self = [super init];
@@ -415,5 +417,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     [super resignMainWindow];
 }
 
+-(IBAction)OnFindNext:(id)sender
+{
+    BZView *bzviewA = [self GetActiveView];
+    if(bzviewA) [bzviewA FindNext:m_findBox];
+}
 
 @end

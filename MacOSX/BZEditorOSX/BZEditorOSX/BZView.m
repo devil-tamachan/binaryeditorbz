@@ -1048,6 +1048,7 @@ Error:
 //- (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)anItem
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
+    NSLog(@"BZView::validateMenuItem");
     SEL theAction = [menuItem action];
     BZOptions *bzopt = [BZOptions sharedInstance];
     
@@ -1191,6 +1192,233 @@ Error:
     BZOptions *bzopt = [BZOptions sharedInstance];
     bzopt->bByteOrder = TRUE;
     //GetMainFrame()->UpdateInspectViewChecks();
+}
+
+
+
+
+-(void)FindNext:(NSComboBox*)findBox
+{
+    NSString *sFind = findBox.stringValue;
+    
+	if([sFind isEqualToString:@""])//sFind.IsEmpty())
+    {
+        //		if(GetBrotherView())
+        //			OnJumpCompare();
+		return;
+	}
+    
+	__uint8_t *pData = [m_pDoc QueryMapView:[m_pDoc GetDocPtr] dwOffset:m_dwCaret + 1];
+	__uint64_t dwFind = [m_pDoc GetMapSize];
+    
+	__uint8_t *p = pData + m_dwCaret + 1;
+	/*int*/__uint64_t len = dwFind - m_dwCaret;
+    
+	int c1 = [sFind cStringUsingEncoding:NSJapaneseEUCStringEncoding][0];//[sFind substringToIndex:1];
+	int c2 = 0;
+	if(c1=='=') {
+        [findBox setStringValue:@"? "];
+		return;
+	}
+	[findBox addItemWithObjectValue:sFind];//pCombo->AddText(sFind);
+    
+	if(c1 == '?' || c1 == '+' || c1 == '>'|| c1 == '<')
+    {
+		__uint64_t dwNew = 0;
+		long nResult;
+		if([BZGlobalFunc CalcHexa:[sFind cStringUsingEncoding:NSJapaneseEUCStringEncoding]+1 retVal:&nResult])//CalcHexa((LPCSTR)sFind + 1, nResult))
+        {
+			switch(c1)
+            {
+                case '?':
+                {
+                    //CString sResult;
+                    //sResult.Format("= 0x%X (%d)", nResult, nResult);
+                    [findBox setStringValue:[NSString stringWithFormat:@"= 0x%lX (%ld)", nResult, nResult]];//pCombo->SetText(sResult);
+                    return;
+                }
+                case '+':
+                    dwNew = m_dwCaret + m_pDoc->m_dwBase;
+                case '>':
+                    dwNew += nResult - m_pDoc->m_dwBase;	// ###1.63
+                    if(dwNew <= m_dwTotal) {
+                        m_dwOldCaret = m_dwCaret;
+                        m_dwCaret = dwNew;
+                        m_bCaretOnChar = FALSE;
+                        [self GotoCaret];//GotoCaret();
+                        [self SetFocus];//SetFocus();
+                    } else {
+                        NSAlert *al = [[NSAlert alloc] init];
+                        [al setMessageText:@"Range Error"];
+                        [al runModal];
+                        //AfxMessageBox(IDS_ERR_RANGE);
+                    }
+                    return;
+                case '<':
+                    //if(m_pDoc->m_bReadOnly)
+                    //    AfxMessageBox(IDS_ERR_READONLY);
+                    //else {
+                    //    if(m_bBlock)
+                    //        FillValue(nResult);
+                    //    else
+                    //        SetValue(m_dwCaret, m_nBytes, nResult);
+                    //}
+                    [self SetFocus];//SetFocus();
+                    return;
+			}
+		} else {
+            //CString sMsg;
+            //sMsg.Format(IDS_ERR_SYNTAX, sExp);
+            //AfxMessageBox(sMsg);
+            NSAlert *al = [[NSAlert alloc] init];
+            [al setMessageText:@"Syntax Error"];
+            [al runModal];
+            return;
+        }
+		return;
+	}
+	if(len < 2) return;
+	len--;
+	int nFind = 0;
+	__uint8_t *pFind = NULL;
+    char *pTmp = NULL;
+	enum CharSet charset = m_charset;
+	if(c1 == '#')
+    {
+		nFind = [BZGlobalFunc ReadHexa:[sFind cStringUsingEncoding:NSJapaneseEUCStringEncoding] buffer:&pFind];//ReadHexa(sFind, pFind);
+		if(!nFind) return;
+		c1 = *pFind;
+		charset = CTYPE_BINARY;
+	} else {
+        __uint8_t *pTmp2 = NULL;
+        switch (charset) {
+            case CTYPE_ASCII:
+                pTmp = [sFind cStringUsingEncoding:NSASCIIStringEncoding];
+                nFind = strlen(pTmp);
+                c1 = pTmp[0];
+				if(islower(c1)) c2 = _toupper(c1);
+				else if(isupper(c1)) c2 = _tolower(c1);
+                break;
+            case CTYPE_SJIS:
+                pTmp = [sFind cStringUsingEncoding:NSShiftJISStringEncoding];
+                nFind = strlen(pTmp);
+                c1 = pTmp[0];
+                break;
+            case CTYPE_UNICODE:
+                if ([BZOptions sharedInstance]->bByteOrder)
+                    pTmp = [sFind cStringUsingEncoding:NSUTF16BigEndianStringEncoding];
+                else
+                    pTmp = [sFind cStringUsingEncoding:NSUTF16LittleEndianStringEncoding];
+                nFind = strlen(pTmp);
+                c1 = pTmp[0];
+                break;
+            case CTYPE_JIS:
+                pTmp2 = (__uint8_t *)[sFind cStringUsingEncoding:NSISO2022JPStringEncoding];
+                nFind = strlen(pTmp2);
+                if (nFind>=3)
+                {
+                    __uint32_t dw3 = ((__uint32_t)(pTmp2[0])) << 16 | ((__uint32_t)(pTmp2[1])) << 8 | ((__uint32_t)(pTmp2[2]));
+                    if (dw3 == 0x001B2442 || dw3 == 0x001B2842) {
+                        pTmp2 += 3;
+                        nFind -= 3;
+                    }
+                }
+                if (nFind>=3)
+                {
+                    __uint32_t dw3 = ((__uint32_t)(pTmp2[nFind-3])) << 16 | ((__uint32_t)(pTmp2[nFind-2])) << 8 | ((__uint32_t)(pTmp2[nFind-1]));
+                    if (dw3 == 0x001B2442 || dw3 == 0x001B2842) {
+                        nFind -= 3;
+                    }
+                }
+                pTmp = (char *)pTmp2;
+                if(nFind>0) c1 = pTmp[0];
+                break;
+            case CTYPE_EUC:
+                pTmp = [sFind cStringUsingEncoding:NSJapaneseEUCStringEncoding];
+                nFind = strlen(pTmp);
+                c1 = pTmp[0];
+                break;
+            case CTYPE_UTF8:
+                pTmp = [sFind cStringUsingEncoding:NSUTF8StringEncoding];
+                nFind = strlen(pTmp);
+                c1 = pTmp[0];
+                break;
+            case CTYPE_EBCDIC:
+            case CTYPE_EPWING:
+            case CTYPE_COUNT:
+            default:
+                return;
+        }
+        if(!c1)return;
+	}
+    
+//	CWaitCursor wait;	// ###1.61
+	for(;;) {
+		__uint8_t *p1 = NULL;
+		__uint8_t *p2 = NULL;
+		if(len >= nFind) {
+			if(charset == CTYPE_UNICODE) {
+				p1 = (__uint8_t*)[BZGlobalFunc MemScanWord:(__uint16_t*)p c:c1 bytes:len];//MemScanWord(p, c1, len);
+				if(c2) p2 = (__uint8_t*)[BZGlobalFunc MemScanWord:(__uint16_t*)p c:c2 bytes:len];//(LPBYTE)MemScanWord(p, c2, len);
+			} else {
+				p1 = [BZGlobalFunc MemScanByte:p c:c1 bytes:len];//MemScanByte(p, c1, len);
+				if(c2) p2 = [BZGlobalFunc MemScanByte:p c:c2 bytes:len];//MemScanByte(p, c2, len);
+			}
+		}
+		if(p1 || p2) {
+			if(!p1 || (p2 && p2 < p1)) p1 = p2;
+			int r = -1;
+			switch(charset) {
+                case CTYPE_BINARY:
+                    r = memcmp(p1, pFind, nFind);
+                    break;
+                case CTYPE_SJIS:
+                case CTYPE_JIS:
+                case CTYPE_EUC:
+                case CTYPE_UNICODE:
+                case CTYPE_UTF8:
+                    r = memcmp(p1, pTmp, nFind);
+                    break;
+                case CTYPE_ASCII:
+                    r = strncasecmp((const char*)p1, (const char*)pTmp, nFind);//r = _strnicmp((LPCSTR)p1, sFind, nFind);
+                    break;
+			}
+			if(!r) {
+				m_dwOldCaret = m_dwCaret;
+				m_dwCaret = p1 - pData;
+				m_bCaretOnChar = !pFind;
+				[self GotoCaret];
+				[self SetFocus];//SetFocus();
+				break;
+			}
+			p1++;
+			if(charset == CTYPE_UNICODE)
+				p1++;
+			len -= p1 - p;
+			p = p1;
+		}
+		else if(dwFind < m_dwTotal) {
+			__uint64_t dwFind0 = dwFind;
+			pData = [m_pDoc QueryMapView:pData dwOffset:dwFind];//pData = m_pDoc->QueryMapView(pData, dwFind);
+			p = pData + dwFind;
+			dwFind = [m_pDoc GetMapSize];//m_pDoc->GetMapSize();
+			len = dwFind - dwFind0;
+		}
+		else {
+            NSAlert *al = [[NSAlert alloc] init];
+            [al setMessageText:@"not found"];
+            [al runModal];
+			//AfxMessageBox(IDS_ERR_FINDSTRING);
+			//pCombo->SetFocus();
+			break;
+		}
+	}
+	if(pFind) free(pFind);
+}
+
+- (void)SetFocus
+{
+    [self.window makeFirstResponder:self];
 }
 
 @end

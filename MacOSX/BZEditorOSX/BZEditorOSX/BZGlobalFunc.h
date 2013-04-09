@@ -99,4 +99,11 @@ NS_INLINE BOOL TAMAEqualSize(TAMASize s1, TAMASize s2)
 
 + (__uint16_t)SwapWord:(__uint16_t)val;
 
++ (BOOL)CalcHexa:(const char*)sExp retVal:(long*)n1;
+
++(int)ReadHexa:(const char*)sHexa buffer:(__uint8_t **)buffer;
+
+
++(__uint8_t*)MemScanByte:(__uint8_t *)pSrc c:(__uint8_t)c bytes:(__uint64_t)bytes;
++(__uint16_t*)MemScanWord:(__uint16_t*)pSrc c:(__uint16_t)c bytes:(__uint64_t)bytes;
 @end

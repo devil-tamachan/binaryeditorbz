@@ -203,4 +203,92 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     return val;
 }
 
+
++ (BOOL)CalcHexa:(const char*)sExp retVal:(long*)n1
+{
+	const char* p = sExp;
+	*n1 = 0;
+	long n2;
+	char op = 0;
+	int  base = 16;
+    
+	for(;;) {
+		while(*p > 0 && *p <= ' ') p++;
+		if(!*p) break;
+		const char* p0 = p;
+		if(*p == '-')
+			n2 = strtol(p, (char**)&p, base);
+		else
+			n2 = strtoul(p, (char**)&p, base);
+		base = 16;
+		if(p != p0) {
+			switch (op) {
+                case 0:
+                case '+': *n1 += n2; break;
+                case '-': *n1 -= n2; break;
+                case '*': *n1 *= n2; break;
+                case '/': *n1 /= n2; break;
+                case '&': *n1 &= n2; break;
+                case '|': *n1 |= n2; break;
+                case '^': *n1 ^= n2; break;
+			}
+			op = 0;
+		} else {
+			char c = *p++;
+			if(c == '%')
+				base = 10;
+			else
+				op = c;
+		}
+	}
+	if(op) {
+		//CString sMsg;sMsg.Format(IDS_ERR_SYNTAX, sExp);AfxMessageBox(sMsg);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
++(int)ReadHexa:(const char*)sHexa buffer:(__uint8_t **)buffer
+{
+	char *p = sHexa;
+	__uint8_t *pFind = NULL;
+	int nFind = 0;
+    
+	for(;;) {
+		while(*p && !isalnum(*p)) p++;
+		if(!*p) break;
+		char *p0 = p;
+		__uint8_t n = (__uint8_t)strtoul(p, (char**)&p, 16);
+		if(n == 0 && p == p0) break;				// ### 1.54
+		nFind ++;
+		if(!pFind) pFind = (__uint8_t *)malloc(nFind);
+		else pFind = (__uint8_t *)realloc(pFind, nFind);
+		pFind[nFind-1] = n;
+	}
+	*buffer = pFind;
+	return nFind;
+}
+
+
++(__uint8_t*)MemScanByte:(__uint8_t *)pSrc c:(__uint8_t)c bytes:(__uint64_t)bytes
+{
+	__uint8_t *pEnd = pSrc+bytes;
+	for(; pSrc<pEnd; pSrc++)
+	{
+		if(*pSrc==c)return pSrc;
+	}
+	return 0;
+}
+
++(__uint16_t*)MemScanWord:(__uint16_t*)pSrc c:(__uint16_t)c bytes:(__uint64_t)bytes
+{
+	__uint16_t *pEnd = (__uint16_t*)(((__uint8_t*)pSrc)+bytes);
+	for(; pSrc<pEnd; pSrc++)
+	{
+		if(*pSrc==c)return pSrc;
+	}
+	return 0;
+}
+
 @end

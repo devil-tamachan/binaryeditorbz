@@ -120,4 +120,9 @@ enum CharMode { CMODE_ASCII, CMODE_ESC, CMODE_ESC1, CMODE_ESC2, CMODE_ESC3, CMOD
 
 - (void)DrawToFile:(NSURL*)outPath;
 
+
+-(void)FindNext:(NSComboBox*)findBox;
+
+-(void)SetFocus;
+
 @end

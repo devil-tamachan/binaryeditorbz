@@ -57,7 +57,10 @@ enum SplitType { SPLIT_NONE=0, SPLIT_H=1, SPLIT_V=2 };
     enum SplitType m_nSplitView0;
     
     BOOL m_isActiveView1;
+    
 }
+@property (weak, nonatomic) IBOutlet NSComboBox *m_findBox;
+
 
 - (void)OnCreateClient;
 - (BOOL)CreateClient;
@@ -90,5 +93,7 @@ enum SplitType { SPLIT_NONE=0, SPLIT_H=1, SPLIT_V=2 };
 - (IBAction)OnFileSaveDumpList:(id)sender;
 
 - (IBAction)openDocumentWithClose:(id)sender;
+
+- (IBAction)OnFindNext:(id)sender;
 
 @end
