@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 enum SplitType { SPLIT_NONE=0, SPLIT_H=1, SPLIT_V=2 };
 
 @class BZView;
+@class BZWindowController;
 
 @interface BZWindow : NSWindow <NSSplitViewDelegate>
 {
@@ -58,9 +59,12 @@ enum SplitType { SPLIT_NONE=0, SPLIT_H=1, SPLIT_V=2 };
     
     BOOL m_isActiveView1;
     
+    //BZWindowController *m_bzWndController;
+    
 }
 @property (weak, nonatomic) IBOutlet NSComboBox *m_findBox;
 
+@property (strong, nonatomic) BZWindowController *m_bzWndController;
 
 - (void)OnCreateClient;
 - (BOOL)CreateClient;

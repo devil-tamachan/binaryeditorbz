@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @implementation BZWindow
 
 @synthesize m_findBox;
+@synthesize m_bzWndController;
 
 - (id)init
 {

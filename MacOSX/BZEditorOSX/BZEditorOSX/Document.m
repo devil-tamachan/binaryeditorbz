@@ -87,15 +87,16 @@ static BOOL g_isNewWindow = TRUE;
 - (void)makeWindowControllers
 {
     NSLog(@"makeWindowControllers");
-    NSWindow *activeWindow = [self GetActiveWindow];
+    BZWindow *activeWindow = [self GetActiveBZWindow];
     NSWindowController *activeWindowController = nil;
-    if (activeWindow) activeWindowController = activeWindow.windowController;
-    if (!g_isNewWindow && activeWindowController) {
+    if (!g_isNewWindow && activeWindow) activeWindowController = ((BZWindow*)activeWindow).m_bzWndController;//activeWindow.windowController;
+    if (activeWindowController) {
         //recycle window
         [self addWindowController:activeWindowController];
     } else {
         //new window
         BZWindowController *mainWindowController = [[BZWindowController alloc] initWithWindowNibName:@"BZWindowController"];
+        ((BZWindow*)mainWindowController.window).m_bzWndController = mainWindowController;
         [self addWindowController:mainWindowController];
     }
 }
@@ -115,12 +116,13 @@ static BOOL g_isNewWindow = TRUE;
     return nil;
 }
 
--(NSWindow *)GetActiveWindow
+-(BZWindow *)GetActiveBZWindow
 {
     NSUInteger max = [[NSApp windows] count];
     for (NSUInteger i = 0; i<max; i++) {
         NSWindow *target = [[NSApp windows] objectAtIndex:i];
-        if([target isKeyWindow]) return target;
+        if([target isKeyWindow] && [target isKindOfClass:[BZWindow class]])
+            return target;
     }
     return nil;
 }

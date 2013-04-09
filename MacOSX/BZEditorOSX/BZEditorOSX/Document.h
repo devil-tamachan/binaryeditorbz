@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #import "BZGlobalFunc.h"
 
 @class BZWindowController;
+@class BZWindow;
 
 @interface Document : NSDocument
 {
@@ -55,7 +56,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     __uint64_t m_dwBase;
 }
 
--(NSWindow*)GetActiveWindow;
+-(BZWindow*)GetActiveBZWindow;
 -(void)CloseDocument;
 
 - (__uint8_t*)GetDocPtr;
