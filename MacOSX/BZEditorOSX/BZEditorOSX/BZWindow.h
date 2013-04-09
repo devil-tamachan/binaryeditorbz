@@ -64,8 +64,6 @@ enum SplitType { SPLIT_NONE=0, SPLIT_H=1, SPLIT_V=2 };
 }
 @property (weak, nonatomic) IBOutlet NSComboBox *m_findBox;
 
-@property (strong, nonatomic) BZWindowController *m_bzWndController;
-
 - (void)OnCreateClient;
 - (BOOL)CreateClient;
 - (void)RemoveAllBZViews;
