@@ -1249,7 +1249,7 @@ Error:
                         [self SetFocus];//SetFocus();
                     } else {
                         NSAlert *al = [[NSAlert alloc] init];
-                        [al setMessageText:@"Range Error"];
+                        [al setMessageText:NSLocalizedString(@"Out of Range", nil)];
                         [al runModal];
                         //AfxMessageBox(IDS_ERR_RANGE);
                     }
@@ -1271,7 +1271,7 @@ Error:
             //sMsg.Format(IDS_ERR_SYNTAX, sExp);
             //AfxMessageBox(sMsg);
             NSAlert *al = [[NSAlert alloc] init];
-            [al setMessageText:@"Syntax Error"];
+            [al setMessageText:NSLocalizedString(@"Syntax error", nil)];
             [al runModal];
             return;
         }
@@ -1406,7 +1406,7 @@ Error:
 		}
 		else {
             NSAlert *al = [[NSAlert alloc] init];
-            [al setMessageText:@"not found"];
+            [al setMessageText:NSLocalizedString(@"Cannot find the string/bytes", nil)];
             [al runModal];
 			//AfxMessageBox(IDS_ERR_FINDSTRING);
 			//pCombo->SetFocus();

@@ -16,6 +16,7 @@
 		601FAD89166A06FA00DAEFF3 /* BZWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 601FAD87166A06FA00DAEFF3 /* BZWindowController.xib */; };
 		601FAD8C166A06FA00DAEFF3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 601FAD8A166A06FA00DAEFF3 /* MainMenu.xib */; };
 		6021F74B1696C53900DA2B79 /* BZWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 6021F74A1696C53900DA2B79 /* BZWindow.m */; };
+		6032413317159F97006B7124 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6032413517159F97006B7124 /* Localizable.strings */; };
 		604EE0D6166E77D800D148A0 /* TextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 604EE0D5166E77D800D148A0 /* TextView.m */; };
 		604EE0D9166E780100D148A0 /* BZView.m in Sources */ = {isa = PBXBuildFile; fileRef = 604EE0D8166E780100D148A0 /* BZView.m */; };
 		60561B70169A20B300337094 /* BZViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 60561B6F169A20B300337094 /* BZViewController.m */; };
@@ -48,6 +49,7 @@
 		601FAD8B166A06FA00DAEFF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		6021F7491696C53900DA2B79 /* BZWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZWindow.h; sourceTree = "<group>"; };
 		6021F74A1696C53900DA2B79 /* BZWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZWindow.m; sourceTree = "<group>"; };
+		6032413417159F97006B7124 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		604EE0D4166E77D800D148A0 /* TextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextView.h; sourceTree = "<group>"; };
 		604EE0D5166E77D800D148A0 /* TextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextView.m; sourceTree = "<group>"; };
 		604EE0D7166E780100D148A0 /* BZView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZView.h; sourceTree = "<group>"; };
@@ -153,6 +155,7 @@
 				6084EFBC16DB59E200B415AD /* BZBmpViewController.xib */,
 				6084EFBF16DB5A1300B415AD /* BZBmpView.h */,
 				6084EFC016DB5A1300B415AD /* BZBmpView.m */,
+				6032413517159F97006B7124 /* Localizable.strings */,
 			);
 			path = BZEditorOSX;
 			sourceTree = "<group>";
@@ -227,6 +230,7 @@
 				600FA8E11698968E001E7851 /* BZViewController.xib in Resources */,
 				6084EFBE16DB59E200B415AD /* BZBmpViewController.xib in Resources */,
 				605D2C4216F9290300173F5D /* BZOnMac2.icns in Resources */,
+				6032413317159F97006B7124 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,6 +290,14 @@
 				601FAD8B166A06FA00DAEFF3 /* en */,
 			);
 			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		6032413517159F97006B7124 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6032413417159F97006B7124 /* en */,
+			);
+			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

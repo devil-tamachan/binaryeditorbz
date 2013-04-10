@@ -86,10 +86,11 @@ static BOOL g_isNewWindow = TRUE;
 
 - (void)makeWindowControllers
 {
-    NSLog(@"makeWindowControllers");
-    BZWindow *activeWindow = [self GetActiveBZWindow];
     NSWindowController *activeWindowController = nil;
-    if (!g_isNewWindow && activeWindow) activeWindowController = ((BZWindow*)activeWindow).windowController;
+    if (!g_isNewWindow) {
+        BZWindow *activeWindow = [self GetActiveBZWindow];
+        if (activeWindow) activeWindowController = activeWindow.windowController;
+    }
     if (activeWindowController) {
         //recycle window
         [self addWindowController:activeWindowController];
