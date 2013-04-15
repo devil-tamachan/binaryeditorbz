@@ -84,6 +84,17 @@ static BOOL g_isNewWindow = TRUE;
 }
  */
 
+-(BZWindow *)GetActiveBZWindow
+{
+    NSUInteger max = [[NSApp windows] count];
+    for (NSUInteger i = 0; i<max; i++) {
+        NSWindow *target = [[NSApp windows] objectAtIndex:i];
+        if([target isKeyWindow] && [target isKindOfClass:[BZWindow class]])
+            return target;
+    }
+    return nil;
+}
+
 - (void)makeWindowControllers
 {
     NSWindowController *activeWindowController = nil;
@@ -103,28 +114,12 @@ static BOOL g_isNewWindow = TRUE;
 
 + (BOOL)autosavesInPlace
 {
-    return YES;
+    return NO;//YES;
 }
 
-//writefromurl ka savefromurl kamo?
-- (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
+- (BOOL)writeToURL:(NSURL *)url ofType:(NSString *)typeName error:(NSError *__autoreleasing *)outError
 {
-    // Insert code here to write your document to data of the specified type. If outError != NULL, ensure that you create and set an appropriate error when returning nil.
-    // You can also choose to override -fileWrapperOfType:error:, -writeToURL:ofType:error:, or -writeToURL:ofType:forSaveOperation:originalContentsURL:error: instead.
-    NSException *exception = [NSException exceptionWithName:@"UnimplementedMethod" reason:[NSString stringWithFormat:@"%@ is unimplemented", NSStringFromSelector(_cmd)] userInfo:nil];
-    @throw exception;
-    return nil;
-}
-
--(BZWindow *)GetActiveBZWindow
-{
-    NSUInteger max = [[NSApp windows] count];
-    for (NSUInteger i = 0; i<max; i++) {
-        NSWindow *target = [[NSApp windows] objectAtIndex:i];
-        if([target isKeyWindow] && [target isKindOfClass:[BZWindow class]])
-            return target;
-    }
-    return nil;
+    return [self OnSaveDocument:url];
 }
 
 - (BOOL)readFromURL:(NSURL *)url ofType:(NSString *)typeName error:(NSError *__autoreleasing *)outError
@@ -136,21 +131,8 @@ static BOOL g_isNewWindow = TRUE;
         //BZWindow *wnd = _window;
         //[_bzwnd1 CreateClient];
     }
-    return true;
+    return ret;
 }
-
-/*
-- (BOOL)readFromData:(NSData *)data ofType:(NSString *)typeName error:(NSError **)outError
-{
-    // Insert code here to read your document from the given data of the specified type. If outError != NULL, ensure that you create and set an appropriate error when returning NO.
-    // You can also choose to override -readFromFileWrapper:ofType:error: or -readFromURL:ofType:error: instead.
-    // If you override either of these, you should also override -isEntireFileLoaded to return NO if the contents are lazily loaded.
-    NSException *exception = [NSException exceptionWithName:@"UnimplementedMethod" reason:[NSString stringWithFormat:@"%@ is unimplemented", NSStringFromSelector(_cmd)] userInfo:nil];
-    @throw exception;
-    return YES;
-}
-*/
-
 
 -(__uint8_t *)GetDocPtr
 {
@@ -198,20 +180,6 @@ static BOOL g_isNewWindow = TRUE;
      }*/
     m_bReadOnly = false;
 }
-
-/*
--(off_t)GetFileLength:(int)fd
-{
-    off_t fposOld = lseek(fd, 0, SEEK_CUR); //backup position
-    off_t fpos = lseek(fd, 0, SEEK_END); //seek to end
-    lseek(fd, fposOld, SEEK_SET); //restore position
-    if(fpos>0xffff)
-    {
-        return 0xffff;
-    }
-    return fpos;
-}
- */
 
 -(BOOL)IsFileMapping
 {
@@ -357,6 +325,41 @@ static BOOL g_isNewWindow = TRUE;
     close(fd);
     
     return true;
+}
+
+- (BOOL)OnSaveDocument:(NSURL *)url
+{
+    BOOL bResult = FALSE;
+    if([self IsFileMapping]) {
+        int ret = msync(m_pMapStart ? m_pMapStart : m_pData, m_dwMapSize, MS_SYNC);
+        bResult = (ret==0);//(m_pMapStart) ? ::FlushViewOfFile(m_pMapStart, m_dwMapSize) : ::FlushViewOfFile(m_pData, m_dwTotal);
+        if(!bResult) {
+            NSAlert *al = [[NSAlert alloc] init];
+            [al setMessageText:NSLocalizedString(@"msync error", nil)];
+            [al runModal];
+        }
+    } else {
+        int fd = open([[url path] fileSystemRepresentation], O_WRONLY|O_CREAT|O_TRUNC|O_EXLOCK);
+        if (fd!=-1)
+        {
+            ssize_t writed = write(fd, m_pData, m_dwTotal);//pFile->Write(m_pData, m_dwTotal);
+            close(fd);
+            bResult = (writed==m_dwTotal);
+        }
+    }
+    if (bResult)
+    {
+        //m_dwUndoSaved = m_dwUndo;		// ###1.54
+        //TouchDoc();
+        return YES;
+    }
+    return NO;
+}
+
+- (void)TouchDoc
+{
+	//SetModifiedFlag(m_dwUndo != m_dwUndoSaved);
+	//GetMainFrame()->OnUpdateFrameTitle();
 }
 
 

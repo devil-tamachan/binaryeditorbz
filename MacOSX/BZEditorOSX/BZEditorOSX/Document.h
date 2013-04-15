@@ -64,6 +64,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 - (BOOL)OnOpenDocument:(NSURL *)url;
+- (BOOL)OnSaveDocument:(NSURL *)url;
+
 //- (off_t)GetFileLength:(int)fd;
 - (void)DeleteContents;
 - (BOOL) IsFileMapping;
@@ -78,5 +80,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 + (void)setIsNewWindow:(BOOL)isNewWindow;
 + (BOOL)isNewWindow;
+
+- (void)TouchDoc;
 
 @end
