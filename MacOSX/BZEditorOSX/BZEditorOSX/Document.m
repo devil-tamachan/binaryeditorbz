@@ -363,6 +363,32 @@ static BOOL g_isNewWindow = TRUE;
 }
 
 
+- (Document *)GetBrotherDoc
+{
+    for (NSWindowController *wcon in self.windowControllers) {
+        BZWindowController *bzwcon = (BZWindowController*)wcon;
+        if(bzwcon->m_doc1 == self) {
+            return bzwcon->m_doc2;
+        } else if(bzwcon->m_doc2 == self) {
+            return bzwcon->m_doc1;
+        }
+    }
+    return nil;
+}
+
+- (BOOL)isDocumentEdited
+{
+    if ([self.undoManager canUndo]) {
+        return YES;
+    }
+    Document *brotherDoc = [self GetBrotherDoc];
+    if (brotherDoc && [brotherDoc.undoManager canUndo]) {
+        return YES;
+    }
+    return NO;
+}
+
+
 -(void)CloseDocument
 {
     NSLog(@"Document::CloseDocument");
@@ -380,5 +406,6 @@ static BOOL g_isNewWindow = TRUE;
 {
     NSLog(@"Doument::dealloc");
 }
+
 
 @end

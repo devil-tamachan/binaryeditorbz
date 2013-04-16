@@ -82,5 +82,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + (BOOL)isNewWindow;
 
 - (void)TouchDoc;
+- (Document*)GetBrotherDoc;
 
 @end
