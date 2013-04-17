@@ -425,9 +425,18 @@ static BOOL g_isNewWindow = TRUE;
 }
 
 
-//OVR
-//dwPtr-4byte(file-offset), mode(byte), data(? byte), dwBlock-4byte(これも含めた全部のバイト)
-//dwSizeはdwBlock-9。つまりdataのサイズ
+//dwBlockは構造体全体のサイズ
+// if mode==UNDO_OVR
+// 8 (__uint64_t)dwPtr
+// 1 (__uint8_t)(enum UndoMode)mode
+// dwSize data 
+// 8 (__uint64_t)dwBlock(==dwSize+sizeof(__uint64_t)*2+sizeof(__uint8_t))
+
+// if mode==UNDO_DEL
+// 8 (__uint64_t)dwPtr
+// 1 (__uint8_t)(enum UndoMode)mode
+// 8 dwSize
+// 8 (__uint64_t)dwBlock(==dwSize+sizeof(__uint64_t)*2+sizeof(__uint8_t))
 
 - (void)StoreUndo:(__uint64_t)dwPtr dwSize:(__uint64_t)dwSize mode:(enum UndoMode)mode
 {
@@ -437,9 +446,9 @@ static BOOL g_isNewWindow = TRUE;
     
 	[self QueryMapView:m_pData dwOffset:dwPtr];
 	
-    __uint64_t dwBlock = dwSize + 9;
+    __uint64_t dwBlock = dwSize +sizeof(__uint64_t)*2+sizeof(__uint8_t);
 	if(mode == UNDO_DEL)
-		dwBlock = 4 + 9;
+		dwBlock = sizeof(__uint64_t) +sizeof(__uint64_t)*2+sizeof(__uint8_t);
 	if(!m_pUndo) {
 		m_pUndo = (__uint8_t*)malloc(dwBlock);
 		m_dwUndo = m_dwUndoSaved = 0;
@@ -466,9 +475,9 @@ static BOOL g_isNewWindow = TRUE;
 
 - (__uint64_t)DoUndo
 {
-	__uint64_t dwSize = *((DWORD*)(m_pUndo+m_dwUndo-4));
+	__uint64_t dwSize = *((__uint64_t *)(m_pUndo+m_dwUndo-sizeof(__uint64_t)));
 	m_dwUndo -= dwSize;
-	dwSize -= 9;
+	dwSize -= sizeof(__uint64_t)*2+sizeof(__uint8_t);
 	__uint8_t *p = m_pUndo + m_dwUndo;
 	__uint64_t dwPtr = *((__uint64_t *)p);
     p+=8;

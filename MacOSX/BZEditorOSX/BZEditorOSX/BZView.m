@@ -248,7 +248,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     __uint64_t dwEnd = [self BlockEnd];
     __uint64_t dwTotal = m_dwTotal;
     
-    DWORD dwTotalP1 = 0;
+    __uint64_t dwTotalP1 = 0;
     
     NSInteger y;
     
