@@ -376,16 +376,123 @@ static BOOL g_isNewWindow = TRUE;
     return nil;
 }
 
+- (BOOL)isDocumentEditedSelfOnly
+{
+    return m_dwUndoSaved != m_dwUndo;
+}
+
 - (BOOL)isDocumentEdited
 {
-    if ([self.undoManager canUndo]) {
+    if ([self isDocumentEditedSelfOnly]) {
         return YES;
     }
     Document *brotherDoc = [self GetBrotherDoc];
-    if (brotherDoc && [brotherDoc.undoManager canUndo]) {
+    if (brotherDoc && [brotherDoc isDocumentEditedSelfOnly]) {
         return YES;
     }
     return NO;
+}
+
+
+- (void)InsertData:(__uint64_t)dwPtr dwSize:(__uint64_t)dwSize bIns:(BOOL)bIns
+{
+	BOOL bGlow = false;
+	__uint64_t nGlow = dwSize - (m_dwTotal - dwPtr);
+	if(nGlow <= dwSize/*overflow check*/ && nGlow > 0)bGlow=true;
+	if(!m_pData) {
+		m_pData = (__uint8_t *)malloc(dwSize);
+		m_dwTotal = dwSize;
+	} else if(bIns || dwPtr == m_dwTotal) {
+        m_pData = (__uint8_t *)realloc(m_pData, m_dwTotal+dwSize);
+        memmove(m_pData+dwPtr+dwSize, m_pData+dwPtr, m_dwTotal - dwPtr);
+        m_dwTotal += dwSize;
+	} else if(bGlow) {
+        m_pData = (__uint8_t *)realloc(m_pData, m_dwTotal+nGlow);
+        m_dwTotal += nGlow;
+	}
+	//ASSERT(m_pData != NULL);
+}
+
+- (void)DeleteData:(__uint64_t)dwPtr dwSize:(__uint64_t)dwSize
+{
+	if(dwPtr == m_dwTotal) return;
+	memmove(m_pData+dwPtr, m_pData+dwPtr+dwSize, m_dwTotal-dwPtr-dwSize);
+	m_dwTotal -= dwSize;
+    
+	if(![self IsFileMapping])
+		m_pData = (__uint8_t *)realloc(m_pData, m_dwTotal);
+	[self TouchDoc];
+}
+
+
+//OVR
+//dwPtr-4byte(file-offset), mode(byte), data(? byte), dwBlock-4byte(これも含めた全部のバイト)
+//dwSizeはdwBlock-9。つまりdataのサイズ
+
+- (void)StoreUndo:(__uint64_t)dwPtr dwSize:(__uint64_t)dwSize mode:(enum UndoMode)mode
+{
+	if(mode == UNDO_OVR && dwPtr+dwSize >= m_dwTotal)
+		dwSize = m_dwTotal - dwPtr;
+	if(dwSize == 0) return;
+    
+	[self QueryMapView:m_pData dwOffset:dwPtr];
+	
+    __uint64_t dwBlock = dwSize + 9;
+	if(mode == UNDO_DEL)
+		dwBlock = 4 + 9;
+	if(!m_pUndo) {
+		m_pUndo = (__uint8_t*)malloc(dwBlock);
+		m_dwUndo = m_dwUndoSaved = 0;
+	} else
+		m_pUndo = (__uint8_t*)realloc(m_pUndo, m_dwUndo+dwBlock);
+	//ASSERT(m_pUndo != NULL);
+	__uint8_t *p = m_pUndo + m_dwUndo;
+	*((__uint64_t *)p) = dwPtr;
+    p+=8;
+	*p++ = mode;
+	if(mode == UNDO_DEL) {
+		*((__uint64_t *)p) = dwSize;
+        p+=8;
+	} else {
+		memcpy(p, m_pData+dwPtr, dwSize);
+		p+=dwSize;
+	}
+	*((__uint64_t *)p) = dwBlock;
+    p+=8;
+	m_dwUndo += dwBlock;
+	//ASSERT(p == m_pUndo+m_dwUndo);
+	[self TouchDoc];
+}
+
+- (__uint64_t)DoUndo
+{
+	__uint64_t dwSize = *((DWORD*)(m_pUndo+m_dwUndo-4));
+	m_dwUndo -= dwSize;
+	dwSize -= 9;
+	__uint8_t *p = m_pUndo + m_dwUndo;
+	__uint64_t dwPtr = *((__uint64_t *)p);
+    p+=8;
+	enum UndoMode mode = (enum UndoMode)(*p++);
+	
+    [self QueryMapView:m_pData dwOffset:dwPtr];//QueryMapView(m_pData, dwPtr);
+    
+	if(mode == UNDO_DEL) {
+		[self DeleteData:dwPtr dwSize:*((__uint64_t *)p)];//DeleteData(dwPtr, *((DWORD*)p));
+	} else {
+		[self InsertData:dwPtr dwSize:dwSize bIns:mode == UNDO_INS];
+		memcpy(m_pData+dwPtr, p, dwSize);
+	}
+	if(m_dwUndo)
+		m_pUndo = (__uint8_t *)realloc(m_pUndo, m_dwUndo);
+	else {				// ### 1.54
+		free(m_pUndo);
+		m_pUndo = NULL;
+		if(m_dwUndoSaved)
+			m_dwUndoSaved = UINT_MAX;
+	}
+	// if(!m_pUndo)
+    [self TouchDoc];//TouchDoc();
+	return dwPtr;
 }
 
 

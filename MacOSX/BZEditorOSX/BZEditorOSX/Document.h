@@ -36,6 +36,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @class BZWindowController;
 @class BZWindow;
 
+enum UndoMode {	UNDO_INS, UNDO_OVR, UNDO_DEL };
+
 @interface Document : NSDocument
 {
     
@@ -54,6 +56,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     __uint64_t m_dwMapSize;
     // void *m_hMapping;
     __uint64_t m_dwBase;
+    
+	__uint8_t *m_pUndo;
+	__uint64_t m_dwUndo;
+	__uint64_t m_dwUndoSaved;
 }
 
 -(BZWindow*)GetActiveBZWindow;
@@ -83,5 +89,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 - (void)TouchDoc;
 - (Document*)GetBrotherDoc;
+
+- (BOOL)isDocumentEdited;
+- (BOOL)isDocumentEditedSelfOnly;
+
+
+- (void)InsertData:(__uint64_t)dwPtr dwSize:(__uint64_t)dwSize bIns:(BOOL)bIns;
+- (void)DeleteData:(__uint64_t)dwPtr dwSize:(__uint64_t)dwSize;
+- (void)StoreUndo:(__uint64_t)dwPtr dwSize:(__uint64_t)dwSize mode:(enum UndoMode)mode;
+- (__uint64_t)DoUndo;
 
 @end
