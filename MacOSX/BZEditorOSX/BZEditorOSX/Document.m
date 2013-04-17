@@ -436,7 +436,7 @@ static BOOL g_isNewWindow = TRUE;
 // 8 (__uint64_t)dwPtr
 // 1 (__uint8_t)(enum UndoMode)mode
 // 8 dwSize
-// 8 (__uint64_t)dwBlock(==dwSize+sizeof(__uint64_t)*2+sizeof(__uint8_t))
+// 8 (__uint64_t)dwBlock(==sizeof(__uint64_t)+sizeof(__uint64_t)*2+sizeof(__uint8_t))
 
 - (void)StoreUndo:(__uint64_t)dwPtr dwSize:(__uint64_t)dwSize mode:(enum UndoMode)mode
 {
