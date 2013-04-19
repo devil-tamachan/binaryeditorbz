@@ -605,6 +605,7 @@ void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 		if(!(options.barState & BARSTATE_FULLPATH) || sPath.IsEmpty())
 			sPath = pDoc->GetTitle();
 		s += sPath;
+		s += pDoc->IsFileMapping()?_T(" (FileMap)"):_T(" (Mem)");
 		if(pDoc->IsModified())
 			s += " *";
 		SetWindowText(s);
