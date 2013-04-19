@@ -770,8 +770,8 @@ BOOL CBZDoc::SaveModified()
 
 	case IDNO:
 		// If not saving changes, revert the document
-		if(IsFileMapping()) {
-			while(m_pUndo)
+		if(IsFileMapping() && m_dwUndoSaved != 0xFFffFFff) {
+			while(isDocumentEditedSelfOnly())//m_pUndo)
 				DoUndo();
 		}
 		break;
