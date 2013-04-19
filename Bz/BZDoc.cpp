@@ -462,6 +462,7 @@ void CBZDoc::StoreUndo(DWORD dwPtr, DWORD dwSize, UndoMode mode)
 	}
 	*((DWORD*&)p)++ = dwBlock;
 	m_dwUndo += dwBlock;
+	ASSERT(m_dwUndo >= dwBlock && m_dwUndo != 0xFFffFFff);//Overflow check
 	ASSERT(p == m_pUndo+m_dwUndo);
 	TouchDoc();
 }
