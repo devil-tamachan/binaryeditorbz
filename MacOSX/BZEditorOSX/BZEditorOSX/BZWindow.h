@@ -98,4 +98,6 @@ enum SplitType { SPLIT_NONE=0, SPLIT_H=1, SPLIT_V=2 };
 
 - (IBAction)OnFindNext:(id)sender;
 
+- (IBAction)OnUndo:(id)sender;
+
 @end

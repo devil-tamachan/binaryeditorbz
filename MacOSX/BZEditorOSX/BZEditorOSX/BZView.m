@@ -954,7 +954,7 @@ Error:
         }*/
 	}
 	m_bBlock = FALSE;
-	p  = [m_pDoc GetDocPtr] + m_dwCaret;//m_pDoc->GetDocPtr() + m_dwCaret;
+	p  = [m_pDoc GetDocPtr] + m_dwCaret;
 	if(!m_bCaretOnChar) {
 		if(nChar >= '0' && nChar <= '9')
 			nChar -= '0';
@@ -988,7 +988,7 @@ Error:
 			if(m_charset == CTYPE_UNICODE) len *= 2;
 			pb = (char*)buffer;
 			for (int i = 0; i<len; i++) *p++ = *pb++;
-			MemFree(buffer);
+			free(buffer);
 			//Invalidate(FALSE);
 			if(!m_bEnterVal)
 				MoveCaretTo(m_dwCaret + len);
@@ -1420,5 +1420,13 @@ Error:
 {
     [self.window makeFirstResponder:self];
 }
+
+- (IBAction)OnUndo:(id)sender
+{
+	m_dwCaret = [m_pDoc DoUndo];
+	[self GotoCaret];
+	[self UpdateDocSize];
+}
+
 
 @end

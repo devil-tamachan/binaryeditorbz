@@ -64,7 +64,14 @@ static BOOL g_isNewWindow = TRUE;
         m_dwMapSize = 0;
         m_dwBase = 0;
         
+        //Undo
+        m_pUndo = NULL;
+        m_dwUndo = 0;
+        m_dwUndoSaved = 0;
+        
         m_pagingSize = sysconf(_SC_PAGESIZE);
+        
+        [self setHasUndoManager:NO];
     }
     return self;
 }
@@ -496,9 +503,9 @@ static BOOL g_isNewWindow = TRUE;
 	else {				// ### 1.54
 		free(m_pUndo);
 		m_pUndo = NULL;
-		if(m_dwUndoSaved)
-			m_dwUndoSaved = UINT_MAX;
+		//if(m_dwUndoSaved)m_dwUndoSaved = UINT_MAX;
 	}
+    if(m_dwUndo < m_dwUndoSaved)m_dwUndoSaved = 0xFFffFFff;
 	// if(!m_pUndo)
     [self TouchDoc];//TouchDoc();
 	return dwPtr;
@@ -508,6 +515,11 @@ static BOOL g_isNewWindow = TRUE;
 -(void)CloseDocument
 {
     NSLog(@"Document::CloseDocument");
+    if ([self IsFileMapping] && m_dwUndoSaved != 0xFFffFFff)
+    {
+        while([self isDocumentEditedSelfOnly])
+            [self DoUndo];
+    }
     [self DeleteContents];
 }
 

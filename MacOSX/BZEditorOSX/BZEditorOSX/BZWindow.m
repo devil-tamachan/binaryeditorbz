@@ -318,6 +318,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     BZView *bzviewA = [self GetActiveView];
     if(bzviewA) [bzviewA OnByteOrderMotorola:sender];
 }
+- (IBAction)OnUndo:(id)sender
+{
+    BZView *bzviewA = [self GetActiveView];
+    if(bzviewA) [bzviewA OnUndo:sender];
+}
 
 - (IBAction)OnViewSplitH:(id)sender
 {

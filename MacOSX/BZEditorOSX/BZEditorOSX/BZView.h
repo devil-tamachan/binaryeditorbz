@@ -125,4 +125,6 @@ enum CharMode { CMODE_ASCII, CMODE_ESC, CMODE_ESC1, CMODE_ESC2, CMODE_ESC3, CMOD
 
 -(void)SetFocus;
 
+-(IBAction)OnUndo:(id)sender;
+
 @end
