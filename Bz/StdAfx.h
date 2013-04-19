@@ -39,6 +39,7 @@
 #include <atlcrack.h>
 #include <atlmisc.h>
 #include <atlddx.h>
+#include <atlsplit.h>
 
 #include "..\cmos.h"
 
