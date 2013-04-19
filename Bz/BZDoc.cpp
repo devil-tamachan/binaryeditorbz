@@ -68,7 +68,6 @@ CBZDoc::CBZDoc()
 	// TODO: add one-time construction code here
 	m_pData = NULL;
 	m_dwTotal = 0;
-	m_pUndo = NULL;
 	m_bReadOnly = TRUE;
 #ifdef FILE_MAPPING
 	m_hMapping = NULL;
@@ -79,6 +78,11 @@ CBZDoc::CBZDoc()
 	m_dwMapSize = 0;
 #endif //FILE_MAPPING
 	m_dwBase = 0;
+
+	//Undo
+	m_pUndo = NULL;
+	m_dwUndo = 0;
+	m_dwUndoSaved = 0;
 
 	SYSTEM_INFO sysinfo;
 	GetSystemInfo(&sysinfo);
@@ -409,23 +413,19 @@ void CBZDoc::DeleteData(DWORD dwPtr, DWORD dwSize)
 	TouchDoc();
 }
 
+BOOL CBZDoc::isDocumentEditedSelfOnly()
+{
+	return m_dwUndo != m_dwUndoSaved;
+}
+
 void CBZDoc::TouchDoc()
 {
-	SetModifiedFlag(m_dwUndo != m_dwUndoSaved);
+	SetModifiedFlag(isDocumentEditedSelfOnly());
 	GetMainFrame()->OnUpdateFrameTitle();
-
-/*	CString sTitle = GetTitle();
-	if(b) sTitle += " *";
-	sTitle += " - ";
-	sTitle += AfxGetApp()->m_pszAppName;
-	CWnd *pFrame = AfxGetMainWnd();
-	pFrame->SetWindowText(sTitle);
-*/
 }
 
 void CBZDoc::OnUpdateEditUndo(CCmdUI* pCmdUI) 
 {
-	// TODO: Add your command update UI handler code here
 	pCmdUI->Enable(!!m_pUndo);	
 }
 
@@ -488,9 +488,9 @@ DWORD CBZDoc::DoUndo()
 	else {				// ### 1.54
 		MemFree(m_pUndo);
 		m_pUndo = NULL;
-		if(m_dwUndoSaved)
-			m_dwUndoSaved = UINT_MAX;
+		//if(m_dwUndoSaved)m_dwUndoSaved = UINT_MAX;
 	}
+	if(m_dwUndo < m_dwUndoSaved)m_dwUndoSaved = 0xFFffFFff;
 	// if(!m_pUndo)
 		TouchDoc();
 	return dwPtr;

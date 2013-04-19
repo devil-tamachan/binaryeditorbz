@@ -68,8 +68,8 @@ static char THIS_FILE[] = __FILE__;
 
 //static const UINT nMsgFindReplace = ::RegisterWindowMessage(FINDMSGSTRING);
 
-static LPBYTE MemScanByte(LPCVOID, BYTE, DWORD);
-static LPWORD MemScanWord(LPCVOID, WORD, DWORD);
+static LPBYTE MemScanByte(BYTE *p, BYTE c, DWORD len);
+static LPWORD MemScanWord(WORD * p, WORD c, DWORD len);
 static DWORD  MemCompByte(LPCVOID p1, LPCVOID p2, DWORD len);
 
 BOOL CBZView::m_bHexSize = FALSE;
@@ -1558,8 +1558,8 @@ void CBZView::OnJumpFindnext()
 		LPBYTE p2 = NULL;
 		if(len >= nFind) {
 			if(charset == CTYPE_UNICODE) {
-				p1 = (LPBYTE)MemScanWord(p, c1, len);
-				if(c2) p2 = (LPBYTE)MemScanWord(p, c2, len);
+				p1 = (LPBYTE)MemScanWord((LPWORD)p, c1, len);
+				if(c2) p2 = (LPBYTE)MemScanWord((LPWORD)p, c2, len);
 			} else {
 				p1 = MemScanByte(p, c1, len);
 				if(c2) p2 = MemScanByte(p, c2, len);
