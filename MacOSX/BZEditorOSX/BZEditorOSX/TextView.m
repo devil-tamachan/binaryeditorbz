@@ -259,6 +259,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     m_isDoc1 = TRUE;
     
     m_pFile = NULL;
+    
+    m_bShowCaret2 = FALSE;
+    m_caretRect2 = NSMakeRect(0, 0, m_cell.width, m_cell.height);
 }
 
 -(BOOL)IsToFile
@@ -334,6 +337,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     m_caretRect.size.width = m_bIns ? 2 : m_cell.width;
     if (m_caretTimer==nil) m_caretTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(BlinkCaret:) userInfo:nil repeats:YES];
     
+    [self ShowCaret2];
+    
    // [self setNeedsDisplay:TRUE];
     NSLog(@"InitCaret!");
 }
@@ -352,6 +357,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         m_bCaretOn = TRUE;//virtual-carret
         [self setNeedsDisplayInRect:m_caretRect];
     }
+}
+
+- (void)ShowCaret2
+{
+    m_bShowCaret2 = TRUE;
+}
+- (void)HideCaret2
+{
+    m_bShowCaret2 = FALSE;
 }
 
 -(void)SetTextSize:(TAMASize)cTotal
@@ -459,13 +473,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 - (void)drawRect:(NSRect)dirtyRect
 {
     // Drawing code here.
-    if(m_bCaretOn)
+    if(m_bCaretOn || m_bShowCaret2)
     {
         CGContextRef context = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
         CGContextSaveGState(context);
         CGContextSetBlendMode(context, kCGBlendModeDifference);
         CGContextSetRGBFillColor(context, 1.0, 1.0, 1.0, 1.0);
-        CGContextFillRect(context, m_caretRect);
+        if (m_bCaretOn) CGContextFillRect(context, m_caretRect);
+        if (m_bShowCaret2) CGContextFillRect(context, m_caretRect2);
         CGContextRestoreGState(context);
     }
 }
@@ -495,6 +510,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     [self GridToPixel:&pt];
     m_caretRect.origin.x = pt.x;
     m_caretRect.origin.y = pt.y;
+}
+
+-(void)MoveCaret2:(TAMASize)pt
+{
+    [self GridToPixel:&pt];
+    m_caretRect2.origin.x = pt.x;
+    m_caretRect2.origin.y = pt.y;
 }
 
 @end

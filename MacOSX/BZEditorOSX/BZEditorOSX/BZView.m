@@ -200,7 +200,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     }
     [self MoveCaret:pt];//MoveCaret(pt);
     pt.x = ptx2;
-    //MoveCaret2(pt);
+    [self MoveCaret2:pt];
     
 /*	if(GetMainFrame() && GetMainFrame()->m_bInspectView) {
 		CBZInspectView* pView = (CBZInspectView*)GetNextWindow(GW_HWNDPREV);

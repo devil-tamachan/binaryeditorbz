@@ -45,6 +45,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     NSRect m_caretRect;
     NSTimer *m_caretTimer;
     
+    BOOL m_bShowCaret2;
+    NSRect m_caretRect2;
+    
     BOOL m_bIns;
     
     NSColor* m_colText;
@@ -95,6 +98,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 - (void)BlinkCaret:(NSTimer*)timer;
 - (void)StopCaret;
 
+- (void)ShowCaret2;
+- (void)HideCaret2;
+
 - (void)SetTextSize:(TAMASize)cTotal;
 
 - (void)SetColorByNSColor:(NSColor*)colText colBk:(NSColor*)colBk;
@@ -119,5 +125,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -(void)InitScrollBar;
 
 - (void)MoveCaret:(TAMASize)pt;
+- (void)MoveCaret2:(TAMASize)pt;
 
 @end
