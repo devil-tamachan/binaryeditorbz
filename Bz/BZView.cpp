@@ -247,15 +247,19 @@ void CBZView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	if(m_charset == CTYPE_EBCDIC)
 		LoadEbcDicTable();
 
-	if(GetMainFrame() && GetMainFrame()->m_bStructView) {
-		CBZFormView* pView = (CBZFormView*)GetNextWindow(GW_HWNDPREV);
-		if(pView!=NULL)
-			pView->SelectTag();
-	}
-	if(GetMainFrame()) {
-		CBZAnalyzerView* pView = (CBZAnalyzerView*)GetNextWindow(GW_HWNDPREV);
-		if(pView!=NULL)
-			pView->Clear();
+	CMainFrame *pMainFrame = GetMainFrame();
+	if(pMainFrame)
+	{
+		if(pMainFrame->m_bStructView) {
+			CBZFormView* pView = (CBZFormView*)GetNextWindow(GW_HWNDPREV);
+			if(pView!=NULL)
+				pView->SelectTag();
+		}
+		if(pMainFrame->m_bAnalyzerView) {
+			CBZAnalyzerView* pView = (CBZAnalyzerView*)GetNextWindow(GW_HWNDPREV);
+			if(pView!=NULL)
+				pView->Clear();
+		}
 	}
 	Invalidate();
 	InitCaret();
