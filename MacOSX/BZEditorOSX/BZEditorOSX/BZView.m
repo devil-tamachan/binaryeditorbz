@@ -741,6 +741,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         BZView *bzBrother = [bzWnd GetBrotherView:self];
         [bzBrother StopCaret];
         [self InitCaret];
+        [bzBrother HideCaret2];
         Document *doc = [self GetDocument];
         [bzWnd setTitle:(doc.fileURL)?doc.fileURL.lastPathComponent : @"Untitled"];
     }
@@ -936,9 +937,10 @@ Error:
 		return;
 	if (m_pDoc->m_bReadOnly)
 		goto Error;
-	if (!m_bEnterVal && !preChar) {
+	if (!m_bEnterVal && !preChar)
+    {
 		__uint64_t dwSize = 1;
-	/*	if(m_bCaretOnChar && (m_charset == CTYPE_UNICODE || (m_charset > CTYPE_UNICODE) && _ismbblead((BYTE)nChar))) {
+	/*if(m_bCaretOnChar && (m_charset == CTYPE_UNICODE || (m_charset > CTYPE_UNICODE) && _ismbblead((BYTE)nChar))) {
 			if(m_charset == CTYPE_UTF8)		// ### 1.54b
 				dwSize = 3;
 			else
@@ -998,7 +1000,7 @@ Error:
 	*p = (__uint8_t)nChar;
 	//Invalidate(FALSE);
 	if(!m_bEnterVal) {
-		[self MoveCaretTo:m_dwCaret+1];//MoveCaretTo(m_dwCaret+1);
+		[self MoveCaretTo:m_dwCaret+1];
 	}
 	return;
 Error:

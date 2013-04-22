@@ -365,7 +365,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 }
 - (void)HideCaret2
 {
-    m_bShowCaret2 = FALSE;
+    if (m_bShowCaret2) {
+        m_bShowCaret2 = FALSE;
+        [self setNeedsDisplayInRect:m_caretRect2];
+    }
 }
 
 -(void)SetTextSize:(TAMASize)cTotal

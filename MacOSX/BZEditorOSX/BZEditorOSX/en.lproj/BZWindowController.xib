@@ -41,7 +41,7 @@
 			<object class="NSWindowTemplate" id="275939982">
 				<int key="NSWindowStyleMask">15</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{133, 235}, {350, 300}}</string>
+				<string key="NSWindowRect">{{133, 235}, {533, 318}}</string>
 				<int key="NSWTFlags">1886912512</int>
 				<string key="NSWindowTitle">Window</string>
 				<string key="NSWindowClass">BZWindow</string>
@@ -69,7 +69,6 @@
 								<int key="NSvFlags">268</int>
 								<string key="NSFrame">{{0, 14}, {134, 19}}</string>
 								<reference key="NSSuperview"/>
-								<reference key="NSWindow"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSComboBoxCell" key="NSCell" id="1005635349">
@@ -205,7 +204,6 @@
 								<int key="NSvFlags">256</int>
 								<string key="NSFrame">{{21, 14}, {17, 17}}</string>
 								<reference key="NSSuperview"/>
-								<reference key="NSWindow"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSButtonCell" key="NSCell" id="1042473926">
@@ -302,7 +300,6 @@
 								<int key="NSvFlags">268</int>
 								<string key="NSFrame">{{2, 14}, {30, 30}}</string>
 								<reference key="NSSuperview"/>
-								<reference key="NSWindow"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSButtonCell" key="NSCell" id="780288548">
@@ -490,7 +487,7 @@
 				<object class="NSView" key="NSWindowView" id="568628114">
 					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
-					<string key="NSFrameSize">{350, 300}</string>
+					<string key="NSFrameSize">{533, 318}</string>
 					<reference key="NSSuperview"/>
 					<reference key="NSWindow"/>
 				</object>
@@ -756,13 +753,13 @@
 						<string key="OnCharmodeUTF8:">id</string>
 						<string key="OnFileSaveDumpList:">id</string>
 						<string key="OnFindNext:">id</string>
+						<string key="OnUndo:">id</string>
 						<string key="OnViewAnalyzer:">id</string>
 						<string key="OnViewBitmap:">id</string>
 						<string key="OnViewInspect:">id</string>
 						<string key="OnViewSplitH:">id</string>
 						<string key="OnViewSplitV:">id</string>
 						<string key="OnViewStruct:">id</string>
-						<string key="openDocument:">id</string>
 						<string key="openDocumentWithClose:">id</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="actionInfosByName">
@@ -818,6 +815,10 @@
 							<string key="name">OnFindNext:</string>
 							<string key="candidateClassName">id</string>
 						</object>
+						<object class="IBActionInfo" key="OnUndo:">
+							<string key="name">OnUndo:</string>
+							<string key="candidateClassName">id</string>
+						</object>
 						<object class="IBActionInfo" key="OnViewAnalyzer:">
 							<string key="name">OnViewAnalyzer:</string>
 							<string key="candidateClassName">id</string>
@@ -840,10 +841,6 @@
 						</object>
 						<object class="IBActionInfo" key="OnViewStruct:">
 							<string key="name">OnViewStruct:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="openDocument:">
-							<string key="name">openDocument:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="openDocumentWithClose:">
