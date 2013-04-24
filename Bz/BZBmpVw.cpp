@@ -69,6 +69,7 @@ BEGIN_MESSAGE_MAP(CBZBmpView, CScrollView)
 	ON_COMMAND_RANGE(ID_BMPVIEW_WIDTH128, ID_BMPVIEW_ZOOM, OnBmpViewMode)
 	ON_WM_SETCURSOR()
 	ON_COMMAND_RANGE(ID_BMPVIEW_8BITCOLOR, ID_BMPVIEW_32BITCOLOR, OnBmpViewColorWidth)
+	ON_WM_MOUSEWHEEL()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -272,7 +273,7 @@ void CBZBmpView::OnLButtonDown(UINT nFlags, CPoint point)
 		if(dwPtr < pView->m_dwTotal) {
 			pView->m_dwCaret = dwPtr;
 			pView->GotoCaret();
-			pView->Activate();
+			//pView->Activate();
 		}
 	}
 
@@ -281,6 +282,7 @@ void CBZBmpView::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CBZBmpView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
 {
+	ATLTRACE("OnVScroll\n");
 	// TODO: Add your message handler code here and/or call default
 	if(nSBCode == SB_THUMBTRACK) {		// ### 1.54
 		SCROLLINFO si;
@@ -291,6 +293,16 @@ void CBZBmpView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	
 	CScrollView::OnVScroll(nSBCode, nPos, pScrollBar);
 }
+
+BOOL CBZBmpView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	// TODO: ここにメッセージ ハンドラ コードを追加するか、既定の処理を呼び出します。
+
+	this->SendMessage(WM_VSCROLL, zDelta > 0 ? SB_LINEUP : SB_LINEDOWN, 0);
+
+	return CScrollView::OnMouseWheel(nFlags, zDelta, pt);
+}
+
 
 // ###1.54c
 
