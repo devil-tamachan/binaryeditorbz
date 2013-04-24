@@ -239,7 +239,12 @@ LPBYTE CBZDoc::QueryMapView1(LPBYTE pBegin, DWORD dwOffset)
 			m_dwFileOffset = dwTmp1 - (dwTmp1 % m_dwAllocationGranularity);
 			m_dwMapSize = m_dwTotal - m_dwFileOffset;
 		}
-		m_pMapStart = (LPBYTE)::MapViewOfFile(m_hMapping, m_bReadOnly ? FILE_MAP_READ : FILE_MAP_WRITE, 0, m_dwFileOffset, m_dwMapSize);
+		int retry = 3;
+		m_pMapStart = NULL;
+		do
+		{
+			m_pMapStart = (LPBYTE)::MapViewOfFile(m_hMapping, m_bReadOnly ? FILE_MAP_READ : FILE_MAP_WRITE, 0, m_dwFileOffset, m_dwMapSize);
+		} while(m_pMapStart==NULL && --retry > 0);
 		TRACE("MapViewOfFile Doc=%X, %X, Offset:%X, Size:%X\n", this, m_pMapStart, m_dwFileOffset, m_dwMapSize);
 		if(!m_pMapStart) {
 			ErrorMessageBox();

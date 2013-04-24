@@ -222,8 +222,8 @@ void CBZBmpView::OnDraw(CDC* pDC)
 		int nBmpHeight = (rClip.Height() - nSpaceTop) / options.nBmpZoom;
 		m_lpbi->biHeight = -nBmpHeight;
 
-		DWORD dwOffset = (rClip.top - (BMPSPACE - nSpaceTop)) * m_cBmp.cx / options.nBmpZoom;
-		dwOffset*=options.nBmpColorWidth/8;
+		DWORD dwOffset = ((DWORD)rClip.top - (DWORD)(BMPSPACE - nSpaceTop)) * (DWORD)m_cBmp.cx / (DWORD)options.nBmpZoom;
+		dwOffset*=(DWORD)(options.nBmpColorWidth/8);
 #ifdef FILE_MAPPING
 		//pDoc->QueryMapView(pDoc->GetDocPtr(), dwOffset);
 		DWORD dwIdeaSize = m_cBmp.cx * nBmpHeight * (options.nBmpColorWidth/8);
