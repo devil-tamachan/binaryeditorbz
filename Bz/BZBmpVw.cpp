@@ -215,7 +215,7 @@ void CBZBmpView::OnDraw(CDC* pDC)
 		rClip.bottom += rClip.bottom % options.nBmpZoom;
 
 		int nSpaceTop = (rClip.top < BMPSPACE) ? BMPSPACE - rClip.top : 0;
-		int nBottom = m_cBmp.cy * options.nBmpZoom + BMPSPACE;
+		long nBottom = m_cBmp.cy * options.nBmpZoom + BMPSPACE;
 		if(rClip.bottom >= nBottom)
 			rClip.bottom = nBottom;
 
