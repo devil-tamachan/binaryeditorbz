@@ -222,7 +222,7 @@ void CBZBmpView::OnDraw(CDC* pDC)
 		int nBmpHeight = (rClip.Height() - nSpaceTop) / options.nBmpZoom;
 		m_lpbi->biHeight = -nBmpHeight;
 
-		ATLTRACE("Clip: left=%ld, top=%ld(0x%016llX) %dx%d\n", rClip.left, rClip.top, rClip.top, rClip.Width(), rClip.Height());
+		ATLTRACE("Clip: left=%ld, top=%ld(0x%08lX) %dx%d\n", rClip.left, rClip.top, rClip.top, rClip.Width(), rClip.Height());
 		DWORD dwOffset = ((DWORD)rClip.top - (DWORD)(BMPSPACE - nSpaceTop)) / (DWORD)options.nBmpZoom * (DWORD)m_cBmp.cx;
 		ATLTRACE("DWORD dwOffset 0x%08X = ((DWORD)rClip.top 0x%08X - (DWORD)(BMPSPACE 0x%X - nSpaceTop 0x%X)) * (DWORD)m_cBmp.cx 0x%08X / (DWORD)options.nBmpZoom 0x%08X;\n", dwOffset, (DWORD)rClip.top, BMPSPACE, nSpaceTop, m_cBmp.cx, options.nBmpZoom);
 		dwOffset*=(DWORD)(options.nBmpColorWidth/8);

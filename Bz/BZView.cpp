@@ -76,22 +76,26 @@ BOOL CBZView::m_bHexSize = FALSE;
 LPSTR CBZView::m_pEbcDic = NULL;
 BOOL  CBZView::m_bLoadEbcDic = FALSE;
 
-inline int SwapWord(int val)
+//inline int SwapWord(int val)
+inline WORD SwapWord(WORD val)
 {
 	if(options.bByteOrder) {
-		_asm {
+		 _byteswap_ushort(val);
+/*		_asm {
 			mov eax, val
 			xchg al,ah
 			mov val, eax
-		}
+		}*/
 	}
 	return val;
 }
 
-inline int SwapDword(int val)
+//inline int SwapDword(int val)
+inline DWORD SwapDword(DWORD val)
 {
 	if(options.bByteOrder) {
-		_asm {
+		 _byteswap_ulong(val);
+/*		_asm {
 			push val
 			pop ax
 			pop bx
@@ -100,7 +104,7 @@ inline int SwapDword(int val)
 			push ax
 			push bx
 			pop val
-		}
+		}*/
 	}
 	return val;
 }
@@ -1662,19 +1666,26 @@ BOOL CBZView::CalcHexa(LPCSTR sExp, long& n1)
 	long n2;
 	char op = 0;
 	int  base = 16;
+	BOOL flagHex=false;
 
 	for(;;) {
 		while(*p > 0 && *p <= ' ') p++;
 		if(!*p) break;
+		if(*p == '0' && (*(p+1) == 'x' || *(p+1) == 'X'))
+		{
+			flagHex = true;
+			p+=2;
+		}
 		LPCSTR p0 = p;
 		if(*p == '-')
-			n2 = strtol(p, (char**)&p, base);
+			n2 = strtol(p, (char**)&p, flagHex?16:base);
 		else
-			n2 = strtoul(p, (char**)&p, base);
+			n2 = strtoul(p, (char**)&p, flagHex?16:base);
 		base = 16;
 		if(p != p0) {
+			if(flagHex)flagHex=false;
 			switch (op) {
-			case 0:
+			case 0:n1=n2;break;
 			case '+': n1 += n2; break;
 			case '-': n1 -= n2; break;
 			case '*': n1 *= n2; break;
