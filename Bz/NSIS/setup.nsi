@@ -124,9 +124,13 @@ Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite on
   CreateDirectory "$SMPROGRAMS\BzEditor"
+  CreateDirectory "$INSTDIR\htm"
   File "..\Release\Bz.exe"
 ;  File "..\chm\Bz.chm"
   File "..\index.htm"
+  File "data\Bz.txt"
+  File "..\Release\Bzres_us.dll"
+  SetOutPath "$INSTDIR\htm"
   File "..\htm\basic.htm"
   File "..\htm\bmpview.htm"
   File "..\htm\filemap.htm"
@@ -139,8 +143,6 @@ Section "MainSection" SEC01
   File "..\htm\splitview.htm"
   File "..\htm\tips.htm"
   File "..\htm\zlibAnalyzer.htm"
-  File "data\Bz.txt"
-  File "..\Release\Bzres_us.dll"
   SetOutPath "$APPDATA\BzEditor"
   SetOverwrite off
   File "data\Bz.def"
@@ -240,6 +242,7 @@ Section Uninstall
   Delete "$SMPROGRAMS\BzEditor\Uninstall.lnk"
   Delete "$SENDTO\Bz.lnk"
 
+  RMDir "$INSTDIR\htm"
   RMDir "$SMPROGRAMS\BzEditor"
   RMDir "$INSTDIR"
 
