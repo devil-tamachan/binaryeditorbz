@@ -81,6 +81,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_INSPECT, &CMainFrame::OnUpdateViewInspect)
 	ON_COMMAND(ID_VIEW_ANALYZER, &CMainFrame::OnViewAnalyzer)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_ANALYZER, &CMainFrame::OnUpdateViewAnalyzer)
+	ON_COMMAND(ID_HELP_INDEX, &CMainFrame::OnHelpIndex)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -739,4 +740,8 @@ void CMainFrame::UpdateInspectViewChecks()
 		((CBZInspectView*)m_pSplitter->GetPane(r, c))->_UpdateChecks();
 		((CBZInspectView*)m_pSplitter->GetPane(r, c))->Update();
 	}
+}
+void CMainFrame::OnHelpIndex()
+{
+	ShellExecute(NULL, _T("open"), _T("index.htm"), NULL, NULL, SW_SHOWNORMAL);
 }

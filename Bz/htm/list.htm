@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Shift_JIS">
+<TITLE>構造体リスティング</TITLE>
+<style type="text/css">
+.auto-style1 {
+	border: 1px solid #000000;
+	background-color: #C0C0C0;
+}
+.auto-style2 {
+	font-size: x-small;
+}
+.auto-style3 {
+	font-size: x-small;
+	font-weight: bold;
+}
+</style>
+</HEAD>
+
+<BODY BGCOLOR="#FFFFE2" TEXT="#000000">
+
+<table style="width: 100%" cellpadding="7">
+	<tr>
+		<td class="auto-style1">
+<P><A NAME="hid_structureview"></A><B>構造体リスティング</B></P></td>
+	</tr>
+	<tr>
+		<td style="height: 19px">
+</td>
+	</tr>
+	<tr>
+		<td>
+
+
+<P class="auto-style2"><span class="auto-style3">View-Structure View</span><span class="auto-style2">メニューで、構造体リスト窓が開きます。「Structures:」リストの中から表示したい構造体名を選び、次に構造体の先頭アドレスをダブルクリックすると、「Members:」リストに、カーソル位置からのデータを構造体のメンバとして表示します。</span><br class="auto-style2">
+<span class="auto-style2">「Members:」リスト上の各メンバをクリックすると、そのデータの位置へカーソルが移動します。さらに、メンバをダブルクリックすると、検索ボックスから新たなデータを入力できます。（リードオンリモードでは、入力できません）</span><br class="auto-style2">
+<span class="auto-style2">※Ver1.61より、メンバの最後の&lt;next&gt;をダブルクリックすると、 次の構造体がある場合にはそれを選択し、次のデータ位置へカーソルを移動します。</span></P>
+
+<P class="auto-style2">構造体リストは、BZ.DEFファイルに記述します。BZ.DEFファイルは、BZ.EXEと同じディレクトリに置いてください。書式はC言語の構造体定義に似ていますが、以下の点に留意してください。</P>
+
+<UL>
+	<LI><span class="auto-style2">型名のキーワードは、次の15種です。構造体のネストはできません。</span><P>
+	<span class="auto-style2">char, short, long(int), int64　　　　符号つき１０進数表示</span><br class="auto-style2" />
+	<span class="auto-style2">byte, word, dword, qword　　　　　符号なし１０進数表示</span><br class="auto-style2" />
+	<span class="auto-style2">BYTE, WORD, DWORD, QWORD　　　符号なし１６進数表示<br>float, 
+	double　　　　　　　　　　　浮動小数点数</span></p>
+</LI>
+
+	<LI><span class="auto-style2">複数のメンバをカンマで区切る場合は、カンマの両側にスペースを入れます。</span><P class="auto-style2">(例) dword cx,cy;</P></LI>
+</UL>
+
+<UL>
+	<LI><span class="auto-style2">配列を記述する場合、メンバ名と[ ]の間にスペースを入れます。</span><P class="auto-style2">(例) long dfReserved1[4];</P></LI>
+</UL>
+
+<UL>
+	<LI><span class="auto-style2">Ver1.61より、構造体記述の後に、ファイル拡張子を記述しておくと、一致した構造体のみをリストに表示します。ファイルに拡張子が無い場合、または一致した構造体が無い場合は、全ての構造体をリストします。複数の拡張子を記述する場合には、カンマの両側にスペースを入れます。</span><P class="auto-style2">(例)　} bmp,ico,cur;</P>
+</LI>
+</UL>
+
+</td>
+	</tr>
+</table>
+
+</BODY>
+</HTML>

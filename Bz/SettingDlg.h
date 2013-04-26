@@ -90,7 +90,8 @@ public:
 	void OnHelp(UINT uNotifyCode, int nID, CWindow wndCtl)
 	{
 		//AfxGetApp()->WinHelp(HID_FILEMAPPING);
-		AfxGetApp()->HtmlHelp(HID_FILEMAPPING);
+		//AfxGetApp()->HtmlHelp(HID_FILEMAPPING);
+		ShellExecute(NULL, _T("open"), _T("htm\\filemap.htm"), NULL, NULL, SW_SHOWNORMAL);
 	}
 
 };

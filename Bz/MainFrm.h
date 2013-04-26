@@ -116,6 +116,7 @@ public:
 	void DeleteSplitterWnd(CCreateContext* pContext);
 	afx_msg void OnViewAnalyzer();
 	afx_msg void OnUpdateViewAnalyzer(CCmdUI *pCmdUI);
+	afx_msg void OnHelpIndex();
 };
 
 #define BZ_CLASSNAME "BzEditorClass"

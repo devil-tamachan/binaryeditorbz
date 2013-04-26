@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Shift_JIS">
+<TITLE>File Mapping</TITLE>
+<style type="text/css">
+.auto-style1 {
+	border: 1px solid #000000;
+	background-color: #C0C0C0;
+}
+.auto-style2 {
+	font-size: x-small;
+}
+.auto-style3 {
+	font-size: x-small;
+	font-weight: bold;
+}
+</style>
+</HEAD>
+
+<BODY BGCOLOR="#FFFFE2" TEXT="#000000">
+
+<table style="width: 100%" cellpadding="7">
+	<tr>
+		<td class="auto-style1">
+<P><A NAME="hid_filemapping"></A><B>File Mapping</B></P></td>
+	</tr>
+	<tr>
+		<td style="height: 19px">
+</td>
+	</tr>
+	<tr>
+		<td>
+
+<P><span class="auto-style2">　Ver1.5x以前は、ファイルをオンメモリで処理していたため、数10MBを越える巨大なファイルは、開くのに非常に時間がかかったり、正常に処理できませんでした。</span><br class="auto-style2">
+<span class="auto-style2">　Ver1.6では、巨大なファイルは「</span><span class="auto-style3">File Mapping</span><span class="auto-style2">」モードで開きます。</span></P>
+<P>　<span class="auto-style3">File Mapping</span><span class="auto-style2">では、ファイル中の参照した部分のみメモリへ読み込み、また修正した部分のみをファイルへ書き戻すため、巨大なファイルも迅速に処理可能です。</span></P>
+<P><span class="auto-style2">　ただし、</span><span class="auto-style3">File Mapping</span><span class="auto-style2">には、以下のような制限があります。</span></P>
+<UL>
+	<LI><span class="auto-style2">4GBを越えるファイルは、最後まで読み込めません。（内部ポインタが32bitのため）</span><BR class="auto-style2"></LI>
+
+	<LI><span class="auto-style2">ファイルを開いた後に、リードオンリモードは変更できません。あらかじめ、[</span><span class="auto-style3">読込時リードオンリ</span><span class="auto-style2">]メニューを変更してから、開いてください。</span><BR class="auto-style2"></LI>
+
+	<LI><span class="auto-style2">ファイルのプロパティにリードオンリの属性がある場合には、リードオンリでしか開けません。</span><BR class="auto-style2"></LI>
+
+	<LI><span class="auto-style2">編集可能の場合でも、ファイルサイズの変更を伴う編集はできません。上書きモードで16進数値の入力、およびペーストが行えるのみです。</span><BR class="auto-style2"></LI>
+
+	<LI><span class="auto-style3">File Mapping</span><span class="auto-style2">モードで編集すると、その結果は即座にファイルへ反映されています。終了時に「変更を保存しますか？」で「いいえ」を選んだ場合は、内部的にUNDOの処理を行い、開いた時点のファイルの内容へ戻しています。</span><BR class="auto-style2"></LI>
+
+	<LI><span class="auto-style3">File Mapping</span><span class="auto-style2">モード時は、アドレスが32bit表示になります。</span><BR class="auto-style2"></LI>
+
+	<LI><span class="auto-style3">File Mapping</span><span class="auto-style2">で開くファイルサイズの下限は、初期状態で1MB(1024KB)です。 [</span><span class="auto-style3">ツール</span><span class="auto-style2">]-[</span><span class="auto-style3">高度な設定</span><span class="auto-style2">]メニューで、このファイルサイズを変更できます。</span><BR class="auto-style2"></LI>
+
+	<LI><span class="auto-style3">File Mapping</span><span class="auto-style2">で開く場合のメモリ空間(</span><span class="auto-style3">View)</span><span class="auto-style2">のサイズは、ファイル全体をMapして失敗した場合には、[</span><span class="auto-style3">高度な設定</span><span class="auto-style2">]の</span><span class="auto-style3">Viewサイズ</span><span class="auto-style2">(初期状態で64MB)になります。</span></LI>
+</UL>
+
+</td>
+	</tr>
+</table>
+
+</BODY>
+</HTML>
