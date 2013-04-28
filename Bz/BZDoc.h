@@ -83,6 +83,7 @@ public:
 	BOOL	IsFileMapping() { return m_hMapping != NULL; }
 	LPBYTE  QueryMapView(LPBYTE pBegin, DWORD dwOffset)
 	{
+		ATLTRACE("QueryMapView pBegin=0x%08X, dwOffset=0x%08X\n", pBegin, dwOffset);
 		//return m_pMapStart ? QueryMapView1(pBegin, dwOffset) : pBegin;
 		LPBYTE p = pBegin + dwOffset;
 		if(m_pMapStart && IsOutOfMap1(p))return QueryMapView1(pBegin, dwOffset);
@@ -98,7 +99,7 @@ public:
 			if(dwNeedLast > m_dwTotal-1)dwNeedLast=m_dwTotal-1;
 			if(IsOutOfMapTama(dwNeedStart) || IsOutOfMapTama(dwNeedLast))return QueryMapView1(m_pData, dwOffset);
 		}
-		return m_pData;
+		return m_pData+dwOffset;
 	}
 	BOOL    IsOutOfMap(LPBYTE p) { return m_pMapStart ? IsOutOfMap1(p) : FALSE; }
 	DWORD	GetMapSize() { return m_pMapStart ? m_dwFileOffset + m_dwMapSize : m_dwTotal; }
