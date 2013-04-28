@@ -173,13 +173,12 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 			return;
 		}
 #endif //FILE_MAPPING
-		if(!IsZlibDeflate(*(p+ofs_inflateStart), *(p+ofs_inflateStart+1)))continue;
+		if(!IsZlibDeflate(*p, *(p+1)))continue;
 
 		z_stream z = {0};
 		z.next_out = outbuf;
 		z.avail_out = outbufsize;
 
-		DWORD ofs = ofs_inflateStart;
 		DWORD dwSize_Nokori = 1000;
 		if(inflateInit(&z)!=Z_OK)continue;
 		/*do*/ {
@@ -195,7 +194,7 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 				break;
 			}*/
 			DWORD dwSize = min(min(dwRemain, dwSize_Nokori), 100);
-			z.next_in = p+ofs;
+			z.next_in = p;
 			z.avail_in = dwSize;
 			inflateStatus = inflate(&z, Z_NO_FLUSH);
 			dwSize_Nokori -= dwSize;
@@ -366,9 +365,10 @@ HRESULT CBZAnalyzerView::SaveFileA(LPCSTR pathOutputDir, unsigned long ulStartAd
 			}
 #endif //FILE_MAPPING
 			DWORD dwSize = min(dwRemain, 0x100000);
-			z.next_in = p+nextOffset;
+			z.next_in = p;
 			z.avail_in = dwSize;
 			nextOffset+=dwSize;
+			p+=dwSize;
 		}
 		inflateStatus = inflate(&z, Z_NO_FLUSH);
 		if(z.avail_out==0)
