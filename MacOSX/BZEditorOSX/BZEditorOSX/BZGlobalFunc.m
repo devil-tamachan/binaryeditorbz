@@ -211,19 +211,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	long n2;
 	char op = 0;
 	int  base = 16;
+    BOOL flagHex=false;
     
 	for(;;) {
 		while(*p > 0 && *p <= ' ') p++;
 		if(!*p) break;
+		if(*p == '0' && (*(p+1) == 'x' || *(p+1) == 'X'))
+		{
+			flagHex = true;
+			p+=2;
+		}
 		const char* p0 = p;
 		if(*p == '-')
-			n2 = strtol(p, (char**)&p, base);
+			n2 = strtol(p, (char**)&p, flagHex?16:base);
 		else
-			n2 = strtoul(p, (char**)&p, base);
+			n2 = strtoul(p, (char**)&p, flagHex?16:base);
 		base = 16;
 		if(p != p0) {
+			if(flagHex)flagHex=false;
 			switch (op) {
-                case 0:
+                case 0:n1=n2;break;
                 case '+': *n1 += n2; break;
                 case '-': *n1 -= n2; break;
                 case '*': *n1 *= n2; break;

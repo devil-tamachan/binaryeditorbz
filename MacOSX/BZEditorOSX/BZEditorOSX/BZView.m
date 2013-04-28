@@ -935,8 +935,11 @@ Error:
     
 	if (nChar < ' ' || nChar >= 256)
 		return;
+    NSString *strInput = [NSString stringWithFormat: @"%C", nChar];
+    
 	if (m_pDoc->m_bReadOnly)
 		goto Error;
+    
 	if (!m_bEnterVal && !preChar)
     {
 		__uint64_t dwSize = 1;
@@ -1004,6 +1007,7 @@ Error:
 	}
 	return;
 Error:
+    NSBeep();
 	//MessageBeep(MB_NOFOCUS);
 	return;
 }
