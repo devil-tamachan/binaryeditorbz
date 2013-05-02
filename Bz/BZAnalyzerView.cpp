@@ -164,7 +164,7 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 	for(DWORD ofs_inflateStart = 0; ofs_inflateStart < filesize-1/*-2ˆÈã‚Å‚à‚¢‚¢‚©‚à*/; ofs_inflateStart++)
 	{
 #ifdef FILE_MAPPING
-		if(p && !(p = pDoc->QueryMapViewTama(ofs_inflateStart, 1000))) return;
+		if(p && !(p = pDoc->QueryMapViewTama2(ofs_inflateStart, 1000))) return;
 		DWORD dwRemain = pDoc->GetMapRemain(ofs_inflateStart);
 		if(dwRemain<2)
 		{
@@ -179,7 +179,7 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 		z.next_out = outbuf;
 		z.avail_out = outbufsize;
 
-		DWORD dwSize_Nokori = 1000;
+		DWORD dwSize_Nokori = dwRemain;
 		if(inflateInit(&z)!=Z_OK)continue;
 		/*do*/ {
 		/*	if(z.avail_out==0)
@@ -356,7 +356,7 @@ HRESULT CBZAnalyzerView::SaveFileA(LPCSTR pathOutputDir, unsigned long ulStartAd
 		{
 			if(nextOffset>=dwTotal)goto saveerr2;
 #ifdef FILE_MAPPING
-			p = pDoc->QueryMapViewTama(nextOffset, 0x100000);
+			p = pDoc->QueryMapViewTama2(nextOffset, 0x100000);
 			DWORD dwRemain = pDoc->GetMapRemain(nextOffset);
 			if(dwRemain==0)
 			{

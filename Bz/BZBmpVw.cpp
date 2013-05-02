@@ -231,10 +231,11 @@ void CBZBmpView::OnDraw(CDC* pDC)
 #ifdef FILE_MAPPING
 		//pDoc->QueryMapView(pDoc->GetDocPtr(), dwOffset);
 		DWORD dwIdeaSize = m_cBmp.cx * nBmpHeight * (options.nBmpColorWidth/8);
-		pDoc->QueryMapViewTama(dwOffset, dwIdeaSize);
+		LPBYTE lpBits = pDoc->QueryMapViewTama2(dwOffset, dwIdeaSize);
 		ASSERT(pDoc->GetMapRemain(dwOffset) >= dwIdeaSize);
-#endif //FILE_MAPPING
+#elif
 		LPBYTE lpBits = pDoc->GetDocPtr() + dwOffset;
+#endif //FILE_MAPPING
 
 		::StretchDIBits(pMemDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
 				, m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/

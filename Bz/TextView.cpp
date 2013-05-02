@@ -458,12 +458,12 @@ void CTextView::MoveCaret(POINT pt)
 {
 //	if(pt.x == -1)
 //		TRACE("!");
-	TRACE("CTextView::MoveCaret(): x=%d, y=%d\n", pt.x, pt.y);
+	//TRACE("CTextView::MoveCaret(): x=%d, y=%d\n", pt.x, pt.y);
 	m_ptCaret = pt;
 	if(GetFocus() == this) {
 		GridToPixel(pt);
 		SetCaretPos(pt);
-		TRACE("CTextView::MoveCaret(): SetCaretPos x=%d, y=%d\n", pt.x, pt.y);
+		//TRACE("CTextView::MoveCaret(): SetCaretPos x=%d, y=%d\n", pt.x, pt.y);
 		if(pt.x >= 0) {
 			HIMC hIMC;
 			if(hIMC = ImmGetContext(m_hWnd)) {
@@ -479,7 +479,7 @@ void CTextView::MoveCaret(POINT pt)
 
 void CTextView::OnSetFocus(CWnd* pOldWnd) 
 {
-	TRACE("CTextView::OnSetFocus\n");
+	//TRACE("CTextView::OnSetFocus\n");
 	CView::OnSetFocus(pOldWnd);
 	
 	// TODO: Add your message handler code here
@@ -490,7 +490,7 @@ void CTextView::OnSetFocus(CWnd* pOldWnd)
 
 void CTextView::OnKillFocus(CWnd* pNewWnd) 
 {
-	TRACE("CTextView::OnKillFocus\n");
+	//TRACE("CTextView::OnKillFocus\n");
 	CView::OnKillFocus(pNewWnd);
 	
 	// TODO: Add your message handler code here
@@ -587,6 +587,7 @@ void CTextView::PutFormatStr(LPCTSTR fmt, ...)
 void CTextView::PutBegin(CDC* pDC)
 {
 	m_pDC = pDC;
+	ASSERT(m_pDC->m_hDC!=NULL);
 	m_nText = 0;
 	Locate(0, 0);
 	SetColor();

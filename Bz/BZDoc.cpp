@@ -258,6 +258,35 @@ LPBYTE CBZDoc::QueryMapView1(LPBYTE pBegin, DWORD dwOffset)
 	return pBegin;
 }
 
+void CBZDoc::AlignMapSize(DWORD dwStartOffset, DWORD dwIdealMapSize)
+{
+	m_dwFileOffset = dwStartOffset - (dwStartOffset % m_dwAllocationGranularity);
+	m_dwMapSize = min(max(options.dwMaxMapSize, dwIdealMapSize),  m_dwTotal - m_dwFileOffset);
+	if(m_dwMapSize == 0)
+	{
+		DWORD dwTmp1 = (m_dwTotal - m_dwAllocationGranularity);
+		m_dwFileOffset = dwTmp1 - (dwTmp1 % m_dwAllocationGranularity);
+		m_dwMapSize = m_dwTotal - m_dwFileOffset;
+	}//バグ：ファイルサイズが極端に小さい場合バグる
+}
+LPBYTE CBZDoc::_QueryMapViewTama2(DWORD dwStartOffset, DWORD dwIdealMapSize)
+{
+	if(dwStartOffset == m_dwTotal && dwStartOffset == m_dwFileOffset + m_dwMapSize) return GetFileMappingPointerFromFileOffset(dwStartOffset);//バグ？そもそもここに来るのはおかしいのではないか？
+	VERIFY(::UnmapViewOfFile(m_pMapStart));//ここでマッピング空間への変更が実ファイルへ書き込まれる。後に保存せず閉じる場合はアンドゥで戻す。
+
+	AlignMapSize(dwStartOffset, dwIdealMapSize);
+
+	m_pMapStart = (LPBYTE)::MapViewOfFile(m_hMapping, m_bReadOnly ? FILE_MAP_READ : FILE_MAP_WRITE, 0, m_dwFileOffset, m_dwMapSize);
+	TRACE("MapViewOfFile Doc=%X, %X, Offset:%X, Size:%X\n", this, m_pMapStart, m_dwFileOffset, m_dwMapSize);
+	if(!m_pMapStart) {
+		ErrorMessageBox();
+		AfxPostQuitMessage(0);
+		return NULL;
+	}
+	m_pData = m_pMapStart - m_dwFileOffset;
+	return GetFileMappingPointerFromFileOffset(dwStartOffset);
+}
+
 BOOL CBZDoc::IsOutOfMap1(LPBYTE p)
 {
 	return ((int)p < (int)m_pMapStart || (int)p >= (int)(m_pMapStart + m_dwMapSize));

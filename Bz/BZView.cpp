@@ -228,7 +228,7 @@ void CBZView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	ASSERT_VALID(m_pDoc);
 #ifdef FILE_MAPPING
 	if(m_pDoc)
-		 m_pDoc->QueryMapView(m_pDoc->GetDocPtr(), 0);
+		m_pDoc->QueryMapViewTama2(0, 1);//ファイルサイズが０の場合で、デフォルト設定ではない場合、ファイルマッピングモードで開くとエラー
 	m_nColAddr = (options.bDWordAddr || m_pDoc->IsFileMapping()) ? ADDRCOLUMNS_MAP : ADDRCOLUMNS;
 	if(GetViewWidth() != VIEWCOLUMNS) {
 		SetViewSize(CSize(VIEWCOLUMNS, 0));
