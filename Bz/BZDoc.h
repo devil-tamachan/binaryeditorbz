@@ -89,18 +89,6 @@ public:
 		if(m_pMapStart && IsOutOfMap1(p))return QueryMapView1(pBegin, dwOffset);
 		else return pBegin;
 	}
-/*	LPBYTE  QueryMapViewTama1(DWORD dwOffset, DWORD dwSize)
-	{
-		//return m_pMapStart ? QueryMapView1(pBegin, dwOffset) : pBegin;
-		if(m_pMapStart)
-		{
-			DWORD dwNeedStart = dwOffset;
-			DWORD dwNeedLast = dwNeedStart+dwSize-1;
-			if(dwNeedLast > m_dwTotal-1)dwNeedLast=m_dwTotal-1;
-			if(IsOutOfMapTama(dwNeedStart) || IsOutOfMapTama(dwNeedLast))return QueryMapView1(m_pData, dwOffset);
-		}
-		return m_pData;
-	}*/
 	LPBYTE  QueryMapViewTama2(DWORD dwStartOffset, DWORD dwIdealMapSize)
 	{
 		ASSERT(dwIdealMapSize > 0);
