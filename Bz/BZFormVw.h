@@ -34,11 +34,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <afxtempl.h>
 
+extern DWORD g_datasizes[];
+
 class CStructMember
 {
 public:
-	CStructMember(LPSTR name = NULL, int type = 0);
-	~CStructMember();
+	CStructMember(LPSTR name = NULL, int type = 0)
+	{
+		m_name = name;
+		m_type = type;
+		m_len = m_bytes = (type == -1) ? 0 : g_datasizes[type];
+	}
+	CStructMember(CString& name, int type = 0)
+	{
+		m_name = name;
+		m_type = type;
+		m_len = m_bytes = (type == -1) ? 0 : g_datasizes[type];
+	}
+	~CStructMember()
+	{
+	}
 	CString m_name;
 	int		m_type;
 	DWORD	m_len;
@@ -49,9 +64,30 @@ public:
 class CStructTag
 {
 public:
-	CStructTag(LPSTR name = NULL);
-	~CStructTag();
-	CStructTag& operator=(const CStructTag&);
+	CStructTag(LPSTR name = NULL)
+	{
+		m_name = name;
+		m_len = 0;
+	}
+	CStructTag(CString& name)
+	{
+		m_name = name;
+		m_len = 0;
+	}
+	CStructTag(LPSTR name, unsigned int max)
+	{
+		m_name.SetString(name, max);
+		m_len = 0;
+	}
+	~CStructTag()
+	{
+	}
+	CStructTag& operator=(const CStructTag& r)
+	{
+		m_name = r.m_name;
+		m_len  = r.m_len;
+		return *this;
+	}
 	CString m_name;
 	DWORD	m_len;
 	CArray<CStructMember, CStructMember&> m_member;
