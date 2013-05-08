@@ -61,7 +61,7 @@ struct BITMAPINFOHEADER {
 	long	biWidth;
 	long	biHeight;
 	word	biPlanes;
-	word	biBitCount
+	word	biBitCount;
 	dword	biCompression;
 	dword	biSizeImage;
 	long	biXPelsPerMeter;
@@ -103,7 +103,7 @@ struct METAFILEHEADER {
 	short	bbox_x2;
 	short	bbox_y2;
 	short	inch;
-	dword	reserved
+	dword	reserved;
 	WORD	checksum;
 } wmf;
 
@@ -116,44 +116,3 @@ struct METAHEADER {
 	dword	mtMaxRecord;
 	word	mtNoParameters;
 } wmf;
-
-struct MY1HEADER {
-	double t1;
-	double t2;
-	double t3;
-} out;
-
-
-struct MY2HEADER {
-	float f3;
-	float f4;
-	qword qw1;
-	QWORD QW2;
-} out;
-
-
-
-struct MYword {
-	word w1;
-};
-
-struct MYSHORT {
-	short s1;
-};
-
-struct MYdword {
-	dword dw1;
-};
-
-struct MYLONG {
-	long l1;
-};
-
-
-struct MYFLOAT {
-	float f1;
-};
-
-struct MYDOUBLE {
-	double d1;
-};
