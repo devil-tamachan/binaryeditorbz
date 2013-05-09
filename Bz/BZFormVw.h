@@ -139,6 +139,8 @@ public:
 protected:
 	virtual ~CBZFormView();
 
+	HRESULT ParseMember(CString& member, int iTag, int iType, CString& errMsg);
+	HRESULT ParseMemberLine(CString& memberline, int iTag, CString& errMsg);
 	BOOL InitStructList();
 	void InitListTag();
 	void InitListMember(int iTag);
