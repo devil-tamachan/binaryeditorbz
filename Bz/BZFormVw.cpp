@@ -341,11 +341,11 @@ HRESULT CBZFormView::ParseMember(CString& member, int iTag, int iType, CString& 
 		}
 		m_tag[iTag].m_member[iMember].m_len *= atoi(arrayNum);
 	}
-	if(curPos4==-1) return S_OK; //with array
+	/*if(curPos4==-1)*/ return S_OK; //with array
 
 	// ‚Ü‚¾—v‘f‚ª‚ ‚é‚Ì‚Í‚¨‚©‚µ‚¢
-	errMsg.Format(_T("too many arg: %s"), member);
-	return E_FAIL;
+/*	errMsg.Format(_T("too many arg: %s"), member);
+	return E_FAIL;*/
 }
 int SearchType(const char *type)
 {
