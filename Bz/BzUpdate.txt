@@ -1,5 +1,10 @@
 ## CHANGELOG
 
+### 1.8.3 2013/05/28 (devil.tamachan@gmail.com)
+ - (修正) [BZ.defのセミコロン抜け修正][1]
+ - (修正) BZ.defパーサーの改造（コメント追加、空白無しの記述サポート）
+ - (追加) アプリの内部文字コードをMBCS -> Unicodeに変更
+
 ### 1.8.2 2013/04/26 (devil.tamachan@gmail.com)
  - (修正) 再修正: BMPビューが正しく表示されない/クラッシュするバグ
  - (修正) 検索ボックスの計算がされない
@@ -142,3 +147,5 @@ GetLengthを使っているところが２ヶ所あってDWORDへの切り捨て
    Win9xでショートカットにドロップでロングファイル名にならない問題を解消    
    右ボタンメニューを追加    
    アプリケーションキーで右ボタンメニュー表示機能を追加
+
+[1]: http://code.google.com/p/binaryeditorbz/source/diff?spec=svnf3794b608a371e7fc5dd52a97d0068e2dffdc3a9&r=f3794b608a371e7fc5dd52a97d0068e2dffdc3a9&format=side&path=/Bz/NSIS/data/Bz.def
