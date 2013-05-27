@@ -227,7 +227,7 @@ Section Uninstall
   Delete "$INSTDIR\index.htm"
   Delete "$INSTDIR\htm\basic.htm"
   Delete "$INSTDIR\htm\bmpview.htm"
-  Delete "$INSTDIR\htm\Deletemap.htm"
+  Delete "$INSTDIR\htm\filemap.htm"
   Delete "$INSTDIR\htm\findbox.htm"
   Delete "$INSTDIR\htm\high.htm"
   Delete "$INSTDIR\htm\inspector.htm"
