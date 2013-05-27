@@ -91,7 +91,7 @@ public:
 	{
 		//AfxGetApp()->WinHelp(HID_FILEMAPPING);
 		//AfxGetApp()->HtmlHelp(HID_FILEMAPPING);
-		ShellExecute(NULL, _T("open"), _T("htm\\filemap.htm"), NULL, NULL, SW_SHOWNORMAL);
+		ShellExecute(NULL, _T("open"), _T("http://devil-tamachan.github.io/BZDoc/#filemapping.filemapping"), NULL, NULL, SW_SHOWNORMAL);
 	}
 
 };

@@ -743,5 +743,5 @@ void CMainFrame::UpdateInspectViewChecks()
 }
 void CMainFrame::OnHelpIndex()
 {
-	ShellExecute(NULL, _T("open"), _T("index.htm"), NULL, NULL, SW_SHOWNORMAL);
+	ShellExecute(NULL, _T("open"), _T("http://devil-tamachan.github.io/BZDoc/"), NULL, NULL, SW_SHOWNORMAL);
 }
