@@ -41,6 +41,8 @@
 #include <atlddx.h>
 #include <atlsplit.h>
 
+#include <shlobj.h>
+
 #include "..\cmos.h"
 
 #include <imagehlp.h>

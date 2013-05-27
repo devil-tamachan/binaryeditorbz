@@ -318,12 +318,12 @@ void RemoveCommentAll(char *src)
 	}
 }
 
-HRESULT CBZFormView::ParseMember(CString& member, int iTag, int iType, CString& errMsg)
+HRESULT CBZFormView::ParseMember(CStringA& member, int iTag, int iType, CString& errMsg)
 {
 	//     m2[43]  
 	const char *seps = "[ \t\r\n";
 	int curPos4 = 0;
-	CString memberName = member.Tokenize(seps, curPos4);
+	CStringA memberName = member.Tokenize(seps, curPos4);
 	if(memberName==_T(""))
 	{
 		errMsg.Format(_T("member name not found (in %dth struct"), iTag);
@@ -331,7 +331,7 @@ HRESULT CBZFormView::ParseMember(CString& member, int iTag, int iType, CString& 
 	}
 	int iMember = m_tag[iTag].m_member.Add(CStructMember(memberName, iType));
 	if(curPos4==-1) return S_OK; //name only(not array)
-	CString arrayNum = member.Tokenize(seps, curPos4).TrimRight("]");
+	CStringA arrayNum = member.Tokenize(seps, curPos4).TrimRight("]");
 	if(arrayNum!=_T(""))
 	{
 		if(atoi(arrayNum)==0)
@@ -354,13 +354,13 @@ int SearchType(const char *type)
 		if(!strcmp(type, g_datatypes[i222])) break;
 	return i222;
 }
-HRESULT CBZFormView::ParseMemberLine(CString& memberline, int iTag, CString& errMsg)
+HRESULT CBZFormView::ParseMemberLine(CStringA& memberline, int iTag, CString& errMsg)
 {
 	//    DWORD m1,m2[43],m424
 	ATLTRACE("memberline %s(%d)\n", memberline,memberline.GetLength());
 	int curPos2 = 0;
-	CString type = memberline.Tokenize(" \t\r\n", curPos2);
-	CString members = memberline.Right(memberline.GetLength() - type.GetLength()).Trim(" \t\r\n");
+	CStringA type = memberline.Tokenize(" \t\r\n", curPos2);
+	CStringA members = memberline.Right(memberline.GetLength() - type.GetLength()).Trim(" \t\r\n");
 
 	int iType = SearchType(type);
 	if(iType == g_nTypes || type.GetLength()==0 || members.GetLength()==0)
@@ -370,8 +370,8 @@ HRESULT CBZFormView::ParseMemberLine(CString& memberline, int iTag, CString& err
 	}
 
 	int curPos3 = 0;
-	CString member;
-	while((member = members.Tokenize(",", curPos3))!=_T(""))
+	CStringA member;
+	while((member = members.Tokenize(",", curPos3))!="")
 	{
 		//     m2[43]  
 		if(FAILED(ParseMember(member, iTag, iType, errMsg)))
@@ -421,9 +421,9 @@ BOOL CBZFormView::InitStructList()
 					errMsg = _T("'}' not found");
 					goto Error;
 				}
-				CString members;
+				CStringA members;
 				members.SetString(p, pEnd - p);
-				CString memberline;
+				CStringA memberline;
 				int curPos=0;
 				while((memberline = members.Tokenize(";", curPos).Trim(" \t\r\n"))!=_T(""))
 				{
@@ -438,7 +438,7 @@ BOOL CBZFormView::InitStructList()
 					errMsg = _T("';' not found. struct AA{...}; <----");
 					goto Error;
 				}
-				CString extall;
+				CStringA extall;
 				extall.SetString(p, pExtEnd-p);
 				int curPos11=0;
 				CString ext;
@@ -535,15 +535,15 @@ void CBZFormView::InitListMember(int iTag)
 		CStructMember& m = m_tag[iTag].m_member[i];
 		CString s;
 
-		s.Format("+%2X", m.m_ofs);
+		s.Format(_T("+%2X"), m.m_ofs);
 		LV_ITEM lvitem;
 		lvitem.mask = LVIF_TEXT;
 		lvitem.iItem = i;
 		lvitem.iSubItem = MBRCOL_OFFSET;
-		lvitem.pszText = (LPSTR)(LPCSTR)s;
+		lvitem.pszText = (LPTSTR)(LPCTSTR)s;
 		lvitem.iItem = m_listMember.InsertItem(&lvitem);
 
-		lvitem.pszText =  (LPSTR)(LPCSTR)m.m_name;
+		lvitem.pszText =  (LPTSTR)(LPCTSTR)m.m_name;
 		lvitem.iSubItem = MBRCOL_LABEL;
 		m_listMember.SetItem(&lvitem);
 
@@ -572,11 +572,11 @@ void CBZFormView::InitListMember(int iTag)
 				sVal = SeparateByComma64(qval, true);
 				break;
 			case 12://float
-				sVal.Format("%f", val);
+				sVal.Format(_T("%f"), val);
 				break;
 			case 9://double
 				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
-				sVal.Format("%f", qval);
+				sVal.Format(_T("%f"), qval);
 				break;
 			case 1: // byte(unsigned char)
 			case 4: // word(unsigned short)
@@ -589,23 +589,23 @@ void CBZFormView::InitListMember(int iTag)
 				//sVal.Format("%I64u", qval);
 				break;
 			case 2://BYTE(Hex)
-				sVal.Format("0x%02X", val);
+				sVal.Format(_T("0x%02X"), val);
 				break;
 			case 5://WORD(Hex)
-				sVal.Format("0x%04X", val);
+				sVal.Format(_T("0x%04X"), val);
 				break;
 			case 8://DWORD(Hex)
-				sVal.Format("0x%08X", val);
+				sVal.Format(_T("0x%08X"), val);
 				break;
 			case 11://QWORD(hex)
 				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
-				sVal.Format("0x%016I64X", qval);
+				sVal.Format(_T("0x%016I64X"), qval);
 				break;
 			}
 
 			if(m.m_len != m.m_bytes)
-				sVal += " ...";
-			lvitem.pszText =  (LPSTR)(LPCSTR)sVal;
+				sVal += _T(" ...");
+			lvitem.pszText =  (LPTSTR)(LPCTSTR)sVal;
 			lvitem.iSubItem = MBRCOL_VALUE;
 			m_listMember.SetItem(&lvitem);
 		}

@@ -69,9 +69,9 @@ public:
 	void Clear();
 
 	unsigned long GetAddress(int nItem);
-	BOOL MakeExportDirA(LPSTR pathOutputDir, LPCSTR pathDstFolder);
-	int MakeExportPathA(LPSTR pathOutput, LPCSTR pathDir, unsigned long ulStartAddr);
-	HRESULT SaveFileA(LPCSTR pathOutputDir, unsigned long ulStartAddr, LPBYTE outbuf, unsigned int outbufsize);
+	BOOL MakeExportDir(LPTSTR pathOutputDir, LPCTSTR pathDstFolder);
+	int MakeExportPath(LPTSTR pathOutput, LPCTSTR pathDir, unsigned long ulStartAddr);
+	HRESULT SaveFile(LPCTSTR pathOutputDir, unsigned long ulStartAddr, LPBYTE outbuf, unsigned int outbufsize);
 };
 
 

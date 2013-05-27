@@ -489,6 +489,12 @@ void CBZView::OnDraw(CDC* pDC)
 		PutStr("  ");
 		ofs = ofs0;
 
+#if 0//#ifdef _UNICODE
+		wchar_t wcConv;
+		char chConv[3]={0};
+		bool fPutSkip = FALSE;
+#endif
+
 		for_to_(i,16) {
 			if(ofs >= dwTotal) {
 				SetColor();
@@ -525,8 +531,20 @@ void CBZView::OnDraw(CDC* pDC)
 					else if(IsMBS(p, ofs-1, FALSE)) {
 						BYTE c1 = *(p + ofs);
 						if(_ismbclegal(MAKEWORD(c1, c))) {
+#if 1//#ifndef _UNICODE
 							PutChar((char)c);
 							c = *(p + ofs);
+#else
+							chConv[0] = (char)c;
+							c = *(p + ofs);
+							chConv[1] = c;
+							chConv[2] = NULL;
+							//swprintf_s(wcConv, 2, _T("%S"), chConv);
+							//mbtowc(&wcConv, chConv, 3);
+							//PutChar(wcConv);
+							PutStr(CA2WEX<4>(chConv));
+							fPutSkip = TRUE;
+#endif
 							if(i < 15) {
 								ofs++;
 								i++;
@@ -551,8 +569,16 @@ void CBZView::OnDraw(CDC* pDC)
 						}
 						c = _mbcjistojms(c);
 						if(!c) c = '..';
-						PutChar(HIBYTE(c));
+#if 1//#ifndef _UNICODE
+						PutChar(HIBYTE(c));//!""""""""!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 						c &= 0xFF;
+#else
+						chConv[0] = HIBYTE(c);
+						chConv[1] = c&0xFF;
+						chConv[2] = NULL;
+						PutStr(CA2WEX<4>(chConv));
+						fPutSkip = TRUE;
+#endif
 					}
 					break;
 				case CTYPE_UTF8:	// ### 1.54b
@@ -564,15 +590,25 @@ void CBZView::OnDraw(CDC* pDC)
 							if(!(c & 0x20)) {	// U+0080..U+07FF 00000xxx:xxyyyyyy 110xxxxx 10yyyyyy
 								if(ofs + 1 >= dwTotal) c = CHAR_NG;
 								else {
-									w = ((c & 0x1F) << 6) | ((*(p + ofs)) & 0x3F);
-									if(++i < 16) ofs++;
+									if(((*(p + ofs))&0xC0/*11000000*/) != 0x80/*10000000*/)
+									{
+										c = CHAR_NG;
+									} else {
+										w = ((c & 0x1F) << 6) | ((*(p + ofs)) & 0x3F);
+										if(++i < 16) ofs++;
+									}
 								}
 							} else  {			// U+0800..U+FFFF xxxxyyyy:yyzzzzzz 1110xxxx 10yyyyyy 10zzzzzz 
 								if(ofs + 2 >= dwTotal) c = CHAR_NG;
 								else {
-									w = ((c & 0x0F) << 12) | (((*(p + ofs)) & 0x3F) << 6) | ((*(p + ofs + 1)) & 0x3F);
-									if(++i < 16) ofs++;
-									if(++i < 16) ofs++;
+									if(((*(p + ofs))&0xC0) != 0x80 || ((*(p + ofs + 1))&0xC0) != 0x80)
+									{
+										c = CHAR_NG;
+									} else {
+										w = ((c & 0x0F) << 12) | (((*(p + ofs)) & 0x3F) << 6) | ((*(p + ofs + 1)) & 0x3F);
+										if(++i < 16) ofs++;
+										if(++i < 16) ofs++;
+									}
 								}
 							}
 							if(w) {
@@ -592,7 +628,18 @@ void CBZView::OnDraw(CDC* pDC)
 						c = *(m_pEbcDic + ((BYTE)c - EBCDIC_BASE));
 					break;
 				}
+#if 0//#ifdef _UNICODE
+				if(fPutSkip)
+				{
+					fPutSkip=FALSE;
+				} else {
+					chConv[0] = (char)c;
+					chConv[1] = chConv[2] = NULL;
+					PutStr(CA2WEX<4>(chConv));
+				}
+#else
 				PutChar((char)c);
+#endif
 			}
 		}
 		SetColor();
@@ -652,10 +699,11 @@ void CBZView::DrawGrid(CDC* pDC, RECT& rClip)
 
 void CBZView::PutUnicodeChar(WORD w)
 {
-	char  mbs[4];
-	WCHAR wbs[2];
+	WCHAR wbs[3] = {0};
 	wbs[0] = w;
-	wbs[1] = 0;
+	wbs[1] = NULL;
+#if 1//#ifndef _UNICODE
+	char  mbs[4];
 	int len = ::WideCharToMultiByte(CP_ACP, 0, wbs, -1, mbs, 3, NULL, NULL);
 	if(len <= 1 || mbs[0] == '?' || wbs[0] < 0x20)
 		PutStr(". ");
@@ -665,6 +713,22 @@ void CBZView::PutUnicodeChar(WORD w)
 		}
 		PutStr(mbs);
 	}
+#else
+	if(wbs[0] < 0x20)
+		PutStr(_T(". "));
+	else {
+		CStringA tmp(wbs);
+		if(tmp.GetLength()==1)
+		{
+			wbs[1]=' ';
+			wbs[2]=NULL;
+		}
+/*		if(mbs[1] == 0) {
+			mbs[1] = ' '; mbs[2] = 0;
+		}*/
+		PutStr(wbs);
+	}
+#endif
 }
 
 void CBZView::DrawHeader()
@@ -1210,10 +1274,10 @@ void CBZView::OnUpdateStatusSize(CCmdUI* pCmdUI)
 	if(m_dwTotal) {
 		CString sResult;
 		if(m_bHexSize)
-			sResult.Format("0x%X", m_dwTotal);
+			sResult.Format(_T("0x%X"), m_dwTotal);
 		else
 			sResult = SeparateByComma(m_dwTotal);
-		sResult += " bytes";
+		sResult += _T(" bytes");
 		pCmdUI->SetText(sResult);
 		pCmdUI->Enable(TRUE);
 	} else
@@ -1222,7 +1286,7 @@ void CBZView::OnUpdateStatusSize(CCmdUI* pCmdUI)
 
 void CBZView::OnUpdateStatusChar(CCmdUI* pCmdUI)
 {
-	static TCHAR *sCharSet[CTYPE_COUNT] = { "ASCII", "S-JIS", "UTF-16", "JIS", "EUC", "UTF-8", "EBCDIC", "EPWING" };
+	static TCHAR *sCharSet[CTYPE_COUNT] = { _T("ASCII"), _T("S-JIS"), _T("UTF-16"), _T("JIS"), _T("EUC"), _T("UTF-8"), _T("EBCDIC"), _T("EPWING") };
 	pCmdUI->SetText(sCharSet[m_charset]);
 	pCmdUI->Enable(TRUE);
 }
@@ -1246,25 +1310,25 @@ CString CBZView::GetStatusInfoText()
 {
 	CString sResult;
 	if(m_dwTotal) {
-		LPCSTR pFmtHexa;
+		LPCTSTR pFmtHexa;
 		int val;
 		if(m_bBlock) {
 			if(m_nColAddr > ADDRCOLUMNS) 
-				sResult.Format("%04X:%04X-%04X:%04X", HIWORD(BlockBegin()), LOWORD(BlockBegin()), HIWORD(BlockEnd()), LOWORD(BlockEnd()));  // ###1.61
+				sResult.Format(_T("%04X:%04X-%04X:%04X"), HIWORD(BlockBegin()), LOWORD(BlockBegin()), HIWORD(BlockEnd()), LOWORD(BlockEnd()));  // ###1.61
 			else
-				sResult.Format("%06X-%06X", BlockBegin(), BlockEnd());
+				sResult.Format(_T("%06X-%06X"), BlockBegin(), BlockEnd());
 			val = BlockEnd() - BlockBegin();
-			pFmtHexa = " 0x%X(%s) bytes";
+			pFmtHexa = _T(" 0x%X(%s) bytes");
 
 			CString sValue;
-			sValue.Format(pFmtHexa, val, (LPCSTR)SeparateByComma(val));
+			sValue.Format(pFmtHexa, val, (LPCTSTR)SeparateByComma(val));
 			sResult += sValue;
 		} else if(m_nBytes<=4) {
-			static TCHAR szFmtHexa[] = ": 0x%02X (%s)";
+			static TCHAR szFmtHexa[] = _T(": 0x%02X (%s)");
 			if(m_nColAddr > ADDRCOLUMNS)
-				sResult.Format("%04X:%04X", HIWORD(m_dwCaret), LOWORD(m_dwCaret));
+				sResult.Format(_T("%04X:%04X"), HIWORD(m_dwCaret), LOWORD(m_dwCaret));
 			else
-				sResult.Format("%06X", m_dwCaret);
+				sResult.Format(_T("%06X"), m_dwCaret);
 #ifdef FILE_MAPPING
 			if(m_pDoc->IsOutOfMap(m_pDoc->GetDocPtr() + m_dwCaret)) return sResult;
 #endif //FILE_MAPPING
@@ -1273,20 +1337,20 @@ CString CBZView::GetStatusInfoText()
 			pFmtHexa = szFmtHexa;
 
 			CString sValue;
-			sValue.Format(pFmtHexa, val, (LPCSTR)SeparateByComma(val));
+			sValue.Format(pFmtHexa, val, (LPCTSTR)SeparateByComma(val));
 			sResult += sValue;
 		} else if(m_nBytes==8) {
 			if(m_nColAddr > ADDRCOLUMNS)
-				sResult.Format("%04X:%04X", HIWORD(m_dwCaret), LOWORD(m_dwCaret));
+				sResult.Format(_T("%04X:%04X"), HIWORD(m_dwCaret), LOWORD(m_dwCaret));
 			else
-				sResult.Format("%06X", m_dwCaret);
+				sResult.Format(_T("%06X"), m_dwCaret);
 #ifdef FILE_MAPPING
 			if(m_pDoc->IsOutOfMap(m_pDoc->GetDocPtr() + m_dwCaret)) return sResult;
 #endif //FILE_MAPPING
 			ULONGLONG qval = GetValue64(m_dwCaret);
 
 			CString sValue;
-			sValue.Format(_T(": 0x%016I64X (%s)"), qval, (LPCSTR)SeparateByComma64(qval));
+			sValue.Format(_T(": 0x%016I64X (%s)"), qval, (LPCTSTR)SeparateByComma64(qval));
 			sResult += sValue;
 		}
 	}
@@ -1460,8 +1524,12 @@ void CBZView::OnJumpFindnext()
 {
 	CTBComboBox* pCombo = &GetMainFrame()->m_wndToolBar.m_combo;
 
-	CString sFind;
-	pCombo->GetWindowText(sFind);
+	CStringA sFind;
+	{
+		LPSTR tmp = sFind.GetBufferSetLength(510);
+		::GetWindowTextA(pCombo->m_hWnd, tmp, 509);
+		sFind.ReleaseBuffer();
+	}
 	if(sFind.IsEmpty()) {
 		if(GetBrotherView())
 			OnJumpCompare();
@@ -1482,7 +1550,7 @@ void CBZView::OnJumpFindnext()
 	int c1 = sFind[0];
 	int c2 = 0;
 	if(c1 == '=') {
-		pCombo->SetText("? ");
+		pCombo->SetText(_T("? "));
 		return;
 	}
 	pCombo->AddText(sFind);
@@ -1493,7 +1561,7 @@ void CBZView::OnJumpFindnext()
 			switch(c1) {
 			case '?': {
 				CString sResult;
-				sResult.Format("= 0x%X (%d)", nResult, nResult);
+				sResult.Format(_T("= 0x%X (%d)"), nResult, nResult);
 				pCombo->SetText(sResult);
 				break;
 			}
@@ -1892,7 +1960,7 @@ void CBZView::OnJumpCompare()
 	// TODO: Add your command handler code here
 	CBZView* pView1 = GetBrotherView();
 	if(!pView1) return;
-	GetMainFrame()->m_wndToolBar.m_combo.SetWindowText("");
+	GetMainFrame()->m_wndToolBar.m_combo.SetWindowText(_T(""));
 
 	LPBYTE pData0 = m_pDoc->GetDocPtr();
 	LPBYTE pData1 = pView1->m_pDoc->GetDocPtr();
@@ -2259,9 +2327,9 @@ void CBZView::OnJumpBase()
 {
 	// TODO: Add your command handler code here
 	CInputDlg dlg;
-	dlg.m_sValue.Format("%X", m_pDoc->m_dwBase);
+	dlg.m_sValue.Format(_T("%X"), m_pDoc->m_dwBase);
 	if(dlg.DoModal() == IDOK) {
-		m_pDoc->m_dwBase = strtol(dlg.m_sValue, NULL, 16);
+		m_pDoc->m_dwBase = _tcstol(dlg.m_sValue, NULL, 16);
 		Invalidate(FALSE);
 	}
 }

@@ -43,8 +43,24 @@ private:
 
 // Operations
 public:
-	void SetText(LPCSTR s);
-	void AddText(LPCSTR s);
+	void SetText(LPCTSTR s);
+#ifdef _UNICODE
+	void AddText(LPCSTR s)
+	{
+		AddTextT(CA2WEX<>(s));
+	}
+
+	void AddTextT(LPCTSTR s)
+#else
+	void AddText(LPCTSTR s)
+#endif
+	{
+		int n = FindStringExact(-1, s);
+		if(n != CB_ERR)
+			DeleteString(n);
+		InsertString(0, s);
+		SetCurSel(0);
+	}
 
 // Overrides
 	// ClassWizard generated virtual function overrides

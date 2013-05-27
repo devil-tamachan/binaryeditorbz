@@ -223,7 +223,7 @@ BOOL CBZDoc::MapView()
 
 LPBYTE CBZDoc::QueryMapView1(LPBYTE pBegin, DWORD dwOffset)
 {
-//	TRACE("QueryMapView1 m_pData:%X, pBegin:%X, dwOffset:%X\n", m_pData, pBegin, dwOffset);
+	TRACE("QueryMapView1 m_pData:%X, pBegin:%X, dwOffset:%X\n", m_pData, pBegin, dwOffset);
 	LPBYTE p = pBegin + dwOffset;
 	//if(IsOutOfMap1(p)) {QueryMapView()“à‚ÉˆÚ“®
 		if(p == m_pData + m_dwTotal && p == m_pMapStart + m_dwMapSize) return pBegin;	// ###1.61a
@@ -363,7 +363,7 @@ BOOL CBZDoc::CopyToClipboard(DWORD dwPtr, DWORD dwSize)	// ###1.5
 	AfxGetMainWnd()->OpenClipboard();
 	::EmptyClipboard();
 	::SetClipboardData(CF_TEXT, hMemTxt);
-	::SetClipboardData(RegisterClipboardFormat("BinaryData2"), hMemBin);
+	::SetClipboardData(RegisterClipboardFormat(_T("BinaryData2")), hMemBin);
 	::CloseClipboard();
 	return TRUE;
 }
@@ -374,13 +374,13 @@ DWORD CBZDoc::PasteFromClipboard(DWORD dwPtr, BOOL bIns)
 	HGLOBAL hMem;
 	DWORD dwSize;
 	LPBYTE pMem;
-	if(hMem = ::GetClipboardData(RegisterClipboardFormat("BinaryData2"))) {
+	if(hMem = ::GetClipboardData(RegisterClipboardFormat(_T("BinaryData2")))) {
 		pMem = (LPBYTE)::GlobalLock(hMem);
 		dwSize = *((DWORD*)(pMem));
 		pMem += sizeof(DWORD);
 	} else if(hMem = GetClipboardData(CF_TEXT)) {
 		pMem = (LPBYTE)::GlobalLock(hMem);
-		dwSize = lstrlen((LPCSTR)pMem);
+		dwSize = lstrlenA((LPCSTR)pMem);
 	} else {
 /*		UINT uFmt = 0;
 		while(uFmt = ::EnumClipboardFormats(uFmt)) {

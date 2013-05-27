@@ -119,14 +119,14 @@ void CBZInspectView::OnInitialUpdate()
 
 void CBZInspectView::ClearAll(void)
 {
-	m_edit8bits.SetWindowText("");
-	m_editHex.SetWindowText("");
-	m_editBinary1.SetWindowText("");
-	m_editBinary2.SetWindowText("");
-	m_editBinary4.SetWindowText("");
-	m_editBinary8.SetWindowText("");
-	m_editFloat.SetWindowText("");
-	m_editDouble.SetWindowText("");
+	m_edit8bits.SetWindowText(_T(""));
+	m_editHex.SetWindowText(_T(""));
+	m_editBinary1.SetWindowText(_T(""));
+	m_editBinary2.SetWindowText(_T(""));
+	m_editBinary4.SetWindowText(_T(""));
+	m_editBinary8.SetWindowText(_T(""));
+	m_editFloat.SetWindowText(_T(""));
+	m_editDouble.SetWindowText(_T(""));
 }
 
 void CBZInspectView::OnBnClickedInsIntel()
@@ -145,15 +145,15 @@ void CBZInspectView::OnBnClickedInsSigned()
 
 	if(m_bSigned)
 	{
-		m_staticBinary1.SetWindowText("char");
-		m_staticBinary2.SetWindowText("short");
-		m_staticBinary4.SetWindowText("int");
-		m_staticBinary8.SetWindowText("int64");
+		m_staticBinary1.SetWindowText(_T("char"));
+		m_staticBinary2.SetWindowText(_T("short"));
+		m_staticBinary4.SetWindowText(_T("int"));
+		m_staticBinary8.SetWindowText(_T("int64"));
 	} else {
-		m_staticBinary1.SetWindowText("uchar");
-		m_staticBinary2.SetWindowText("ushort");
-		m_staticBinary4.SetWindowText("uint");
-		m_staticBinary8.SetWindowText("uint64");
+		m_staticBinary1.SetWindowText(_T("uchar"));
+		m_staticBinary2.SetWindowText(_T("ushort"));
+		m_staticBinary4.SetWindowText(_T("uint"));
+		m_staticBinary8.SetWindowText(_T("uint64"));
 	}
 	Update();
 }
@@ -194,13 +194,13 @@ void CBZInspectView::Update(void)
 	strVal = SeparateByComma64(qval, m_bSigned);
 	m_editBinary8.SetWindowText(strVal);
 
-	strVal.Format("%f", *((float*)pVal));
+	strVal.Format(_T("%f"), *((float*)pVal));
 	m_editFloat.SetWindowText(strVal);
 
-	strVal.Format("%f", qval);
+	strVal.Format(_T("%f"), qval);
 	m_editDouble.SetWindowText(strVal);
 
-	strVal.Format("0x%08X %08X", *( ((int*)pVal)+1 ), *( ((int*)pVal)+0 ));
+	strVal.Format(_T("0x%08X %08X"), *( ((int*)pVal)+1 ), *( ((int*)pVal)+0 ));
 //	strVal.Format("0x%016I64X", qval);
 	m_editHex.SetWindowText(strVal);
 

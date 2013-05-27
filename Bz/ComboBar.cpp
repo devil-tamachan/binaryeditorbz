@@ -198,28 +198,20 @@ int CTBComboBox::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	logFont.lfCharSet = SHIFTJIS_CHARSET;
 	logFont.lfQuality = DEFAULT_QUALITY;
 	logFont.lfPitchAndFamily = VARIABLE_PITCH;
-	lstrcpyn(logFont.lfFaceName, "‚l‚r ‚oƒSƒVƒbƒN", LF_FACESIZE);
+	lstrcpyn(logFont.lfFaceName, _T("‚l‚r ‚oƒSƒVƒbƒN"), LF_FACESIZE);
 
 	if (m_font.CreateFontIndirect(&logFont))
 		SetFont(&m_font);
 	return 0;
 }
 
-void CTBComboBox::SetText(LPCSTR s)
+void CTBComboBox::SetText(LPCTSTR s)
 {
 	SetWindowText(s);
 	int len = lstrlen(s);
 	SetEditSel(len, len);	// move caret to end
 }
 
-void CTBComboBox::AddText(LPCSTR s)
-{
-	int n = FindStringExact(-1, s);
-	if(n != CB_ERR)
-		DeleteString(n);
-	InsertString(0, s);
-	SetCurSel(0);
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // CTBComboBox message handlers

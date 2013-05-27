@@ -127,7 +127,7 @@ void CTextView::SetDefaultFont(CDC* pDC)
 		::GetObject(hFont, sizeof(LOGFONT), &lf);
 		m_pFont->CreateFontIndirect(&lf);
 	} else {
-*/		int nFontSize = AfxGetApp()->GetProfileInt("Option", "FontSize", 140);
+*/		int nFontSize = AfxGetApp()->GetProfileInt(_T("Option"), _T("FontSize"), 140);
 		lf.lfCharSet = DEFAULT_CHARSET;
 		lf.lfHeight = options.nFontSize;
 		if(options.fFontStyle & 1) lf.lfWeight = FW_BOLD;
@@ -261,7 +261,7 @@ void CTextView::SetTextSize(SIZE cTotal)
 {
 	if(!m_pVText || m_cTotal.cx != cTotal.cx) {
 		delete m_pVText;
-		m_pVText = new TCHAR[cTotal.cx+1];
+		m_pVText = new char[cTotal.cx+1];
 	}
 	m_cTotal = cTotal;
 }
@@ -548,9 +548,9 @@ void CTextView::Locate(int x, int y)
 	m_yLoc = y;
 	if(IsToFile()) {
 		if(y)
-			m_pFile->Write(_T("\r\n"), 2);
+			m_pFile->Write("\r\n", 2);
 		if(x) {
-			PutChar(TCHAR(' '), x);
+			PutChar(' ', x);
 		}
 	}
 }
@@ -564,7 +564,7 @@ void CTextView::SetColor(DWORD colText, DWORD colBk)
 	}
 }
 
-void CTextView::PutChar(TCHAR c, int n)
+void CTextView::PutChar(char c, int n)
 {
 	if(!n || m_nText >= m_cTotal.cx) return;
 	for_to(i, n)
@@ -572,22 +572,22 @@ void CTextView::PutChar(TCHAR c, int n)
 	*(m_pVText + m_nText) = '\0';
 }
 
-void CTextView::PutStr(LPCTSTR str)
+void CTextView::PutStr(LPCSTR str)
 {
-	lstrcpy(m_pVText + m_nText, str);
-	m_nText += lstrlen(str);
+	lstrcpyA(m_pVText + m_nText, str);
+	m_nText += lstrlenA(str);
 }
 
-void CTextView::PutFormatStr(LPCTSTR fmt, ...)
+void CTextView::PutFormatStr(LPCSTR fmt, ...)
 {
 //	m_nText += wsprintf(m_pVText+m_nText, str, val);
-	m_nText += wvsprintf(m_pVText + m_nText, fmt, (va_list)(&fmt + 1));
+	m_nText += wvsprintfA(m_pVText + m_nText, fmt, (va_list)(&fmt + 1));
 }
 
 void CTextView::PutBegin(CDC* pDC)
 {
 	m_pDC = pDC;
-	ASSERT(m_pDC->m_hDC!=NULL);
+//	ASSERT(m_pDC->m_hDC!=NULL);
 	m_nText = 0;
 	Locate(0, 0);
 	SetColor();
@@ -619,7 +619,7 @@ void CTextView::PutFlush()
 		}
 		int xFrom = m_xLoc;
 		int xTo = xFrom + m_nText;
-		m_pDC->TextOut((m_xLoc-pt.x)*m_cell.cx, m_yLoc*m_cell.cy, m_pVText, m_nText);
+		::TextOutA(m_pDC->m_hDC, (m_xLoc-pt.x)*m_cell.cx, m_yLoc*m_cell.cy, m_pVText, m_nText);
 		m_xLoc += m_nText;
 		m_nText = 0;
 		if(m_bShowCaret2 && m_yLoc == m_ptCaret2.y && m_ptCaret2.x >= xFrom && m_ptCaret2.x < xTo) {	// ### 1.62

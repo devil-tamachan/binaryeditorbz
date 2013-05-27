@@ -24,7 +24,7 @@
 			UseOfMFC="1"
 			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -53,6 +53,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
+				SmallerTypeCheck="true"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
@@ -125,6 +126,7 @@
 			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			WholeProgramOptimization="3"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -160,6 +162,7 @@
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile=".\Release/Bz.pch"
+				AssemblerOutput="2"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -191,7 +194,7 @@
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				OptimizeForWindows98="1"
-				LinkTimeCodeGeneration="0"
+				LinkTimeCodeGeneration="3"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -685,6 +688,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\Splitter.cpp"
+				>
+			</File>
+			<File
 				RelativePath="StatBar.cpp"
 				>
 				<FileConfiguration
@@ -842,6 +849,10 @@
 			</File>
 			<File
 				RelativePath="SettingDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Splitter.h"
 				>
 			</File>
 			<File

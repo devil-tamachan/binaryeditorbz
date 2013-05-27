@@ -85,7 +85,7 @@ public:
 		if(!CWindowImpl<CColorCombo, WTL::CComboBox>::SubclassWindow(hWnd))return FALSE;
 		LONG curSetting = GetWindowLong(GWL_STYLE);
 		SetWindowLong(GWL_STYLE, curSetting | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS);
-		for_to(i, MAX_COLORS + m_bOther)AddString("");
+		for_to(i, MAX_COLORS + m_bOther)AddString(_T(""));
 		SetCurSel(0);
 		return TRUE;
 	}
@@ -126,7 +126,7 @@ public:
 			sLabel.LoadString(mode > 0 ? IDS_AUTOCOLOR : IDS_OTHERCOLOR);
 			dc.SetBkMode(TRANSPARENT);
 			WTL::CFont font;
-			font.CreatePointFont(90, "");
+			font.CreatePointFont(90, _T(""));
 			dc.SelectFont(font);
 			dc.SetTextColor(rgb ^ 0xFFFFFF);
 			dc.DrawText(sLabel, (int)sLabel.GetLength(), rcItem, DT_SINGLELINE | DT_CENTER | DT_VCENTER | DT_EXTERNALLEADING);
@@ -141,7 +141,7 @@ public:
 		BOOL bAuto = IsSystemColor(rgbDefault);
 		if(bAuto) {
 			if(!m_bAuto)
-				AddString("");
+				AddString(_T(""));
 			m_rgbAuto = rgbDefault;
 			if(IsSystemColor(rgb)) {
 				SetCurSel(MAX_COLORS + m_bOther);

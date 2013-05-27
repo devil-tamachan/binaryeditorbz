@@ -61,7 +61,7 @@ protected:
 	int		m_xLoc, m_yLoc;
 	DWORD	m_colText;
 	DWORD	m_colBk;
-	TCHAR*	m_pVText;
+	char*	m_pVText;
 	int		m_nText;
 	CDC*	m_pDC;
 	BOOL	m_bPrinting;	// ### 1.54
@@ -106,9 +106,9 @@ public:
 
 	void Locate(int x, int y);
 	void SetColor(DWORD colText=COLOR_WINDOWTEXT, DWORD colBk=COLOR_WINDOW);
-	void PutChar(TCHAR c=' ', int n=1);
-	void PutStr(LPCTSTR str);
-	void PutFormatStr(LPCTSTR fmt, ...);
+	void PutChar(char c=' ', int n=1);
+	void PutStr(LPCSTR str);
+	void PutFormatStr(LPCSTR fmt, ...);
 	void PutBegin(CDC* pDC);
 	void PutEnd();
 	void PutFlush();

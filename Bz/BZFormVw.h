@@ -45,7 +45,7 @@ public:
 		m_type = type;
 		m_len = m_bytes = (type == -1) ? 0 : g_datasizes[type];
 	}
-	CStructMember(CString& name, int type = 0)
+	CStructMember(CStringA& name, int type = 0)
 	{
 		m_name = name;
 		m_type = type;
@@ -69,14 +69,18 @@ public:
 		m_name = name;
 		m_len = 0;
 	}
-	CStructTag(CString& name)
+/*	CStructTag(CStringA& name)
 	{
 		m_name = name;
 		m_len = 0;
-	}
+	}*/
 	CStructTag(LPSTR name, unsigned int max)
 	{
-		m_name.SetString(name, max);
+		char *tmp = (char*)malloc(max+1);
+		lstrcpynA(tmp, name, max+1);
+		m_name = tmp;
+		free(tmp);
+		//m_name.SetString(name, max);
 		m_len = 0;
 	}
 	~CStructTag()
@@ -139,8 +143,8 @@ public:
 protected:
 	virtual ~CBZFormView();
 
-	HRESULT ParseMember(CString& member, int iTag, int iType, CString& errMsg);
-	HRESULT ParseMemberLine(CString& memberline, int iTag, CString& errMsg);
+	HRESULT ParseMember(CStringA& member, int iTag, int iType, CString& errMsg);
+	HRESULT ParseMemberLine(CStringA& memberline, int iTag, CString& errMsg);
 	BOOL InitStructList();
 	void InitListTag();
 	void InitListMember(int iTag);

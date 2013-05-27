@@ -92,11 +92,11 @@ void CBZAnalyzerView::OnInitialUpdate()
 	// TODO: ここに特定なコードを追加するか、もしくは基本クラスを呼び出してください。
 	if(m_combo_analyzetype.GetCount()==0)
 	{
-		m_combo_analyzetype.InsertString(0, "zlib (deflate)");
+		m_combo_analyzetype.InsertString(0, _T("zlib (deflate)"));
 		m_combo_analyzetype.SetCurSel(0);
 
 		m_resultList.DeleteAllItems();
-		m_resultList.InsertColumn(0, "Address", LVCFMT_LEFT, 120);
+		m_resultList.InsertColumn(0, _T("Address"), LVCFMT_LEFT, 120);
 	//	m_resultList.InsertColumn(1, "Size", LVCFMT_LEFT, 80);
 	}
 	CSplitterWnd* pSplit = (CSplitter*)GetParent();
@@ -168,7 +168,7 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 		DWORD dwRemain = pDoc->GetMapRemain(ofs_inflateStart);
 		if(dwRemain<2)
 		{
-			MessageBox("FileMapping Error", "ERROR", MB_OK);
+			MessageBox(_T("FileMapping Error"), _T("ERROR"), MB_OK);
 			free(outbuf);
 			return;
 		}
@@ -203,11 +203,11 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 		if(inflateStatus==Z_OK||inflateStatus==Z_STREAM_END)
 		{
 			CString str;
-			str.Format("0x%08X", ofs_inflateStart);
+			str.Format(_T("0x%08X"), ofs_inflateStart);
 			m_resultList.InsertItem(++iListIndex, str);
 		//	m_resultList.SetItemText(0, 1, "5000");
 		}
-		TRACE("BZAnalyzerView(0x%08X) inflateStatus==%d\n",ofs_inflateStart , inflateStatus);
+		TRACE(_T("BZAnalyzerView(0x%08X) inflateStatus==%d\n"),ofs_inflateStart , inflateStatus);
 		inflateEnd(&z);
 	}
 
@@ -221,20 +221,20 @@ unsigned long CBZAnalyzerView::GetAddress(int nItem)
 	TCHAR tmpbuf[20];
 	m_resultList.GetItemText(nItem, 0, tmpbuf, 19);
 	tmpbuf[19]=NULL;//Safety
-	return strtoul(tmpbuf+2, NULL, 16);
+	return  _tcstoul(tmpbuf+2, NULL, 16);
 }
 
-BOOL CBZAnalyzerView::MakeExportDirA(LPSTR pathOutputDir, LPCSTR pathDstFolder)
+BOOL CBZAnalyzerView::MakeExportDir(LPTSTR pathOutputDir, LPCTSTR pathDstFolder)
 {
-	char lastDir[_MAX_PATH];
-	sprintf_s(lastDir, _MAX_PATH, "%s\\", ::PathFindFileNameA(GetDocument()->GetPathName()));
-	strcpy_s(pathOutputDir, _MAX_PATH, pathDstFolder);
-	return ::PathAppendA(pathOutputDir, lastDir);
+	TCHAR lastDir[_MAX_PATH];
+	_stprintf_s(lastDir, _MAX_PATH, _T("%s\\"), ::PathFindFileName(GetDocument()->GetPathName()));
+	_tcscpy_s(pathOutputDir, _MAX_PATH, pathDstFolder);
+	return ::PathAppend(pathOutputDir, lastDir);
 }
 
-int CBZAnalyzerView::MakeExportPathA(LPSTR pathOutput, LPCSTR pathDir, unsigned long ulStartAddr)
+int CBZAnalyzerView::MakeExportPath(LPTSTR pathOutput, LPCTSTR pathDir, unsigned long ulStartAddr)
 {
-	return sprintf_s(pathOutput, _MAX_PATH, "%s%08X.bin", pathDir, ulStartAddr);
+	return _stprintf_s(pathOutput, _MAX_PATH, _T("%s%08X.bin"), pathDir, ulStartAddr);
 }
 
 void CBZAnalyzerView::OnBnClickedAnalyzerSave()
@@ -246,22 +246,22 @@ void CBZAnalyzerView::OnBnClickedAnalyzerSave()
 		POSITION pos = m_resultList.GetFirstSelectedItemPosition();
 		if(pos==NULL)
 		{
-			MessageBox("no selected", "Error", MB_OK);
+			MessageBox(_T("no selected"), _T("Error"), MB_OK);
 			return;
 		}
 
 		unsigned int outbufsize = 1024000;
 		LPBYTE outbuf = (LPBYTE)malloc(outbufsize);
 
-		char pathOutputDir[_MAX_PATH];
-		MakeExportDirA(pathOutputDir, dlg.GetFolderPath());
+		TCHAR pathOutputDir[_MAX_PATH];
+		MakeExportDir(pathOutputDir, dlg.GetFolderPath());
 		CAtlList<int> delList;
 
 		while(pos)
 		{
 			int nItem = m_resultList.GetNextSelectedItem(pos);
 			unsigned long ulStartAddr = GetAddress(nItem);
-			if(FAILED(SaveFileA(pathOutputDir, ulStartAddr, outbuf, outbufsize))) delList.AddHead(nItem);
+			if(FAILED(SaveFile(pathOutputDir, ulStartAddr, outbuf, outbufsize))) delList.AddHead(nItem);
 		}
 		free(outbuf);
 
@@ -283,8 +283,8 @@ void CBZAnalyzerView::OnBnClickedAnalyzerSaveall()
 		unsigned int outbufsize = 1024000;
 		LPBYTE outbuf = (LPBYTE)malloc(outbufsize);
 
-		char pathOutputDir[_MAX_PATH];
-		MakeExportDirA(pathOutputDir, dlg.GetFolderPath());
+		TCHAR pathOutputDir[_MAX_PATH];
+		MakeExportDir(pathOutputDir, dlg.GetFolderPath());
 		CAtlList<int> delList;
 		
 		int itemcount = m_resultList.GetItemCount();
@@ -292,7 +292,7 @@ void CBZAnalyzerView::OnBnClickedAnalyzerSaveall()
 		for(int i=0; i<itemcount; i++)
 		{
 			unsigned long ulStartAddr = GetAddress(i);
-			if(FAILED(SaveFileA(pathOutputDir, ulStartAddr, outbuf, outbufsize))) delList.AddHead(i);
+			if(FAILED(SaveFile(pathOutputDir, ulStartAddr, outbuf, outbufsize))) delList.AddHead(i);
 		}
 		free(outbuf);
 
@@ -305,34 +305,38 @@ void CBZAnalyzerView::OnBnClickedAnalyzerSaveall()
 	}
 }
 
-HRESULT CBZAnalyzerView::SaveFileA(LPCSTR pathOutputDir, unsigned long ulStartAddr, LPBYTE outbuf, unsigned int outbufsize)
+HRESULT CBZAnalyzerView::SaveFile(LPCTSTR pathOutputDir, unsigned long ulStartAddr, LPBYTE outbuf, unsigned int outbufsize)
 {
-	char pathOutput[_MAX_PATH];
+	TCHAR pathOutput[_MAX_PATH];
 
 	CBZDoc* pDoc = (CBZDoc*)GetDocument();
 	ASSERT(pDoc);
 	LPBYTE p  = pDoc->GetDocPtr();
 	if(p==NULL)
 	{
-		MessageBox("GetDocPtr() error", "Error", MB_OK);
+		MessageBox(_T("GetDocPtr() error"), _T("Error"), MB_OK);
 		return E_FAIL;
 	}
 
-	int retMakePath = MakeExportPathA(pathOutput, pathOutputDir, ulStartAddr);
+	int retMakePath = MakeExportPath(pathOutput, pathOutputDir, ulStartAddr);
 	FILE *fp;
 	if(retMakePath==-1)
 	{
-		MessageBox("Path error", "Error", MB_OK);
+		MessageBox(_T("Path error"), _T("Error"), MB_OK);
 		return E_FAIL;
 	}
+#ifdef _UNICODE
+	if(::SHCreateDirectoryEx(NULL, pathOutputDir, NULL)!=ERROR_SUCCESS)
+#else
 	if(!MakeSureDirectoryPathExists(pathOutputDir))
+#endif
 	{
-		MessageBox("makedir error", "Error", MB_OK);
+		MessageBox(_T("makedir error"), _T("Error"), MB_OK);
 		return E_FAIL;
 	}
-	if(fopen_s(&fp, pathOutput, "wb")!=0)
+	if(_tfopen_s(&fp, pathOutput, _T("wb"))!=0)
 	{
-		MessageBox("fopen error", "Error", MB_OK);
+		MessageBox(_T("fopen error"), _T("Error"), MB_OK);
 		return E_FAIL;
 	}
 
@@ -344,7 +348,7 @@ HRESULT CBZAnalyzerView::SaveFileA(LPCSTR pathOutputDir, unsigned long ulStartAd
 
 	if(inflateInit(&z)!=Z_OK)
 	{
-		MessageBox("inflateInit error", "Error", MB_OK);
+		MessageBox(_T("inflateInit error"), _T("Error"), MB_OK);
 		goto saveerr;
 	}
 
@@ -360,7 +364,7 @@ HRESULT CBZAnalyzerView::SaveFileA(LPCSTR pathOutputDir, unsigned long ulStartAd
 			DWORD dwRemain = pDoc->GetMapRemain(nextOffset);
 			if(dwRemain==0)
 			{
-				MessageBox("FileMapping Error", "ERROR", MB_OK);
+				MessageBox(_T("FileMapping Error"), _T("ERROR"), MB_OK);
 				goto saveerr2;
 			}
 #endif //FILE_MAPPING
@@ -375,7 +379,7 @@ HRESULT CBZAnalyzerView::SaveFileA(LPCSTR pathOutputDir, unsigned long ulStartAd
 		{
 			if(fwrite(outbuf, 1, outbufsize, fp)!=outbufsize)
 			{
-				MessageBox("fwrite error", "Error", MB_OK);
+				MessageBox(_T("fwrite error"), _T("Error"), MB_OK);
 				goto saveerr2;
 			}
 			z.next_out = outbuf;
@@ -390,7 +394,7 @@ HRESULT CBZAnalyzerView::SaveFileA(LPCSTR pathOutputDir, unsigned long ulStartAd
 		{
 			if(fwrite(outbuf, 1, nokori, fp)!=nokori)
 			{
-				MessageBox("fwrite error2", "Error", MB_OK);
+				MessageBox(_T("fwrite error2"), _T("Error"), MB_OK);
 				goto saveerr2;
 			}
 		}
@@ -415,7 +419,7 @@ saveerr2:
 
 saveerr:
 	fclose(fp);
-	DeleteFileA(pathOutput);
+	DeleteFile(pathOutput);
 
 	return E_FAIL;
 }

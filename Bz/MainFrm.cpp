@@ -122,11 +122,11 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 		WNDCLASSEX wc;
 		wc.cbSize = sizeof(WNDCLASSEX);
 		VERIFY(::GetClassInfoEx(AfxGetInstanceHandle(), cs.lpszClass, &wc));
-		wc.lpszClassName = BZ_CLASSNAME;
+		wc.lpszClassName = _T(BZ_CLASSNAME);
 		wc.hIcon  = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 		wc.hIconSm = (HICON)::LoadImage(AfxGetResourceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 16, 16, 0);
 		::RegisterClassEx(&wc);
-		cs.lpszClass = BZ_CLASSNAME;
+		cs.lpszClass = _T(BZ_CLASSNAME);
 		return TRUE;
 	}
 	return FALSE;
@@ -191,7 +191,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	UINT nID;
 	UINT nStyle;
 	m_wndStatusBar.GetPaneInfo(1, nID, nStyle, m_nPaneWidth);
-	m_wndStatusBar.SetPaneText(1, "");
+	m_wndStatusBar.SetPaneText(1, _T(""));
 
 	return 0;
 }
@@ -410,7 +410,7 @@ void CMainFrame::OnJumpTo()
 	// TODO: Add your command handler code here
 	ShowControlBar(&m_wndToolBar, TRUE, FALSE);
 	m_wndToolBar.m_combo.SetFocus();
-	m_wndToolBar.m_combo.SetText("> ");
+	m_wndToolBar.m_combo.SetText(_T("> "));
 }
 
 void CMainFrame::OnEditValue() 
@@ -418,7 +418,7 @@ void CMainFrame::OnEditValue()
 	// TODO: Add your command handler code here
 	ShowControlBar(&m_wndToolBar, TRUE, FALSE);
 	m_wndToolBar.m_combo.SetFocus();
-	m_wndToolBar.m_combo.SetText("< %");
+	m_wndToolBar.m_combo.SetText(_T("< %"));
 }
 
 void CMainFrame::OnViewBitmap() 

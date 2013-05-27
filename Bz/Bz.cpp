@@ -127,19 +127,19 @@ http://social.msdn.microsoft.com/Forums/en/vcgeneral/thread/c3feab0f-601b-4ca6-b
 	// TODO: 会社名または組織名などの適切な文字列に
 	// この文字列を変更してください。
 
-	SetRegistryKey("c.mos");
+	SetRegistryKey(_T("c.mos"));
 /*#ifdef _AFXDLL
 	Enable3dControls();			// Call this when using MFC in a shared DLL
 #else
 	Enable3dControlsStatic();	// Call this when linking to MFC statically
 #endif*/
 
-	m_bFirstInstance = ::FindWindow(BZ_CLASSNAME, NULL) == NULL;
+	m_bFirstInstance = ::FindWindow(_T(BZ_CLASSNAME), NULL) == NULL;
 
 	LoadStdProfileSettings(10);  // Load standard INI file options (including MRU)
 	options.Load();
 
-	if(options.bLanguage && (m_hInstDll = ::LoadLibrary("BZres_us.dll"))) 
+	if(options.bLanguage && (m_hInstDll = ::LoadLibrary(_T("BZres_us.dll")))) 
 		AfxSetResourceHandle(m_hInstDll); 
 
 	// Register the application's document templates.  Document templates
@@ -244,7 +244,7 @@ void CBZApp::OnAppAbout()
 CString SeparateByComma(int num, BOOL bSigned)
 {
 	CString sSrc;
-	sSrc.Format(bSigned ? "%d" : "%u", num);
+	sSrc.Format(bSigned ? _T("%d") : _T("%u"), num);
 	TCHAR sDst[64];
 	int n = sSrc.GetLength();
 	LPCTSTR src = sSrc;
@@ -260,7 +260,7 @@ CString SeparateByComma(int num, BOOL bSigned)
 CString SeparateByComma64(ULONGLONG num, BOOL bSigned)
 {
 	CString sSrc;
-	sSrc.Format(bSigned ? "%I64d" : "%I64u", num);
+	sSrc.Format(bSigned ? _T("%I64d") : _T("%I64u"), num);
 	TCHAR sDst[64];
 	int n = sSrc.GetLength();
 	LPCTSTR src = sSrc;
@@ -273,13 +273,13 @@ CString SeparateByComma64(ULONGLONG num, BOOL bSigned)
 	return sDst;
 }
 
-CString GetModulePath(LPCSTR pFileName) 
+CString GetModulePath(LPCTSTR pFileName) 
 {
 	CString sPath;
-	LPSTR pBuffer = sPath.GetBuffer(_MAX_PATH);
+	LPTSTR pBuffer = sPath.GetBuffer(_MAX_PATH);
 	::GetModuleFileName(NULL, pBuffer, _MAX_PATH - 1);
-	char* p;
-	p = strrchr(pBuffer, '\\');
+	TCHAR* p;
+	p =  _tcsrchr(pBuffer, '\\');
 	ASSERT(p);
 	*(p+1) = '\0';
 	sPath.ReleaseBuffer();
@@ -306,7 +306,7 @@ CString GetStructFilePath(UINT uID)
 	return retStr;
 }
 
-LPVOID ReadFile(LPCSTR pPath)
+LPVOID ReadFile(LPCTSTR pPath)
 {
 	CFile file;
 	if(!file.Open(pPath, CFile::modeRead | CFile::shareDenyNone)) {
@@ -329,8 +329,8 @@ CString GetErrorMessage() // ###1.60
 	CString sMsg, sErr;
 	DWORD dwErr = GetLastError();
 	int nErr = LOWORD(dwErr);
-	sErr.Format("(%d)", nErr);
-	TRACE("Error=%d\n", nErr);
+	sErr.Format(_T("(%d)"), nErr);
+	TRACE(_T("Error=%d\n"), nErr);
 	::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 
 		NULL, dwErr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL );
 	if(lpMsgBuf) {
@@ -422,16 +422,17 @@ void CBZApp::ShortNameToLongName(CString& sPath)
 {
 	if(sPath.Find(TCHAR('~')) == -1) return;
 
-	WCHAR wszShortPath[MAX_PATH];
 	TCHAR szLongPath[MAX_PATH];
-    ::MultiByteToWideChar(CP_ACP, 0, sPath, -1, wszShortPath, MAX_PATH);
+	CComBSTR bstrShortPath = sPath.AllocSysString();
+//	WCHAR wszShortPath[MAX_PATH];
+//	::MultiByteToWideChar(CP_ACP, 0, sPath, -1, wszShortPath, MAX_PATH);
 
 	LPMALLOC pMalloc;
 	LPSHELLFOLDER pSF;
 	LPITEMIDLIST pIDL;
 	if(::SHGetMalloc(&pMalloc) == NOERROR) {
 		if (::SHGetDesktopFolder(&pSF) == NOERROR) {
-			if(pSF->ParseDisplayName(NULL, NULL, wszShortPath, NULL, &pIDL, NULL) == NOERROR) {
+			if(pSF->ParseDisplayName(NULL, NULL, bstrShortPath, NULL, &pIDL, NULL) == NOERROR) {
                 if (::SHGetPathFromIDList(pIDL, szLongPath)) {
 					sPath = szLongPath;
 				}
@@ -476,50 +477,50 @@ void CBZOptions::Load()
 		}
 		TRACE(" },\n");
 	}*/
-	charset = (CharSet)GetProfileInt("CharSet", CTYPE_ASCII);
-	bAutoDetect = GetProfileInt("AutoDetect", FALSE);
-	bByteOrder= GetProfileInt("ByteOrder", FALSE);
-	sFontName = GetProfileString("FontName", _T("FixedSys"));	// ###1.54
-	fFontStyle= GetProfileInt("FontStyle", 0);
-	nFontSize = GetProfileInt("FontSize", 140);
-	ptFrame.x = GetProfileInt("FrameLeft", 0);
-	ptFrame.y = GetProfileInt("FrameTop", 0);
-	nCmdShow  = GetProfileInt("CmdShow", SW_SHOWNORMAL);
-	cyFrame   = GetProfileInt("FrameHeight", 0);
-	cyFrame2  = GetProfileInt("FrameHeight2", 0);
-	cxFrame2  = GetProfileInt("FrameWidth2", 0);
-	xSplit    = GetProfileInt("SplitHPos", 0);
-	ySplit    = GetProfileInt("SplitVPos", 0);
-	xSplitStruct = 	GetProfileInt("SplitStruct", 0);
-	bStructView = GetProfileInt("StructView", FALSE);
-	nComboHeight = GetProfileInt("ComboHeight", 15);
-	bLanguage = GetProfileInt("Language", ::GetThreadLocale() != 0x411);
-	dwDetectMax = GetProfileInt("DetectMax", 0x10000);
-	barState = GetProfileInt("BarState", BARSTATE_TOOL | BARSTATE_STATUS);
-	bReadOnlyOpen = GetProfileInt("ReadOnly", TRUE);
-	nBmpWidth = GetProfileInt("BmpWidth", 128);
-	nBmpZoom =  GetProfileInt("BmpZoom", 1);
-	dwMaxOnMemory = GetProfileInt("MaxOnMemory", 1024 * 1024);		// ###1.60
-	dwMaxMapSize =  GetProfileInt("MaxMapSize", 1024 * 1024 * 64);	// ###1.61
-	bTagAll =  GetProfileInt("TagAll", FALSE);
-	bSubCursor =  GetProfileInt("SubCursor", TRUE);
+	charset = (CharSet)GetProfileInt(_T("CharSet"), CTYPE_ASCII);
+	bAutoDetect = GetProfileInt(_T("AutoDetect"), FALSE);
+	bByteOrder= GetProfileInt(_T("ByteOrder"), FALSE);
+	sFontName = GetProfileString(_T("FontName"), _T("FixedSys"));	// ###1.54
+	fFontStyle= GetProfileInt(_T("FontStyle"), 0);
+	nFontSize = GetProfileInt(_T("FontSize"), 140);
+	ptFrame.x = GetProfileInt(_T("FrameLeft"), 0);
+	ptFrame.y = GetProfileInt(_T("FrameTop"), 0);
+	nCmdShow  = GetProfileInt(_T("CmdShow"), SW_SHOWNORMAL);
+	cyFrame   = GetProfileInt(_T("FrameHeight"), 0);
+	cyFrame2  = GetProfileInt(_T("FrameHeight2"), 0);
+	cxFrame2  = GetProfileInt(_T("FrameWidth2"), 0);
+	xSplit    = GetProfileInt(_T("SplitHPos"), 0);
+	ySplit    = GetProfileInt(_T("SplitVPos"), 0);
+	xSplitStruct = 	GetProfileInt(_T("SplitStruct"), 0);
+	bStructView = GetProfileInt(_T("StructView"), FALSE);
+	nComboHeight = GetProfileInt(_T("ComboHeight"), 15);
+	bLanguage = GetProfileInt(_T("Language"), ::GetThreadLocale() != 0x411);
+	dwDetectMax = GetProfileInt(_T("DetectMax"), 0x10000);
+	barState = GetProfileInt(_T("BarState"), BARSTATE_TOOL | BARSTATE_STATUS);
+	bReadOnlyOpen = GetProfileInt(_T("ReadOnly"), TRUE);
+	nBmpWidth = GetProfileInt(_T("BmpWidth"), 128);
+	nBmpZoom =  GetProfileInt(_T("BmpZoom"), 1);
+	dwMaxOnMemory = GetProfileInt(_T("MaxOnMemory"), 1024 * 1024);		// ###1.60
+	dwMaxMapSize =  GetProfileInt(_T("MaxMapSize"), 1024 * 1024 * 64);	// ###1.61
+	bTagAll =  GetProfileInt(_T("TagAll"), FALSE);
+	bSubCursor =  GetProfileInt(_T("SubCursor"), TRUE);
 
 	memcpy(colors, colorsDefault, sizeof(colorsDefault));
-	GetProfileBinary2("Colors", colors, sizeof colors);
+	GetProfileBinary2(_T("Colors"), colors, sizeof colors);
 //	if(!GetProfileBinary("Colors", colors))
 //		memcpy(colors, colorsDefault, sizeof(colorsDefault));
-	if(!GetProfileBinary("MemberColumns", colWidth))
+	if(!GetProfileBinary(_T("MemberColumns"), colWidth))
 		memcpy(colWidth, colWidthDefault, sizeof(colWidthDefault));
-	if(!GetProfileBinary("PageMargin", (LPRECT)rMargin))
+	if(!GetProfileBinary(_T("PageMargin"), (LPRECT)rMargin))
 		rMargin.SetRect(2000, 2000, 2000, 2000);
 
-	sDumpHeader = GetProfileString("DumpHeader");	// ###1.63
-	nDumpPage = GetProfileInt("DumpPage", 0);
-	bDWordAddr = GetProfileInt("DWordAddr", FALSE);
+	sDumpHeader = GetProfileString(_T("DumpHeader"));	// ###1.63
+	nDumpPage = GetProfileInt(_T("DumpPage"), 0);
+	bDWordAddr = GetProfileInt(_T("DWordAddr"), FALSE);
 	
-	bSyncScroll = GetProfileInt("SyncScroll", true);
-	iGrid = GetProfileInt("Grid", 0);
-	nBmpColorWidth = GetProfileInt("BmpColorWidth", 8);
+	bSyncScroll = GetProfileInt(_T("SyncScroll"), true);
+	iGrid = GetProfileInt(_T("Grid"), 0);
+	nBmpColorWidth = GetProfileInt(_T("BmpColorWidth"), 8);
 	switch(nBmpColorWidth)
 	{
 	case 8:
@@ -531,8 +532,8 @@ void CBZOptions::Load()
 		break;
 	}
 
-	bInspectView = GetProfileInt("InspectView", FALSE);
-	bAnalyzerView = GetProfileInt("AnalyzerView", FALSE);
+	bInspectView = GetProfileInt(_T("InspectView"), FALSE);
+	bAnalyzerView = GetProfileInt(_T("AnalyzerView"), FALSE);
 
 	if(bInspectView && bStructView && bAnalyzerView)
 	{
@@ -543,61 +544,61 @@ void CBZOptions::Load()
 
 void CBZOptions::Save()
 {
-	WriteProfileInt("CharSet", charset);
-	WriteProfileInt("AutoDetect", bAutoDetect);
-	WriteProfileInt("ByteOrder", bByteOrder);
+	WriteProfileInt(_T("CharSet"), charset);
+	WriteProfileInt(_T("AutoDetect"), bAutoDetect);
+	WriteProfileInt(_T("ByteOrder"), bByteOrder);
 	if(!sFontName.IsEmpty()) {
-		WriteProfileString("FontName", sFontName);
-		WriteProfileInt("FontStyle", fFontStyle);
-		WriteProfileInt("FontSize", nFontSize);
+		WriteProfileString(_T("FontName"), sFontName);
+		WriteProfileInt(_T("FontStyle"), fFontStyle);
+		WriteProfileInt(_T("FontSize"), nFontSize);
 	}
 	if(theApp.m_bFirstInstance) {
-		WriteProfileInt("FrameLeft", ptFrame.x);
-		WriteProfileInt("FrameTop", ptFrame.y);
+		WriteProfileInt(_T("FrameLeft"), ptFrame.x);
+		WriteProfileInt(_T("FrameTop"), ptFrame.y);
 	}
-	WriteProfileInt("CmdShow", nCmdShow);
+	WriteProfileInt(_T("CmdShow"), nCmdShow);
 	switch(nSplitView) {
 	case 0:
-		WriteProfileInt("FrameHeight", cyFrame);
+		WriteProfileInt(_T("FrameHeight"), cyFrame);
 		break;
 	case ID_VIEW_SPLIT_H:
-		WriteProfileInt("FrameHeight2", cyFrame2);
-		WriteProfileInt("SplitVPos", ySplit);
+		WriteProfileInt(_T("FrameHeight2"), cyFrame2);
+		WriteProfileInt(_T("SplitVPos"), ySplit);
 		break;
 	case ID_VIEW_SPLIT_V:
-		WriteProfileInt("FrameWidth2", cxFrame2);
-		WriteProfileInt("SplitHPos", xSplit);
+		WriteProfileInt(_T("FrameWidth2"), cxFrame2);
+		WriteProfileInt(_T("SplitHPos"), xSplit);
 		break;
 	}
-	WriteProfileInt("StructView", bStructView);
+	WriteProfileInt(_T("StructView"), bStructView);
 	if(bStructView || bInspectView)
-		WriteProfileInt("SplitStruct", xSplitStruct);
-	WriteProfileInt("ComboHeight", nComboHeight);
-	WriteProfileInt("Language", bLanguage);
-	WriteProfileInt("DetectMax", dwDetectMax);
-	WriteProfileInt("BarState", barState);
-	WriteProfileInt("ReadOnly", bReadOnlyOpen);
-	WriteProfileInt("BmpWidth", nBmpWidth);
-	WriteProfileInt("BmpZoom", nBmpZoom);
-	WriteProfileInt("MaxOnMemory", dwMaxOnMemory);
-	WriteProfileInt("MaxMapSize", dwMaxMapSize);
-	WriteProfileInt("TagAll", bTagAll);
-	WriteProfileInt("SubCursor", bSubCursor);
+		WriteProfileInt(_T("SplitStruct"), xSplitStruct);
+	WriteProfileInt(_T("ComboHeight"), nComboHeight);
+	WriteProfileInt(_T("Language"), bLanguage);
+	WriteProfileInt(_T("DetectMax"), dwDetectMax);
+	WriteProfileInt(_T("BarState"), barState);
+	WriteProfileInt(_T("ReadOnly"), bReadOnlyOpen);
+	WriteProfileInt(_T("BmpWidth"), nBmpWidth);
+	WriteProfileInt(_T("BmpZoom"), nBmpZoom);
+	WriteProfileInt(_T("MaxOnMemory"), dwMaxOnMemory);
+	WriteProfileInt(_T("MaxMapSize"), dwMaxMapSize);
+	WriteProfileInt(_T("TagAll"), bTagAll);
+	WriteProfileInt(_T("SubCursor"), bSubCursor);
 
-	WriteProfileBinary("Colors", (LPBYTE)colors, sizeof(colorsDefault));
-	WriteProfileBinary("MemberColumns", (LPBYTE)colWidth, sizeof(colWidth));
-	WriteProfileBinary("PageMargin", (LPBYTE)(LPRECT)rMargin, sizeof(rMargin));
+	WriteProfileBinary(_T("Colors"), (LPBYTE)colors, sizeof(colorsDefault));
+	WriteProfileBinary(_T("MemberColumns"), (LPBYTE)colWidth, sizeof(colWidth));
+	WriteProfileBinary(_T("PageMargin"), (LPBYTE)(LPRECT)rMargin, sizeof(rMargin));
 
-	WriteProfileString("DumpHeader", sDumpHeader);
-	WriteProfileInt("DumpPage", nDumpPage);
-	WriteProfileInt("DWordAddr", bDWordAddr);
+	WriteProfileString(_T("DumpHeader"), sDumpHeader);
+	WriteProfileInt(_T("DumpPage"), nDumpPage);
+	WriteProfileInt(_T("DWordAddr"), bDWordAddr);
 	
-	WriteProfileInt("SyncScroll", bSyncScroll);
-	WriteProfileInt("Grid", iGrid);
-	WriteProfileInt("BmpColorWidth", nBmpColorWidth);
+	WriteProfileInt(_T("SyncScroll"), bSyncScroll);
+	WriteProfileInt(_T("Grid"), iGrid);
+	WriteProfileInt(_T("BmpColorWidth"), nBmpColorWidth);
 
-	WriteProfileInt("InspectView", bInspectView);
-	WriteProfileInt("AnalyzerView", bAnalyzerView);
+	WriteProfileInt(_T("InspectView"), bInspectView);
+	WriteProfileInt(_T("AnalyzerView"), bAnalyzerView);
 	
 }
 
@@ -608,7 +609,7 @@ void CBZApp::OnFileSaveDumpList()
 {
 	// TODO: Add your command handler code here
 	CString sFileName = GetMainFrame()->GetActiveDocument()->GetPathName();
-	sFileName += _T((".lst"));
+	sFileName += _T(".lst");
 
 	if(m_pDocManager->DoPromptFileName(sFileName, IDS_SAVEDUMP_CAPTION, OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY, FALSE, NULL)) {
 		CFile file;
