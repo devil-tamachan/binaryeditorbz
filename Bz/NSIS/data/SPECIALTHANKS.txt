@@ -1,0 +1,46 @@
+
+Special Thanks
+-------------------------------
+
+
+Binary Editor BZ - original version -
+
+    Binary Editor BZ 1.6.2 Win (New BSD License) --- Copyright (c) 1996-2004 c.mos
+
+Contribute
+
+    doraneko (BZ1.06)
+
+Bug-report
+
+    satou.takashi
+    SHIROUZU Hiroaki
+    nobumasa.tamaoki
+
+Libraries
+
+    Zlib (zlib license) --- Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
+    kb976038.h (2012/07/14) (New BSD License) --- Copyright (C) 2010 Apple Inc. All rights reserved.
+
+Installer
+
+    NSIS Installer --- Copyright (C) 1999-2013 Contributors
+
+This Help (Main - css, build script, etc...)
+
+    JavaScript Garden (MIT License) --- Copyright (c) 2010 Ivo Wetzel.
+
+This Help (Compilers - Node.js)
+
+    Node.js
+    Jade (MIT License) --- Copyright (c) 2009-2010 TJ Holowaychuk tj@vision-media.ca
+    marked (MIT License) --- Copyright (c) 2011-2013, Christopher Jeffrey (https://github.com/chjj/)
+    fomatto, neko (MIT License) --- Copyright (c) 2010 Ivo Wetzel.
+
+This Help (JavaScript)
+
+    jQuery (MIT License) --- Copyright 2013 jQuery Foundation and other contributors
+    jQuery.browser.mobile (public domain)
+    HTML5 Shiv (MIT/GPL2 Licensed) --- @afarkas @jdalton @jon_neal @rem
+    prettify.js (Apache License) --- Copyright 2011 Mike Samuel et al
+
