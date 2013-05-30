@@ -22,6 +22,10 @@ Libraries
     Zlib (zlib license) --- Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
     kb976038.h (2012/07/14) (New BSD License) --- Copyright (C) 2010 Apple Inc. All rights reserved.
 
+Mac Toolbar Icons
+
+    Fugue Icons (http://creativecommons.org/licenses/by/3.0/deed.ja) --- Copyright (C) 2013 Yusuke Kamiyamane. All rights reserved.
+
 Installer
 
     NSIS Installer --- Copyright (C) 1999-2013 Contributors
