@@ -69,6 +69,7 @@
 								<int key="NSvFlags">268</int>
 								<string key="NSFrame">{{0, 14}, {134, 19}}</string>
 								<reference key="NSSuperview"/>
+								<reference key="NSWindow"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSComboBoxCell" key="NSCell" id="1005635349">
@@ -204,6 +205,7 @@
 								<int key="NSvFlags">256</int>
 								<string key="NSFrame">{{21, 14}, {17, 17}}</string>
 								<reference key="NSSuperview"/>
+								<reference key="NSWindow"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSButtonCell" key="NSCell" id="1042473926">
@@ -274,9 +276,9 @@
 							<string key="NSToolbarItemPaletteLabel">Open</string>
 							<string key="NSToolbarItemToolTip"/>
 							<nil key="NSToolbarItemView"/>
-							<object class="NSCustomResource" key="NSToolbarItemImage" id="623055943">
+							<object class="NSCustomResource" key="NSToolbarItemImage">
 								<string key="NSClassName">NSImage</string>
-								<string key="NSResourceName">NSApplicationIcon</string>
+								<string key="NSResourceName">folder-horizontal</string>
 							</object>
 							<nil key="NSToolbarItemTarget"/>
 							<nil key="NSToolbarItemAction"/>
@@ -300,6 +302,7 @@
 								<int key="NSvFlags">268</int>
 								<string key="NSFrame">{{2, 14}, {30, 30}}</string>
 								<reference key="NSSuperview"/>
+								<reference key="NSWindow"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSButtonCell" key="NSCell" id="780288548">
@@ -315,13 +318,17 @@
 									<reference key="NSControlView" ref="725700628"/>
 									<int key="NSButtonFlags">-2033958912</int>
 									<int key="NSButtonFlags2">130</int>
+									<object class="NSCustomResource" key="NSNormalImage" id="713351272">
+										<string key="NSClassName">NSImage</string>
+										<string key="NSResourceName">arrow-270</string>
+									</object>
 									<string key="NSAlternateContents"/>
 									<string key="NSKeyEquivalent"/>
 									<int key="NSPeriodicDelay">400</int>
 									<int key="NSPeriodicInterval">75</int>
 								</object>
 							</object>
-							<nil key="NSToolbarItemImage"/>
+							<reference key="NSToolbarItemImage" ref="713351272"/>
 							<nil key="NSToolbarItemTarget"/>
 							<nil key="NSToolbarItemAction"/>
 							<string key="NSToolbarItemMinSize">{26, 24}</string>
@@ -340,7 +347,10 @@
 							<string key="NSToolbarItemPaletteLabel">Save</string>
 							<string key="NSToolbarItemToolTip"/>
 							<nil key="NSToolbarItemView"/>
-							<reference key="NSToolbarItemImage" ref="623055943"/>
+							<object class="NSCustomResource" key="NSToolbarItemImage">
+								<string key="NSClassName">NSImage</string>
+								<string key="NSResourceName">disk</string>
+							</object>
 							<nil key="NSToolbarItemTarget"/>
 							<nil key="NSToolbarItemAction"/>
 							<string key="NSToolbarItemMinSize">{0, 0}</string>
@@ -879,11 +889,13 @@
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
-			<string key="NSApplicationIcon">{128, 128}</string>
 			<string key="NSMenuCheckmark">{11, 11}</string>
 			<string key="NSMenuMixedState">{10, 3}</string>
 			<string key="NSSwitch">{15, 15}</string>
 			<string key="NSToolbarPrint">{32, 32}</string>
+			<string key="arrow-270">{32, 32}</string>
+			<string key="disk">{24, 24}</string>
+			<string key="folder-horizontal">{32, 32}</string>
 		</dictionary>
 	</data>
 </archive>

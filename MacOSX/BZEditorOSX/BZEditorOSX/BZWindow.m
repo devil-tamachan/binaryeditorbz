@@ -140,6 +140,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     if(m_bzViewController2) {
         [m_bzViewController2.bzview OnUpdate];
         [m_bzViewController2.bzview StopCaret];
+    } else {
+        [m_bzViewController1.bzview InitCaret:YES];
     }
     return true;
 }

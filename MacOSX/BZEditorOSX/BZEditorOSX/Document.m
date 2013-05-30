@@ -56,7 +56,7 @@ static BOOL g_isNewWindow = TRUE;
         NSLog(@"Document::init()");
         m_pData = NULL;
         m_dwTotal = 0;
-        m_bReadOnly = READONLY;
+        m_bReadOnly = NO;//READONLY;
         //m_hMapping = NULL;
         m_pFileMapping = 0;
         m_pMapStart = 0;
@@ -97,7 +97,7 @@ static BOOL g_isNewWindow = TRUE;
     for (NSUInteger i = 0; i<max; i++) {
         NSWindow *target = [[NSApp windows] objectAtIndex:i];
         if([target isKeyWindow] && [target isKindOfClass:[BZWindow class]])
-            return target;
+            return (BZWindow *)target;
     }
     return nil;
 }
@@ -325,7 +325,7 @@ static BOOL g_isNewWindow = TRUE;
             close(fd);
             return false;//err
         }
-        m_bReadOnly = READONLY;
+        m_bReadOnly = NO;//READONLY;
     }
     
     //munmap(data, m_dwMapSize);

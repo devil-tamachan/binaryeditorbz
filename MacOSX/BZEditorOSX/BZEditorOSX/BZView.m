@@ -900,7 +900,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             
         default:
             //[super keyDown:theEvent];
-            break;
+            return;
     }
 	m_bEnterVal = FALSE;
 	if(!m_bBlock && bShift) {
@@ -1001,7 +1001,7 @@ Error:
 		return;
 	}
 	*p = (__uint8_t)nChar;
-	//Invalidate(FALSE);
+	[self setNeedsDisplay:YES];//Invalidate(FALSE);
 	if(!m_bEnterVal) {
 		[self MoveCaretTo:m_dwCaret+1];
 	}
