@@ -551,7 +551,7 @@ void CBZView::OnDraw(CDC* pDC)
 							}
 						} else
 							c = CHAR_NG;
-					} else if(c > 0x7E && c < 0xA1 || c > 0xDF)
+					} else if((c > 0x7E && c < 0xA1) || c > 0xDF)
 						c = CHAR_NG;
 					break;
 				case CTYPE_JIS:
@@ -2256,7 +2256,7 @@ CharSet CBZView::DetectCodeType(LPBYTE p, LPBYTE pEnd)
 				}
 			}
 		}
-		if(c >= 0x08 && c <= 0x0D || c >= 0x20 && c <= 0x7E || c >= 0x81 && c <= 0xFC) {
+		if((c >= 0x08 && c <= 0x0D) || (c >= 0x20 && c <= 0x7E) || (c >= 0x81 && c <= 0xFC)) {
 			if(_ismbblead(c)) {
 				c = (BYTE)*p++;
 				if(!_ismbbtrail(c)) {
