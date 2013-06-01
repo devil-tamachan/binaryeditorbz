@@ -119,7 +119,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 }
             }
         }
-        if (c >= 0x08 && c <= 0x0D || c >= 0x20 && c <= 0x7E || c >= 0x81 && c <= 0xFC)
+        if ((c >= 0x08 && c <= 0x0D) || (c >= 0x20 && c <= 0x7E) || (c >= 0x81 && c <= 0xFC))
         {
             if ([self _ismbbleadSJIS932:c]) {
                 c = *p++;
