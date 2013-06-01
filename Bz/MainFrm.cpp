@@ -374,8 +374,7 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 	if(bReCreate) {
 //		if(!IsZoomed())
 			RecalcLayout();
-	} else
-		((CBZView*)pActiveView)->ResizeFrame();
+	} //else ((CBZView*)pActiveView)->ResizeFrame();
 	return TRUE;
 }
 
