@@ -90,6 +90,8 @@ enum CharMode { CMODE_ASCII, CMODE_ESC, CMODE_ESC1, CMODE_ESC2, CMODE_ESC3, CMOD
 
 - (BOOL)DrawCaret;
 
+- (void)UpdateToolbar;
+
 - (void)OnLButtonDown:(NSPoint)ptClick bShiftKey:(BOOL)bShiftKey;
 - (void)OnMouseDrag:(NSPoint)pt;
 - (void)OnLButtonUp;
@@ -117,6 +119,8 @@ enum CharMode { CMODE_ASCII, CMODE_ESC, CMODE_ESC1, CMODE_ESC2, CMODE_ESC3, CMOD
 
 - (IBAction)OnByteOrderIntel:(id)sender;
 - (IBAction)OnByteOrderMotorola:(id)sender;
+
+- (IBAction)changeCheckBoxState:(id)sender;
 
 - (void)DrawToFile:(NSURL*)outPath;
 
