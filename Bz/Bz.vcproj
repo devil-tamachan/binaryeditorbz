@@ -79,7 +79,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ComCtl32.lib zlib127.lib"
+				AdditionalDependencies="ComCtl32.lib zlib128.lib"
 				OutputFile=".\Debug/Bz.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -125,7 +125,7 @@
 			UseOfMFC="1"
 			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
 			WholeProgramOptimization="3"
 			>
 			<Tool
@@ -182,7 +182,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlib127.lib imagehlp.lib"
+				AdditionalDependencies="zlib128.lib imagehlp.lib"
 				OutputFile=".\Release/Bz.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
