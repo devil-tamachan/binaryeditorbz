@@ -326,7 +326,8 @@ HRESULT CBZAnalyzerView::SaveFile(LPCTSTR pathOutputDir, unsigned long ulStartAd
 		return E_FAIL;
 	}
 #ifdef _UNICODE
-	if(::SHCreateDirectoryEx(NULL, pathOutputDir, NULL)!=ERROR_SUCCESS)
+	int dirRet = ::SHCreateDirectoryEx(NULL, pathOutputDir, NULL);
+	if(dirRet!=ERROR_SUCCESS && dirRet!=ERROR_ALREADY_EXISTS && dirRet!=ERROR_FILE_EXISTS)
 #else
 	if(!MakeSureDirectoryPathExists(pathOutputDir))
 #endif
