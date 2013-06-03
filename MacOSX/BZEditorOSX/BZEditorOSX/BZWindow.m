@@ -143,6 +143,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     } else {
         [m_bzViewController1.bzview InitCaret:YES];
     }
+    [m_bzViewController1.bzview UpdateToolbar];
     return true;
 }
 

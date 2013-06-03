@@ -40,4 +40,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 }
 - (void)setSuperDocumentIsDoc1:(BOOL)isDoc1;
 
+@property (weak) IBOutlet NSButton *m_tbchkReadOnly;
+
 @end

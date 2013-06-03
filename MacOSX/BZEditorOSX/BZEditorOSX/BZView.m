@@ -744,7 +744,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         [bzBrother HideCaret2];
         Document *doc = [self GetDocument];
         [bzWnd setTitle:(doc.fileURL)?doc.fileURL.lastPathComponent : @"Untitled"];
+        
+        [self UpdateToolbar];
     }
+}
+
+-(void)UpdateToolbar
+{
+    BZWindowController* bzwndCon = (BZWindowController*)self.window.windowController;
+    [bzwndCon.m_tbchkReadOnly setState:m_pDoc->m_bReadOnly ? NSOnState : NSOffState];
 }
 
 /*
@@ -1198,6 +1206,12 @@ Error:
     BZOptions *bzopt = [BZOptions sharedInstance];
     bzopt->bByteOrder = TRUE;
     //GetMainFrame()->UpdateInspectViewChecks();
+}
+
+- (IBAction)changeCheckBoxState:(id)sender
+{
+    NSButton *check = [sender selectedCell];
+    m_pDoc->m_bReadOnly = [check state]==NSOnState?YES:NO;
 }
 
 
