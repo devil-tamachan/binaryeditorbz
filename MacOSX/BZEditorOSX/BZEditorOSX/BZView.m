@@ -1190,7 +1190,36 @@ Error:
     m_pDoc->m_bReadOnly = [check state]==NSOnState?YES:NO;
 }
 
+- (enum CharSet)GetCharSetFromMenuIndex:(NSInteger)menuIndex
+{
+    switch (menuIndex) {
+        case 0:
+            return CTYPE_ASCII;
+        case 1:
+            return CTYPE_SJIS;
+        case 2:
+            return CTYPE_UNICODE;
+        case 3:
+            return CTYPE_UTF8;
+        case 4:
+            return CTYPE_JIS;
+        case 5:
+            return CTYPE_EUC;
+        case 6:
+            return CTYPE_EBCDIC;
+        case 7:
+        default:
+            return CTYPE_EPWING;
+    }
+}
 
+- (IBAction)OnInfobarCharSet:(id)sender
+{
+    NSPopUpButton *popup = (NSPopUpButton*)sender;
+    m_charset = [self GetCharSetFromMenuIndex:[popup indexOfSelectedItem]];
+    [self setNeedsDisplay:YES];
+    [self UpdateMiniInfoBar];
+}
 
 
 -(void)FindNext:(NSComboBox*)findBox
@@ -1424,7 +1453,7 @@ Error:
 	[self UpdateDocSize];
 }
 
-- (int)GetCharSetMenuIndex
+- (NSInteger)GetCharSetMenuIndex
 {
     switch (m_charset) {
         case CTYPE_ASCII:
@@ -1449,10 +1478,12 @@ Error:
 
 - (void)UpdateMiniInfoBar
 {
-    [infobarFilename setStringValue:[[m_pDoc fileURL] path]];
-    [infobarMapMode selectItemAtIndex:[m_pDoc IsFileMapping]?0:1];
-    [infobarReadOnly setState:m_pDoc->m_bReadOnly?NSOnState:NSOffState];
-    [infobarCharSet selectItemAtIndex:[self GetCharSetMenuIndex]];
+    if (m_pDoc) {
+        [infobarFilename setStringValue:m_pDoc.fileURL?[m_pDoc.fileURL path]:@"Untitled"];
+        [infobarMapMode selectItemAtIndex:[m_pDoc IsFileMapping]?0:1];
+        [infobarReadOnly setState:m_pDoc->m_bReadOnly?NSOnState:NSOffState];
+        [infobarCharSet selectItemAtIndex:[self GetCharSetMenuIndex]];
+    }
 }
 
 

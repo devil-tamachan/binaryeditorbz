@@ -124,6 +124,9 @@ enum CharMode { CMODE_ASCII, CMODE_ESC, CMODE_ESC1, CMODE_ESC2, CMODE_ESC3, CMOD
 
 - (IBAction)OnToolbarReadOnly:(id)sender;
 
+- (enum CharSet)GetCharSetFromMenuIndex:(NSInteger)menuIndex;
+- (IBAction)OnInfobarCharSet:(id)sender;
+
 - (void)DrawToFile:(NSURL*)outPath;
 
 
@@ -133,7 +136,7 @@ enum CharMode { CMODE_ASCII, CMODE_ESC, CMODE_ESC1, CMODE_ESC2, CMODE_ESC3, CMOD
 
 -(IBAction)OnUndo:(id)sender;
 
--(int)GetCharSetMenuIndex;
+-(NSInteger)GetCharSetMenuIndex;
 -(void)UpdateMiniInfoBar;
 
 @property (weak) IBOutlet NSTextField *infobarFilename;
