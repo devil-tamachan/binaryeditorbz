@@ -80,6 +80,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     //BZOptions *bzopt = [BZOptions sharedInstance];
     
     m_splitDoc1 = [[NSSplitView alloc] initWithFrame:[self.contentView bounds]];
+    [m_splitDoc1 setDividerStyle:NSSplitViewDividerStyleThin];
     [m_splitDoc1 setVertical:YES];
     [m_splitDoc1 setAutoresizingMask:NSViewMinXMargin | NSViewWidthSizable | NSViewMaxXMargin | NSViewMinYMargin | NSViewHeightSizable | NSViewMaxYMargin];
     [m_splitDoc1 setAutoresizesSubviews:YES];
@@ -100,11 +101,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     if (m_nSplitView!=SPLIT_NONE)
     {
         m_splitDoc = [[NSSplitView alloc] initWithFrame:[self.contentView bounds]];
+        [m_splitDoc setDividerStyle:NSSplitViewDividerStyleThin];
         [m_splitDoc setVertical:m_nSplitView==SPLIT_V];
         [m_splitDoc setAutoresizingMask:NSViewMinXMargin | NSViewWidthSizable | NSViewMaxXMargin | NSViewMinYMargin | NSViewHeightSizable | NSViewMaxYMargin];
         [m_splitDoc setAutoresizesSubviews:YES];
         
         m_splitDoc2 = [[NSSplitView alloc] initWithFrame:[self.contentView bounds]];
+        [m_splitDoc2 setDividerStyle:NSSplitViewDividerStyleThin];
         [m_splitDoc2 setVertical:YES];
         [m_splitDoc2 setAutoresizingMask:NSViewMinXMargin | NSViewWidthSizable | NSViewMaxXMargin | NSViewMinYMargin | NSViewHeightSizable | NSViewMaxYMargin];
         [m_splitDoc2 setAutoresizesSubviews:YES];
@@ -144,6 +147,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         [m_bzViewController1.bzview InitCaret:YES];
     }
     [m_bzViewController1.bzview UpdateToolbar];
+    
+    //[self makeFirstResponder:m_bzViewController1.bzview];//not work
+    //bool bSetFirst = [m_bzViewController1.bzview becomeFirstResponder];// not work
+    [m_bzViewController1.bzview SetFocus];//not work
     return true;
 }
 

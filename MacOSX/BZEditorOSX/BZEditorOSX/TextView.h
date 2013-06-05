@@ -67,6 +67,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
 @private
     NSInteger m_scrollMin, m_scrollMax;
+    
+    //BOOL m_bScrollH;
 }
 
 @property (assign) IBOutlet id vScroller;

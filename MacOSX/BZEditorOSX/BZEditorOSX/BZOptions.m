@@ -94,7 +94,7 @@ static BZOptions *_sharedInstance = nil;
                               //bLanguage = GetProfileInt("Language", ::GetThreadLocale() != 0x411);
                               [NSNumber numberWithUnsignedLongLong:0x10000], @"DetectMax",
                               //barState = GetProfileInt("BarState", BARSTATE_TOOL | BARSTATE_STATUS);
-                              [NSNumber numberWithBool:TRUE], @"ReadOnly",
+                              [NSNumber numberWithBool:NO], @"ReadOnly",
                               [NSNumber numberWithInt:128], @"BmpWidth",
                               [NSNumber numberWithInt:1], @"BmpZoom",
                               [NSNumber numberWithUnsignedLongLong:1024*1024], @"MaxOnMemory",
@@ -164,10 +164,10 @@ static BZOptions *_sharedInstance = nil;
 	bLanguage = GetProfileInt("Language", ::GetThreadLocale() != 0x411);
      */
     dwDetectMax = [[ud objectForKey:@"DetectMax"] unsignedLongLongValue];
-    /*
-	barState = GetProfileInt("BarState", BARSTATE_TOOL | BARSTATE_STATUS);
-	bReadOnlyOpen = GetProfileInt("ReadOnly", TRUE);
-	nBmpWidth = GetProfileInt("BmpWidth", 128);
+    
+	//barState = GetProfileInt("BarState", BARSTATE_TOOL | BARSTATE_STATUS);
+    bReadOnlyOpen = [[ud objectForKey:@"ReadOnly"] boolValue];
+	/*nBmpWidth = GetProfileInt("BmpWidth", 128);
 	nBmpZoom =  GetProfileInt("BmpZoom", 1);
 	dwMaxOnMemory = GetProfileInt("MaxOnMemory", 1024 * 1024);		// ###1.60
 	dwMaxMapSize =  GetProfileInt("MaxMapSize", 1024 * 1024 * 64);	// ###1.61

@@ -56,7 +56,7 @@ static BOOL g_isNewWindow = TRUE;
         NSLog(@"Document::init()");
         m_pData = NULL;
         m_dwTotal = 0;
-        m_bReadOnly = NO;//READONLY;
+        m_bReadOnly = READONLY;
         //m_hMapping = NULL;
         m_pFileMapping = 0;
         m_pMapStart = 0;
@@ -325,7 +325,7 @@ static BOOL g_isNewWindow = TRUE;
             close(fd);
             return false;//err
         }
-        m_bReadOnly = NO;//READONLY;
+        m_bReadOnly = [BZOptions sharedInstance]->bReadOnlyOpen;//READONLY;
     }
     
     //munmap(data, m_dwMapSize);
