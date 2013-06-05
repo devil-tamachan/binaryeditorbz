@@ -262,6 +262,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
     m_bShowCaret2 = FALSE;
     m_caretRect2 = NSMakeRect(0, 0, m_cell.width, m_cell.height);
+    
+    //m_bScrollH = TRUE;
 }
 
 -(BOOL)IsToFile
@@ -311,20 +313,51 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     m_scrollMin = 0;
     m_scrollMax = m_cTotal.cx;
     
-    CGFloat vDouble = _bounds.size.height / (m_cTotal.cy*m_cell.height);
-    CGFloat hDouble = _bounds.size.width / (m_cTotal.cx*m_cell.width);
-    [vScroller setEnabled:(vDouble < 1.0)];
-    [vScroller setKnobProportion:vDouble];
-    [hScroller setEnabled:(hDouble < 1.0)];
-    [hScroller setKnobProportion:hDouble];
+    NSInteger cHeight = m_cTotal.cy * m_cell.height;
+    NSInteger cWidth = m_cTotal.cx * m_cell.width;
     
-    /*    [vScroller setDoubleValue:0.5];
-     [vScroller setKnobProportion:0.999];
-     [vScroller setEnabled:YES];
-     [hScroller setDoubleValue:0.1];
-     [hScroller setKnobProportion:0.2];
-     [hScroller setEnabled:YES];*/
-    //[hScroller setHidden:YES];
+    CGFloat vDouble = _bounds.size.height / cHeight;
+    CGFloat hDouble = _bounds.size.width / cWidth;
+    
+    if (_bounds.size.width > cWidth)
+    {
+        [hScroller setHidden:YES];
+        [hScroller setEnabled:NO];
+        /*if (m_bScrollH)
+        {
+            //_frame.origin.y = 0;
+            //_frame.size.height = 269+15;
+            _bounds.size.height += 15;
+            //[self setNeedsUpdateConstraints:YES];
+            m_bScrollH = FALSE;
+            NSLog(@"hScroll Off");
+        }*/
+    } else {
+        [hScroller setHidden:NO];
+        [hScroller setEnabled:YES];
+        [hScroller setKnobProportion:hDouble];
+        /*if (!m_bScrollH)
+        {
+            //_frame.origin.y = 15;
+            //_frame.size.height = 269;
+            _bounds.size.height -= 15;
+            //[self setNeedsUpdateConstraints:YES];
+            m_bScrollH = TRUE;
+            NSLog(@"hScroll On");
+        }*/
+    }
+    
+    if (_bounds.size.height > cHeight)
+    {
+        [vScroller setHidden:YES];
+        [vScroller setEnabled:NO];
+    } else {
+        [vScroller setHidden:NO];
+        [vScroller setEnabled:YES];
+        [vScroller setKnobProportion:vDouble];
+    }
+    
+    //NSLog(@"InitScrollBar: %f(%f), %f(%f)", vDouble, [vScroller doubleValue], hDouble, [hScroller doubleValue]);
 }
 
 - (void)InitCaret
