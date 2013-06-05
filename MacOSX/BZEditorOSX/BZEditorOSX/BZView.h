@@ -107,6 +107,8 @@ enum CharMode { CMODE_ASCII, CMODE_ESC, CMODE_ESC1, CMODE_ESC2, CMODE_ESC3, CMOD
 - (void)keyDownWithUnichar:(unichar)key bCtrl:(BOOL)bCtrl bShift:(BOOL)bShift;
 - (void)OnCharWithUnichar:(unichar)nChar;
 
+- (void)UpdateCharSet;
+
 - (IBAction)OnCharmodeAscii:(id)sender;
 - (IBAction)OnCharmodeSJIS:(id)sender;
 - (IBAction)OnCharmodeUTF16:(id)sender;
@@ -120,7 +122,7 @@ enum CharMode { CMODE_ASCII, CMODE_ESC, CMODE_ESC1, CMODE_ESC2, CMODE_ESC3, CMOD
 - (IBAction)OnByteOrderIntel:(id)sender;
 - (IBAction)OnByteOrderMotorola:(id)sender;
 
-- (IBAction)changeCheckBoxState:(id)sender;
+- (IBAction)OnToolbarReadOnly:(id)sender;
 
 - (void)DrawToFile:(NSURL*)outPath;
 
@@ -130,5 +132,13 @@ enum CharMode { CMODE_ASCII, CMODE_ESC, CMODE_ESC1, CMODE_ESC2, CMODE_ESC3, CMOD
 -(void)SetFocus;
 
 -(IBAction)OnUndo:(id)sender;
+
+-(int)GetCharSetMenuIndex;
+-(void)UpdateMiniInfoBar;
+
+@property (weak) IBOutlet NSTextField *infobarFilename;
+@property (weak) IBOutlet NSPopUpButton *infobarMapMode;
+@property (weak) IBOutlet NSButton *infobarReadOnly;
+@property (weak) IBOutlet NSPopUpButton *infobarCharSet;
 
 @end

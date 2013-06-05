@@ -43,6 +43,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 @implementation BZView
 
+@synthesize infobarFilename, infobarMapMode, infobarReadOnly, infobarCharSet;
+
 - (id)initWithFrame:(NSRect)frame
 {
     self = [super initWithFrame:frame];
@@ -161,6 +163,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     [self InitCaret];//InitCaret();
     [self StopCaret];
     [self DrawCaret];// DrawCaret();
+    
+    [self UpdateMiniInfoBar];
 }
 
 - (BOOL)DrawCaret
@@ -1092,77 +1096,59 @@ Error:
     return YES;
 }
 
+-(void)UpdateCharSet
+{
+    [self setNeedsDisplay:YES];
+    [self UpdateMiniInfoBar];
+	BZView* pView = [self GetBrotherView:self];
+	if(pView) {
+		pView->m_charset = m_charset;
+        [pView setNeedsDisplay:YES];
+        [pView UpdateMiniInfoBar];
+    }
+}
+
 - (IBAction)OnCharmodeAscii:(id)sender
 {
     BZOptions *bzopt = [BZOptions sharedInstance];
 	m_charset = bzopt->charset = CTYPE_ASCII;
 //	options.Touch();
-    [self setNeedsDisplay:YES];//Invalidate(TRUE);
-	BZView* pView = [self GetBrotherView:self];
-	if(pView) {
-		pView->m_charset = m_charset;
-        [pView setNeedsDisplay:YES];//pView->Invalidate(TRUE);
-	}
+    [self UpdateCharSet];
 }
 - (IBAction)OnCharmodeSJIS:(id)sender
 {
     BZOptions *bzopt = [BZOptions sharedInstance];
 	m_charset = bzopt->charset = CTYPE_SJIS;
     //	options.Touch();
-    [self setNeedsDisplay:YES];//Invalidate(TRUE);
-	BZView* pView = [self GetBrotherView:self];
-	if(pView) {
-		pView->m_charset = m_charset;
-        [pView setNeedsDisplay:YES];//pView->Invalidate(TRUE);
-	}
+    [self UpdateCharSet];
 }
 - (IBAction)OnCharmodeUTF16:(id)sender
 {
     BZOptions *bzopt = [BZOptions sharedInstance];
 	m_charset = bzopt->charset = CTYPE_UNICODE;
     //	options.Touch();
-    [self setNeedsDisplay:YES];//Invalidate(TRUE);
-	BZView* pView = [self GetBrotherView:self];
-	if(pView) {
-		pView->m_charset = m_charset;
-        [pView setNeedsDisplay:YES];//pView->Invalidate(TRUE);
-	}
+    [self UpdateCharSet];
 }
 - (IBAction)OnCharmodeUTF8:(id)sender
 {
     BZOptions *bzopt = [BZOptions sharedInstance];
 	m_charset = bzopt->charset = CTYPE_UTF8;
     //	options.Touch();
-    [self setNeedsDisplay:YES];//Invalidate(TRUE);
-	BZView* pView = [self GetBrotherView:self];
-	if(pView) {
-		pView->m_charset = m_charset;
-        [pView setNeedsDisplay:YES];//pView->Invalidate(TRUE);
-	}
+    [self UpdateCharSet];
 }
 - (IBAction)OnCharmodeJIS:(id)sender
 {
     BZOptions *bzopt = [BZOptions sharedInstance];
 	m_charset = bzopt->charset = CTYPE_JIS;
     //	options.Touch();
-    [self setNeedsDisplay:YES];//Invalidate(TRUE);
-	BZView* pView = [self GetBrotherView:self];
-	if(pView) {
-		pView->m_charset = m_charset;
-        [pView setNeedsDisplay:YES];//pView->Invalidate(TRUE);
-	}
+    [self UpdateCharSet];
 }
 - (IBAction)OnCharmodeEUC:(id)sender
 {
     BZOptions *bzopt = [BZOptions sharedInstance];
 	m_charset = bzopt->charset = CTYPE_EUC;
     //	options.Touch();
-    [self setNeedsDisplay:YES];//Invalidate(TRUE);
-	BZView* pView = [self GetBrotherView:self];
-	if(pView) {
-		pView->m_charset = m_charset;
-        [pView setNeedsDisplay:YES];//pView->Invalidate(TRUE);
-	}
+    [self UpdateCharSet];
 }
 - (IBAction)OnCharmodeEBCDIC:(id)sender
 {
@@ -1170,24 +1156,14 @@ Error:
 	m_charset = bzopt->charset = CTYPE_EBCDIC;
     [[BZEbcDic sharedInstance] LoadEbcDicTable];//LoadEbcDicTable();
     //	options.Touch();
-    [self setNeedsDisplay:YES];//Invalidate(TRUE);
-	BZView* pView = [self GetBrotherView:self];
-	if(pView) {
-		pView->m_charset = m_charset;
-        [pView setNeedsDisplay:YES];//pView->Invalidate(TRUE);
-	}
+    [self UpdateCharSet];
 }
 - (IBAction)OnCharmodeEPWING:(id)sender
 {
     BZOptions *bzopt = [BZOptions sharedInstance];
 	m_charset = bzopt->charset = CTYPE_EPWING;
     //	options.Touch();
-    [self setNeedsDisplay:YES];//Invalidate(TRUE);
-	BZView* pView = [self GetBrotherView:self];
-	if(pView) {
-		pView->m_charset = m_charset;
-        [pView setNeedsDisplay:YES];//pView->Invalidate(TRUE);
-	}
+    [self UpdateCharSet];
 }
 -(void)OnCharmodeAutoDetect:(id)sender
 {
@@ -1208,7 +1184,7 @@ Error:
     //GetMainFrame()->UpdateInspectViewChecks();
 }
 
-- (IBAction)changeCheckBoxState:(id)sender
+- (IBAction)OnToolbarReadOnly:(id)sender
 {
     NSButton *check = [sender selectedCell];
     m_pDoc->m_bReadOnly = [check state]==NSOnState?YES:NO;
@@ -1446,6 +1422,37 @@ Error:
 	m_dwCaret = [m_pDoc DoUndo];
 	[self GotoCaret];
 	[self UpdateDocSize];
+}
+
+- (int)GetCharSetMenuIndex
+{
+    switch (m_charset) {
+        case CTYPE_ASCII:
+            return 0;
+        case CTYPE_SJIS:
+            return 1;
+        case CTYPE_UNICODE:
+            return 2;
+        case CTYPE_UTF8:
+            return 3;
+        case CTYPE_JIS:
+            return 4;
+        case CTYPE_EUC:
+            return 5;
+        case CTYPE_EBCDIC:
+            return 6;
+        case CTYPE_EPWING:
+            return 7;
+    }
+    return -1;
+}
+
+- (void)UpdateMiniInfoBar
+{
+    [infobarFilename setStringValue:[[m_pDoc fileURL] path]];
+    [infobarMapMode selectItemAtIndex:[m_pDoc IsFileMapping]?0:1];
+    [infobarReadOnly setState:m_pDoc->m_bReadOnly?NSOnState:NSOffState];
+    [infobarCharSet selectItemAtIndex:[self GetCharSetMenuIndex]];
 }
 
 

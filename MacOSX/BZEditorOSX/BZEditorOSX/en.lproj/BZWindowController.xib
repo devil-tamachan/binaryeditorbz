@@ -70,7 +70,6 @@
 								<string key="NSFrame">{{0, 14}, {134, 19}}</string>
 								<reference key="NSSuperview"/>
 								<reference key="NSWindow"/>
-								<reference key="NSNextKeyView"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSComboBoxCell" key="NSCell" id="1005635349">
@@ -207,7 +206,6 @@
 								<string key="NSFrame">{{21, 14}, {17, 17}}</string>
 								<reference key="NSSuperview"/>
 								<reference key="NSWindow"/>
-								<reference key="NSNextKeyView"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSButtonCell" key="NSCell" id="1042473926">
@@ -305,7 +303,6 @@
 								<string key="NSFrame">{{2, 14}, {30, 30}}</string>
 								<reference key="NSSuperview"/>
 								<reference key="NSWindow"/>
-								<reference key="NSNextKeyView"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSButtonCell" key="NSCell" id="780288548">
@@ -503,7 +500,6 @@
 					<string key="NSFrameSize">{533, 318}</string>
 					<reference key="NSSuperview"/>
 					<reference key="NSWindow"/>
-					<reference key="NSNextKeyView"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
 				<string key="NSMinSize">{94, 155}</string>
@@ -566,11 +562,11 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
-						<string key="label">changeCheckBoxState:</string>
+						<string key="label">OnToolbarReadOnly:</string>
 						<reference key="source" ref="613418571"/>
 						<reference key="destination" ref="976736509"/>
 					</object>
-					<int key="connectionID">100165</int>
+					<int key="connectionID">100170</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -762,7 +758,7 @@
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">100169</int>
+			<int key="maxID">100170</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -781,6 +777,7 @@
 						<string key="OnCharmodeSJIS:">id</string>
 						<string key="OnCharmodeUTF16:">id</string>
 						<string key="OnCharmodeUTF8:">id</string>
+						<string key="OnToolbarReadOnly:">id</string>
 						<string key="OnUndo:">id</string>
 						<string key="changeCheckBoxState:">id</string>
 					</dictionary>
@@ -829,6 +826,10 @@
 							<string key="name">OnCharmodeUTF8:</string>
 							<string key="candidateClassName">id</string>
 						</object>
+						<object class="IBActionInfo" key="OnToolbarReadOnly:">
+							<string key="name">OnToolbarReadOnly:</string>
+							<string key="candidateClassName">id</string>
+						</object>
 						<object class="IBActionInfo" key="OnUndo:">
 							<string key="name">OnUndo:</string>
 							<string key="candidateClassName">id</string>
@@ -836,6 +837,30 @@
 						<object class="IBActionInfo" key="changeCheckBoxState:">
 							<string key="name">changeCheckBoxState:</string>
 							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="infobarCharSet">NSPopUpButton</string>
+						<string key="infobarFilename">NSTextField</string>
+						<string key="infobarMapMode">NSPopUpButton</string>
+						<string key="infobarReadOnly">NSButton</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="infobarCharSet">
+							<string key="name">infobarCharSet</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="infobarFilename">
+							<string key="name">infobarFilename</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="infobarMapMode">
+							<string key="name">infobarMapMode</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="infobarReadOnly">
+							<string key="name">infobarReadOnly</string>
+							<string key="candidateClassName">NSButton</string>
 						</object>
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -867,6 +892,7 @@
 						<string key="OnViewSplitH:">id</string>
 						<string key="OnViewSplitV:">id</string>
 						<string key="OnViewStruct:">id</string>
+						<string key="openDocument:">id</string>
 						<string key="openDocumentWithClose:">id</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="actionInfosByName">
@@ -948,6 +974,10 @@
 						</object>
 						<object class="IBActionInfo" key="OnViewStruct:">
 							<string key="name">OnViewStruct:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openDocument:">
+							<string key="name">openDocument:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="openDocumentWithClose:">
