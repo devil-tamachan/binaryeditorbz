@@ -75,7 +75,7 @@ static BZOptions *_sharedInstance = nil;
     
     NSDictionary *defaults = [NSDictionary dictionaryWithObjectsAndKeys:
                               [NSNumber numberWithInt:CTYPE_ASCII], @"CharSet",
-                              [NSNumber numberWithBool:FALSE], @"AutoDetect",
+                              [NSNumber numberWithBool:YES], @"AutoDetect",
                               [NSNumber numberWithBool:FALSE], @"ByteOrder",
                               @"MigMix 1M", @"FontName",
                               [NSNumber numberWithInt:0], @"FontStyle",

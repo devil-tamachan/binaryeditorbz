@@ -44,4 +44,56 @@
     return NO;
 }*/
 
+
+//- (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)anItem
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+    //NSLog(@"BZView::validateMenuItem");
+    SEL theAction = [menuItem action];
+    BZOptions *bzopt = [BZOptions sharedInstance];
+    
+    /*if (theAction == @selector(OnCharmodeAscii:)) {
+        [menuItem setState:(bzopt->charset==CTYPE_ASCII)? NSOnState:NSOffState];
+    } else if (theAction == @selector(OnCharmodeSJIS:)) {
+        [menuItem setState:(bzopt->charset==CTYPE_SJIS)? NSOnState:NSOffState];
+    } else if (theAction == @selector(OnCharmodeUTF16:)) {
+        [menuItem setState:(bzopt->charset==CTYPE_UNICODE)? NSOnState:NSOffState];
+    } else if (theAction == @selector(OnCharmodeUTF8:)) {
+        [menuItem setState:(bzopt->charset==CTYPE_UTF8)? NSOnState:NSOffState];
+    } else if (theAction == @selector(OnCharmodeJIS:)) {
+        [menuItem setState:(bzopt->charset==CTYPE_JIS)? NSOnState:NSOffState];
+    } else if (theAction == @selector(OnCharmodeEUC:)) {
+        [menuItem setState:(bzopt->charset==CTYPE_EUC)? NSOnState:NSOffState];
+    } else if (theAction == @selector(OnCharmodeEBCDIC:)) {
+        [menuItem setState:(bzopt->charset==CTYPE_EBCDIC)? NSOnState:NSOffState];
+    } else if (theAction == @selector(OnCharmodeEPWING:)) {
+        [menuItem setState:(bzopt->charset==CTYPE_EPWING)? NSOnState:NSOffState];
+    } else*/ if (theAction == @selector(OnCharmodeAutoDetect:)) {
+        [menuItem setState:(bzopt->bAutoDetect)? NSOnState:NSOffState];
+    } else if (theAction == @selector(OnByteOrderIntel:)) {
+        [menuItem setState:!(bzopt->bByteOrder)? NSOnState:NSOffState];
+    } else if (theAction == @selector(OnByteOrderMotorola:)) {
+        [menuItem setState:(bzopt->bByteOrder)? NSOnState:NSOffState];
+    }
+    return YES;
+}
+-(void)OnCharmodeAutoDetect:(id)sender
+{
+    BZOptions *bzopt = [BZOptions sharedInstance];
+    bzopt->bAutoDetect = !bzopt->bAutoDetect;
+}
+
+-(void)OnByteOrderIntel:(id)sender
+{
+    BZOptions *bzopt = [BZOptions sharedInstance];
+    bzopt->bByteOrder = FALSE;
+    //GetMainFrame()->UpdateInspectViewChecks();
+}
+-(void)OnByteOrderMotorola:(id)sender
+{
+    BZOptions *bzopt = [BZOptions sharedInstance];
+    bzopt->bByteOrder = TRUE;
+    //GetMainFrame()->UpdateInspectViewChecks();
+}
+
 @end

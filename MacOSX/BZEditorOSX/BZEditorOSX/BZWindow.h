@@ -84,10 +84,6 @@ enum SplitType { SPLIT_NONE=0, SPLIT_H=1, SPLIT_V=2 };
 - (IBAction)OnCharmodeEUC:(id)sender;
 - (IBAction)OnCharmodeEBCDIC:(id)sender;
 - (IBAction)OnCharmodeEPWING:(id)sender;
-- (IBAction)OnCharmodeAutoDetect:(id)sender;
-
-- (IBAction)OnByteOrderIntel:(id)sender;
-- (IBAction)OnByteOrderMotorola:(id)sender;
 
 - (IBAction)OnViewSplitH:(id)sender;
 - (IBAction)OnViewSplitV:(id)sender;

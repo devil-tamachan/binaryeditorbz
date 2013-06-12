@@ -33,5 +33,9 @@
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 
 //@property (assign) IBOutlet NSWindow *window;
+- (IBAction)OnCharmodeAutoDetect:(id)sender;
+
+- (IBAction)OnByteOrderIntel:(id)sender;
+- (IBAction)OnByteOrderMotorola:(id)sender;
 
 @end

@@ -187,6 +187,59 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     return FALSE;
 }
 
++ (int)ConvertCharSet:(enum CharSet)charset strSrc:(NSString *)strSrc retBuffer:(char **)retBuffer
+{
+    int len=0;
+    switch (charset) {
+        case CTYPE_ASCII:
+            *retBuffer = (char *)[strSrc cStringUsingEncoding:NSASCIIStringEncoding];
+            return (int)strlen(*retBuffer);
+        case CTYPE_SJIS:
+            *retBuffer = (char *)[strSrc cStringUsingEncoding:NSShiftJISStringEncoding];
+            return (int)strlen(*retBuffer);
+        case CTYPE_UNICODE:
+            if ([BZOptions sharedInstance]->bByteOrder)
+                *retBuffer = (char *)[strSrc cStringUsingEncoding:NSUTF16BigEndianStringEncoding];
+            else
+                *retBuffer = (char *)[strSrc cStringUsingEncoding:NSUTF16LittleEndianStringEncoding];
+            return (int)strlen(*retBuffer);
+        case CTYPE_JIS:
+        {
+            uint8_t *pTmp2 = (uint8_t *)[strSrc cStringUsingEncoding:NSISO2022JPStringEncoding];
+            int nFind = (int)strlen((const char *)pTmp2);
+            if (nFind>=3)
+            {
+                __uint32_t dw3 = ((__uint32_t)(pTmp2[0])) << 16 | ((__uint32_t)(pTmp2[1])) << 8 | ((__uint32_t)(pTmp2[2]));
+                if (dw3 == 0x001B2442 || dw3 == 0x001B2842) {
+                    pTmp2 += 3;
+                    nFind -= 3;
+                }
+            }
+            if (nFind>=3)
+            {
+                __uint32_t dw3 = ((__uint32_t)(pTmp2[nFind-3])) << 16 | ((__uint32_t)(pTmp2[nFind-2])) << 8 | ((__uint32_t)(pTmp2[nFind-1]));
+                if (dw3 == 0x001B2442 || dw3 == 0x001B2842) {
+                    nFind -= 3;
+                }
+            }
+            *retBuffer = (char *)pTmp2;
+            return nFind;
+        }
+        case CTYPE_EUC:
+            *retBuffer = (char *)[strSrc cStringUsingEncoding:NSJapaneseEUCStringEncoding];
+            return (int)strlen(*retBuffer);
+        case CTYPE_UTF8:
+            *retBuffer = (char *)[strSrc cStringUsingEncoding:NSUTF8StringEncoding];
+            return (int)strlen(*retBuffer);
+        case CTYPE_EBCDIC:
+        case CTYPE_EPWING:
+        case CTYPE_COUNT:
+        default:
+            *retBuffer = NULL;
+            return 0;
+    }
+}
+
 +(TAMARect)NSRect2TAMARect:(NSRect*)rect
 {
     TAMARect tamaRect;

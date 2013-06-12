@@ -404,6 +404,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     }
 }
 
+-(void)MoveCaret:(TAMASize)pt
+{
+    [self GridToPixel:&pt];
+    m_caretRect.origin.x = pt.x;
+    m_caretRect.origin.y = pt.y;
+    [self setNeedsDisplayInRect:m_caretRect];
+}
+-(void)MoveCaret2:(TAMASize)pt
+{
+    [self GridToPixel:&pt];
+    m_caretRect2.origin.x = pt.x;
+    m_caretRect2.origin.y = pt.y;
+    [self setNeedsDisplayInRect:m_caretRect2];
+}
+
 -(void)SetTextSize:(TAMASize)cTotal
 {
     if(!m_pVText || !TAMAEqualSize(m_cTotal, cTotal))
@@ -539,20 +554,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 {
     pt->x *= m_cell.width;
     pt->y *= m_cell.height;
-}
-
--(void)MoveCaret:(TAMASize)pt
-{
-    [self GridToPixel:&pt];
-    m_caretRect.origin.x = pt.x;
-    m_caretRect.origin.y = pt.y;
-}
-
--(void)MoveCaret2:(TAMASize)pt
-{
-    [self GridToPixel:&pt];
-    m_caretRect2.origin.x = pt.x;
-    m_caretRect2.origin.y = pt.y;
 }
 
 @end

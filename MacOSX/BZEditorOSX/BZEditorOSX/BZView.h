@@ -89,6 +89,8 @@ enum CharMode { CMODE_ASCII, CMODE_ESC, CMODE_ESC1, CMODE_ESC2, CMODE_ESC3, CMOD
 - (__uint16_t)GetCharCode:(__uint16_t)c ofs:(__uint64_t)ofs;
 
 - (BOOL)DrawCaret;
+- (void)MoveCaretTo:(__uint64_t)dwNewCaret;
+- (BOOL)GotoCaret;
 
 - (void)UpdateToolbar;
 
@@ -99,10 +101,6 @@ enum CharMode { CMODE_ASCII, CMODE_ESC, CMODE_ESC1, CMODE_ESC2, CMODE_ESC3, CMOD
 - (__uint64_t)PointToOffset:(NSPoint)pt;
 - (void)OnTimerUp:(NSTimer*)timer;
 - (void)OnTimerDown:(NSTimer*)timer;
-
-
-- (void)MoveCaretTo:(__uint64_t)dwNewCaret;
-- (BOOL)GotoCaret;
 
 - (void)keyDownWithUnichar:(unichar)key bCtrl:(BOOL)bCtrl bShift:(BOOL)bShift;
 - (void)OnCharWithUnichar:(unichar)nChar;
@@ -117,10 +115,6 @@ enum CharMode { CMODE_ASCII, CMODE_ESC, CMODE_ESC1, CMODE_ESC2, CMODE_ESC3, CMOD
 - (IBAction)OnCharmodeEUC:(id)sender;
 - (IBAction)OnCharmodeEBCDIC:(id)sender;
 - (IBAction)OnCharmodeEPWING:(id)sender;
-- (IBAction)OnCharmodeAutoDetect:(id)sender;
-
-- (IBAction)OnByteOrderIntel:(id)sender;
-- (IBAction)OnByteOrderMotorola:(id)sender;
 
 - (IBAction)OnToolbarReadOnly:(id)sender;
 

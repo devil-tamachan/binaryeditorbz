@@ -97,6 +97,8 @@ NS_INLINE BOOL TAMAEqualSize(TAMASize s1, TAMASize s2)
 
 + (BOOL)_ismbclegal:(__uint8_t)ch ch2:(__uint8_t)ch2;
 
++ (int)ConvertCharSet:(enum CharSet)charset strSrc:(NSString *)strSrc retBuffer:(char **)retBuffer;
+
 + (__uint16_t)SwapWord:(__uint16_t)val;
 
 + (BOOL)CalcHexa:(const char*)sExp retVal:(long*)n1;
