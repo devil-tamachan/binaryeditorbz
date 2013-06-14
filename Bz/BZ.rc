@@ -327,10 +327,10 @@ BEGIN
         MENUITEM "カラー(&O)...",                  ID_VIEW_COLOR
         MENUITEM "高度な設定(&A)...",                ID_TOOLS_SETTING
         MENUITEM SEPARATOR
-        POPUP "言語(&L)..."
+        POPUP "Language(&L)..."
         BEGIN
             MENUITEM "日本語(&J)",                     ID_LANG_JPN
-            MENUITEM "英語(&E)",                      ID_LANG_ENU
+            MENUITEM "English(&E)",                      ID_LANG_ENU
         END
         MENUITEM SEPARATOR
         MENUITEM "BZ.DEFの編集(&E)",               ID_TOOLS_EDITDEF
