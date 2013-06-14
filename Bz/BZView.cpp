@@ -1099,7 +1099,7 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 		goto Error;
 	if(!m_bEnterVal && !preChar) {
 		DWORD dwSize = 1;
-		if(m_bCaretOnChar && (m_charset == CTYPE_UNICODE || (m_charset > CTYPE_UNICODE) && _ismbblead((BYTE)nChar))) {
+		if(m_bCaretOnChar && (m_charset == CTYPE_UNICODE || (m_charset > CTYPE_UNICODE && _ismbblead((BYTE)nChar)))) {
 			if(m_charset == CTYPE_UTF8)		// ### 1.54b
 				dwSize = 3;
 			else
