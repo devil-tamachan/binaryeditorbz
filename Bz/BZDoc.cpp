@@ -676,9 +676,13 @@ BOOL CBZDoc::OnOpenDocument(LPCTSTR lpszPathName)
 		if(!m_bReadOnly) {  // Reopen for ReadWrite
 			ReleaseFile(pFile, FALSE);
 			pFile = GetFile(lpszPathName, CFile::modeReadWrite | CFile::shareExclusive, &fe);
-			if(pFile == NULL) {
-				ReportSaveLoadException(lpszPathName, &fe, FALSE, AFX_IDP_INVALID_FILENAME);
-				return FALSE;
+			if(pFile == NULL) { //Retry open (ReadOnly)
+				pFile = GetFile(lpszPathName, CFile::modeRead|CFile::shareDenyWrite, &fe);
+				if(pFile == NULL) { //Failed open
+					ReportSaveLoadException(lpszPathName, &fe, FALSE, AFX_IDP_INVALID_FILENAME);
+					return FALSE;
+				}
+				m_bReadOnly = true;
 			}
 		}
 		m_pFileMapping = pFile;
