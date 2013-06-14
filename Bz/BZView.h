@@ -115,6 +115,10 @@ private:
 	static BOOL LoadEbcDicTable();					// ### 1.63
 	UCHAR ConvertEbcDic(UCHAR c);
 
+public:
+	void ReCreateBackup();
+	void ReCreateRestore();
+
 
 // Overrides
 	// ClassWizard generated virtual function overrides

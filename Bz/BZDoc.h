@@ -62,6 +62,9 @@ public:
 #endif //FILE_MAPPING
 	DWORD	m_dwBase;		// ###1.63
 
+	DWORD	m_restoreCaret;
+	POINT	m_restoreScroll;
+
 // Operations
 public:
 	BOOL	CopyToClipboard(DWORD dwPtr, DWORD dwSize);

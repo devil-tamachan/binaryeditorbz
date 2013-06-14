@@ -2398,3 +2398,22 @@ void CBZView::OnUpdateViewGrid1(CCmdUI *pCmdUI)
 	// TODO: ここにコマンド更新 UI ハンドラ コードを追加します。
 	pCmdUI->SetCheck(options.iGrid==1);
 }
+
+void CBZView::ReCreateBackup()
+{
+	if(m_pDoc)
+	{
+		m_pDoc->m_restoreCaret = m_dwCaret;
+		m_pDoc->m_restoreScroll = this->GetScrollPos();
+		m_pDoc->m_restoreScroll.x = 0;
+	}
+}
+void CBZView::ReCreateRestore()
+{
+	if(m_pDoc)
+	{
+		m_dwCaret = m_pDoc->m_restoreCaret;
+		DrawCaret();
+		ScrollToPos(m_pDoc->m_restoreScroll);
+	}
+}

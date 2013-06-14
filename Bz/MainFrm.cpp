@@ -250,6 +250,24 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 	CBZDocTemplate* pDocTemp = (CBZDocTemplate*)pDoc->GetDocTemplate();
 
 	if(bReCreate) {
+		// Backup (Caret, Scroll...)
+		CBZView *bzView;
+		if(m_pSplitter) {
+			int maxRow = m_pSplitter->GetRowCount();
+			int maxCol = m_pSplitter->GetColumnCount();
+			for(int r=0; r<maxRow; r++)
+			{
+				for(int c=0; c<maxCol; c++)
+				{
+					bzView = dynamic_cast<CBZView *>(m_pSplitter->GetPane(r,c));
+					if(bzView) bzView->ReCreateBackup();
+				}
+			}
+		} else {
+			bzView = dynamic_cast<CBZView *>(GetActiveView());
+			if(bzView) bzView->ReCreateBackup();
+		}
+
 		if(pDoc) pDoc->m_bAutoDelete = FALSE;
 		if(pDoc2) pDoc2->m_bAutoDelete = FALSE;
 		pContext = &context;
@@ -265,6 +283,7 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 	}
 
 	CView* pActiveView = NULL;
+	CBZView *bzViewNew[2] = {0};
 
 	if(m_nSplitView) {
 		m_pSplitter = new CSplitterWnd;
@@ -292,9 +311,12 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 				else
 					m_pSplitter->CreateView(r, c, RUNTIME_CLASS(CBZFormView), CSize(0,0), pContext);
 				m_pSplitter->CreateView(r, c + 1, RUNTIME_CLASS(CBZView), CSize(0,0), pContext);
+				bzViewNew[i] = dynamic_cast<CBZView *>(m_pSplitter->GetPane(r, c + 1));
 				((CView*)m_pSplitter->GetPane(r, c))->OnInitialUpdate();
-			} else
+			} else {
 				m_pSplitter->CreateView(r, c, RUNTIME_CLASS(CBZView), CSize(0,0), pContext);
+				bzViewNew[0] = dynamic_cast<CBZView *>(m_pSplitter->GetPane(r, c));
+			}
 			pActiveView = (CView*)m_pSplitter->GetPane(r, c + bSubView);
 			pActiveView->OnInitialUpdate();
 			if(nCol) 
@@ -333,9 +355,11 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 			m_pSplitter->CreateView(0, 1, RUNTIME_CLASS(CBZView), CSize(0,0), pContext);
 			((CView*)m_pSplitter->GetPane(0, 0))->OnInitialUpdate();
 			pActiveView = (CView*)m_pSplitter->GetPane(0, 1);
+			bzViewNew[0] = dynamic_cast<CBZView *>(pActiveView);
 		} else {
 			pContext->m_pNewViewClass = RUNTIME_CLASS(CBZView);
 			pActiveView = (CView*)CreateView(pContext);
+			bzViewNew[0] = dynamic_cast<CBZView *>(pActiveView);
 		}
 		pActiveView->OnInitialUpdate();
 	}
@@ -374,6 +398,8 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 	if(bReCreate) {
 //		if(!IsZoomed())
 			RecalcLayout();
+		if(bzViewNew[0])bzViewNew[0]->ReCreateRestore();
+		if(bzViewNew[1])bzViewNew[1]->ReCreateRestore();
 	} //else ((CBZView*)pActiveView)->ResizeFrame();
 	return TRUE;
 }
