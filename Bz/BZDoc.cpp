@@ -559,6 +559,10 @@ void CBZDoc::DuplicateDoc(CBZDoc* pDstDoc)
 	if(!s.IsEmpty())
 		pDstDoc->SetPathName(s);
 //	pDstDoc->UpdateAllViews(NULL);
+
+	//Restore infomation
+	pDstDoc->m_restoreCaret = m_restoreCaret;
+	pDstDoc->m_restoreScroll = m_restoreScroll;
 }
 
 /////////////////////////////////////////////////////////////////////////////

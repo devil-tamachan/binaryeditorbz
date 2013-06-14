@@ -315,7 +315,7 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 				((CView*)m_pSplitter->GetPane(r, c))->OnInitialUpdate();
 			} else {
 				m_pSplitter->CreateView(r, c, RUNTIME_CLASS(CBZView), CSize(0,0), pContext);
-				bzViewNew[0] = dynamic_cast<CBZView *>(m_pSplitter->GetPane(r, c));
+				bzViewNew[i] = dynamic_cast<CBZView *>(m_pSplitter->GetPane(r, c));
 			}
 			pActiveView = (CView*)m_pSplitter->GetPane(r, c + bSubView);
 			pActiveView->OnInitialUpdate();
