@@ -998,7 +998,7 @@ Error:
 	if (!m_bEnterVal && !preChar)
     {
 		__uint64_t dwSize = 1;
-        if(m_bCaretOnChar && (m_charset == CTYPE_UNICODE || (m_charset > CTYPE_UNICODE) && [BZGlobalFunc _ismbbleadSJIS932:(__uint8_t)nChar]/*_ismbblead((BYTE)nChar)*/)) {
+        if(m_bCaretOnChar && (m_charset == CTYPE_UNICODE || (m_charset > CTYPE_UNICODE && [BZGlobalFunc _ismbbleadSJIS932:(__uint8_t)nChar]))) {
 			if(m_charset == CTYPE_UTF8)		// ### 1.54b
 				dwSize = 3;
 			else
@@ -1086,7 +1086,6 @@ Error:
 {
     NSLog(@"BZView::validateMenuItem");
     SEL theAction = [menuItem action];
-    BZOptions *bzopt = [BZOptions sharedInstance];
     
     if (theAction == @selector(OnCharmodeAscii:)) {
         [menuItem setState:(m_charset==CTYPE_ASCII)? NSOnState:NSOffState];

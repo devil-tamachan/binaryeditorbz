@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		600FA8E11698968E001E7851 /* BZViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 600FA8E01698968E001E7851 /* BZViewController.xib */; };
 		601FAD73166A06F900DAEFF3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 601FAD72166A06F900DAEFF3 /* Cocoa.framework */; };
 		601FAD7D166A06F900DAEFF3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 601FAD7B166A06F900DAEFF3 /* InfoPlist.strings */; };
 		601FAD7F166A06F900DAEFF3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 601FAD7E166A06F900DAEFF3 /* main.m */; };
@@ -19,6 +18,7 @@
 		6032413317159F97006B7124 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6032413517159F97006B7124 /* Localizable.strings */; };
 		604EE0D6166E77D800D148A0 /* TextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 604EE0D5166E77D800D148A0 /* TextView.m */; };
 		604EE0D9166E780100D148A0 /* BZView.m in Sources */ = {isa = PBXBuildFile; fileRef = 604EE0D8166E780100D148A0 /* BZView.m */; };
+		60548DCF1768B4AC005EA5B5 /* BZViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 60548DD11768B4AC005EA5B5 /* BZViewController.xib */; };
 		60561B70169A20B300337094 /* BZViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 60561B6F169A20B300337094 /* BZViewController.m */; };
 		60561B73169B6E2C00337094 /* BZWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 60561B72169B6E2B00337094 /* BZWindowController.m */; };
 		605D2C4216F9290300173F5D /* BZOnMac2.icns in Resources */ = {isa = PBXBuildFile; fileRef = 605D2C4116F9290300173F5D /* BZOnMac2.icns */; };
@@ -38,7 +38,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		600FA8E01698968E001E7851 /* BZViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BZViewController.xib; sourceTree = "<group>"; };
 		601FAD6E166A06F900DAEFF3 /* BZEditorOSX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BZEditorOSX.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		601FAD72166A06F900DAEFF3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		601FAD75166A06F900DAEFF3 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -60,6 +59,7 @@
 		604EE0D5166E77D800D148A0 /* TextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextView.m; sourceTree = "<group>"; };
 		604EE0D7166E780100D148A0 /* BZView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZView.h; sourceTree = "<group>"; };
 		604EE0D8166E780100D148A0 /* BZView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZView.m; sourceTree = "<group>"; };
+		60548DD01768B4AC005EA5B5 /* en */ = {isa = PBXFileReference; lastKnownFileType = file; name = en; path = en.lproj/BZViewController.xib; sourceTree = "<group>"; };
 		60561B6E169A20B300337094 /* BZViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZViewController.h; sourceTree = "<group>"; };
 		60561B6F169A20B300337094 /* BZViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZViewController.m; sourceTree = "<group>"; };
 		60561B71169B6E2B00337094 /* BZWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZWindowController.h; sourceTree = "<group>"; };
@@ -153,7 +153,7 @@
 				604EE0D8166E780100D148A0 /* BZView.m */,
 				60561B6E169A20B300337094 /* BZViewController.h */,
 				60561B6F169A20B300337094 /* BZViewController.m */,
-				600FA8E01698968E001E7851 /* BZViewController.xib */,
+				60548DD11768B4AC005EA5B5 /* BZViewController.xib */,
 				604EE0D4166E77D800D148A0 /* TextView.h */,
 				604EE0D5166E77D800D148A0 /* TextView.m */,
 				60A43357167C8B970028D4DF /* BZOptions.h */,
@@ -233,6 +233,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				ja,
 			);
 			mainGroup = 601FAD63166A06F900DAEFF3;
 			productRefGroup = 601FAD6F166A06F900DAEFF3 /* Products */;
@@ -253,7 +254,7 @@
 				601FAD83166A06F900DAEFF3 /* Credits.rtf in Resources */,
 				601FAD89166A06FA00DAEFF3 /* BZWindowController.xib in Resources */,
 				601FAD8C166A06FA00DAEFF3 /* MainMenu.xib in Resources */,
-				600FA8E11698968E001E7851 /* BZViewController.xib in Resources */,
+				60548DCF1768B4AC005EA5B5 /* BZViewController.xib in Resources */,
 				6084EFBE16DB59E200B415AD /* BZBmpViewController.xib in Resources */,
 				605D2C4216F9290300173F5D /* BZOnMac2.icns in Resources */,
 				6032413317159F97006B7124 /* Localizable.strings in Resources */,
@@ -330,6 +331,14 @@
 				6032413417159F97006B7124 /* en */,
 			);
 			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		60548DD11768B4AC005EA5B5 /* BZViewController.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				60548DD01768B4AC005EA5B5 /* en */,
+			);
+			name = BZViewController.xib;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
