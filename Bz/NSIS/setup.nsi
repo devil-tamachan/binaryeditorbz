@@ -7,7 +7,7 @@ RequestExecutionLevel admin
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "BzEditor"
-!define PRODUCT_VERSION "1.8.3"
+!define PRODUCT_VERSION "1.8.4"
 !define PRODUCT_PUBLISHER "c.mos"
 !define PRODUCT_WEB_SITE "http://www.vcraft.jp/"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"
@@ -129,7 +129,7 @@ Section "MainSection" SEC01
 ;  File "..\chm\Bz.chm"
 ;  File "..\index.htm"
   File "data\Bz.txt"
-  File "data\SPECIALTHANKS.txt"
+  File "..\..\SPECIALTHANKS.txt"
   File "..\Release\Bzres_us.dll"
 ;  SetOutPath "$INSTDIR\htm"
 ;  File "..\htm\basic.htm"
