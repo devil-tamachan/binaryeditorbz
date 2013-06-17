@@ -88,6 +88,7 @@ CBZApp theApp;
 BOOL CBZApp::InitInstance()
 {
 #ifdef _DEBUG
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF|_CRTDBG_CHECK_ALWAYS_DF|_CRTDBG_LEAK_CHECK_DF);
 	disableUserModeCallbackExceptionFilter();
 #endif
 
