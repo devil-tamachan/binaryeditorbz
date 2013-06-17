@@ -187,6 +187,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
     TAMASize pt;
     __int64_t ptx2 = -1;
+    NSLog(@"DrawCaret: m_dwCaret==%llu, dwOrg==%llu, dwMax==%llu", m_dwCaret, dwOrg, dwMax);
     if (m_dwCaret < dwOrg || m_dwCaret >= dwMax) {
         pt.x = pt.y = -1;
     } else {
@@ -211,21 +212,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 		CBZInspectView* pView = (CBZInspectView*)GetNextWindow(GW_HWNDPREV);
 		pView->Update();
 	}*/
+    NSLog(@"DrawCaret: return %@", bDraw?@"True":@"False");
     
 	return bDraw;
 }
-- (BOOL)GotoCaret
+- (BOOL)GotoCaret //MoveCaretTo+arg
 {
-	if([self DrawCaret])//DrawCaret())
+	if([self DrawCaret])
     {
-		//if(m_bBlock) [self setNeedsDisplay:YES];//Invalidate(FALSE);
+		if(m_bBlock) [self setNeedsDisplay:YES];//Invalidate(FALSE);
 		return TRUE;
 	}
 	//POINT pt;
 	//pt.x = 0;
 	//pt.y = m_dwCaret/16 - 1;
 	[self ScrollToPos:m_dwCaret/16-1];//ScrollToPos(pt);
-	//[self setNeedsDisplay:YES];//Invalidate(FALSE);
+	[self setNeedsDisplay:YES];//Invalidate(FALSE);
 	return FALSE;
 }
 -(void)MoveCaretTo:(__uint64_t)dwNewCaret
@@ -235,13 +237,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	}
     
     [self setNeedsDisplayInRect:m_caretRect];m_bCaretOn = FALSE;
-	int dy = dwNewCaret/16 - m_dwCaret/16;
+	//int dy = dwNewCaret/16 - m_dwCaret/16;
 	m_dwCaret = dwNewCaret;
-	if(![self DrawCaret])//DrawCaret())
+	if([self DrawCaret])
     {
-		[self ScrollBy:0 dy:dy bScrl:!m_bBlock];//ScrollBy(0, dy, !m_bBlock);
+        if(m_bBlock)[self setNeedsDisplay:YES];//if(m_bBlock)Invalidate(FALSE);
 	}
-	//if(m_bBlock)Invalidate(FALSE);
+	[self ScrollToPos:m_dwCaret/16-1];//[self ScrollBy:0 dy:dy bScrl:!m_bBlock];//ScrollBy(0, dy, !m_bBlock);
 }
 
 
@@ -747,6 +749,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     return charset;
 }
 
+
+- (void)otherMouseDown:(NSEvent *)theEvent
+//void CBZView::OnMButtonDown(UINT nFlags, CPoint point)
+{
+	m_bCaretOnChar = !m_bCaretOnChar;
+	[self GotoCaret];
+	//CTextView::OnMButtonDown(nFlags, point);
+}
+
 - (void)mouseDown:(NSEvent *)theEvent
 //- (void)rightMouseDown:(NSEvent *)theEvent
 {
@@ -871,10 +882,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             [self setNeedsDisplayInRect:m_caretRect];m_bCaretOn = FALSE;
             m_dwCaret = ofs;
             m_bBlock = TRUE;
-            NSLog(@"m_bBlock==TRUE");
+            //NSLog(@"m_bBlock==TRUE");
             if([self DrawCaret])
             {
-                //Invalidate(FALSE);
+                [self setNeedsDisplay:YES];//Invalidate(FALSE);
             } else {
                 m_dwCaret = dwCaretOld;
                 m_caretRect.origin = ptCaretOld;
@@ -897,6 +908,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 }
 -(void)OnTimerDown:(NSTimer *)timer
 {
+    NSLog(@"OnTimerDown");
     [self keyDownWithUnichar:NSDownArrowFunctionKey bCtrl:FALSE bShift:TRUE];
     [self OnCharWithUnichar:NSDownArrowFunctionKey];
 }
@@ -966,15 +978,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	} else if(m_bBlock && !bShift) {
         NSLog(@"m_bBlock==FALSE");
 		m_bBlock = FALSE;
-		//Invalidate(FALSE);
+		[self setNeedsDisplay:YES];//Invalidate(FALSE);
 	}
-	if(m_caretRect.origin.x == -1) {
+//	if(YES) {//m_caretRect.origin.x == -1/*wrong here*/) {
+        //NSLog(@"m_caretRect.origin.x == %f", m_caretRect.origin.x);
 		if(dwNewCaret <= m_dwTotal) {	// ### 1.62
 			m_dwCaret = dwNewCaret;
 			[self GotoCaret];//GotoCaret();
+            NSLog(@"GotoCaret");
 		}
-	} else
+/*	} else {
+        NSLog(@"m_caretRect.origin.x == %f", m_caretRect.origin.x);
 		[self MoveCaretTo:dwNewCaret];//MoveCaretTo(dwNewCaret);
+        NSLog(@"MoveCaretTo");
+    }*/
     
     //[self setNeedsDisplay:YES];
 	return;
@@ -1055,7 +1072,9 @@ Error:
             memcpy(p, pb, len);//for (int i = 0; i<len; i++) *p++ = *pb++;
 			//free(buffer);
 			if(!m_bEnterVal)
+            {
 				[self MoveCaretTo:m_dwCaret + len];
+            }
             [self setNeedsDisplay:YES];
 		}
 		return;

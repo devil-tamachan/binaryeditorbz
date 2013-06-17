@@ -267,16 +267,29 @@ static BOOL g_isNewWindow = TRUE;
 
 -(BOOL)OnOpenDocument:(NSURL *)url
 {
-    int fd = open([[url path] fileSystemRepresentation], O_RDWR|O_EXLOCK/*|O_NONBLOCK*/);
-    if (fd==-1) {
-        m_bReadOnly = true;
-    }
-    close(fd);
+    BZOptions *bzopt = [BZOptions sharedInstance];
     
-    fd = open([[url path] fileSystemRepresentation], O_RDONLY|O_EXLOCK/*|O_NONBLOCK*/);
-    if(fd==-1)
+    int fd = -1;
+    const char *cFilePath = [[url path] fileSystemRepresentation];
+    if (!bzopt->bReadOnlyOpen)
     {
-        return false;//err
+        fd = open(cFilePath, O_RDWR|O_EXLOCK|O_NONBLOCK);
+        if (fd==-1) {
+            m_bReadOnly = true;
+            
+            fd = open(cFilePath, O_RDONLY|O_EXLOCK|O_NONBLOCK);
+            if(fd==-1)
+            {
+                return false;//err
+            }
+        }
+        close(fd);
+    } else {
+        fd = open(cFilePath, O_RDONLY|O_EXLOCK|O_NONBLOCK);
+        if(fd==-1)
+        {
+            return false;//err
+        }
     }
     //    flock(fd, LOCK_EX|LOCK_NB);
     
@@ -298,7 +311,7 @@ static BOOL g_isNewWindow = TRUE;
         //m_bReadOnly = /*options.bReadOnly||*/ st.mode;
         if (m_bReadOnly==false) {
             close(fd);
-            fd = open([[url path] fileSystemRepresentation], O_RDWR|O_EXLOCK/*|O_NONBLOCK*/);
+            fd = open(cFilePath, O_RDWR|O_EXLOCK|O_NONBLOCK);
             if (fd == -1) {
                 return false;//err
             }
