@@ -179,6 +179,13 @@ void CBZBmpView::OnInitialUpdate()
 	cView.cx = options.nBmpWidth * options.nBmpZoom + BMPSPACE*2 + GetSystemMetrics(SM_CXVSCROLL)+1;
 	pSplit->SetColumnInfo(0, cView.cx, 0);
 	// MemFree(lpbi);
+
+	int nMapMode;
+	SIZE sizeTotal, sizePage, sizeLine;
+	GetDeviceScrollSizes(nMapMode, sizeTotal, sizePage, sizeLine);
+	sizePage.cy = 150;
+	sizeLine.cy = 20;
+	SetScrollSizes(nMapMode, sizeTotal, sizePage, sizeLine);
 }
 
 BOOL CBZBmpView::OnEraseBkgnd(CDC* pDC)
@@ -393,30 +400,19 @@ void CBZBmpView::OnBmpViewColorWidth(UINT nID)
 
 void CBZBmpView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	// TODO: ここにメッセージ ハンドラ コードを追加するか、既定の処理を呼び出します。
 	switch(nChar)
 	{
 	case VK_DOWN:
-		{
-			SCROLLINFO si;
-			GetScrollInfo(SB_VERT, &si, SIF_TRACKPOS|SIF_RANGE);
-			Invalidate();
-			SetScrollPos(SB_VERT, min(si.nMax, si.nTrackPos+50), TRUE);
-		}
-		break;
-	case VK_UP:
-		{
-			SCROLLINFO si;
-			GetScrollInfo(SB_VERT, &si, SIF_TRACKPOS);
-			Invalidate();
-			SetScrollPos(SB_VERT, max(0, si.nTrackPos-50), TRUE);
-		}
-		break;
-	case VK_NEXT://PageDown
 		this->SendMessage(WM_VSCROLL, SB_LINEDOWN, 0);
 		break;
-	case VK_PRIOR://PageUp
+	case VK_UP:
 		this->SendMessage(WM_VSCROLL, SB_LINEUP, 0);
+		break;
+	case VK_NEXT://PageDown
+		this->SendMessage(WM_VSCROLL, SB_PAGEDOWN, 0);
+		break;
+	case VK_PRIOR://PageUp
+		this->SendMessage(WM_VSCROLL, SB_PAGEUP, 0);
 		break;
 	case VK_HOME:
 		this->SendMessage(WM_VSCROLL, SB_TOP, 0);
