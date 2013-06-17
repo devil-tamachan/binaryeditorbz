@@ -70,6 +70,7 @@ BEGIN_MESSAGE_MAP(CBZBmpView, CScrollView)
 	ON_WM_SETCURSOR()
 	ON_COMMAND_RANGE(ID_BMPVIEW_8BITCOLOR, ID_BMPVIEW_32BITCOLOR, OnBmpViewColorWidth)
 	ON_WM_MOUSEWHEEL()
+	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -291,8 +292,9 @@ void CBZBmpView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	if(nSBCode == SB_THUMBTRACK) {		// ### 1.54
 		SCROLLINFO si;
 		GetScrollInfo(SB_VERT, &si, SIF_TRACKPOS);
-		TRACE("nPos, nTrackPos=%d, %d\n", nPos, si.nTrackPos);
+		TRACE("nPos, nTrackPos=%u, %d\n", nPos, si.nTrackPos);
 		nPos = si.nTrackPos;
+		TRACE("nPos, nTrackPos=%u, %d\n", nPos, si.nTrackPos);
 	}
 	
 	CScrollView::OnVScroll(nSBCode, nPos, pScrollBar);
@@ -387,4 +389,42 @@ void CBZBmpView::OnBmpViewColorWidth(UINT nID)
 		break;
 	}
 	GetMainFrame()->CreateClient();
+}
+
+void CBZBmpView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	// TODO: ここにメッセージ ハンドラ コードを追加するか、既定の処理を呼び出します。
+	switch(nChar)
+	{
+	case VK_DOWN:
+		{
+			SCROLLINFO si;
+			GetScrollInfo(SB_VERT, &si, SIF_TRACKPOS|SIF_RANGE);
+			Invalidate();
+			SetScrollPos(SB_VERT, min(si.nMax, si.nTrackPos+50), TRUE);
+		}
+		break;
+	case VK_UP:
+		{
+			SCROLLINFO si;
+			GetScrollInfo(SB_VERT, &si, SIF_TRACKPOS);
+			Invalidate();
+			SetScrollPos(SB_VERT, max(0, si.nTrackPos-50), TRUE);
+		}
+		break;
+	case VK_NEXT://PageDown
+		this->SendMessage(WM_VSCROLL, SB_LINEDOWN, 0);
+		break;
+	case VK_PRIOR://PageUp
+		this->SendMessage(WM_VSCROLL, SB_LINEUP, 0);
+		break;
+	case VK_HOME:
+		this->SendMessage(WM_VSCROLL, SB_TOP, 0);
+		break;
+	case VK_END:
+		this->SendMessage(WM_VSCROLL, SB_BOTTOM, 0);
+		break;
+	}
+
+	CScrollView::OnKeyDown(nChar, nRepCnt, nFlags);
 }
