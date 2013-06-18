@@ -360,12 +360,9 @@ void CBZBmpView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		wsprintf(tmp, _T("0x%08X"), currentAddress);
 		WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, tmp);
 		m_tooltip.UpdateTipText(toolinfo);
-		ATLTRACE(_T("UpdateTooltip: %08X, %08X\n"), currentAddress, m_tooltipLastAddress);
-		m_tooltipLastAddress = currentAddress;
 		m_tooltip.Activate(true);
 		m_tooltip.Popup();
 	} else if(nSBCode == SB_THUMBPOSITION) {
-		m_tooltipLastAddress = 0xffffffff;
 		m_tooltip.Activate(false);
 		m_tooltip.Pop();
 	}
