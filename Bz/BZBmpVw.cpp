@@ -191,6 +191,7 @@ void CBZBmpView::OnInitialUpdate()
 	sizeLine.cy = 20;
 	SetScrollSizes(nMapMode, sizeTotal, sizePage, sizeLine);
 
+	if(m_tooltip.m_hWnd!=NULL)m_tooltip.DestroyWindow();
 	m_tooltip.Create(m_hWnd, NULL, NULL, TTS_BALLOON|TTS_NOFADE|TTS_NOANIMATE|TTS_ALWAYSTIP);
 	m_tooltip.SetDelayTime(TTDT_RESHOW, 0);
 	m_tooltip.SetDelayTime(TTDT_AUTOPOP, 0xffff);
