@@ -229,10 +229,8 @@ void CBZBmpView::OnMouseMove(UINT nFlags, CPoint point)
 	}
 
 	m_tooltipLastAddress = 0xffffffff;
-	//m_tooltip.DelTool(m_hWnd, 0);
-	m_tooltip.Activate(false);//Hide tooltip
+	m_tooltip.Activate(false);
 	m_tooltip.Pop();
-	CScrollView::OnMouseMove(nFlags, point);
 	//CScrollView::OnMouseMove(nFlags, point);
 }
 
@@ -351,6 +349,25 @@ void CBZBmpView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		TRACE("nPos, nTrackPos=%u, %d\n", nPos, si.nTrackPos);
 		nPos = si.nTrackPos;
 		TRACE("nPos, nTrackPos=%u, %d\n", nPos, si.nTrackPos);
+
+		CPoint point = GetScrollPosition();
+		point.x = max(point.x-BMPSPACE, 0);
+		point.y = max(point.y-BMPSPACE, 0);
+		point.x /= options.nBmpZoom;
+		point.y /= options.nBmpZoom;
+		DWORD currentAddress = point.y*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (point.x * (options.nBmpColorWidth/8));
+		TCHAR tmp[22];
+		wsprintf(tmp, _T("0x%08X"), currentAddress);
+		WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, tmp);
+		m_tooltip.UpdateTipText(toolinfo);
+		ATLTRACE(_T("UpdateTooltip: %08X, %08X\n"), currentAddress, m_tooltipLastAddress);
+		m_tooltipLastAddress = currentAddress;
+		m_tooltip.Activate(true);
+		m_tooltip.Popup();
+	} else if(nSBCode == SB_THUMBPOSITION) {
+		m_tooltipLastAddress = 0xffffffff;
+		m_tooltip.Activate(false);
+		m_tooltip.Pop();
 	}
 	
 	CScrollView::OnVScroll(nSBCode, nPos, pScrollBar);
