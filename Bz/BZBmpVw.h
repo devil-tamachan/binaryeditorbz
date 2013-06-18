@@ -46,6 +46,7 @@ private:
 	LPBITMAPINFOHEADER m_lpbi;
 	WTL::CToolTipCtrl m_tooltip;
 	DWORD m_tooltipLastAddress;
+	BOOL m_isLButtonDown;
 public:
 
 // Operations
@@ -82,6 +83,7 @@ public:
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 };
 
 /////////////////////////////////////////////////////////////////////////////

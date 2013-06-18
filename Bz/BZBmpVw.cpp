@@ -51,6 +51,7 @@ CBZBmpView::CBZBmpView()
 	m_hBmp = NULL;
 	m_lpbi = NULL;
 	m_tooltipLastAddress = 0xffffffff;
+	m_isLButtonDown = false;
 }
 
 CBZBmpView::~CBZBmpView()
@@ -73,6 +74,7 @@ BEGIN_MESSAGE_MAP(CBZBmpView, CScrollView)
 	ON_WM_MOUSEWHEEL()
 	ON_WM_KEYDOWN()
 	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONUP()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -198,42 +200,6 @@ void CBZBmpView::OnInitialUpdate()
 	m_tooltip.AddTool(toolinfo);
 }
 
-void CBZBmpView::OnMouseMove(UINT nFlags, CPoint point)
-{
-	point += GetScrollPosition();
-	point.x -= BMPSPACE;
-	point.y -= BMPSPACE;
-	point.x /= options.nBmpZoom;
-	point.y /= options.nBmpZoom;
-	if(point.x >= 0 && point.x < options.nBmpWidth && point.y >= 0) {
-		DWORD currentAddress = point.y*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (point.x * (options.nBmpColorWidth/8));
-		if(currentAddress != m_tooltipLastAddress)
-		{
-			CBZView* pView = (CBZView*)GetNextWindow();
-			if(currentAddress < pView->m_dwTotal) {
-				TCHAR tmp[22];
-				wsprintf(tmp, _T("0x%08X"), currentAddress);
-				WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, tmp);
-				m_tooltip.UpdateTipText(toolinfo);
-				ATLTRACE(_T("UpdateTooltip: %08X, %08X\n"), currentAddress, m_tooltipLastAddress);
-				m_tooltipLastAddress = currentAddress;
-				m_tooltip.Activate(true);
-				m_tooltip.Popup();
-				//CScrollView::OnMouseMove(nFlags, point);
-				return;
-			}
-		} else {
-				ATLTRACE(_T("!!!UpdateTooltip: %08X, %08X\n"), currentAddress, m_tooltipLastAddress);
-				return;
-		}
-	}
-
-	m_tooltipLastAddress = 0xffffffff;
-	m_tooltip.Activate(false);
-	m_tooltip.Pop();
-	//CScrollView::OnMouseMove(nFlags, point);
-}
-
 
 BOOL CBZBmpView::OnEraseBkgnd(CDC* pDC)
 {
@@ -320,7 +286,8 @@ void CBZBmpView::Dump(CDumpContext& dc) const
 
 void CBZBmpView::OnLButtonDown(UINT nFlags, CPoint point) 
 {
-	// TODO: Add your message handler code here and/or call default
+	m_isLButtonDown = true;
+
 	point += GetScrollPosition();
 	point.x -= BMPSPACE;
 	point.y -= BMPSPACE;
@@ -337,6 +304,53 @@ void CBZBmpView::OnLButtonDown(UINT nFlags, CPoint point)
 	}
 
 //	CScrollView::OnLButtonDown(nFlags, point);
+}
+void CBZBmpView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	point += GetScrollPosition();
+	point.x -= BMPSPACE;
+	point.y -= BMPSPACE;
+	point.x /= options.nBmpZoom;
+	point.y /= options.nBmpZoom;
+	if(point.x >= 0 && point.x < options.nBmpWidth && point.y >= 0) {
+		DWORD currentAddress = point.y*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (point.x * (options.nBmpColorWidth/8));
+		if(currentAddress != m_tooltipLastAddress)
+		{
+			CBZView* pView = (CBZView*)GetNextWindow();
+			if(currentAddress < pView->m_dwTotal) {
+				if(m_isLButtonDown)
+				{
+					pView->m_dwCaret = currentAddress;
+					pView->GotoCaret();
+					//pView->Activate();
+				} else {
+					TCHAR tmp[22];
+					wsprintf(tmp, _T("0x%08X"), currentAddress);
+					WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, tmp);
+					m_tooltip.UpdateTipText(toolinfo);
+					ATLTRACE(_T("UpdateTooltip: %08X, %08X\n"), currentAddress, m_tooltipLastAddress);
+					m_tooltipLastAddress = currentAddress;
+					m_tooltip.Activate(true);
+					m_tooltip.Popup();
+					//CScrollView::OnMouseMove(nFlags, point);
+					return;
+				}
+			}
+		} else {
+				ATLTRACE(_T("!!!UpdateTooltip: %08X, %08X\n"), currentAddress, m_tooltipLastAddress);
+				return;
+		}
+	}
+
+	m_tooltipLastAddress = 0xffffffff;
+	m_tooltip.Activate(false);
+	m_tooltip.Pop();
+	//CScrollView::OnMouseMove(nFlags, point);
+}
+void CBZBmpView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	m_isLButtonDown = false;
+	//CScrollView::OnLButtonUp(nFlags, point);
 }
 
 void CBZBmpView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
