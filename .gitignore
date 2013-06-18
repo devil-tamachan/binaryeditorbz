@@ -2,3 +2,5 @@ project.xcworkspace/
 xcuserdata/
 build/
 *.DS_Store
+Bz/Release/
+Bz/Debug/
