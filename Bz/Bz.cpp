@@ -541,6 +541,8 @@ void CBZOptions::Load()
 		bStructView=false;
 		bAnalyzerView=false;
 	}
+	
+	bAddressTooltip = GetProfileInt(_T("BmpAddressTooltip"), TRUE);
 }
 
 void CBZOptions::Save()
@@ -600,6 +602,8 @@ void CBZOptions::Save()
 
 	WriteProfileInt(_T("InspectView"), bInspectView);
 	WriteProfileInt(_T("AnalyzerView"), bAnalyzerView);
+	
+	WriteProfileInt(_T("BmpAddressTooltip"), bAddressTooltip);
 	
 }
 

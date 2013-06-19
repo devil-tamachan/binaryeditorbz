@@ -52,8 +52,7 @@
 #define IDL_ANALYZE_RESULT              1038
 #define IDP_ANALYZE_PERCENT             1039
 #define IDB_ANALYZER_SAVE               1041
-#define IDC_BUTTON2                     1042
-#define IDB_ANALYZER_SAVEALL            1043
+#define IDB_ANALYZER_SAVEALL            1042
 #define IDS_COLOR_ADDRESS               3000
 #define IDS_COLOR_ADDRESS2              3001
 #define IDS_COLOR_TEXT                  3002
@@ -119,7 +118,7 @@
 #define ID_BMPVIEW_8BITCOLOR            32850
 #define ID_BMPVIEW_24BITCOLOR           32851
 #define ID_BMPVIEW_32BITCOLOR           32852
-#define ID_Menu32857                    32857
+#define ID_BMPVIEW_ADDRESSTOOLTIP       32853
 #define ID_VIEW_ANALYZER                32858
 #define ID_INDICATOR_INFO               0xE710
 #define ID_INDICATOR_SIZE               0xE711

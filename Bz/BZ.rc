@@ -355,6 +355,8 @@ BEGIN
         MENUITEM "8bit color",                  ID_BMPVIEW_8BITCOLOR
         MENUITEM "24bit color",                 ID_BMPVIEW_24BITCOLOR
         MENUITEM "32bit color",                 ID_BMPVIEW_32BITCOLOR
+        MENUITEM SEPARATOR
+        MENUITEM "Address Tooltip",             ID_BMPVIEW_ADDRESSTOOLTIP
     END
 END
 

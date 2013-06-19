@@ -71,6 +71,7 @@ BEGIN_MESSAGE_MAP(CBZBmpView, CScrollView)
 	ON_COMMAND_RANGE(ID_BMPVIEW_WIDTH128, ID_BMPVIEW_ZOOM, OnBmpViewMode)
 	ON_WM_SETCURSOR()
 	ON_COMMAND_RANGE(ID_BMPVIEW_8BITCOLOR, ID_BMPVIEW_32BITCOLOR, OnBmpViewColorWidth)
+	ON_COMMAND(ID_BMPVIEW_ADDRESSTOOLTIP, OnBmpViewAddressTooltip)
 	ON_WM_MOUSEWHEEL()
 	ON_WM_KEYDOWN()
 	ON_WM_MOUSEMOVE()
@@ -324,7 +325,7 @@ void CBZBmpView::OnMouseMove(UINT nFlags, CPoint point)
 					pView->m_dwCaret = currentAddress;
 					pView->GotoCaret();
 					//pView->Activate();
-				} else {
+				} else if(options.bAddressTooltip) {
 					TCHAR tmp[22];
 					wsprintf(tmp, _T("0x%08X"), currentAddress);
 					WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, tmp);
@@ -365,18 +366,21 @@ void CBZBmpView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		nPos = si.nTrackPos;
 		TRACE("nPos, nTrackPos=%u, %d\n", nPos, si.nTrackPos);
 
-		CPoint point = GetScrollPosition();
-		point.x = max(point.x-BMPSPACE, 0);
-		point.y = max(point.y-BMPSPACE, 0);
-		point.x /= options.nBmpZoom;
-		point.y /= options.nBmpZoom;
-		DWORD currentAddress = point.y*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (point.x * (options.nBmpColorWidth/8));
-		TCHAR tmp[22];
-		wsprintf(tmp, _T("0x%08X"), currentAddress);
-		WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, tmp);
-		m_tooltip.UpdateTipText(toolinfo);
-		m_tooltip.Activate(true);
-		m_tooltip.Popup();
+		if(options.bAddressTooltip)
+		{
+			CPoint point = GetScrollPosition();
+			point.x = max(point.x-BMPSPACE, 0);
+			point.y = max(point.y-BMPSPACE, 0);
+			point.x /= options.nBmpZoom;
+			point.y /= options.nBmpZoom;
+			DWORD currentAddress = point.y*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (point.x * (options.nBmpColorWidth/8));
+			TCHAR tmp[22];
+			wsprintf(tmp, _T("0x%08X"), currentAddress);
+			WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, tmp);
+			m_tooltip.UpdateTipText(toolinfo);
+			m_tooltip.Activate(true);
+			m_tooltip.Popup();
+		}
 	} else if(nSBCode == SB_THUMBPOSITION) {
 		m_tooltip.Activate(false);
 		m_tooltip.Pop();
@@ -387,9 +391,7 @@ void CBZBmpView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 
 BOOL CBZBmpView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
-	// TODO: ここにメッセージ ハンドラ コードを追加するか、既定の処理を呼び出します。
-
-	this->SendMessage(WM_VSCROLL, zDelta > 0 ? SB_LINEUP : SB_LINEDOWN, 0);
+	this->SendMessage(WM_VSCROLL, zDelta > 0 ? SB_PAGEUP : SB_PAGEDOWN, 0);
 
 	return CScrollView::OnMouseWheel(nFlags, zDelta, pt);
 }
@@ -426,6 +428,8 @@ void CBZBmpView::OnRButtonDown(UINT nFlags, CPoint point)
 		pMenu->CheckMenuItem(ID_BMPVIEW_32BITCOLOR, MF_BYCOMMAND | MF_CHECKED);
 		break;
 	}
+	if(options.bAddressTooltip)
+		pMenu->CheckMenuItem(ID_BMPVIEW_ADDRESSTOOLTIP, MF_BYCOMMAND | MF_CHECKED);
 
 	CPoint pt;
 	GetCursorPos(&pt);
@@ -474,6 +478,11 @@ void CBZBmpView::OnBmpViewColorWidth(UINT nID)
 		break;
 	}
 	GetMainFrame()->CreateClient();
+}
+
+void CBZBmpView::OnBmpViewAddressTooltip()
+{
+	options.bAddressTooltip = !options.bAddressTooltip;
 }
 
 void CBZBmpView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
