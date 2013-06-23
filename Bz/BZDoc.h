@@ -72,7 +72,7 @@ public:
 	BOOL	isDocumentEditedSelfOnly();
 	void	InsertData(DWORD dwPtr, DWORD dwSize, BOOL bIns);
 	void	DeleteData(DWORD dwPtr, DWORD dwSize);
-	void	StoreUndo(DWORD dwPtr, DWORD dwSize, UndoMode mode);
+	BOOL	StoreUndo(DWORD dwPtr, DWORD dwSize, UndoMode mode);
 	DWORD	DoUndo();
 	void	TouchDoc();		// ###1.54
 	void	DuplicateDoc(CBZDoc* pDstDoc);
