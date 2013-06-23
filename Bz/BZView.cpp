@@ -80,7 +80,7 @@ BOOL  CBZView::m_bLoadEbcDic = FALSE;
 inline WORD SwapWord(WORD val)
 {
 	if(options.bByteOrder) {
-		 _byteswap_ushort(val);
+		 val = _byteswap_ushort(val);
 /*		_asm {
 			mov eax, val
 			xchg al,ah
@@ -94,7 +94,7 @@ inline WORD SwapWord(WORD val)
 inline DWORD SwapDword(DWORD val)
 {
 	if(options.bByteOrder) {
-		 _byteswap_ulong(val);
+		 val = _byteswap_ulong(val);
 /*		_asm {
 			push val
 			pop ax
@@ -1116,7 +1116,7 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 			m_pDoc->StoreUndo(m_dwCaret, dwSize, UNDO_OVR);
 	}
 	m_bBlock = FALSE;
-	p  = m_pDoc->GetDocPtr() + m_dwCaret;
+	p = m_pDoc->QueryMapViewTama2(m_dwCaret, 4); //p  = m_pDoc->GetDocPtr() + m_dwCaret;
 	if(!m_bCaretOnChar) {
 		if(nChar >= '0' && nChar <= '9')
 			nChar -= '0';
@@ -1382,58 +1382,46 @@ void CBZView::OnStatusChar()
 	OnCharMode(m_charset + ID_CHAR_ASCII);
 }
 
-int CBZView::GetValue(DWORD ofs, int bytes)
+int CBZView::GetValue(DWORD dwOffset, int bytes)
 {
-	LPBYTE p  = m_pDoc->GetDocPtr();
+	LPBYTE lpStart = m_pDoc->QueryMapViewTama2(dwOffset, bytes); //LPBYTE p  = m_pDoc->GetDocPtr();
 	int val = 0;
-	if(p) {
-#ifdef FILE_MAPPING
-		if(m_pDoc->IsOutOfMap(p + ofs)) return 0;
-#endif //FILE_MAPPING
-		if(ofs + bytes > m_dwTotal)
-			val = 0;
-		else {
-			p += ofs;
-			switch(bytes) {
-				case 1: val = *p; break;
-				case 2: val = SwapWord(*(WORD*)p); break;
-				case 4: val = SwapDword(*(DWORD*)p); break;
-			}
+	if(!lpStart || m_pDoc->GetMapRemain(dwOffset) < bytes)return 0;
+	if(dwOffset + bytes > m_dwTotal)
+		val = 0;
+	else {
+		switch(bytes) {
+			case 1: val = *lpStart; break;
+			case 2: val = SwapWord(*(WORD*)lpStart); break;
+			case 4: val = SwapDword(*(DWORD*)lpStart); break;
 		}
 	}
 	return val;
 }
 
-ULONGLONG CBZView::GetValue64(DWORD ofs)
+ULONGLONG CBZView::GetValue64(DWORD dwOffset)
 {
-	LPBYTE p  = m_pDoc->GetDocPtr();
+	LPBYTE lpStart = m_pDoc->QueryMapViewTama2(dwOffset, 8); //LPBYTE p  = m_pDoc->GetDocPtr();
 	ULONGLONG val = 0;
-	if(p) {
-#ifdef FILE_MAPPING
-		if(m_pDoc->IsOutOfMap(p + ofs)) return 0;
-#endif //FILE_MAPPING
-		if(ofs + 8 > m_dwTotal)
-			val = 0;
-		else {
-			p += ofs;
-			val = SwapQword(*(ULONGLONG*)p);
-		}
+	if(!lpStart || m_pDoc->GetMapRemain(dwOffset) < 8)return 0;
+	if(dwOffset + 8 > m_dwTotal)
+		val = 0;
+	else {
+		val = SwapQword(*(ULONGLONG*)lpStart);
 	}
 	return val;
 }
 
-void CBZView::SetValue(DWORD ofs, int bytes, int val)
+void CBZView::SetValue(DWORD dwOffset, int bytes, int val)
 {
-	LPBYTE p  = m_pDoc->GetDocPtr();
-	if(p && ofs + bytes <= m_dwTotal) {
-		p += ofs;
-		m_pDoc->StoreUndo(ofs, bytes, UNDO_OVR);
-		SetValue(p, bytes, val);
-		Invalidate(FALSE);
-		if(m_dwStruct) {
-			CBZFormView* pView = (CBZFormView*)GetWindow(GW_HWNDFIRST);
-			pView->OnSelchangeListTag();
-		}
+	LPBYTE lpStart = m_pDoc->QueryMapViewTama2(dwOffset, bytes); //LPBYTE p  = m_pDoc->GetDocPtr();
+	if(!lpStart || m_pDoc->GetMapRemain(dwOffset) < bytes /*|| dwOffset + bytes > m_dwTotal*/)return;
+	m_pDoc->StoreUndo(dwOffset, bytes, UNDO_OVR);
+	SetValue(lpStart, bytes, val);
+	Invalidate(FALSE);
+	if(m_dwStruct) {
+		CBZFormView* pView = (CBZFormView*)GetWindow(GW_HWNDFIRST);
+		pView->OnSelchangeListTag();
 	}
 }
 

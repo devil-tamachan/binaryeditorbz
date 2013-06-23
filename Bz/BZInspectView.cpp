@@ -178,26 +178,27 @@ void CBZInspectView::Update(void)
 	ULONGLONG qval = m_pView->GetValue64(m_pView->m_dwCaret);
 	void *pVal = &qval;
 
-	char chVal = *((char*)pVal);
-	strVal = SeparateByComma(chVal, m_bSigned);
+	val = m_pView->GetValue(m_pView->m_dwCaret, 1);
+	strVal = SeparateByComma(m_bSigned ? (int)(char)val : val, m_bSigned);
 	m_editBinary1.SetWindowText(strVal);
 
 	val = m_pView->GetValue(m_pView->m_dwCaret, 2);
-	short sVal = *((short*)pVal);
-	strVal = SeparateByComma(sVal, m_bSigned);
+	strVal = SeparateByComma(m_bSigned ? (int)(short)val : val, m_bSigned);
 	m_editBinary2.SetWindowText(strVal);
 
-	int iVal = *((int*)pVal);
-	strVal = SeparateByComma(iVal, m_bSigned);
+	val = m_pView->GetValue(m_pView->m_dwCaret, 4);
+	strVal = SeparateByComma(val, m_bSigned);
 	m_editBinary4.SetWindowText(strVal);
 
 	strVal = SeparateByComma64(qval, m_bSigned);
 	m_editBinary8.SetWindowText(strVal);
 
-	strVal.Format(_T("%f"), *((float*)pVal));
+	val = m_pView->GetValue(m_pView->m_dwCaret, 4);
+	float ft = *((float*)&val);
+	strVal.Format(_T("%f"), ft);
 	m_editFloat.SetWindowText(strVal);
 
-	strVal.Format(_T("%f"), qval);
+	strVal.Format(_T("%f"), *((double*)&qval));
 	m_editDouble.SetWindowText(strVal);
 
 	strVal.Format(_T("0x%08X %08X"), *( ((int*)pVal)+1 ), *( ((int*)pVal)+0 ));
