@@ -102,7 +102,7 @@ private:
 	BOOL	IsMBS(LPBYTE pTop, DWORD ofs, BOOL bTrail);
 	CharSet AutoDetectCharSet();
 	int ConvertCharSet(CharSet charset, LPCSTR sFind, LPBYTE &buffer);
-	CharSet DetectCodeType(LPBYTE p, LPBYTE pEnd);
+	CharSet DetectCodeType(DWORD dwStart = 0, DWORD dwMaxSize = 0xFFFFffff);//(LPBYTE p, LPBYTE pEnd);
 	void InitCharMode(LPBYTE pTop, DWORD ofs);
 	WORD GetCharCode(WORD c, DWORD ofs = 0);
 	void SetColor(TextColor n = TCOLOR_TEXT);
