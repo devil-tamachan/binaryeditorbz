@@ -1524,19 +1524,7 @@ void CBZView::OnJumpFindnext()
 		return;
 	}
 
-#ifndef FILE_MAPPING
-	LPBYTE pData  = m_pDoc->GetDocPtr();
-	DWORD dwFind = m_dwTotal;
-#else
-	LPBYTE pData = m_pDoc->QueryMapView(m_pDoc->GetDocPtr(), m_dwCaret + 1);
-	DWORD dwFind = m_pDoc->GetMapSize();
-#endif //FILE_MAPPING
-
-	LPBYTE p = pData + m_dwCaret + 1;
-	int len = dwFind - m_dwCaret;
-
 	int c1 = sFind[0];
-	int c2 = 0;
 	if(c1 == '=') {
 		pCombo->SetText(_T("? "));
 		return;
@@ -1581,121 +1569,58 @@ void CBZView::OnJumpFindnext()
 		}
 		return;
 	}
-	if(len < 2) return;
-	len--;
+
+	//検索モード [# 00 AA BB FF] または [abcdef]
+
+	CWaitCursor wait;	// ###1.61
+
+	DWORD dwStart = m_dwCaret + 1;
+	if(dwStart >= m_dwTotal-1)return;
+
+	DWORD dwRetAddress = 0xFFFFffff;//err
+
 	int nFind = 0;
 	LPBYTE pFind = NULL;
 	CharSet charset = m_charset;
-	if(c1 == '#') {
+	if(c1 == '#') {//検索モード [# 00 AA BB FF]
 		nFind = ReadHexa(sFind, pFind);
 		if(!nFind) return;
-		c1 = *pFind;
-		charset = CTYPE_BINARY;
-	} else {
-		if(charset >= CTYPE_UNICODE) {
+		dwRetAddress = strstrBinary(pFind, nFind, dwStart);//charset = CTYPE_BINARY;
+	} else {		//検索モード [abcdef]
+		if(charset >= CTYPE_UNICODE) { //CTYPE_UNICODE, CTYPE_JIS, CTYPE_EUC, CTYPE_UTF8, CTYPE_EBCDIC, CTYPE_EPWING, CTYPE_COUNT, CTYPE_BINARY
 			nFind = ConvertCharSet(charset, sFind, pFind);
 			if(!pFind || !nFind) return;
 			if(charset == CTYPE_UNICODE) {
-				c1 = *((LPWORD)pFind);
-				if(iswlower(c1)) c2 = towupper(c1);
-				if(iswupper(c1)) c2 = towlower(c1);
-				if(((long)p)&1) {
-					p++; len--;
+				if(dwStart&1) {
+					dwStart++;
 				}
+				dwRetAddress = stristrBinaryW((LPCWSTR)pFind, nFind, dwStart);
 			} else {
-				charset = CTYPE_BINARY;
-				c1 = *pFind;
+				dwRetAddress = strstrBinary(pFind, nFind, dwStart);//charset = CTYPE_BINARY;
 			}
-		} else {
+		} else { //CTYPE_ASCII, CTYPE_SJIS
 			nFind = sFind.GetLength();
-			if(charset == CTYPE_ASCII) {
-				if(islower(c1)) c2 = _toupper(c1);
-				if(isupper(c1)) c2 = _tolower(c1);
-			}
+			if(m_charset == CTYPE_ASCII)
+				dwRetAddress = stristrBinaryA(sFind, dwStart);
+			else
+				dwRetAddress = strstrBinary((LPBYTE)((LPCSTR)sFind), nFind, dwStart);
 		}
-		if(!c1) return;
+	}
+	if(dwRetAddress==0xFFFFffff)
+	{
+		AfxMessageBox(IDS_ERR_FINDSTRING);
+		pCombo->SetFocus();
+		if(pFind) MemFree(pFind);
+		return;
 	}
 
-	CWaitCursor wait;	// ###1.61
-	for(;;) {
-		LPBYTE p1 = NULL;
-		LPBYTE p2 = NULL;
-		if(len >= nFind) {
-			if(charset == CTYPE_UNICODE) {
-				p1 = (LPBYTE)MemScanWord((LPWORD)p, c1, len);
-				if(c2) p2 = (LPBYTE)MemScanWord((LPWORD)p, c2, len);
-			} else {
-				p1 = MemScanByte(p, c1, len);
-				if(c2) p2 = MemScanByte(p, c2, len);
-			}
-		}
-		if(p1 || p2) {
-			if(!p1 || (p2 && p2 < p1)) p1 = p2;
-			int r;
-			switch(charset) {
-			case CTYPE_BINARY:
-				r = memcmp(p1, pFind, nFind);
-				break;
-			case CTYPE_ASCII:
-				r = _strnicmp((LPCSTR)p1, sFind, nFind);
-				break;
-			case CTYPE_SJIS:
-				r = strncmp((LPCSTR)p1, sFind, nFind);
-				break;
-			case CTYPE_UNICODE:
-				r = _wcsnicmp(/*(LPWORD)*/(const wchar_t *)p1, /*(LPWORD)*/(const wchar_t *)pFind, nFind);
-				break;
-			}
-			if(!r) {
-				m_dwOldCaret = m_dwCaret;
-				m_dwCaret = p1 - pData;
-				m_bCaretOnChar = !pFind;
-				GotoCaret();
-				SetFocus();
-				break;
-			}
-			p1++;
-			if(charset == CTYPE_UNICODE)
-				p1++;
-			len -= p1 - p;
-			p = p1;
-		}
-#ifdef FILE_MAPPING
-		else if(dwFind < m_dwTotal) {
-			DWORD dwFind0 = dwFind;
-			pData = m_pDoc->QueryMapView(pData, dwFind);
-			p = pData + dwFind;
-			dwFind = m_pDoc->GetMapSize();
-			len = dwFind - dwFind0;
-		}		
-#endif //FILE_MAPPING
-		else {
-			AfxMessageBox(IDS_ERR_FINDSTRING);
-			pCombo->SetFocus();
-			break;
-		}
-	}
+	m_dwOldCaret = m_dwCaret;
+	m_dwCaret = dwRetAddress;
+	m_bCaretOnChar = !pFind;
+	GotoCaret();
+	SetFocus();
+
 	if(pFind) MemFree(pFind);
-}
-
-static LPBYTE MemScanByte(BYTE *p, BYTE c, DWORD len)
-{
-	BYTE *p2 = p+len;
-	for(;p<p2;p++)
-	{
-		if(*p==c)return p;
-	}
-	return 0;
-}
-
-static LPWORD MemScanWord(WORD * p, WORD c, DWORD len)
-{
-	WORD *p2 = (WORD*)(((BYTE*)p)+len);
-	for(;p<p2;p++)
-	{
-		if(*p==c)return p;
-	}
-	return 0;
 }
 
 static DWORD MemCompByte(LPCVOID p1, LPCVOID p2, DWORD len)
@@ -2141,23 +2066,12 @@ int CBZView::ConvertCharSet(CharSet charset, LPCSTR sFind, LPBYTE &buffer)
 			nFind = ::MultiByteToWideChar(CP_ACP, 0, sFind, -1, (LPWSTR)buffer, nFind);
 			if(nFind) nFind--;
 			if(charset == CTYPE_UTF8) {			// ### 1.54b
-				WORD w = *((LPWORD)buffer);
+				const int nFindUtf8 = ::WideCharToMultiByte(CP_UTF8, 0, (LPWSTR)buffer, nFind, NULL, 0, 0, 0);
+				char *bufferNew = (char *)MemAlloc(nFindUtf8*2);
+				::WideCharToMultiByte(CP_UTF8, 0, (LPWSTR)buffer, nFind, bufferNew, nFindUtf8*2, 0, 0);
 				MemFree(buffer);
-				buffer = (LPBYTE)MemAlloc(4);
-				if(w < 0x80) {
-					*buffer = (BYTE)w;
-					nFind = 1;
-				} else if(w < 0x800) {
-					*buffer = (BYTE)((w >> 6) | 0xC0);
-					*(buffer + 1) = (BYTE)((w & 0x3F) | 0x80);
-					nFind = 2;
-				} else {
-					*buffer = (BYTE)((w >> 12) & 0x0F | 0xE0);
-					*(buffer + 1) = (BYTE)((w >> 6) & 0x3F | 0x80);
-					*(buffer + 2) = (BYTE)(w & 0x3F | 0x80);
-					nFind = 3;
-				}
-
+				buffer = (LPBYTE)bufferNew;
+				nFind = nFindUtf8;
 			}
 		}
 	} else {
@@ -2436,4 +2350,118 @@ void CBZView::ReCreateRestore()
 		DrawCaret();
 		ScrollToPos(m_pDoc->m_restoreScroll);
 	}
+}
+
+
+
+
+// Quick Search Algorithm
+void CBZView::preQuickSearchWI1(LPCWSTR searchTextW, BYTE nSearchTextW, BYTE *skipTable)
+{
+	for(int j=0;j<0x10000;j++)skipTable[j] = nSearchTextW+1;
+	WORD wc;
+	for(DWORD i=0;i<nSearchTextW;i++)
+	{
+		wc = searchTextW[i];
+		skipTable[wc] = nSearchTextW - i;
+		if('A' <= wc && wc <= 'Z')		skipTable[wc+0x20] = nSearchTextW - i;
+		else if('a' <= wc && wc <= 'z')	skipTable[wc-0x20] = nSearchTextW - i;
+	}
+}
+DWORD CBZView::stristrBinaryW1(LPCWSTR searchTextW, BYTE nSearchTextW, DWORD dwStart)
+{
+	BYTE skipTable[0x10000];
+	preQuickSearchWI1(searchTextW, nSearchTextW, skipTable);
+
+	DWORD dwNeedSize = (nSearchTextW+1)*2;
+	DWORD dwCurrent=dwStart;
+	while(dwCurrent < m_dwTotal-2)
+	{
+		LPWORD p = (LPWORD)m_pDoc->QueryMapViewTama2(dwCurrent, dwNeedSize);
+		if(!p || m_pDoc->GetMapRemain(dwCurrent) < dwNeedSize)break;//err
+		if(wcsnicmp(searchTextW, (const wchar_t*)p, nSearchTextW)==0)return dwCurrent;
+		dwCurrent += skipTable[p[nSearchTextW]]*2;
+	}
+	return 0xFFFFffff; // error
+}
+void CBZView::preQuickSearchWI4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD *skipTable)
+{
+	for(int j=0;j<0x10000;j++)skipTable[j] = nSearchTextW+1;
+	WORD wc;
+	for(DWORD i=0;i<nSearchTextW;i++)
+	{
+		wc = searchTextW[i];
+		skipTable[wc] = nSearchTextW - i;
+		if('A' <= wc && wc <= 'Z')		skipTable[wc+0x20] = nSearchTextW - i;
+		else if('a' <= wc && wc <= 'z')	skipTable[wc-0x20] = nSearchTextW - i;
+	}
+}
+DWORD CBZView::stristrBinaryW4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD dwStart)
+{
+	DWORD skipTable[0x10000];
+	preQuickSearchWI4(searchTextW, nSearchTextW, skipTable);
+
+	DWORD dwNeedSize = (nSearchTextW+1)*2;
+	DWORD dwCurrent=dwStart;
+	while(dwCurrent < m_dwTotal-2)
+	{
+		LPWORD p = (LPWORD)m_pDoc->QueryMapViewTama2(dwCurrent, dwNeedSize);
+		if(!p || m_pDoc->GetMapRemain(dwCurrent) < dwNeedSize)break;//err
+		if(wcsnicmp(searchTextW, (const wchar_t*)p, nSearchTextW)==0)return dwCurrent;
+		dwCurrent += skipTable[p[nSearchTextW]]*2;
+	}
+	return 0xFFFFffff; // error
+}
+DWORD CBZView::stristrBinaryW(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD dwStart)
+{
+	if(nSearchTextW < 0xFF)
+		return stristrBinaryW1(searchTextW, nSearchTextW, dwStart);
+	else
+		return stristrBinaryW4(searchTextW, nSearchTextW, dwStart);
+}
+void CBZView::preQuickSearchAI(LPCSTR searchText, DWORD nSearchText, DWORD *skipTable)
+{
+	for(int j=0;j<0x100;j++)skipTable[j] = nSearchText+1;
+	BYTE ch;
+	for(DWORD i=0;i<nSearchText;i++)
+	{
+		ch = searchText[i];
+		skipTable[ch] = nSearchText - i;
+		if('A' <= ch && ch <= 'Z')		skipTable[ch+0x20] = nSearchText - i;
+		else if('a' <= ch && ch <= 'z')	skipTable[ch-0x20] = nSearchText - i;
+	}
+}
+DWORD CBZView::stristrBinaryA(LPCSTR searchText, DWORD dwStart)
+{
+	DWORD nSearchText = strlen(searchText);
+	DWORD skipTable[0x100];
+	preQuickSearchAI(searchText, nSearchText, skipTable);
+	DWORD dwCurrent=dwStart;
+	while(dwCurrent < m_dwTotal-1)
+	{
+		LPBYTE p = m_pDoc->QueryMapViewTama2(dwCurrent, nSearchText+1);
+		if(!p || m_pDoc->GetMapRemain(dwCurrent) < nSearchText+1)break;//err
+		if(strnicmp(searchText, (const char*)p, nSearchText)==0)return dwCurrent;
+		dwCurrent += skipTable[p[nSearchText]];
+	}
+	return 0xFFFFffff; // error
+}
+void CBZView::preQuickSearch(LPBYTE searchByte, unsigned int nSearchByte, DWORD* skipTable)
+{
+	for(int j=0;j<0x100;j++)skipTable[j] = nSearchByte+1;
+	for(DWORD i=0;i<nSearchByte;i++)skipTable[searchByte[i]] = nSearchByte - i;
+}
+DWORD CBZView::strstrBinary(LPBYTE searchByte, unsigned int nSearchByte, DWORD dwStart)
+{
+	DWORD skipTable[0x100];
+	preQuickSearch(searchByte, nSearchByte, skipTable);
+	DWORD dwCurrent=dwStart;
+	while(dwCurrent < m_dwTotal-1)
+	{
+		LPBYTE p = m_pDoc->QueryMapViewTama2(dwCurrent, nSearchByte+1);
+		if(!p || m_pDoc->GetMapRemain(dwCurrent) < nSearchByte+1)break;//err
+		if(memcmp(searchByte, p, nSearchByte)==0)return dwCurrent;
+		dwCurrent += skipTable[p[nSearchByte]];
+	}
+	return 0xFFFFffff; // error
 }

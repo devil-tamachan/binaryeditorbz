@@ -115,6 +115,17 @@ private:
 	static BOOL LoadEbcDicTable();					// ### 1.63
 	UCHAR ConvertEbcDic(UCHAR c);
 
+	// Quick Search Algorithm
+	void preQuickSearchWI1(LPCWSTR searchTextW, BYTE nSearchTextW, BYTE *skipTable);
+	DWORD stristrBinaryW1(LPCWSTR searchTextW, BYTE nSearchTextW, DWORD dwStart);
+	void preQuickSearchWI4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD *skipTable);
+	DWORD stristrBinaryW4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD dwStart);
+	DWORD stristrBinaryW(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD dwStart);
+	void preQuickSearchAI(LPCSTR searchText, DWORD nSearchText, DWORD *skipTable);
+	DWORD stristrBinaryA(LPCSTR searchText, DWORD dwStart);
+	void preQuickSearch(LPBYTE searchByte, unsigned int nSearchByte, DWORD* skipTable);
+	DWORD strstrBinary(LPBYTE searchByte, unsigned int nSearchByte, DWORD dwStart);
+
 public:
 	void ReCreateBackup();
 	void ReCreateRestore();
