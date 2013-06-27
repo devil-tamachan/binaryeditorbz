@@ -1623,8 +1623,18 @@ void CBZView::OnJumpFindnext()
 	if(pFind) MemFree(pFind);
 }
 
-static DWORD MemCompByte(LPCVOID p1, LPCVOID p2, DWORD len)
+//戻り値
+//全部一緒だと0
+//違うところがあるとオフセット+1を返す
+static DWORD MemCompByte(const BYTE *p1, const BYTE *p2, DWORD len)
 {
+	const BYTE *p3 = p1;
+	while(*p3++ == *p2++)
+	{
+		if(--len == 0)return 0;
+	}
+	return p3-p1;
+	/*
 	DWORD ofs = 0;
 	__asm {
 		mov esi, p1
@@ -1637,7 +1647,7 @@ static DWORD MemCompByte(LPCVOID p1, LPCVOID p2, DWORD len)
 		mov ofs, esi
 	Done:
 	}
-	return ofs;
+	return ofs;*/
 }
 
 BOOL CBZView::CalcHexa(LPCSTR sExp, long& n1)
@@ -1876,25 +1886,55 @@ void CBZView::OnJumpCompare()
 	// TODO: Add your command handler code here
 	CBZView* pView1 = GetBrotherView();
 	if(!pView1) return;
+	CBZDoc *pDoc1 = pView1->m_pDoc;
 	GetMainFrame()->m_wndToolBar.m_combo.SetWindowText(_T(""));
 
-	LPBYTE pData0 = m_pDoc->GetDocPtr();
-	LPBYTE pData1 = pView1->m_pDoc->GetDocPtr();
 	DWORD len = min(m_dwTotal - m_dwCaret, pView1->m_dwTotal - pView1->m_dwCaret);
 	if(len <= 1) return;
-	DWORD ofs = MemCompByte(pData0+m_dwCaret+1, pData1+pView1->m_dwCaret+1, len-1);
-	if(!ofs)
+	len--;
+	DWORD dwCurrent0 =         m_dwCaret+1;
+	DWORD dwCurrent1 = pView1->m_dwCaret+1;
+	LPBYTE pData0, pData1;
+	do
+	{
+		DWORD maxMapSize = min(len, options.dwMaxMapSize);
+		pData0 = m_pDoc->QueryMapViewTama2(dwCurrent0, maxMapSize);
+		pData1 = pDoc1->QueryMapViewTama2(dwCurrent1, maxMapSize);
+		if(!pData0 || !pData1)
+		{//ERR: Mapping failed
+			MessageBox(_T("File Mapping Error!"), _T("Error"), MB_OK);
+			return;
+		}
+		DWORD minMapSize = min(min(m_pDoc->GetMapRemain(dwCurrent0), pDoc1->GetMapRemain(dwCurrent1)), len);
+		if(minMapSize==0) return;
+		DWORD ofs = MemCompByte(pData0, pData1, minMapSize);
+		if(ofs)
+		{	//Data0 != Data1
+			ofs--;
+			dwCurrent0 += ofs;
+			dwCurrent1 += ofs;
+			goto founddiff;
+		}
+		len -= minMapSize;
+		dwCurrent0 += minMapSize;
+		dwCurrent1 += minMapSize;
+	} while(len > 0);
+
+	if(dwCurrent0==m_dwTotal && dwCurrent1==pView1->m_dwTotal)
+	{
 		AfxMessageBox(IDS_COMPARE_OK, MB_ICONINFORMATION);
-	else {
+		return;
+	}
+founddiff:
 		m_dwOldCaret = m_dwCaret;
-		m_dwCaret += ofs;
-		GotoCaret();
+		m_dwCaret = dwCurrent0;
 		pView1->m_dwOldCaret = pView1->m_dwCaret;
-		pView1->m_dwCaret += ofs;
+		pView1->m_dwCaret = dwCurrent1;
+		GotoCaret();
 		pView1->GotoCaret();
 		Invalidate(FALSE);
 		pView1->Invalidate(FALSE);
-	}
+		return;
 }
 
 void CBZView::OnUpdateJumpCompare(CCmdUI* pCmdUI) 
