@@ -68,9 +68,7 @@ static char THIS_FILE[] = __FILE__;
 
 //static const UINT nMsgFindReplace = ::RegisterWindowMessage(FINDMSGSTRING);
 
-static LPBYTE MemScanByte(BYTE *p, BYTE c, DWORD len);
-static LPWORD MemScanWord(WORD * p, WORD c, DWORD len);
-static DWORD  MemCompByte(LPCVOID p1, LPCVOID p2, DWORD len);
+static DWORD  MemCompByte2(LPCVOID p1, LPCVOID p2, DWORD len);
 
 BOOL CBZView::m_bHexSize = FALSE;
 LPSTR CBZView::m_pEbcDic = NULL;
@@ -1624,30 +1622,16 @@ void CBZView::OnJumpFindnext()
 }
 
 //戻り値
-//全部一緒だと0
-//違うところがあるとオフセット+1を返す
-static DWORD MemCompByte(const BYTE *p1, const BYTE *p2, DWORD len)
+//全部一緒だと0xFFFFffff
+//違うところがあるとオフセットを返す
+static DWORD MemCompByte2(const BYTE *p1, const BYTE *p2, DWORD len)
 {
 	const BYTE *p3 = p1;
 	while(*p3++ == *p2++)
 	{
-		if(--len == 0)return 0;
+		if(--len == 0)return 0xFFFFffff;
 	}
 	return p3-p1;
-	/*
-	DWORD ofs = 0;
-	__asm {
-		mov esi, p1
-		mov	edi, p2
-		mov	ecx, len
-		repe cmpsb
-		je Done
-		dec edi
-		sub esi, p1
-		mov ofs, esi
-	Done:
-	}
-	return ofs;*/
 }
 
 BOOL CBZView::CalcHexa(LPCSTR sExp, long& n1)
@@ -1905,10 +1889,12 @@ void CBZView::OnJumpCompare()
 			MessageBox(_T("File Mapping Error!"), _T("Error"), MB_OK);
 			return;
 		}
-		DWORD minMapSize = min(min(m_pDoc->GetMapRemain(dwCurrent0), pDoc1->GetMapRemain(dwCurrent1)), len);
+		DWORD dwRemain0 = m_pDoc->GetMapRemain(dwCurrent0); //minmax内で直接callすると何度も実行される
+		DWORD dwRemain1 = pDoc1->GetMapRemain(dwCurrent1); //minmax内で直接callすると何度も実行される
+		DWORD minMapSize = min(min(dwRemain0, dwRemain1), len); //minmax内で直接callすると何度も実行される
 		if(minMapSize==0) return;
-		DWORD ofs = MemCompByte(pData0, pData1, minMapSize);
-		if(ofs)
+		DWORD ofs = MemCompByte2(pData0, pData1, minMapSize);
+		if(ofs!=0xFFFFffff)
 		{	//Data0 != Data1
 			ofs--;
 			dwCurrent0 += ofs;
