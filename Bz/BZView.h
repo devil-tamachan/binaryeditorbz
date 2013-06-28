@@ -99,7 +99,7 @@ private:
 	CBZView* GetBrotherView();
 	void	ChangeFont(LOGFONT& logFont);
 	void	SetValue(LPBYTE p, int bytes, int val);
-	BOOL	IsMBS(LPBYTE pTop, DWORD ofs, BOOL bTrail);
+	//BOOL	IsMBS(LPBYTE pTop, DWORD ofs, BOOL bTrail);
 	CharSet AutoDetectCharSet();
 	int ConvertCharSet(CharSet charset, LPCSTR sFind, LPBYTE &buffer);
 	CharSet DetectCodeType(DWORD dwStart = 0, DWORD dwMaxSize = 0xFFFFffff);//(LPBYTE p, LPBYTE pEnd);

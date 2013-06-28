@@ -517,32 +517,21 @@ void CBZView::OnDraw(CDC* pDC)
 				ofs += 2;
 				i++;
 			} else {
-				WORD c = *(p + ofs++);
+				WORD c = *(p + ofs++);//íçà”: WORDÇæÇØÇ«pÇ™LPBYTEÇ»ÇÃÇ≈1ÉoÉCÉgÇµÇ©äiî[Ç≥ÇÍÇƒÇ¢Ç»Ç¢
 				switch(m_charset) {
 				case CTYPE_ASCII:
 					if(c < 0x20 || c > 0x7E) c = CHAR_NG;
 					break;
 				case CTYPE_SJIS:
+				{
 					if(c < 0x20) c = CHAR_NG;
-					else if(i == 0 && IsMBS(p, ofs-1, TRUE))
+					else if(i == 0 && m_dwTotal > ofs && _ismbbtrail(*(p + ofs))/*IsMBS(p, ofs-1, TRUE)*/)
 						 c=' ';
-					else if(IsMBS(p, ofs-1, FALSE)) {
+					else if(m_dwTotal > ofs && _ismbblead(c)/*IsMBS(p, ofs-1, FALSE)*/) {
 						BYTE c1 = *(p + ofs);
 						if(_ismbclegal(MAKEWORD(c1, c))) {
-#if 1//#ifndef _UNICODE
 							PutChar((char)c);
 							c = *(p + ofs);
-#else
-							chConv[0] = (char)c;
-							c = *(p + ofs);
-							chConv[1] = c;
-							chConv[2] = NULL;
-							//swprintf_s(wcConv, 2, _T("%S"), chConv);
-							//mbtowc(&wcConv, chConv, 3);
-							//PutChar(wcConv);
-							PutStr(CA2WEX<4>(chConv));
-							fPutSkip = TRUE;
-#endif
 							if(i < 15) {
 								ofs++;
 								i++;
@@ -552,6 +541,7 @@ void CBZView::OnDraw(CDC* pDC)
 					} else if((c > 0x7E && c < 0xA1) || c > 0xDF)
 						c = CHAR_NG;
 					break;
+				}
 				case CTYPE_JIS:
 				case CTYPE_EUC:
 				case CTYPE_EPWING:
@@ -1953,7 +1943,7 @@ void CBZView::OnUpdateByteOrder(CCmdUI* pCmdUI)
 /////////////////////////////////////////////////////////////////////////////
 // CBZView Character code
 
-BOOL CBZView::IsMBS(LPBYTE pTop, DWORD ofs, BOOL bTrail)
+/*BOOL CBZView::IsMBS(LPBYTE pTop, DWORD ofs, BOOL bTrail)
 {
 	LPBYTE p, p1;
 	p = p1 = pTop+ofs;
@@ -1962,7 +1952,7 @@ BOOL CBZView::IsMBS(LPBYTE pTop, DWORD ofs, BOOL bTrail)
 		p--;
 	}
 	return bTrail ? _ismbstrail(p, p1) : _ismbslead(p, p1);
-}
+}*/
 
 void CBZView::InitCharMode(LPBYTE pTop, DWORD ofs)
 {
@@ -2212,7 +2202,7 @@ CharSet CBZView::DetectCodeType(DWORD dwStart, DWORD dwMaxSize)//(LPBYTE p, LPBY
 					}
 					if(i==3 || ((*(p+i)) >= 0x80 && (*(p+i)) < 0xC0))
 					{
-						return CTYPE_SJIS;
+						flag &= ~CTYPE_SJIS;
 					}
 				}
 			}
