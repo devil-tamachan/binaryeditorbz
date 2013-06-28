@@ -1088,7 +1088,7 @@ Error:
 void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) 
 {
 	static UINT preChar = 0;
-	LPBYTE p;
+	//LPBYTE p;
 
 	// TODO: Add your message handler code here and/or call default
 	if(nChar < ' ' || nChar >= 256)
@@ -1114,7 +1114,7 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 			m_pDoc->StoreUndo(m_dwCaret, dwSize, UNDO_OVR);
 	}
 	m_bBlock = FALSE;
-	p = m_pDoc->QueryMapViewTama2(m_dwCaret, 4); //p  = m_pDoc->GetDocPtr() + m_dwCaret;
+	//p = m_pDoc->QueryMapViewTama2(m_dwCaret, 4); //p  = m_pDoc->GetDocPtr() + m_dwCaret;
 	if(!m_bCaretOnChar) {
 		if(nChar >= '0' && nChar <= '9')
 			nChar -= '0';
@@ -1125,6 +1125,7 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 		else
 			goto Error;
 		if(m_bEnterVal) {
+			LPBYTE p = m_pDoc->QueryMapViewTama2(m_dwCaret, 1);
 			BYTE nVal = *p;
 			nChar |= nVal<<4;
 			m_bEnterVal = FALSE;
@@ -1147,7 +1148,7 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 		if(len) {
 			if(m_charset == CTYPE_UNICODE) len *= 2;
 			pb = (char*)buffer;
-			for_to(i, len) *p++ = *pb++;
+			m_pDoc->memcpyMem2Filemap(m_dwCaret, pb, len);//for_to(i, len) *p++ = *pb++;
 			MemFree(buffer);
 			Invalidate(FALSE);
 			if(!m_bEnterVal) 
@@ -1155,7 +1156,7 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 		}
 		return;
 	}
-	*p = (BYTE)nChar;
+	m_pDoc->memcpyMem2Filemap(m_dwCaret, &nChar, 1);//*p = (BYTE)nChar;
 	Invalidate(FALSE);
 	if(!m_bEnterVal) {
 		MoveCaretTo(m_dwCaret+1);

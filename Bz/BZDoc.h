@@ -29,8 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define FILE_MAPPING	// ###1.60
 
-enum UndoMode {	UNDO_INS, UNDO_OVR, UNDO_DEL };
-
 class CBZDoc : public CDocument
 {
 public: // create from serialization only
@@ -67,12 +65,12 @@ public:
 
 // Operations
 public:
-	BOOL	CopyToClipboard(DWORD dwPtr, DWORD dwSize);
-	DWORD	PasteFromClipboard(DWORD dwPtr, BOOL bIns);
+	BOOL	CopyToClipboard(DWORD dwStart, DWORD dwSize);
+	DWORD	PasteFromClipboard(DWORD dwStart, BOOL bIns);
 	BOOL	isDocumentEditedSelfOnly();
 	void	InsertData(DWORD dwPtr, DWORD dwSize, BOOL bIns);
-	void	DeleteData(DWORD dwPtr, DWORD dwSize);
-	BOOL	StoreUndo(DWORD dwPtr, DWORD dwSize, UndoMode mode);
+	void	DeleteData(DWORD dwDelStart, DWORD dwDelSize);
+	BOOL	StoreUndo(DWORD dwStart, DWORD dwSize, UndoMode mode);
 	DWORD	DoUndo();
 	void	TouchDoc();		// ###1.54
 	void	DuplicateDoc(CBZDoc* pDstDoc);
@@ -131,8 +129,111 @@ private:
 			return (dwOffset < m_dwFileOffset || dwOffset >= m_dwFileOffset + m_dwMapSize);
 		} else return true;
 	}
+public:
+	BOOL memcpyMem2Filemap(DWORD dwStart, void *src1, DWORD dwSize)
+	{
+		LPBYTE lpStart;
+		do
+		{
+			lpStart = QueryMapViewTama2(dwStart, min(dwSize, options.dwMaxMapSize));
+			DWORD dwMapSize = GetMapRemain(dwStart);
+			if(dwMapSize > dwSize)dwMapSize = dwSize;
+			if(dwMapSize==0)
+			{
+				return FALSE;
+			}
+			memcpy(lpStart, src1, dwMapSize);
+			dwSize -= dwMapSize;
+		} while(dwSize > 0);
+
+		return TRUE;
+	}
+	BOOL memcpyFilemap2Mem(void *dst1, DWORD dwStart, DWORD dwSize)
+	{
+		LPBYTE lpStart;
+		do
+		{
+			lpStart = QueryMapViewTama2(dwStart, min(dwSize, options.dwMaxMapSize));
+			DWORD dwMapSize = GetMapRemain(dwStart);
+			if(dwMapSize > dwSize)dwMapSize = dwSize;
+			if(dwMapSize==0)
+			{
+				return FALSE;
+			}
+			memcpy(dst1, lpStart, dwMapSize);
+			dwSize -= dwMapSize;
+		} while(dwSize > 0);
+
+		return TRUE;
+	}
+	BOOL memcpyFilemap2Mem(void *dst1, void *dst2, DWORD dwStart, DWORD dwSize)
+	{
+		LPBYTE lpStart;
+		do
+		{
+			lpStart = QueryMapViewTama2(dwStart, min(dwSize, options.dwMaxMapSize));
+			DWORD dwMapSize = GetMapRemain(dwStart);
+			if(dwMapSize > dwSize)dwMapSize = dwSize;
+			if(dwMapSize==0)
+			{
+				return FALSE;
+			}
+			memcpy(dst1, lpStart, dwMapSize);
+			memcpy(dst2, lpStart, dwMapSize);
+			dwSize -= dwMapSize;
+		} while(dwSize > 0);
+
+		return TRUE;
+	}
+#define SHIFTBUFSIZE 8*1024*1024
+	BOOL ShiftFileDataL(DWORD dwDelStart, DWORD dwDelSize)
+	{
+		DWORD dwRemain = m_dwTotal-dwDelStart-dwDelSize;
+		if(dwDelSize==0 || dwRemain==0)return TRUE;
+		DWORD dwCopySize = min(SHIFTBUFSIZE, dwRemain);
+		LPBYTE buf = (LPBYTE)malloc(dwCopySize);
+		DWORD dwCurrent = dwDelStart;
+		BOOL bRet = FALSE;
+		while(dwRemain!=0)
+		{
+			bRet = memcpyFilemap2Mem(buf, dwCurrent+dwDelSize, dwCopySize);
+			if(!bRet)break;
+			bRet = memcpyMem2Filemap(dwCurrent, buf, dwCopySize);
+			if(!bRet)break;
+			dwRemain -= dwCopySize;
+			dwCurrent += dwCopySize;
+			dwCopySize = min(SHIFTBUFSIZE, dwRemain);
+		}
+		free(buf);
+		return bRet;
+	}
+	BOOL ShiftFileDataR(DWORD dwInsStart, DWORD dwInsSize)
+	{
+		DWORD dwRemain = m_dwTotal - dwInsSize - dwInsStart;
+		if(dwInsSize==0 || dwRemain==0)return TRUE;
+		DWORD dwCopySize = min(SHIFTBUFSIZE, dwRemain);
+		LPBYTE buf = (LPBYTE)malloc(dwCopySize);
+		DWORD dwCurrent = m_dwTotal - dwCopySize;
+		BOOL bRet = FALSE;
+		while(dwRemain!=0)
+		{
+			bRet = memcpyFilemap2Mem(buf, dwCurrent-dwInsSize, dwCopySize);
+			if(!bRet)break;
+			bRet = memcpyMem2Filemap(dwCurrent, buf, dwCopySize);
+			if(!bRet)break;
+			dwRemain -= dwCopySize;
+#ifdef DEBUG
+			if(dwRemain==0)ASSERT(dwCurrent-dwInsSize==dwInsStart);
+#endif
+			dwCurrent -= dwCopySize;
+			dwCopySize = min(SHIFTBUFSIZE, dwRemain);
+		}
+		free(buf);
+		return bRet;
+	}
 #endif //FILE_MAPPING
 
+private:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CBZDoc)
