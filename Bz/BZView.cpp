@@ -525,9 +525,8 @@ void CBZView::OnDraw(CDC* pDC)
 				case CTYPE_SJIS:
 				{
 					if(c < 0x20) c = CHAR_NG;
-					else if(i == 0 && m_dwTotal > ofs && _ismbbtrail(*(p + ofs))/*IsMBS(p, ofs-1, TRUE)*/)
-						 c=' ';
-					else if(m_dwTotal > ofs && _ismbblead(c)/*IsMBS(p, ofs-1, FALSE)*/) {
+					else if(_ismbblead(c)/*IsMBS(p, ofs-1, FALSE)*/ && m_dwTotal > ofs && _ismbbtrail(*(p + ofs)))
+					{
 						BYTE c1 = *(p + ofs);
 						if(_ismbclegal(MAKEWORD(c1, c))) {
 							PutChar((char)c);
@@ -538,7 +537,10 @@ void CBZView::OnDraw(CDC* pDC)
 							}
 						} else
 							c = CHAR_NG;
-					} else if((c > 0x7E && c < 0xA1) || c > 0xDF)
+					}
+					else if(i == 0 && _ismbbtrail(c)/*IsMBS(p, ofs-1, TRUE)*/)
+						 c=' ';
+					else if((c > 0x7E && c < 0xA1) || c > 0xDF)
 						c = CHAR_NG;
 					break;
 				}
@@ -2202,7 +2204,7 @@ CharSet CBZView::DetectCodeType(DWORD dwStart, DWORD dwMaxSize)//(LPBYTE p, LPBY
 					}
 					if(i==3 || ((*(p+i)) >= 0x80 && (*(p+i)) < 0xC0))
 					{
-						flag &= ~CTYPE_SJIS;
+						return CTYPE_SJIS;//flag &= ~CTYPE_SJIS;
 					}
 				}
 			}
