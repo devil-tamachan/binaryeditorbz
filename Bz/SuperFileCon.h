@@ -184,6 +184,31 @@ public:
 	}
 	BOOL Write(DWORD dwStart, void *src1, DWORD dwSize)
 	{
+		DWORD dwNewTotal = dwStart + dwSize;
+		if(dwNewTotal < dwStart)return FALSE;//dwSize too big (overflow)
+		BOOL bGlow = FALSE;
+		DWORD dwGlow = dwNewTotal - m_dwTotal;
+		if(dwNewTotal > m_dwTotal)bGlow = TRUE;
+		TAMAUndoRedo *pNewUndo = (TAMAUndoRedo *)malloc(sizeof(TAMAUndoRedo));
+		if(!pNewUndo)return FALSE;//memory full
+		pNewUndo->dwStart = dwStart;
+		pNewUndo->dwSize = dwSize;
+		pNewUndo->dataNext = (LPBYTE)malloc(dwSize);
+		pNewUndo->dwPrevSize = bGlow? dwSize-dwGlow : dwSize;
+		pNewUndo->dataPrev = (LPBYTE)malloc(pNewUndo->dwPrevSize);
+		if(pNewUndo->dataNext==NULL || pNewUndo->dataPrev==NULL)
+		{
+			if(pNewUndo->dataNext==NULL)free(pNewUndo->dataNext);
+			if(pNewUndo->dataPrev==NULL)free(pNewUndo->dataPrev);
+			free(pNewUndo);
+			return FALSE;//memory full
+		}
+		pNewUndo->mode = UNDO_OVR;
+		ClearRedo();
+		m_undo.Push(pNewUndo);
+		
+		UpdateMap
+		/*
 		LPBYTE lpStart;
 		do
 		{
@@ -198,7 +223,7 @@ public:
 			dwSize -= dwMapSize;
 		} while(dwSize > 0);
 
-		return TRUE;
+		return TRUE;*/
 	}
 // Insert/Delete
 	BOOL Insert()
@@ -207,6 +232,95 @@ public:
 	BOOL Delete()
 	{
 	}
+	void _PreNewUndoInsert()
+	{
+		ClearRedo();
+		if(m_redoIndex<m_savedIndex)
+		{
+			BOOL bHiddenStarted = FALSE;
+			size_t nHiddenStarted;
+			for(size_t i=m_redoIndex; i<=m_savedIndex; i++)
+			{
+				TAMAUndoRedo *undo = m_undo[i];
+				if(!bHiddenStarted)
+				{
+					if(undo->bHidden)
+					{
+						bHiddenStarted = TRUE;
+						nHiddenStarted = i;
+					}
+				} else {
+					if(!undo->bHidden)
+					{
+						bHiddenStarted = FALSE;
+						if(i!=m_savedIndex)
+						{
+							size_t delSize = i-nHiddenStarted;
+							_RemoveUndoRedoAt(nHiddenStarted, delSize);
+						}
+					}
+				}
+				undo->bHidden = TRUE;
+			}
+			//compacthiddennode (too fast) + change m_savedIndex
+			for(size_t i = m_savedIndex-1; i>=m_redoIndex; i--)
+			{
+				TAMAUndoRedo *reverseUndo = _ReverseTAMAUndoRedo(m_undo[i]);
+				m_undo.PushLast(reverseUndo);
+			}
+			//compacthiddennode (too safe
+		}
+	}
+	TAMAUndoRedo * _ReverseTAMAUndoRedo(TAMAUndoRedo *undo)
+	{
+		TAMAUndoRedo *newUndo = (TAMAUndoRedo*)malloc(sizeof(TAMAUndoRedo));
+		if(newUndo==NULL)return NULL;
+		memcpy(newUndo, undo, sizeof(TAMAUndoRedo));
+		switch(undo->mode)
+		{
+		case UNDO_INS:
+			newUndo->mode = UNDO_DEL;
+			break;
+		case UNDO_DEL:
+			newUndo->mode = UNDO_INS;
+			break;
+		case UNDO_OVR:
+			break;
+		}
+		newUndo->dataPrev = undo->dataNext;
+		newUndo->dataPrev->nRefCount++;
+		newUndo->dataNext = undo->dataPrev;
+		newUndo->dataNext->nRefCount++;
+	}
+BOOL InsertData(DWORD dwStart, DWORD dwSize, BOOL bIns)
+{
+	BOOL bGlow = false;
+	DWORD nGlow = dwSize - (m_dwTotal - dwStart);
+	if(nGlow <= dwSize/*overflow check*/ && nGlow > 0)
+		bGlow=true;
+	if(!m_pData) {
+		m_pData = (LPBYTE)MemAlloc(dwSize);
+		m_dwTotal = dwSize;
+	} else if(bIns || dwStart == m_dwTotal) {
+			m_pData = (LPBYTE)MemReAlloc(m_pData, m_dwTotal+dwSize);
+			m_dwTotal += dwSize;
+			ShiftFileDataR(dwStart, dwSize);//memmove(m_pData+dwStart+dwSize, m_pData+dwStart, m_dwTotal - dwStart);
+	} else if(bGlow) {
+			m_pData = (LPBYTE)MemReAlloc(m_pData, m_dwTotal+nGlow);
+			m_dwTotal += nGlow;
+	}
+	ASSERT(m_pData != NULL);
+}
+
+BOOL DeleteData(DWORD dwDelStart, DWORD dwDelSize)
+{
+	if(dwDelStart == m_dwTotal) return;
+	ShiftFileDataL(dwDelStart, dwDelSize);//memmove(m_pData+dwPtr, m_pData+dwPtr+dwSize, m_dwTotal-dwPtr-dwSize);
+	m_dwTotal -= dwDelSize;
+	if(!IsFileMapping())
+		m_pData = (LPBYTE)MemReAlloc(m_pData, m_dwTotal);
+	TouchDoc();
+}
 
 // Undo/Redo
 	BOOL Undo()
@@ -251,6 +365,8 @@ public:
 			free(undo);
 		}
 		m_undo.RemoveAt(delStartIndex, nDelSize);
+		if(delStartIndex<m_savedIndex)m_savedIndex -= nDelSize;
+		if(delStartIndex<m_redoIndex)m_redoIndex -= nDelSize;
 	}
 
 // File-mapping Operations
@@ -292,14 +408,21 @@ public:
 		return m_dwTotal;
 	}
 
-protected:
+  protected:
+	typedef struct
+	{
+		LPBYTE *data;
+		DWORD dwSize;
+		DWORD nRefCount;
+	} TAMADataChunk;
+	
 	typedef struct
 	{
 		UndoMode mode;
 		DWORD dwStart;
-		DWORD dwSize;
-		LPBYTE *dataNext;
-		LPBYTE *dataPrev;
+		TAMADataChunk *dataNext;
+		TAMADataChunk *dataPrev;
+		BOOL bHidden;
 	} TAMAUndoRedo;
 
 protected:
