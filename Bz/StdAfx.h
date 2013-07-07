@@ -40,6 +40,8 @@
 #include <atlmisc.h>
 #include <atlddx.h>
 #include <atlsplit.h>
+#include <atlfile.h>
+#include <atlutil.h>
 
 #include <shlobj.h>
 

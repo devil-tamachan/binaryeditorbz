@@ -27,7 +27,11 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#pragma once
+
 #define FILE_MAPPING	// ###1.60
+
+#include "SuperFileCon.h"
 
 class CBZDoc : public CDocument
 {
@@ -62,6 +66,8 @@ public:
 
 	DWORD	m_restoreCaret;
 	POINT	m_restoreScroll;
+
+	CSuperFileCon m_filecon;
 
 // Operations
 public:

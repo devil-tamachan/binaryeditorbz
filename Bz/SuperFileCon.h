@@ -1,12 +1,39 @@
 #pragma once
 
-#ifdef FILE_MAPPING
-  //#define FILEOFFSET_MASK 0xFFF00000	// by 1MB
-  #define MAX_FILELENGTH  0xFFFFFFF0
-#endif //FILE_MAPPING
+#include "tree.h"
+
+#define MAX_FILELENGTH  0xFFFFFFF0
 
 
-	typedef enum {	UNDO_INS, UNDO_OVR, UNDO_DEL } UndoMode;
+typedef enum {	UNDO_INS, UNDO_OVR, UNDO_DEL } UndoMode;
+typedef struct
+{
+	LPBYTE data;
+	DWORD dwSize;
+	DWORD nRefCount;
+} TAMADataChunk;
+typedef struct
+{
+	UndoMode mode;
+	DWORD dwStart;
+	TAMADataChunk *dataNext;
+	TAMADataChunk *dataPrev;
+	BOOL bHidden;
+} TAMAUndoRedo;
+
+typedef struct _TAMAFILECHUNK
+{
+	RB_ENTRY(_TAMAFILECHUNK) linkage;
+	DWORD dwEnd;
+} TAMAFILECHUNK;
+static int cmpTAMAFILECHUNK(TAMAFILECHUNK *c1, TAMAFILECHUNK *c2)
+{
+	return c2->dwEnd - c1->dwEnd;
+}
+RB_HEAD(_TAMAFILECHUNK_HEAD, _TAMAFILECHUNK);
+RB_PROTOTYPE(_TAMAFILECHUNK_HEAD, _TAMAFILECHUNK, linkage, cmpTAMAFILECHUNK);
+
+
 
 class CSuperFileCon
 {
@@ -14,6 +41,7 @@ public:
 
 	CSuperFileCon(void)
 	{
+		RB_INIT(&m_filemapHead);
 	}
 	~CSuperFileCon(void)
 	{
@@ -182,32 +210,23 @@ public:
 
 		return TRUE;
 	}
-	BOOL Write(DWORD dwStart, void *src1, DWORD dwSize)
+	BOOL Write(DWORD dwStart, void *src1, DWORD dwSize/*, BOOL bNotCopy = FALSE*/)
 	{
 		DWORD dwNewTotal = dwStart + dwSize;
 		if(dwNewTotal < dwStart)return FALSE;//dwSize too big (overflow)
 		BOOL bGlow = FALSE;
 		DWORD dwGlow = dwNewTotal - m_dwTotal;
 		if(dwNewTotal > m_dwTotal)bGlow = TRUE;
-		TAMAUndoRedo *pNewUndo = (TAMAUndoRedo *)malloc(sizeof(TAMAUndoRedo));
-		if(!pNewUndo)return FALSE;//memory full
-		pNewUndo->dwStart = dwStart;
-		pNewUndo->dwSize = dwSize;
-		pNewUndo->dataNext = (LPBYTE)malloc(dwSize);
-		pNewUndo->dwPrevSize = bGlow? dwSize-dwGlow : dwSize;
-		pNewUndo->dataPrev = (LPBYTE)malloc(pNewUndo->dwPrevSize);
-		if(pNewUndo->dataNext==NULL || pNewUndo->dataPrev==NULL)
-		{
-			if(pNewUndo->dataNext==NULL)free(pNewUndo->dataNext);
-			if(pNewUndo->dataPrev==NULL)free(pNewUndo->dataPrev);
-			free(pNewUndo);
-			return FALSE;//memory full
-		}
-		pNewUndo->mode = UNDO_OVR;
-		ClearRedo();
-		m_undo.Push(pNewUndo);
+		size_t nPrevSize = bGlow? dwSize-dwGlow : dwSize;
 		
-		UpdateMap
+		TAMAUndoRedo *pNewUndo = _CreateTAMAUndoRedo(UNDO_OVR, dwStart, dwSize, nPrevSize);
+		if(!pNewUndo)return FALSE; //memory full
+		memcpy(pNewUndo->dataNext->data, src1, dwSize);
+		Read(pNewUndo->dataPrev->data, dwStart, nPrevSize);
+		_PreNewUndo();
+		m_undo.Add(pNewUndo);
+		
+//		UpdateMap
 		/*
 		LPBYTE lpStart;
 		do
@@ -225,6 +244,27 @@ public:
 
 		return TRUE;*/
 	}
+	TAMAUndoRedo* _CreateTAMAUndoRedo(UndoMode mode, DWORD dwStart, size_t nNextSize, size_t nPrevSize)
+	{
+		TAMAUndoRedo *pNewUndo = (TAMAUndoRedo *)malloc(sizeof(TAMAUndoRedo));
+		if(!pNewUndo)return NULL;//memory full
+		pNewUndo->dwStart = dwStart;
+		pNewUndo->dataNext = (TAMADataChunk *)malloc(sizeof(TAMADataChunk));
+		pNewUndo->dataNext->data = (LPBYTE)malloc(nNextSize);
+		pNewUndo->dataNext->dwSize = nNextSize;
+		pNewUndo->dataPrev = (TAMADataChunk *)malloc(sizeof(TAMADataChunk));
+		pNewUndo->dataPrev->dwSize = nPrevSize;
+		pNewUndo->dataPrev->data = (LPBYTE)malloc(nPrevSize);
+		if(pNewUndo->dataNext==NULL || pNewUndo->dataPrev==NULL)
+		{
+			if(pNewUndo->dataNext==NULL)free(pNewUndo->dataNext);
+			if(pNewUndo->dataPrev==NULL)free(pNewUndo->dataPrev);
+			free(pNewUndo);
+			return NULL;//memory full
+		}
+		pNewUndo->mode = mode;
+		pNewUndo->bHidden = FALSE;
+	}
 // Insert/Delete
 	BOOL Insert()
 	{
@@ -232,50 +272,79 @@ public:
 	BOOL Delete()
 	{
 	}
-	void _PreNewUndoInsert()
+	BOOL _PreNewUndo()
 	{
-		ClearRedo();
+		BOOL nRet=	ClearRedo();
+		nRet	&=	_MakeRestoreNodeFromDiskFile();
+		return nRet;
+	}
+	BOOL _MakeRestoreNodeFromDiskFile()
+	{
 		if(m_redoIndex<m_savedIndex)
 		{
-			BOOL bHiddenStarted = FALSE;
-			size_t nHiddenStarted;
-			for(size_t i=m_redoIndex; i<=m_savedIndex; i++)
-			{
-				TAMAUndoRedo *undo = m_undo[i];
-				if(!bHiddenStarted)
-				{
-					if(undo->bHidden)
-					{
-						bHiddenStarted = TRUE;
-						nHiddenStarted = i;
-					}
-				} else {
-					if(!undo->bHidden)
-					{
-						bHiddenStarted = FALSE;
-						if(i!=m_savedIndex)
-						{
-							size_t delSize = i-nHiddenStarted;
-							_RemoveUndoRedoAt(nHiddenStarted, delSize);
-						}
-					}
-				}
-				undo->bHidden = TRUE;
-			}
+			_RemoveNeedlessHiddenNode(m_redoIndex, m_savedIndex);//‚±‚±‚Å‡‚Á‚Ä‚éH
+			_HiddenNodes(m_redoIndex, m_savedIndex);
 			//compacthiddennode (too fast) + change m_savedIndex
 			for(size_t i = m_savedIndex-1; i>=m_redoIndex; i--)
 			{
 				TAMAUndoRedo *reverseUndo = _ReverseTAMAUndoRedo(m_undo[i]);
-				m_undo.PushLast(reverseUndo);
+				if(reverseUndo==NULL)
+				{
+					ASSERT(FALSE);
+					return FALSE;
+				}
+				m_undo.Add(reverseUndo);
 			}
 			//compacthiddennode (too safe
 		}
+		return TRUE;
+	}
+	inline void _RemoveNeedlessHiddenNode(size_t nStartIndex = 0, size_t nEndIndex = 0)
+	{
+		if(nEndIndex==0)nEndIndex = m_undo.GetCount()-1;
+		ASSERT(nStartIndex<=nEndIndex);
+
+		BOOL bHiddenStarted = FALSE;
+		size_t nHiddenStarted;
+		BOOL bFoundSavedIndex = FALSE;
+		for(size_t i=nStartIndex; i<=nEndIndex; i++)
+		{
+			TAMAUndoRedo *undo = m_undo[i];
+			if(!bHiddenStarted)
+			{
+				if(undo->bHidden)
+				{
+					bHiddenStarted = TRUE;
+					nHiddenStarted = i;
+					if(i==m_savedIndex)bFoundSavedIndex = TRUE;
+				}
+			} else {
+				if(!undo->bHidden)
+				{
+					if(!bFoundSavedIndex)
+					{
+						size_t delSize = i-nHiddenStarted;
+						_RemoveUndoRedoAt(nHiddenStarted, delSize);
+						i-=delSize;
+					}
+					bFoundSavedIndex = FALSE;
+					bHiddenStarted = FALSE;
+				} else {
+					if(i==m_savedIndex)bFoundSavedIndex = TRUE;
+				}
+			}
+		}
+	}
+	inline void _HiddenNodes(size_t nStartIndex, size_t nEndIndex)
+	{
+		ASSERT(nStartIndex<=nEndIndex);
+		for(size_t i=nStartIndex; i<=nEndIndex; i++)
+			m_undo[i]->bHidden = TRUE;
 	}
 	TAMAUndoRedo * _ReverseTAMAUndoRedo(TAMAUndoRedo *undo)
 	{
-		TAMAUndoRedo *newUndo = (TAMAUndoRedo*)malloc(sizeof(TAMAUndoRedo));
-		if(newUndo==NULL)return NULL;
-		memcpy(newUndo, undo, sizeof(TAMAUndoRedo));
+		TAMAUndoRedo *newUndo = _CopyTAMAUndoRedo(undo);
+		if(!newUndo)return NULL;
 		switch(undo->mode)
 		{
 		case UNDO_INS:
@@ -288,10 +357,17 @@ public:
 			break;
 		}
 		newUndo->dataPrev = undo->dataNext;
-		newUndo->dataPrev->nRefCount++;
 		newUndo->dataNext = undo->dataPrev;
+	}
+	inline TAMAUndoRedo* _CopyTAMAUndoRedo(TAMAUndoRedo *srcUndo)
+	{
+		TAMAUndoRedo *newUndo = (TAMAUndoRedo*)malloc(sizeof(TAMAUndoRedo));
+		if(newUndo==NULL)return NULL;
+		memcpy(newUndo, srcUndo, sizeof(TAMAUndoRedo));
+		newUndo->dataPrev->nRefCount++;
 		newUndo->dataNext->nRefCount++;
 	}
+	
 BOOL InsertData(DWORD dwStart, DWORD dwSize, BOOL bIns)
 {
 	BOOL bGlow = false;
@@ -304,14 +380,14 @@ BOOL InsertData(DWORD dwStart, DWORD dwSize, BOOL bIns)
 	} else if(bIns || dwStart == m_dwTotal) {
 			m_pData = (LPBYTE)MemReAlloc(m_pData, m_dwTotal+dwSize);
 			m_dwTotal += dwSize;
-			ShiftFileDataR(dwStart, dwSize);//memmove(m_pData+dwStart+dwSize, m_pData+dwStart, m_dwTotal - dwStart);
+			_ShiftFileDataR(dwStart, dwSize);//memmove(m_pData+dwStart+dwSize, m_pData+dwStart, m_dwTotal - dwStart);
 	} else if(bGlow) {
 			m_pData = (LPBYTE)MemReAlloc(m_pData, m_dwTotal+nGlow);
 			m_dwTotal += nGlow;
 	}
 	ASSERT(m_pData != NULL);
 }
-
+/*
 BOOL DeleteData(DWORD dwDelStart, DWORD dwDelSize)
 {
 	if(dwDelStart == m_dwTotal) return;
@@ -320,7 +396,7 @@ BOOL DeleteData(DWORD dwDelStart, DWORD dwDelSize)
 	if(!IsFileMapping())
 		m_pData = (LPBYTE)MemReAlloc(m_pData, m_dwTotal);
 	TouchDoc();
-}
+}*/
 
 // Undo/Redo
 	BOOL Undo()
@@ -355,18 +431,6 @@ BOOL DeleteData(DWORD dwDelStart, DWORD dwDelSize)
 		size_t nDelSize = GetUndoCountCanRemove();
 		if(nDelSize>0)_RemoveUndoRedoAt(0, nDelSize);
 		return TRUE;
-	}
-	_inline void _RemoveUndoRedoAt(size_t delStartIndex, size_t nDelSize)
-	{
-		for(size_t i=0;i<nDelSize;i++)
-		{
-			TAMAUndoRedo *undo = m_undo.GetAt(delStartIndex+i);
-			free(undo->data);
-			free(undo);
-		}
-		m_undo.RemoveAt(delStartIndex, nDelSize);
-		if(delStartIndex<m_savedIndex)m_savedIndex -= nDelSize;
-		if(delStartIndex<m_redoIndex)m_redoIndex -= nDelSize;
 	}
 
 // File-mapping Operations
@@ -409,21 +473,6 @@ BOOL DeleteData(DWORD dwDelStart, DWORD dwDelSize)
 	}
 
   protected:
-	typedef struct
-	{
-		LPBYTE *data;
-		DWORD dwSize;
-		DWORD nRefCount;
-	} TAMADataChunk;
-	
-	typedef struct
-	{
-		UndoMode mode;
-		DWORD dwStart;
-		TAMADataChunk *dataNext;
-		TAMADataChunk *dataPrev;
-		BOOL bHidden;
-	} TAMAUndoRedo;
 
 protected:
 	CAtlFile m_file;
@@ -443,6 +492,8 @@ protected:
 	CAtlArray<TAMAUndoRedo*> m_undo;
 	size_t m_savedIndex;
 	size_t m_redoIndex;
+
+	struct _TAMAFILECHUNK_HEAD m_filemapHead;
 
 protected:
 
@@ -617,6 +668,40 @@ protected:
 			} else dwSize = ulFileSize.LowPart;
 		}
 		return dwSize;
+	}
+
+	inline void _RemoveUndoRedoAt(size_t delStartIndex, size_t nDelSize)
+	{
+		for(size_t i=0;i<nDelSize;i++)
+		{
+			_ReleaseTAMAUndoRedoByIndex(delStartIndex+i);
+		}
+		m_undo.RemoveAt(delStartIndex, nDelSize);
+		if(delStartIndex<m_savedIndex)m_savedIndex -= nDelSize;
+		if(delStartIndex<m_redoIndex)m_redoIndex -= nDelSize;
+	}
+	BOOL inline _ReleaseTAMAUndoRedoByIndex(size_t nIndex)
+	{
+		_ReleaseTAMAUndoRedo(m_undo.GetAt(nIndex));
+	}
+	BOOL inline _ReleaseTAMAUndoRedo(TAMAUndoRedo *undo)
+	{
+		ASSERT(undo!=NULL);
+		if(_ReleaseTAMADataChunk(undo->dataNext))undo->dataNext = NULL;
+		if(_ReleaseTAMADataChunk(undo->dataPrev))undo->dataPrev = NULL;
+		free(undo);
+	}
+	// TRUE  - nRefCount==0
+	// FALSE - nRefCount!=0
+	BOOL inline _ReleaseTAMADataChunk(TAMADataChunk *chunk)
+	{
+		if(--chunk->nRefCount == 0)
+		{
+			free(chunk->data);
+			free(chunk);
+			return TRUE;
+		} //else Realloc(chunk->data);
+		return FALSE;
 	}
 
 	void LastErrorMessageBox()

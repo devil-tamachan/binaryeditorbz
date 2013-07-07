@@ -155,8 +155,8 @@ void CBZDoc::DeleteContents()
 
 void CBZDoc::Serialize(CArchive& ar)
 {
-	MEMORYSTATUS ms;
-	GlobalMemoryStatus(&ms);
+	//MEMORYSTATUS ms;
+	//GlobalMemoryStatus(&ms);
 
 	CFile *pFile = ar.GetFile();
 	ar.Flush();
@@ -827,3 +827,8 @@ BOOL CBZDoc::SaveModified()
 }
 
 #endif //FILE_MAPPING
+
+
+#include "SuperFileCon.h"
+
+RB_GENERATE(_TAMAFILECHUNK_HEAD, _TAMAFILECHUNK, linkage, cmpTAMAFILECHUNK);

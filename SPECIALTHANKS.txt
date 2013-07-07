@@ -20,7 +20,8 @@ Bug-report
 Libraries
 
     Zlib (zlib license) --- Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
-    kb976038.h (2012/07/14) (New BSD License) --- Copyright (C) 2010 Apple Inc. All rights reserved.
+    kb976038.h (2012/07/14) (BSDlike License) --- Copyright (C) 2010 Apple Inc. All rights reserved.
+    tree.h (New BSD License) --- Copyright 2002 Niels Provos <provos@citi.umich.edu> All rights reserved.
 
 Mac Toolbar Icons
 
