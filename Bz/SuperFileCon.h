@@ -21,6 +21,7 @@ typedef struct
 	BOOL bHidden;
 } TAMAUndoRedo;
 
+typedef enum {	CHUNK_FILE, /*CHUNK_UNDO,*/ CHUNK_MEM } ChunkType;
 typedef struct _TAMAFILECHUNK
 {
 	RB_ENTRY(_TAMAFILECHUNK) linkage;
@@ -30,6 +31,20 @@ typedef struct _TAMAFILECHUNK
 		DWORD key;
 	};
 	DWORD dwStart;
+	ChunkType dataType;
+	union
+	{
+		struct _dataFile
+		{
+			DWORD dwStart;
+			DWORD dwSize;
+		} dataFile;
+		struct _dataMem
+		{
+			TAMADataChunk* pTAMADataChunk;
+			DWORD dwOffset;
+		} dataMem;
+	};
 } TAMAFILECHUNK;
 static int cmpTAMAFILECHUNK(TAMAFILECHUNK *c1, TAMAFILECHUNK *c2)
 {
@@ -714,6 +729,8 @@ protected:
 		MessageBox(NULL, AtlGetErrorDescription(::GetLastError(), LANG_USER_DEFAULT), _T("Error"), MB_OK | MB_ICONERROR);
 	}
 
+	//pSplitChunk[dwStart,(dwSplitPoint),dwEnd] >>>
+	// pNewFirstChunk[dwStart,dwSplitPoint-1] -(Split)- pSplitChunk[dwSplitPoint,dwEnd]
 	BOOL FileMap_SplitPoint(DWORD dwSplitPoint)
 	{
 		TAMAFILECHUNK findChunk, *pSplitChunk;
@@ -724,8 +741,33 @@ protected:
 		{
 			TAMAFILECHUNK *pNewFirstChunk = (TAMAFILECHUNK *)malloc(sizeof(TAMAFILECHUNK));
 			if(pNewFirstChunk==NULL)return FALSE;
+			DWORD dwFirstSize = dwSplitPoint - pSplitChunk->dwStart;
 			pNewFirstChunk->dwStart = pSplitChunk->dwStart;
 			pNewFirstChunk->dwEnd   = dwSplitPoint-1;
+			ChunkType type = pSplitChunk->dataType;
+			pNewFirstChunk->dataType = type;
+			switch(type)
+			{
+			case CHUNK_FILE:
+				pNewFirstChunk->dataFile.dwSize = dwFirstSize;
+				pSplitChunk->dataFile.dwSize -= dwFirstSize;
+				pNewFirstChunk->dataFile.dwStart = pSplitChunk->dataFile.dwStart;
+				pSplitChunk->dataFile.dwStart += dwFirstSize;
+				break;
+//			case CHUNK_UNDO:
+			case CHUNK_MEM:
+				{
+				TAMADataChunk *undoChunk = pSplitChunk->dataMem.pTAMADataChunk;
+				pNewFirstChunk->dataMem.pTAMADataChunk = undoChunk;
+				undoChunk->nRefCount++;
+				pNewFirstChunk->dataMem.dwOffset = pSplitChunk->dataMem.dwOffset;
+				pSplitChunk->dataMem.dwOffset += dwFirstSize;
+				}
+				break;
+			default:
+				ASSERT(FALSE);
+				break;
+			}
 			RB_INSERT(_TAMAFILECHUNK_HEAD, &m_filemapHead, pNewFirstChunk);
 			pSplitChunk->dwStart = dwSplitPoint;
 		}
@@ -739,18 +781,18 @@ protected:
 //		return pCloneChunk;
 //	}
 
-	BOOL FileMap_Insert(DWORD dwEnd, DWORD dwSize)
+	TAMAFILECHUNK* FileMap_Insert(DWORD dwEnd, DWORD dwSize)
 	{
 		TAMAFILECHUNK *pNewChunk = (TAMAFILECHUNK *)malloc(sizeof(TAMAFILECHUNK));
 		DWORD dwStart = dwEnd - dwSize +1;
-		if(dwSize==0 || !pNewChunk)return FALSE;
+		if(dwSize==0 || !pNewChunk)return NULL;
 		FileMap_SplitPoint(dwStart);
-		FileMap_ShiftRange(dwEnd, dwSize);
+		FileMap_Shift(dwEnd, dwSize);
 
 		pNewChunk->dwStart = dwStart;
 		pNewChunk->dwEnd = dwEnd;
 		RB_INSERT(_TAMAFILECHUNK_HEAD, &m_filemapHead, pNewChunk);
-		return TRUE;
+		return pNewChunk;
 	}
 
 	BOOL FileMap_Del(DWORD dwEnd, DWORD dwSize)
@@ -761,18 +803,18 @@ protected:
 		FileMap_SplitPoint(dwEnd+1);
 
 		FileMap_DeleteRange(dwEnd, dwSize);
-		FileMap_ShiftRange(dwEnd, dwSize, FALSE/*minus (-dwSize)*/);
+		FileMap_Shift(dwEnd, dwSize, FALSE/*minus (-dwSize)*/);
 		return TRUE;
 	}
 
-	BOOL FileMap_ShiftRange(DWORD dwEnd, DWORD dwShiftSize, BOOL bPlus = TRUE)
+	BOOL FileMap_Shift(DWORD dwNoShiftEnd, DWORD dwShiftSize, BOOL bPlus = TRUE)
 	{
 		if(bPlus)
 		{
 			TAMAFILECHUNK *pChunk;
 			RB_FOREACH_REVERSE(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
 			{
-				if(pChunk->dwStart <= dwEnd)break;
+				if(pChunk->dwStart <= dwNoShiftEnd)break;
 				pChunk->dwStart += dwShiftSize;
 				pChunk->dwEnd   += dwShiftSize;
 			}
@@ -780,7 +822,7 @@ protected:
 			TAMAFILECHUNK *pChunk;
 			RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
 			{
-				if(pChunk->dwStart > dwEnd)
+				if(pChunk->dwStart > dwNoShiftEnd)
 				{
 					pChunk->dwStart -= dwShiftSize;
 					pChunk->dwEnd   -= dwShiftSize;
