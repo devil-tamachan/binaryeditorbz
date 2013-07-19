@@ -38,6 +38,8 @@ typedef struct _TAMAFILECHUNK
 	DWORD dwStart;
 	TAMADataChunk* dataChunk;
 	DWORD dwSkipOffset;
+	
+	BOOL bSaved; // for Save
 } TAMAFILECHUNK;
 static int cmpTAMAFILECHUNK(TAMAFILECHUNK *c1, TAMAFILECHUNK *c2)
 {
@@ -106,7 +108,7 @@ public:
 		CWaitCursor wait;
 		if (_GetFileLengthLimit4G() != 0)
 		{
-			m_dwTotal = _GetFileLengthLimit4G();
+			m_dwTotalSavedFile = m_dwTotal = _GetFileLengthLimit4G();
 			if(IsFileMapping())
 			{
 				if(!_MapView())
@@ -144,6 +146,222 @@ public:
 		m_filePath = lpszPathName;
 
 		return TRUE;
+	}
+	void _ClearSavedFlags()
+	{
+		TAMAFILECHUNK *pChunk;
+		RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
+		{
+			ASSERT(pChunk->dataChunk);
+			pChunk->bSaved = FALSE;
+			if(pChunk->dataChunk->dataType == CHUNK_FILE && pChunk->dwStart == _GetRealFileStartAddr(pChunk) /*サイズも確認したほうがいい？*/)
+				pChunk->bSaved = TRUE; //file change nothing
+		}
+	}
+	BOOL _ExtendFileSize()
+	{
+		if(m_dwTotal <= m_dwTotalSavedFile)return TRUE;
+		SetFileSize(m_dwTotal);
+		TAMAFILECHUNK *fileChunk = RB_MAX(_TAMAFILECHUNK_HEAD, &m_filemapHead);
+		if(fileChunk->bSaved)return TRUE;//no move
+		switch(fileChunk->dataChunk->dataType)
+		{
+		case CHUNK_FILE:
+			DWORD dwPlusSize = m_dwTotal - m_dwTotalSavedFile;
+			_ShiftFileDataR(_GetRealFileStartAddr(fileChunk), dwPlusSize);
+			fileChunk->bSaved = TRUE;
+			return TRUE;
+		case CHUNK_MEM:
+			DWORD dwShiftStart = m_dwTotalSaved-1;
+			_FileMap_SplitPoint(dwShiftStart);
+			fileChunk = RB_MAX(_TAMAFILECHUNK_HEAD, &m_filemapHead);
+			FWrite(dwShiftStart, _GetRealMemStartAddr(fileChunk), fileChunk->dwSize);
+			fileChunk->bSaved = TRUE;
+			return TRUE;
+		default:
+			ASSERT(FALSE);
+			break;
+		}
+		return FALSE;
+	}
+	//TempMap<DWORD/*size(Key)*/, DWORD/*startAddr*/> _ScanNoRefFileSpace()
+	//{
+		//DWORD dwNextProccessAddress = 0;
+		//TempMap<DWORD/*size(Key)*/, DWORD/*startAddr*/> noRefFileSpaceMap;
+		//DWORD dwPrevStart=0;
+		//TAMAFILECHUNK *pChunk;
+		//RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
+		//{
+		//	ASSERT(pChunk->dataChunk);
+		//	if(!pChunk->bSaved && pChunk->dataChunk->dataType == CHUNK_FILE)
+		//	{
+		//		DWORD dwRealSrcFileStart = _GetRealSrcFileStartAddr(pChunk);
+		//		DWORD dwSize = pChunk->dwEnd - pChunk->dwStart +1;
+		//		ASSERT(dwRealSrcFileStart-dwNextProccessAddress != 0);//0 size file chunk!
+		//		noRefFileSpaceMap.push(dwRealSrcFileStart-dwNextProccessAddress, dwNextProccessAddress);
+		//		dwNextProccessAddress = dwRealSrcFileStart + dwSize;
+		//	}
+		//}
+		//if(dwNextProccessAddress > m_dwTotalSaved)
+		//{
+		//	noRefFileSpaceMap.push(m_dwTotalSaved-dwNextProccessAddress, dwNextProccessAddress);
+		//}
+		//noRefFileSpaceMap.Sort(max-min);
+		//return noRefFileSpaceMap;
+	//}
+	//char _IntervalCheck(DWORD dwSrcStart, DWORD dwDstStart, DWORD dwSize)
+	//{
+	//	if(dwSrcStart==dwDstStart)return 0;
+	//	if(dwSrcStart<dwDstStart)
+	//	{
+	//		if(dwDstStart-dwSrcStart<dwSize)return -1;
+	//		else return -2;
+	//	}else{
+	//		if(dwSrcStart-dwDstStart<dwSize)return 1;
+	//		else return 2;
+	//	}
+	//}
+	BOOL _isRightShiftFileChunk(TAMAFILECHUNK *fileChunk)
+	{
+		ASSERT(fileChunk->dwStart != _GetRealSrcFileStartAddr(fileChunk)); //No move
+		if(fileChunk->dwStart < _GetRealSrcFileStartAddr(fileChunk))return FALSE;
+		return TRUE;
+	}
+	BOOL _ProccessAllChunksRefSrcFile()
+	{
+		TAMAFILECHUNK *pLastFileChunk = NULL;
+		RB_FOREACH_REVERSE(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
+		{
+			if(!pChunk->bSaved && pChunk->dataChunk->dataType == CHUNK_FILE)
+			{
+				pLastFileChunk = pChunk;
+				if(_isRightShiftFileChunk(pChunk))
+				{
+					if(!_ShiftAllFileChunksAfterArg(pChunk))
+					{
+						ASSERT(FALSE);
+						return FALSE;
+					}
+				}
+			}
+		}
+		if(pLastFileChunk && !pLastFileChunk->bSaved)
+		{
+			if(!_ShiftAllFileChunksAfterArg(pChunk))
+			{
+				ASSERT(FALSE);
+				return FALSE;
+			}
+		}
+		return TRUE;
+	}
+	BOOL _ProccessAllMemChunks()
+	{
+		RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
+		{
+			if(!pChunk->bSaved)
+			{
+				ASSERT(pChunk->dataChunk->dataType == CHUNK_MEM);
+				LPBYTE pSrc = _GetRealSrcMemStartAddr(pChunk);
+				::WriteFile();
+				pChunk->bSaved = TRUE;
+			}
+		}
+	}
+	BOOL _Debug_SearchUnSavedChunk()
+	{
+		RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
+		{
+			if(!pChunk->bSaved)
+			{
+				return TRUE;
+			}
+		}
+		return FALSE;
+	}
+	BOOL _ProccessAllChunks()
+	{
+		_UndoRedo_BackUpFileData();
+		_ClearSavedFlags();
+		if(!_ExtendFileSize())
+		{
+			ASSERT(FALSE);
+			return FALSE;
+		}
+		if(!ProccessAllChunksRefSrcFile())
+		{
+			ASSERT(FALSE);
+			return FALSE;
+		}
+		if(!_ProccessAllMemChunks())
+		{
+			ASSERT(FALSE);
+			return FALSE;
+		}
+#ifdef DEBUG
+		ASSERT(!_Debug_SearchUnSavedChunk());
+#endif
+		_UndoRedo_CreateRefSrcFileDataChunk();
+	}
+	BOOL _ShiftAllFileChunksAfterArg(TAMAFILECHUNK *fileChunk)
+	{
+		while(fileChunk) {
+			if(pChunk->dataChunk->dataType == CHUNK_FILE)
+			{
+				if(pChunk->bSaved)return TRUE;
+				if(!_DoShiftFileChunk(fileChunk))
+				{
+					ASSERT(FALSE);
+					return FALSE;
+				}
+			}
+			fileChunk = fileChunk->Next();
+		}
+		return TRUE;
+	}
+	BOOL _DoShiftFileChunk(TAMAFILECHUNK *fileChunk)
+	{
+		ASSERT(fileChunk);
+		ASSERT(fileChunk->bSaved==FALSE);
+		ASSERT(pChunk->dataChunk->dataType == CHUNK_FILE);
+		BOOL nRet;
+		DWORD dwRefSrcFileAddr = _GetRealSrcFileStartAddr(fileChunk);
+		DWORD dwDstFileAddr = fileChunk->dwStartAddr;
+		if(_isRightShiftFileChunk(fileChunk))
+		{
+			nRet = _ShiftFileDataR(dwRefSrcFileAddr, dwDstFileAddr - dwRefSrcFileAddr);
+		} else {
+			nRet = _ShiftFileDataL(dwDstFileAddr, dwRefSrcFileAddr - dwDstFileAddr);
+		}
+		if(!nRet)
+		{
+			ASSERT(FALSE);
+			return FALSE;
+		}
+		fileChunk->bSaved = TRUE;
+		return nRet;
+	}
+	void _UpdateNewRefSrcFileAddress()
+	{
+		RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
+		{
+			ASSERT(pChunk->dataChunk);
+			ASSERT(pChunk->bSaved);
+			if(pChunk->dataChunk->dataType == CHUNK_FILE)
+			{
+				pChunk->dataChunk->dataFileAddr = pChunk->dataChunk->dwStart - pChunk->dwSkipOffset;
+			}
+		}
+	}
+	DWORD _GetRealSrcFileStartAddr(TAMAFILECHUNK* fileChunk)
+	{
+		ASSERT(fileChunk->dataChunk->dataType==CHUNK_FILE);
+		return fileChunk->dwSkipOffset + fileChunk->dataChunk->dataFileAddr;
+	}
+	LPBYTE _GetRealSrcMemStartAddr(TAMAFILECHUNK* memChunk)
+	{
+		ASSERT(fileChunk->dataChunk->dataType==CHUNK_MEM);
+		return fileChunk->dwSkipOffset + fileChunk->dataChunk->dataMemAddr;
 	}
 	BOOL Save() //上書き保存
 	{
@@ -644,6 +862,7 @@ protected:
 	CString m_filePath;
 //	LPBYTE	m_pData; //メモリ内のアドレス。ファイル内アドレスで0に当たるアドレスを示す。ただし部分的なファイルマッピングの場合がある。その場合m_pDataからマッピング領域が始まっているとは限らない、m_pDataは擬似的なアドレスになっている
 	DWORD	m_dwTotal;
+	DWORD	m_dwTotalSavedFile;
 	HANDLE	m_hMapping;
 	LPBYTE	m_pMapStart;	// ###1.61　マッピング領域先端（メモリ内のアドレス）
 	DWORD   m_dwFileOffset; //データファイルのマッピング開始アドレス（ファイル内のアドレス）
@@ -893,6 +1112,7 @@ protected:
 			DWORD dwFirstSize = dwSplitPoint - pSplitChunk->dwStart;
 			pNewFirstChunk->dwStart = pSplitChunk->dwStart;
 			pNewFirstChunk->dwEnd   = dwSplitPoint-1;
+			pNewFirstChunk->bSaved = pSplitChunk->bSaved;
 			ChunkType type = pSplitChunk->dataChunk->dataType;
 			//pNewFirstChunk->dataChunk->dataType = type;
 			switch(type)
@@ -921,13 +1141,6 @@ protected:
 		}
 		return TRUE;
 	}
-
-//	TAMAFILECHUNK* _CloneTAMAFILECHUNK(TAMAFILECHUNK *srcChunk)
-//	{
-//		TAMAFILECHUNK *pCloneChunk = (TAMAFILECHUNK *)malloc(sizeof(TAMAFILECHUNK));
-//		if(pCloneChunk)memcpy(pCloneChunk, srcChunk, sizeof(TAMAFILECHUNK));
-//		return pCloneChunk;
-//	}
 
 	TAMAFILECHUNK* _FileMap_BasicInsert(DWORD dwEnd, DWORD dwSize)
 	{
