@@ -7,23 +7,34 @@
 
 typedef enum {	UNDO_INS, UNDO_OVR, UNDO_DEL } UndoMode;
 typedef enum {	CHUNK_FILE, /*CHUNK_UNDO,*/ CHUNK_MEM } ChunkType;
-typedef struct
+typedef enum {	DC_UNKNOWN, DC_FD, DC_FF, DC_DF, DC_DD, DC_DONE } DataChunkSavingType;
+typedef struct _TAMADataBuf
+{
+	LPBYTE pData;
+	DWORD nRefCount;
+} TAMADataBuf;
+typedef struct _TAMADataChunk
 {
 	ChunkType dataType;
 	union
 	{
-		LPBYTE dataMemPointer;
+		TAMADataBuf *dataMem;
 		DWORD dataFileAddr;
 	};
 	DWORD dwSize;
-	DWORD nRefCount;
+	DWORD dwSkipOffset;
+	DataChunkSavingType savingType;//for Save()
 } TAMADataChunk;
-typedef struct
+typedef struct _TAMAUndoRedo
 {
 	UndoMode mode;
 	DWORD dwStart;
-	TAMADataChunk *dataNext;//TAMADataChunk**にすると効率が上がる
-	TAMADataChunk *dataPrev;//TAMADataChunk**にすると効率が上がる
+	
+	TAMADataChunk **dataNext;
+	DWORD nDataNext;
+	TAMADataChunk **dataPrev;
+	DWORD nDataPrev;
+	
 	BOOL bHidden;
 } TAMAUndoRedo;
 
@@ -37,7 +48,7 @@ typedef struct _TAMAFILECHUNK
 	};
 	DWORD dwStart;
 	TAMADataChunk* dataChunk;
-	DWORD dwSkipOffset;
+//	DWORD dwSkipOffset;
 	
 	BOOL bSaved; // for Save
 } TAMAFILECHUNK;
@@ -156,6 +167,23 @@ public:
 			pChunk->bSaved = FALSE;
 			if(pChunk->dataChunk->dataType == CHUNK_FILE && pChunk->dwStart == _GetRealSrcFileStartAddr(pChunk) /*サイズも確認したほうがいい？*/)
 				pChunk->bSaved = TRUE; //file change nothing
+		}
+	}
+	void _ClearDataChunkSavingFlag()
+	{
+		TAMAFILECHUNK *pChunk;
+		RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
+		{
+			ASSERT(pChunk->dataChunk);
+			pChunk->dataChunk->savingType = DC_UNKNOWN;
+		}
+		size_t nUndo = m_undo.GetCount();
+		for(size_t i=0; i < nUndo; i++)
+		{
+			TAMAUndoRedo *undo = m_undo[i];
+			ASSERT(undo);
+			if(undo->dataNext)undo->dataNext->savingType = DC_UNKNOWN;
+			if(undo->dataPrev)undo->dataPrev->savingType = DC_UNKNOWN;
 		}
 	}
 	BOOL _SetFileSize(DWORD newSize)
@@ -306,8 +334,64 @@ public:
 		}
 		return FALSE;
 	}
+	void _UpdateAllDataChunkSavingType()//!!!!!!!!!!!!!!重複使用が考慮されていない
+	{
+		_ClearDataChunkSavingFlag();
+		
+		TAMAFILECHUNK *pChunk;
+		RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
+		{
+			TAMADATACHUNK *dataChunk = pChunk->dataChunk;
+			ASSERT(dataChunk);
+			if(dataChunk->savingType == DC_UNKNOWN)
+			{
+				switch(dataChunk->dataType)
+				{
+				case CHUNK_FILE:
+					dataChunk->savingType = DC_FF;
+					break;
+				case CHUNK_MEM:
+					dataChunk->savingType = DC_DF;
+					break;
+				default:
+					ASSERT(FALSE);
+					break;
+				}
+			}
+		}
+		size_t nUndo = m_undo.GetCount();
+		for(size_t i=0; i < nUndo; i++)
+		{
+			TAMAUndoRedo *undo = m_undo[i];
+			ASSERT(undo);
+			TAMADATACHUNK *dataChunk = undo->dataNext;
+			if(dataChunk && dataChunk->savingType == DC_UNKNOWN && dataChunk->dataType==CHUNK_FILE)dataChunk->savingType = DC_FD;
+			dataChunk = undo->dataPrev;
+			if(dataChunk && dataChunk->savingType == DC_UNKNOWN && dataChunk->dataType==CHUNK_FILE)dataChunk->savingType = DC_FD;
+		}
+	}
+	BOOL _UndoRedo_BackUpFileData()
+	{
+		size_t nUndo = m_undo.GetCount();
+		for(size_t i=0; i < nUndo; i++)
+		{
+			TAMAUndoRedo *undo = m_undo[i];
+			ASSERT(undo);
+			TAMADATACHUNK *dataChunk = undo->dataNext;
+			if(dataChunk && dataChunk->savingType == DC_FD)
+			{
+				dataChunk-
+			}
+			dataChunk = undo->dataPrev;
+			if(dataChunk && dataChunk->savingType == DC_FD)
+			{
+				dataChunk->savingType = DC_FD;
+			}
+		}
+	}
 	BOOL _ProccessAllChunks()
 	{
+		_UpdateAllDataChunkSavingType();
 		_UndoRedo_BackUpFileData();
 		_ClearSavedFlags();
 		if(!_ExtendFileSize())
