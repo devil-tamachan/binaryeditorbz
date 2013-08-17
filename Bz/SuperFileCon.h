@@ -6,7 +6,7 @@
 
 
 typedef enum {	UNDO_INS, UNDO_OVR, UNDO_DEL } UndoMode;
-typedef enum {	CHUNK_FILE, /*CHUNK_UNDO,*/ CHUNK_MEM } ChunkType;
+typedef enum {	CHUNK_FILE, /*CHUNK_UNDO,*/ CHUNK_MEM } DataChunkType;
 typedef enum {	DC_UNKNOWN, DC_FD, DC_FF, DC_DF, DC_DD, DC_DONE } DataChunkSavingType;
 typedef struct _TAMADataBuf
 {
@@ -15,7 +15,7 @@ typedef struct _TAMADataBuf
 } TAMADataBuf;
 typedef struct _TAMADataChunk
 {
-	ChunkType dataType;
+	DataChunkType dataType;
 	union
 	{
 		TAMADataBuf *dataMem;
@@ -434,7 +434,7 @@ public:
 		*pNRemain -= nChunkSize;
 		return dataChunk;
 	}
-	TAMADataBuf* _TAMADataBuf_Create(LPBYTE pData, DWORD nRefCount = 0)
+	TAMADataBuf* _TAMADataBuf_CreateAssign(LPBYTE pData, DWORD nRefCount = 0)
 	{
 		TAMADataBuf *pDataBuf = (TAMADataBuf *)malloc(sizeof(TAMADataBuf));
 		if(pDataBuf)
@@ -442,6 +442,22 @@ public:
 			pDataBuf->pData = pData;
 			pDataBuf->nRefCount = nRefCount;
 		}
+		return pDataBuf;
+	}
+	TAMADataBuf* _TAMADataBuf_CreateNew(DWORD dwNewAlloc, DWORD nRefCount = 0)
+	{
+		TAMADataBuf *pDataBuf = (TAMADataBuf *)malloc(sizeof(TAMADataBuf));
+		ASSERT(pDataBuf);
+		if(!pDataBuf)return NULL;
+		
+		pDataBuf->pData = (LPBYTE)malloc(sizeof(dwNewAlloc));
+		ASSERT(pDataBuf->pData);
+		if(!pDataBuf->pData)
+		{
+			free(pDataBuf);
+			return NULL;
+		}
+		pDataBuf->nRefCount = nRefCount;
 		return pDataBuf;
 	}
 	DWORD _TAMAOLDFILECHUNK_GetSize(TAMAOLDFILECHUNK *oldFileChunk)
@@ -724,51 +740,37 @@ public:
 	}
 	TAMAUndoRedo* _TAMAUndoRedo_Create(UndoMode mode, DWORD dwStart, size_t nPrevSize, size_t nNextSize)
 	{
-		TAMAUndoRedo *pNewUndo = (TAMAUndoRedo *)malloc(sizeof(TAMAUndoRedo));
-		if(!pNewUndo)return NULL;//memory full
+		TAMAUndoRedo *pNewUndo = NULL;
+		pNewUndo = (TAMAUndoRedo *)malloc(sizeof(TAMAUndoRedo));
+		if(!pNewUndo) goto err_TAMAUndoRedoCreate;
 		pNewUndo->dwStart = dwStart;
 		pNewUndo->dataNext = NULL;
+		pNewUndo->dataPrev = NULL;
 		if(nNextSize)
 		{
-			pNewUndo->dataNext = (TAMADataChunk *)malloc(sizeof(TAMADataChunk));
-			if(pNewUndo->dataNext)
-			{
-				pNewUndo->dataNext->dataType = CHUNK_MEM;
-				pNewUndo->dataNext->dwSize = nNextSize;
-				pNewUndo->dataNext->nRefCount = 1;
-				pNewUndo->dataNext->dataMemPointer = (LPBYTE)malloc(nNextSize);
-			}
+			pNewUndo->dataNext = _TAMADataChunk_CreateMemNew(nNextSize, 0);
+			ASSERT(pNewUndo->dataNext);
+			if(!pNewUndo->dataNext) goto err_TAMAUndoRedoCreate;
 		}
-		pNewUndo->dataPrev = NULL;
 		if(nPrevSize)
 		{
-			pNewUndo->dataPrev = (TAMADataChunk *)malloc(sizeof(TAMADataChunk));
-			if(pNewUndo->dataPrev)
-			{
-				pNewUndo->dataPrev->dataType = CHUNK_MEM;
-				pNewUndo->dataPrev->dwSize = nPrevSize;
-				pNewUndo->dataPrev->nRefCount = 1;
-				pNewUndo->dataPrev->dataMemPointer = (LPBYTE)malloc(nPrevSize);
-			}
-		}
-		if((nNextSize && (!pNewUndo->dataNext || !pNewUndo->dataNext->dataMemPointer)) || (nPrevSize && (!pNewUndo->dataPrev || !pNewUndo->dataPrev->dataMemPointer)))
-		{//ERR: Memory full
-			if(pNewUndo->dataNext)
-			{
-				if(pNewUndo->dataNext->dataMemPointer)free(pNewUndo->dataNext->dataMemPointer);
-				free(pNewUndo->dataNext);
-			}
-			if(pNewUndo->dataPrev)
-			{
-				if(pNewUndo->dataPrev->dataMemPointer)free(pNewUndo->dataPrev);
-				free(pNewUndo->dataPrev);
-			}
-			free(pNewUndo);
-			return NULL;//ERR:memory full
+			pNewUndo->dataPrev = _TAMADataChunk_CreateMemNew(nPrevSize, 0);
+			ASSERT(pNewUndo->dataPrev);
+			if(!pNewUndo->dataPrev) goto err_TAMAUndoRedoCreate;
 		}
 		pNewUndo->mode = mode;
 		pNewUndo->bHidden = FALSE;
 		return pNewUndo;
+		
+	  err_TAMAUndoRedoCreate:
+		ASSERT(FALSE);
+		if(pNewUndo)
+		{
+			if(pNewUndo->dataNext)_TAMADataChunk_Release(pNewUndo->dataNext);
+			if(pNewUndo->dataPrev)_TAMADataChunk_Release(pNewUndo->dataPrev);
+			free(pNewUndo);
+		}
+		return NULL;
 	}
 	DWORD inline _GetEndOffset(DWORD dwStart, DWORD dwSize) { ASSERT(dwSize>0); return dwStart+dwSize-1; };
 
@@ -817,7 +819,7 @@ public:
 			//compacthiddennode (too fast) + change m_savedIndex
 			for(size_t i = m_savedIndex-1; i>=m_redoIndex; i--)
 			{
-				TAMAUndoRedo *reverseUndo = _ReverseTAMAUndoRedo(m_undo[i]);
+				TAMAUndoRedo *reverseUndo = _TAMAUndoRedo_ReverseCopy(m_undo[i]);
 				if(reverseUndo==NULL)
 				{
 					ASSERT(FALSE);
@@ -875,11 +877,11 @@ public:
 		for(size_t i=nStartIndex; i<=nEndIndex; i++)
 			m_undo[i]->bHidden = TRUE;
 	}
-	TAMAUndoRedo * _TAMAUndoRedo_Reverse(TAMAUndoRedo *undo)
+	inline TAMAUndoRedo* _TAMAUndoRedo_ReverseCopy(TAMAUndoRedo *srcUndo)
 	{
-		TAMAUndoRedo *newUndo = _CloneTAMAUndoRedo(undo);
-		if(!newUndo)return NULL;
-		switch(undo->mode)
+		TAMAUndoRedo *newUndo = (TAMAUndoRedo*)malloc(sizeof(TAMAUndoRedo));
+		if(newUndo==NULL)return NULL;
+		switch(srcUndo->mode)
 		{
 		case UNDO_INS:
 			newUndo->mode = UNDO_DEL;
@@ -890,17 +892,66 @@ public:
 		case UNDO_OVR:
 			break;
 		}
-		TAMADataChunk *swap = undo->dataPrev;
-		newUndo->dataPrev = undo->dataNext;
-		newUndo->dataNext = swap;
+		newUndo->dwStart = srcUndo->dwStart;
+		newUndo->bHidden = srcUndo->bHidden;
+		newUndo->dataNext = _TAMADATACHUNKS_Copy(srcUndo->dataPrev);
+		ASSERT(newUndo->dataNext);
+		if(!newUndo->dataNext)
+		{
+			free(newUndo);
+			return NULL;
+		}
+		newUndo->nDataNext = srcUndo->nDataPrev;
+		newUndo->dataPrev = _TAMADATACHUNKS_Copy(srcUndo->dataNext);
+		ASSERT(newUndo->dataPrev);
+		if(!newUndo->dataPrev)
+		{
+			_TAMADATACHUNKS_Release(newUndo->dataNext);
+			free(newUndo);
+			return NULL;
+		}
+		newUndo->nDataPrev = srcUndo->nDataPrev;
+		
+		return newUndo;
 	}
-	inline TAMAUndoRedo* _TAMAUndoRedo_Clone(TAMAUndoRedo *srcUndo)
+	TAMADataChunk** _TAMADATACHUNKS_Copy(TAMADataChunk **dataChunks, DWORD nData)
 	{
-		TAMAUndoRedo *newUndo = (TAMAUndoRedo*)malloc(sizeof(TAMAUndoRedo));
-		if(newUndo==NULL)return NULL;
-		memcpy(newUndo, srcUndo, sizeof(TAMAUndoRedo));
-		newUndo->dataPrev->nRefCount++;
-		newUndo->dataNext->nRefCount++;
+		TAMADataChunk **pDataChunks = (TAMADataChunk **)malloc(sizeof(TAMADataChunk *)*nData);
+		if(pDataChunks==NULL)return NULL;
+		for(DWORD i=0; i<nData; i++)
+		{
+			ASSERT(dataChunks[i]);
+			pDataChunk[i] = _TAMADataChunk_Copy(dataChunks[i]);
+		}
+		return pDataChunks;
+	}
+	TAMADataChunk* _TAMADataChunk_Copy(TAMADataChunk *dataChunk)
+	{
+		TAMADataChunk *newChunk = (TAMADataChunk *)malloc(sizeof(TAMADataChunk));
+		if(newChunk==NULL)return NULL;
+		memcpy(&newChunk, &dataChunk, sizeof(TAMADataChunk));
+		switch(dataChunk->dataType)
+		{
+		  case CHUNK_MEM:
+			_TAMADataBuf_IncRef(newChunk->dataMem);
+			break;
+		  case CHUNK_FILE:
+			break;
+		  default:
+			ASSERT(FALSE);
+			free(newChunk);
+			return NULL;
+		}
+		return newChunk;
+	}
+	void _TAMADataChunk_IncRef(TAMADataChunk *dataChunk)
+	{
+		if(dataChunk->dataType == CHUNK_MEM && dataChunk->dataMem)_TAMADataBuf_IncRef(dataChunk->dataMem);
+	}
+	void _TAMADataBuf_IncRef(TAMADataBuf *pDataBuf)
+	{
+		ASSERT(pDataBuf->nRefCount<0xFFffFFff);
+		pDataBuf->nRefCount++;
 	}
 	/*
 BOOL _InsertData(DWORD dwStart, DWORD dwSize, BOOL bIns)
@@ -1256,23 +1307,44 @@ protected:
 	BOOL inline _UndoRedo_ReleaseByIndex(size_t nIndex)	{ return _UndoRedo_Release(m_undo.GetAt(nIndex)); }
 	BOOL inline _UndoRedo_Release(TAMAUndoRedo *undo)
 	{
-		if(undo==NULL)return FALSE;
-		_ReleaseTAMADataChunk(undo->dataNext);
-		_ReleaseTAMADataChunk(undo->dataPrev);
+		if(undo==NULL)
+		{
+			ASSERT(FALSE);
+			return FALSE;
+		}
+		if(undo->dataNext)_TAMADataChunks_Release(undo->dataNext, undo->nDataNext);
+		if(undo->dataPrev)_TAMADataChunks_Release(undo->dataPrev, undo->nDataPrev);
 		free(undo);
 		return TRUE;
+	}
+	BOOOL _TAMADataChunks_Release(TAMADataChunk **chunks, DWORD dwChunks)
+	{
+		for(int i=0; i<dwChunks; i++)
+		{
+			ASSERT(chunks[i]);
+			if(chunks[i])_TAMADataChunk_Release(chunks[i]);
+		}
 	}
 	// TRUE  - nRefCount==0
 	// FALSE - nRefCount!=0
 	BOOL inline _TAMADataChunk_Release(TAMADataChunk *chunk)
 	{
+		BOOL bRet = FALSE;
 		if(chunk==NULL)return FALSE;
-		if(--chunk->nRefCount == 0)
+		if(chunk->dataType==CHUNK_MEM && chunk->dataMem) bRet=_TAMADataBuf_Release(chunk->dataMem);
+		else bRet = TRUE;
+		free(chunk);
+		return bRet;
+	}
+	BOOL inline _TAMADataBuf_Release(TAMADataBuf *pDataBuf)
+	{
+		if(pDataBuf==NULL)return FALSE;
+		if(pDataBuf->nRefCount==0 || --(pDataBuf->nRefCount) == 0)
 		{
-			if(chunk->dataType==CHUNK_MEM && chunk->dataMemPointer) free(chunk->dataMemPointer);
-			free(chunk);
+			if(pDataBuf->pData)free(pDataBuf->pData);
+			free(pDataBuf);
 			return TRUE;
-		} //else Realloc(chunk->data);
+		}
 		return FALSE;
 	}
 
@@ -1407,12 +1479,34 @@ protected:
 		dataChunk->dwSize = dwSize;
 		return dataChunk;
 	}*/
-	TAMADataChunk* _TAMADataChunk_CreateMemChunk(DWORD dwSize, DWORD dwSkipOffset, TAMADataBuf pTAMADataBuf)
+	TAMADataChunk* _TAMADataChunk_CreateMemAssign(DWORD dwSize, DWORD dwSkipOffset, TAMADataBuf pTAMADataBuf)
 	{
-		ASSERT(pTAMADataBuf);
 		TAMADataChunk *dataChunk = (TAMADataChunk *)malloc(sizeof(TAMADataChunk));
 		if(dataChunk==NULL)return NULL;
-		pDataChunk->nRefCount++;
+		if(pTAMADataBuf)
+		{
+			pTAMADataBuf->nRefCount++;
+			dataChunk->dataMem = pTAMADataBuf;
+		}
+		dataChunk->dataType = CHUNK_MEM;
+		dataChunk->dwSize = dwSize;
+		dataChunk->dwSkipOffset = dwSkipOffset;
+		return dataChunk;
+	}
+	TAMADataChunk* _TAMADataChunk_CreateMemNew(DWORD dwSize, DWORD dwSkipOffset)
+	{
+		TAMADataChunk *dataChunk = (TAMADataChunk *)malloc(sizeof(TAMADataChunk));
+		if(dataChunk==NULL)return NULL;
+		
+		TAMADataBuf *pTAMADataBuf = _TAMADataBuf_CreateNew(nNextSize, 1/*nRefCount*/);
+		ASSERT(pTAMADataBuf);
+		if(!pTAMADataBuf)
+		{
+			_TAMADataBuf_Release(pTAMADataBuf);
+			free(dataChunk);
+			return NULL;
+		}
+		dataChunk->dataMem = pTAMADataBuf;
 		dataChunk->dataType = CHUNK_MEM;
 		dataChunk->dwSize = dwSize;
 		dataChunk->dwSkipOffset = dwSkipOffset;
