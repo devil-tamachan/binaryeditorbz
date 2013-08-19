@@ -738,7 +738,7 @@ public:
 		
 		return _FileMap_OverWriteMem(dwStart, dwSize, pNewUndo->dataNext, 0);
 	}
-	TAMAUndoRedo* _TAMAUndoRedo_Create(UndoMode mode, DWORD dwStart, size_t nPrevSize, size_t nNextSize)
+	TAMAUndoRedo* _TAMAUndoRedo_Create(UndoMode mode, DWORD dwStart, TAMADataChunk **dataPrev, DWORD nDataPrev, TAMADataChunk **dataNext, DWORD nDataNext)
 	{
 		TAMAUndoRedo *pNewUndo = NULL;
 		pNewUndo = (TAMAUndoRedo *)malloc(sizeof(TAMAUndoRedo));
@@ -766,8 +766,8 @@ public:
 		ASSERT(FALSE);
 		if(pNewUndo)
 		{
-			if(pNewUndo->dataNext)_TAMADataChunk_Release(pNewUndo->dataNext);
-			if(pNewUndo->dataPrev)_TAMADataChunk_Release(pNewUndo->dataPrev);
+			if(pNewUndo->dataNext)_TAMADataChunks_Release(pNewUndo->dataNext);
+			if(pNewUndo->dataPrev)_TAMADataChunks_Release(pNewUndo->dataPrev);
 			free(pNewUndo);
 		}
 		return NULL;
@@ -927,8 +927,14 @@ public:
 	}
 	TAMADataChunk* _TAMADataChunk_Copy(TAMADataChunk *dataChunk)
 	{
+		ASSERT(dataChunk);
+		if(!dataChunk)return NULL;
 		TAMADataChunk *newChunk = (TAMADataChunk *)malloc(sizeof(TAMADataChunk));
-		if(newChunk==NULL)return NULL;
+		if(newChunk==NULL)
+		{
+			ASSERT(FALSE);
+			return NULL;
+		}
 		memcpy(&newChunk, &dataChunk, sizeof(TAMADataChunk));
 		switch(dataChunk->dataType)
 		{
@@ -1317,13 +1323,14 @@ protected:
 		free(undo);
 		return TRUE;
 	}
-	BOOOL _TAMADataChunks_Release(TAMADataChunk **chunks, DWORD dwChunks)
+	BOOL _TAMADataChunks_Release(TAMADataChunk **chunks, DWORD dwChunks)
 	{
 		for(int i=0; i<dwChunks; i++)
 		{
 			ASSERT(chunks[i]);
 			if(chunks[i])_TAMADataChunk_Release(chunks[i]);
 		}
+		free(chunks);
 	}
 	// TRUE  - nRefCount==0
 	// FALSE - nRefCount!=0
@@ -1404,6 +1411,11 @@ protected:
 		}
 		return TRUE;
 	}
+	
+	inline TAMAFILECHUNK* __FileMap_LowInsert(TAMAFILECHUNK* pInsert)
+	{
+		return RB_INSERT(_TAMAFILECHUNK_HEAD, &m_filemapHead, pInsert);
+	}
 
 	TAMAFILECHUNK* _FileMap_BasicInsert(DWORD dwEnd, DWORD dwSize)
 	{
@@ -1415,7 +1427,7 @@ protected:
 
 		pNewChunk->dwStart = dwStart;
 		pNewChunk->dwEnd = dwEnd;
-		RB_INSERT(_TAMAFILECHUNK_HEAD, &m_filemapHead, pNewChunk);
+		__FileMap_LowInsert(pNewChunk);
 		return pNewChunk;
 	}
 	BOOL _FileMap_InsertMem(DWORD dwInsStart, LPBYTE srcDataDetached, DWORD dwInsSize)
@@ -1553,6 +1565,21 @@ protected:
 			}
 		}
 	}
+	
+	inline TAMAFILECHUNK* __FileMap_LowFind(TAMAFILECHUNK* pFind)
+	{
+		return RB_FIND(_TAMAFILECHUNK_HEAD, &m_filemapHead, pFind);
+	}
+	
+	inline TAMAFILECHUNK* __FileMap_LowPrev(TAMAFILECHUNK* pFind)
+	{
+		return RB_PREV(_TAMAFILECHUNK_HEAD, &m_filemapHead, pFind);
+	}
+	
+	inline TAMAFILECHUNK* __FileMap_LowNext(TAMAFILECHUNK* pFind)
+	{
+		return RB_NEXT(_TAMAFILECHUNK_HEAD, &m_filemapHead, pFind);
+	}
 
 	BOOL __FileMap_DeleteRange(DWORD dwEnd, DWORD dwSize)
 	{
@@ -1564,22 +1591,27 @@ protected:
 		TAMAFILECHUNK findChunk;
 		findChunk.key = dwEnd;
 		TAMAFILECHUNK *pDeleteChunk, *pChunk;
-		pDeleteChunk = RB_FIND(_TAMAFILECHUNK_HEAD, &m_filemapHead, &findChunk);
+		pDeleteChunk = __FileMap_LowFind(&findChunk);
 		if(pDeleteChunk==NULL)
 		{
 			//Merge (Restore split)
 			return FALSE;
 		}
-		pChunk = RB_PREV(_TAMAFILECHUNK_HEAD, &m_filemapHead, pDeleteChunk);
+		pChunk = __FileMap_LowPrev(pDeleteChunk);
 		while(pChunk && pChunk->dwEnd < dwStart)
 		{
-			pChunk = RB_PREV(_TAMAFILECHUNK_HEAD, &m_filemapHead, pDeleteChunk);
+			pChunk = __FileMap_LowPrev(pDeleteChunk);
 			_FileMap_Remove(pDeleteChunk);
 			pDeleteChunk = pChunk;
 		}
 		if(pDeleteChunk)_FileMap_Remove(pDeleteChunk);
 	}
-
+	
+	TAMAFILECHUNK* __FileMap_LowRemove(TAMAFILECHUNK *pRemove)
+	{
+		return RB_REMOVE(_TAMAFILECHUNK_HEAD, &m_filemapHead, pRemove);
+	}
+	
 	void _FileMap_Remove(TAMAFILECHUNK *pDeleteChunk)
 	{
 		switch(pDeleteChunk->dataChunk->dataType)
@@ -1594,7 +1626,7 @@ protected:
 				ASSERT(FALSE);
 				break;
 		}
-		RB_REMOVE(_TAMAFILECHUNK_HEAD, &m_filemapHead, pDeleteChunk);
+		__FileMap_LowRemove(pDeleteChunk);
 		free(pDeleteChunk);
 	}
 
@@ -1611,7 +1643,7 @@ protected:
 		pNewChunk->dwEnd = dwEnd;
 		pNewChunk->dataChunk = NULL;
 		pNewChunk->dwSkipOffset = 0;
-		RB_INSERT(_TAMAFILECHUNK_HEAD, &m_filemapHead, pNewChunk);
+		__FileMap_LowInsert(pNewChunk);
 		return pNewChunk;
 	}
 	
@@ -1625,6 +1657,78 @@ protected:
 		chunk->dataChunk = dataChunk;
 
 		return TRUE;
+	}
+	
+	BOOL _TAMAFILECHUNK_IsContainPoint(TAMAFILECHUNK *fileChunk, DWORD dwPoint) { return fileChunk->dwStart <= dwPoint && dwPoint <= fileChunk->dwEnd; }
+	
+	TAMADataChunk** _FileMap_CreateTAMADataChunks(DWORD dwStart, DWORD dwSize, TAMADataChunk*** ppDataChunks, DWORD *nDataChunks)
+	{
+		TAMAFILECHUNK *pFCStart = _FileMap_LookUp(dwStart);
+		if(!pFCStart)
+		{
+			ASSERT(FALSE);
+			return NULL;
+		}
+		DWORD dwEnd = _GetEndOffset(dwStart, dwSize);
+		TAMAFILECHUNK *pFCCur = pFCStart;
+		DWORD dwDataChunksSize = 1;
+		while(1)
+		{
+			if(_TAMAFILECHUNK_IsContainPoint(pFCCur, dwEnd))break;
+			pFCCur = __FileMap_LowNext(pFCCur);
+			if(!pFCCur)
+			{
+				ASSERT(FALSE);
+				return NULL;
+			}
+			ASSERT(dwDataChunksSize<0xFFffFFff);
+			dwDataChunksSize++;
+			ASSERT(dwEnd > pFCCur->dwStart);
+			ASSERT(dwStart < pFCCur->dwEnd);
+		}
+		TAMAFILECHUNK *pFCEnd = pFCCur;
+		TAMADataChunk **pDataChunks = (TAMADataChunk **)malloc(sizeof(TAMADataChunk *)*dwDataChunksSize);
+		if(!pDataChunks)
+		{
+			ASSERT(FALSE);
+			return NULL;
+		}
+		pFCCur = pFCStart;
+		TAMADataChunk *pDC = _TAMADataChunk_Copy(pFCStart->dataChunk);
+		if(!pDC)
+		{
+			ASSERT(FALSE);
+			free(pDataChunks);
+			return NULL;
+		}
+		pDataChunks[0] = pDC;
+		ASSERT(pFCStart >= dwStart);
+		DWORD dwSkipS = pFCStart->dwStart - dwStart;
+		pDC->dwSkipOffset += dwSkipS;
+		pDC->dwSize -= dwSkipS;
+		
+		for(DWORD i=1; ; i++)
+		{
+			if(pFCCur==pFCEnd)
+			{
+				*nDataChunks = i;
+				ASSERT(dwEnd<=pFCEnd->dwEnd);
+				DWORD dwDecE = pFCEnd->dwEnd - dwEnd;
+				ASSERT(pDC->dwSize > dwDecE);
+				pDC->dwSize -= dwDecE;
+				break;
+			}
+			pFCCur = __FileMap_LowNext(pFCCur);
+			if(!pFCCur || !(pDC = _TAMADataChunk_Copy(pFCCur->dataChunk)))
+			{
+				ASSERT(FALSE);
+				_TAMADataChunks_Release(pDataChunks, i);
+				return NULL;
+			}
+			ASSERT(i<dwDataChunksSize);
+			pDataChunks[i] = pDC;
+		}
+		return pDataChunks;
 	}
 	
 	
