@@ -773,16 +773,44 @@ public:
 		return NULL;
 	}
 	DWORD inline _GetEndOffset(DWORD dwStart, DWORD dwSize) { ASSERT(dwSize>0); return dwStart+dwSize-1; };
+	
+	TAMADataChunk** _TAMADATACHUNKS_CreateWith1MemDataChunk(DWORD dwSize, DWORD dwSkipOffset, LPBYTE srcDataDetached)
+	{
+		TAMADataChunk *pNextDataChunk = _TAMADataChunk_CreateMemAssignRawPointer(dwInsSize, 0, srcDataDetached);
+		if(!pNextDataChunk)
+		{
+			return NULL;
+		}
+		TAMADataChunk **ppNextDataChunks = (TAMADataChunk **)malloc(sizeof(TAMADataChunk *)*1);
+		if(!ppNextDataChunks)
+		{
+			_TAMADataChunk_Release(pNextDataChunk); ///!!!!!!!!!!!!!!Insert()‚ªŽ¸”s‚µ‚Ä‚àsrcDataDetached‚ªfree‚³‚ê‚Ä‚µ‚Ü‚¤
+			return NULL;
+		}
+		ppNextDataChunks[0] = pNextDataChunk;
+		return ppDataChunks;
+	}
 
 // Insert/Delete
 	BOOL Insert(DWORD dwInsStart, LPBYTE srcDataDetached, DWORD dwInsSize)
 	{
-		TAMAUndoRedo *pNewUndo = _CreateTAMAUndoRedo(UNDO_INS, dwInsStart, 0, 0/*dwInsSize*/);
-		ASSERT(pNewUndo);
-		if(!pNewUndo)return FALSE; //memory full
-		pNewUndo->dataNext = _CreateMemDataChunk(dwInsSize, srcDataDetached);
-		ASSERT(pNewUndo->dataNext);
-		if(!pNewUndo->dataNext)return FALSE; //memory full
+		TAMAUndoRedo *pNewUndo = NULL;
+		TAMADataChunk **ppNextDataChunks = NULL;
+		pNewUndo = _CreateTAMAUndoRedo(UNDO_INS, dwInsStart, 0, 0/*dwInsSize*/);
+		if(!pNewUndo)
+		{
+			ASSERT(FALSE);
+			return FALSE;
+		}
+		ppNextDataChunks = _TAMADATACHUNKS_CreateWith1MemDataChunk(dwInsSize, 0, srcDataDetached);
+		if(!ppNextDataChunks)
+		{
+			ASSERT(FALSE);
+			free(pNewUndo);
+			return FALSE;
+		}
+		pNewUndo->dataNext = ppNextDataChunks;
+		pNewUndo->nDataNext = 1;
 		_PreNewUndo();
 		m_undo.Add(pNewUndo);
 
@@ -1491,7 +1519,26 @@ protected:
 		dataChunk->dwSize = dwSize;
 		return dataChunk;
 	}*/
-	TAMADataChunk* _TAMADataChunk_CreateMemAssign(DWORD dwSize, DWORD dwSkipOffset, TAMADataBuf pTAMADataBuf)
+	TAMADataChunk* _TAMADataChunk_CreateMemAssignRawPointer(DWORD dwSize, DWORD dwSkipOffset, LPBYTE srcDataDetached)
+	{
+		TAMADataBuf *pTAMADataBuf = _TAMADataBuf_CreateAssign(srcDataDetached, 0/*nRefCount*/);
+		ASSERT(pTAMADataBuf);
+		if(!pTAMADataBuf)
+		{
+			ASSERT(FALSE);
+			return NULL;
+		}
+		TAMADataChunk *retDataChunk = _TAMADataChunk_CreateMemAssignTAMADataBuf(dwSize, dwSkipOffset, pTAMADataBuf);
+		if(!retDataChunk)
+		{
+			ASSERT(FALSE);
+			_TAMADataBuf_Release(pTAMADataBuf);
+			return NULL;
+		}
+		return retDataChunk;
+	}
+	
+	TAMADataChunk* _TAMADataChunk_CreateMemAssignTAMADataBuf(DWORD dwSize, DWORD dwSkipOffset, TAMADataBuf pTAMADataBuf)
 	{
 		TAMADataChunk *dataChunk = (TAMADataChunk *)malloc(sizeof(TAMADataChunk));
 		if(dataChunk==NULL)return NULL;
@@ -1514,7 +1561,7 @@ protected:
 		ASSERT(pTAMADataBuf);
 		if(!pTAMADataBuf)
 		{
-			_TAMADataBuf_Release(pTAMADataBuf);
+			ASSERT(FALSE);
 			free(dataChunk);
 			return NULL;
 		}
@@ -1728,6 +1775,7 @@ protected:
 			ASSERT(i<dwDataChunksSize);
 			pDataChunks[i] = pDC;
 		}
+		*ppDataChunks = pDataChunks;
 		return pDataChunks;
 	}
 	
