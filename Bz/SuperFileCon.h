@@ -1404,7 +1404,11 @@ protected:
 	BOOL inline _TAMADataChunk_Release(TAMADataChunk *chunk, BOOL bFreeRawPointer = TRUE)
 	{
 		BOOL bRet = FALSE;
-		if(chunk==NULL)return FALSE;
+		if(chunk==NULL)
+		{
+			ASSERT(FALSE);
+			return FALSE;
+		}
 		if(chunk->dataType==CHUNK_MEM && chunk->dataMem) bRet=_TAMADataBuf_Release(chunk->dataMem, bFreeRawPointer);
 		else bRet = TRUE;
 		free(chunk);
@@ -1412,7 +1416,11 @@ protected:
 	}
 	BOOL inline _TAMADataBuf_Release(TAMADataBuf *pDataBuf, BOOL bFreeRawPointer = TRUE)
 	{
-		if(pDataBuf==NULL)return FALSE;
+		if(pDataBuf==NULL)
+		{
+			ASSERT(FALSE);
+			return FALSE;
+		}
 		if(pDataBuf->nRefCount==0 || --(pDataBuf->nRefCount) == 0)
 		{
 			if(pDataBuf->pData && bFreeRawPointer)free(pDataBuf->pData);
@@ -1441,11 +1449,19 @@ protected:
 	{
 		TAMAFILECHUNK *pSplitChunk;
 		pSplitChunk = _FileMap_LookUp(dwSplitPoint);
-		if(!pSplitChunk)return FALSE;
+		if(!pSplitChunk)
+		{
+			ASSERT(FALSE);
+			return FALSE;
+		}
 		if(pSplitChunk->dwStart != dwSplitPoint)
 		{
 			TAMAFILECHUNK *pNewFirstChunk = (TAMAFILECHUNK *)malloc(sizeof(TAMAFILECHUNK));
-			if(pNewFirstChunk==NULL)return FALSE;
+			if(pNewFirstChunk==NULL)
+			{
+				ASSERT(FALSE);
+				return FALSE;
+			}
 			DWORD dwFirstSize = dwSplitPoint - pSplitChunk->dwStart;
 			pNewFirstChunk->dwStart = pSplitChunk->dwStart;
 			pNewFirstChunk->dwEnd   = dwSplitPoint-1;
@@ -1494,8 +1510,7 @@ protected:
 			ASSERT(FALSE);
 			return NULL;
 		}
-		_FileMap_SplitPoint(dwStart);
-		_FileMap_Shift(dwEnd, dwSize);
+		_FileMap_Shift(dwStart, dwSize);
 
 		pNewChunk->dwStart = dwStart;
 		pNewChunk->dwEnd = dwEnd;
@@ -1524,6 +1539,26 @@ protected:
 		return TRUE;
 	}
 	
+	TAMAFILECHUNK* _TAMADataChunk_CreateFileChunk(TAMADataChunk *pDataChunk, DWORD dwStart)
+	{
+		TAMAFILECHUNK *pFileChunk = (TAMAFILECHUNK *)malloc(sizeof(TAMAFILECHUNK));
+		if(!pFileChunk)
+		{
+			ASSERT(FALSE);
+			return NULL;
+		}
+		pFileChunk.dwStart = dwStart;
+		pFileChunk.dataChunk = _TAMADataChunk_Copy(pDataChunk);
+		if(!pFileChunk.dataChunk)
+		{
+			ASSERT(FALSE);
+			free(pFileChunk);
+			return NULL;
+		}
+		pFileChunk.dwEnd = dwStart + pDataChunk->dwSize;
+		return pFileChunk;
+	}
+	
 	//return 0 ---- Failed
 	DWORD _TAMADATACHUNKS_GetSumSize(TAMADataChunk **pDataChunks, DWORD nDataChunks)
 	{
@@ -1541,8 +1576,34 @@ protected:
 		}
 		return dwSum;
 	}
+	BOOL __FileMap_BasicInsertTAMADataChunks(DWORD dwInsStart, TAMADataChunk **ppDataChunks, DWORD nDataChunks)
+	{
+		DWORD dwFCStart = dwInsStart;
+		for(DWORD i=0; i<nDataChunks; i++)
+		{
+			TAMADataChunk *pDC = pDataChunks[i];
+			ASSERT(pDC);
+			TAMAFILECHUNK *pFileChunk = _TAMADataChunk_CreateFileChunk(pDC, dwFCStart);
+			if(!pFileChunk)
+			{
+				ASSERT(FALSE);//FileMap壊れる
+				return FALSE;
+			}
+			__FileMap_LowInsert(pFileChunk);
+			dwFCStart += pDC->dwSize;
+			if(dwFCStart < pDC->dwSize)
+			{
+				ASSERT(FALSE);
+				return FALSE;
+			}
+		}
+		return TRUE;
+	}
 	BOOL _FileMap_InsertTAMADataChunks(DWORD dwInsStart, TAMADataChunk **pDataChunks, DWORD nDataChunks, DWORD dwInsSize=0)
 	{
+#ifdef _DEBUG
+		ASSERT(dwInsSize==0 || dwInsSize==_TAMADATACHUNKS_GetSumSize(pDataChunks, nDataChunks));
+#endif
 		if(dwInsSize==0) //0 --- Automatic Calc
 		{
 			dwInsSize = _TAMADATACHUNKS_GetSumSize(pDataChunks, nDataChunks);
@@ -1552,19 +1613,19 @@ protected:
 				return FALSE;
 			}
 		}
-		//DWORD dwInsEnd = _GetEndOffset(dwInsStart, dwInsSize);
-		TAMAFILECHUNK *insChunk = _FileMap_BasicInsert(dwInsStart, dwInsSize);
-		if(!insChunk)
+		_FileMap_Shift(dwInsStart, dwInsSize);
+		BOOL bRetIns = __FileMap_BasicInsertTAMADataChunks(dwInsStart, pDataChunks, nDataChunks);
+		if(!bRetIns)//Insert Failed
 		{
-			ASSERT(FALSE);
+			ASSERT(FALSE);//Try to fix
+			if(!__FileMap_DeleteRange(dwInsStart, dwInsSize) || !_FileMap_Shift(dwInsStart, dwInsSize, FALSE))
+			{
+				ASSERT(FALSE);//fatal error
+				exit(-1);
+				return FALSE;
+			}
 			return FALSE;
 		}
-
-		ASSERT(srcDataChunk);
-		srcDataChunk->nRefCount++;
-		insChunk->dataChunk = srcDataChunk;
-		insChunk->dwSkipOffset = dwSkipOffset;
-
 		//OptimizeFileMap(insChunk);
 		
 		return TRUE;
@@ -1575,7 +1636,7 @@ protected:
 		TAMAFILECHUNK *insChunk = _FileMap_BasicInsert(dwInsStart, dwInsSize);
 		ASSERT(insChunk);
 
-		TAMADataChunk *dataChunk = _CreateFileDataChunk(dwInsSize, dwStartFileSpace);
+		TAMADataChunk *dataChunk = _TAMADataChunk_CreateFileChunk(dwInsSize, dwStartFileSpace);
 		ASSERT(dataChunk);
 		insChunk->dataChunk = dataChunk;
 		insChunk->dwSkipOffset = 0;
@@ -1585,12 +1646,15 @@ protected:
 	TAMADataChunk* _TAMADataChunk_CreateFileChunk(DWORD dwSize, DWORD dwStartFileSpace)
 	{
 		TAMADataChunk *dataChunk = (TAMADataChunk *)malloc(sizeof(TAMADataChunk));
-		if(dataChunk==NULL)return NULL;
-		//		dataChunk->nRefCount = 1;
-	  TODO: FileChunkはnRefCountが無くなった。FileChunkは使い回しせず必ず新しく作るように書き換える
+		if(dataChunk==NULL)
+		{
+			ASSERT(FALSE);
+			return NULL;
+		}
 		dataChunk->dataType = CHUNK_FILE;
 		dataChunk->dataFileAddr = dwStartFileSpace;
 		dataChunk->dwSize = dwSize;
+		dataChunk->dwSkipOffset = 0;
 		return dataChunk;
 	}
 	
@@ -1615,7 +1679,11 @@ protected:
 	TAMADataChunk* _TAMADataChunk_CreateMemAssignTAMADataBuf(DWORD dwSize, DWORD dwSkipOffset, TAMADataBuf pTAMADataBuf)
 	{
 		TAMADataChunk *dataChunk = (TAMADataChunk *)malloc(sizeof(TAMADataChunk));
-		if(dataChunk==NULL)return NULL;
+		if(dataChunk==NULL)
+		{
+			ASSERT(FALSE);
+			return NULL;
+		}
 		if(pTAMADataBuf)
 		{
 			pTAMADataBuf->nRefCount++;
@@ -1651,12 +1719,14 @@ protected:
 	BOOL __FileMap_Del2(DWORD dwEnd, DWORD dwSize)
 	{
 		DWORD dwStart = dwEnd - dwSize +1;
-		if(dwSize==0)return FALSE;
-		_FileMap_SplitPoint(dwStart);
-		_FileMap_SplitPoint(dwEnd+1);
-
+		if(dwSize==0 || dwEnd==0xFFffFFff)
+		{
+			ASSERT(FALSE);
+			return FALSE;
+		}
+		DWORD dwShiftStart = dwEnd + 1;
 		__FileMap_DeleteRange(dwStart, dwSize);
-		_FileMap_Shift(dwEnd, dwSize, FALSE/*minus (-dwSize)*/);
+		_FileMap_Shift(dwShiftStart, dwSize, FALSE/*bPlus==FALSE (Shift-left: dwSize)*/);
 		return TRUE;
 	}
 	BOOL _FileMap_Del(DWORD dwDelStart, DWORD dwDelSize)
@@ -1665,14 +1735,19 @@ protected:
 		__FileMap_Del2(dwDelEnd, dwDelSize);
 	}
 
-	BOOL _FileMap_Shift(DWORD dwNoShiftEnd, DWORD dwShiftSize, BOOL bPlus = TRUE)
+	BOOL _FileMap_Shift(DWORD dwShiftStart, DWORD dwShiftSize, BOOL bPlus = TRUE)
 	{
+		if(!_FileMap_SplitPoint(dwShiftStart))
+		{
+			ASSERT(FALSE);
+			return FALSE;
+		}
 		if(bPlus)
 		{
 			TAMAFILECHUNK *pChunk;
 			RB_FOREACH_REVERSE(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
 			{
-				if(pChunk->dwStart <= dwNoShiftEnd)break;
+				if(pChunk->dwStart < dwShiftStart)break;
 				pChunk->dwStart += dwShiftSize;
 				pChunk->dwEnd   += dwShiftSize;
 			}
@@ -1680,13 +1755,14 @@ protected:
 			TAMAFILECHUNK *pChunk;
 			RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
 			{
-				if(pChunk->dwStart > dwNoShiftEnd)
+				if(pChunk->dwStart >= dwShiftStart)
 				{
 					pChunk->dwStart -= dwShiftSize;
 					pChunk->dwEnd   -= dwShiftSize;
 				}
 			}
 		}
+		return TRUE;
 	}
 	
 	inline TAMAFILECHUNK* __FileMap_LowFind(TAMAFILECHUNK* pFind)
@@ -1703,14 +1779,17 @@ protected:
 	{
 		return RB_NEXT(_TAMAFILECHUNK_HEAD, &m_filemapHead, pFind);
 	}
-
+	
+	//low-level internal function for _FileMap_Del()... (not include to shift chunks)
 	BOOL __FileMap_DeleteRange(DWORD dwStart, DWORD dwSize)
 	{
 		//DWORD dwStart = dwEnd - dwSize +1;
 		DWORD dwEnd = _GetEndOffset(dwStart, dwSize);
-		if(dwSize==0)return FALSE;
-		_FileMap_SplitPoint(dwStart);
-		_FileMap_SplitPoint(dwEnd+1);
+		if(dwSize==0 || dwEnd==0xFFffFFff || !_FileMap_SplitPoint(dwStart) || !_FileMap_SplitPoint(dwEnd+1))
+		{
+			ASSERT(FALSE);
+			return FALSE;
+		}
 
 		TAMAFILECHUNK findChunk;
 		findChunk.key = dwEnd;
@@ -1719,6 +1798,7 @@ protected:
 		if(pDeleteChunk==NULL)
 		{
 			//Merge (Restore split)
+			ASSERT(FALSE);
 			return FALSE;
 		}
 		pChunk = __FileMap_LowPrev(pDeleteChunk);
@@ -1760,8 +1840,6 @@ protected:
 		//DWORD dwStart = dwEnd - dwSize +1;
 		DWORD dwEnd = _GetEndOffset(dwStart, dwSize);
 		if(dwSize==0 || !pNewChunk)return NULL;
-		_FileMap_SplitPoint(dwStart);
-		_FileMap_SplitPoint(dwEnd+1);
 		__FileMap_DeleteRange(dwStart, dwSize);
 
 		pNewChunk->dwStart = dwStart;
@@ -1775,7 +1853,11 @@ protected:
 	BOOL _FileMap_OverWriteMem(DWORD dwStart, DWORD dwSize, TAMADataChunk *dataChunk, DWORD dwSkipOffset)
 	{
 		TAMAFILECHUNK *chunk = _FileMap_BasicOverWriteMem(dwStart, dwSize);
-		if(chunk==NULL)return FALSE;
+		if(chunk==NULL)
+		{
+			ASSERT(FALSE);
+			return FALSE;
+		}
 		chunk->dwSkipOffset = dwSkipOffset;
 		dataChunk->nRefCount++;
 		chunk->dataChunk = dataChunk;
