@@ -209,8 +209,20 @@ public:
 		{
 			TAMAUndoRedo *undo = m_undo[i];
 			ASSERT(undo);
-			if(undo->dataNext)undo->dataNext->savingType = DC_UNKNOWN;
-			if(undo->dataPrev)undo->dataPrev->savingType = DC_UNKNOWN;
+			if(undo->dataNext)
+			{
+				DWORD nDataNext = undo->nDataNext;
+				TAMADataChunk **dataNext = undo->dataNext;
+				for(DWORD i=0; i<nDataNext; i++)
+					dataNext[i]->savingType = DC_UNKNOWN;
+			}
+			if(undo->dataPrev)
+			{
+				DWORD nDataPrev = undo->nDataPrev;
+				TAMADataChunk **dataPrev = undo->dataPrev;
+				for(DWORD i=0; i<nDataPrev; i++)
+					dataPrev[i]->savingType = DC_UNKNOWN;
+			}
 		}
 	}
 	BOOL _SetFileSize(DWORD newSize)
@@ -240,7 +252,7 @@ public:
 							_FileMap_SplitPoint(dwShiftStart);
 							fileChunk = RB_MAX(_TAMAFILECHUNK_HEAD, &m_filemapHead);
 						}
-						if(!_WriteMemChunk(fileChunk))return FALSE;
+						if(!_TAMAFILECHUNK_WriteMemChunk(fileChunk))return FALSE;
 					}
 				default:
 					ASSERT(FALSE);
@@ -275,7 +287,7 @@ public:
 			if(!pChunk->bSaved && pChunk->dataChunk->dataType == CHUNK_FILE)
 			{
 				pLastFileChunk = pChunk;
-				if(_isRightShiftFileChunk(pChunk))
+				if(_TAMAFILECHUNK_isRightShift(pChunk))
 				{
 					if(!_ShiftAllFileChunksAfterArg(pChunk))
 					{
@@ -303,7 +315,7 @@ public:
 			if(!pChunk->bSaved)
 			{
 				ASSERT(pChunk->dataChunk->dataType == CHUNK_MEM);
-				if(_WriteMemChunk(pChunk)==FALSE)return FALSE;
+				if(_TAMAFILECHUNK_WriteMemChunk(pChunk)==FALSE)return FALSE;
 				pChunk->bSaved = TRUE;
 			}
 		}
@@ -328,7 +340,7 @@ public:
 		RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
 		{
 			ASSERT(pChunk);
-			TAMADATACHUNK *dataChunk = pChunk->dataChunk;
+			TAMADataChunk *dataChunk = pChunk->dataChunk;
 			ASSERT(dataChunk);
 			if(dataChunk->savingType == DC_UNKNOWN)
 			{
@@ -359,11 +371,11 @@ public:
 	{
 		for(DWORD i=0;i<*pNumDataChunks;i++)
 		{
-			TAMADATACHUNK *dataChunk = (*pDataChunks)[i];
+			TAMADataChunk *dataChunk = (*pDataChunks)[i];
 			if(dataChunk && dataChunk->savingType == DC_UNKNOWN && dataChunk->dataType==CHUNK_FILE)
 			{
 				ASSERT(dataChunk->dwSize > 0);
-				DWORD dwOldFileAddrS = dataChunk->dataFileAddr + dataChunk->dwSkipOffset
+				DWORD dwOldFileAddrS = dataChunk->dataFileAddr + dataChunk->dwSkipOffset;
 				TAMAOLDFILECHUNK *pOldFileChunkS = _OldFileMap_LookUp(pOldFilemapHead, dwOldFileAddrS);
 				DWORD nOldFileChunkS = _TAMAOLDFILECHUNK_GetSize(pOldFileChunkS);
 				ASSERT(nOldFileChunkS > 0);
@@ -416,12 +428,14 @@ public:
 		switch(pOldFileChunk->type)
 		{
 		case OF_FD:
-			TAMADataBuf *pTAMADataBuf = _TAMADataBuf_Create(pMem, 0);
+		{
+			TAMADataBuf *pTAMADataBuf = _TAMADataBuf_CreateAssign(pMem, 0);
 			ASSERT(pTAMADataBuf);
-			dataChunk = _TAMADataChunk_CreateMemChunk(nChunkSize, 0, pTAMADataBuf);
+			dataChunk = _TAMADataChunk_CreateMemAssignTAMADataBuf(nChunkSize, 0, pTAMADataBuf);
 			ASSERT(dataChunk);
 			dataChunk->savingType = DC_DONE;
 			break;
+		}
 		case OF_FF:
 			dataChunk = _TAMADataChunk_CreateFileChunk(nChunkSize, pOldFileChunk->dwNewFileAddr);
 			ASSERT(dataChunk);
@@ -467,10 +481,10 @@ public:
 	}
 	BOOL _TAMADATACHUNKS_Insert(TAMADataChunk ***pDataChunks, DWORD *pNumDataChunks, DWORD nInsertIndex, TAMADataChunk *pInsertDataChunk)
 	{
-		ASSERT(*pNumDataChunk!=0xffFFffFF);
+		ASSERT(*pNumDataChunks!=0xffFFffFF);
 		ASSERT(nInsertIndex<=*pNumDataChunks);
-		*pNumDataChunk++;
-		*pDataChunks = realloc(*pDataChunks, *pNumDataChunk);
+		*pNumDataChunks++;
+		*pDataChunks = (TAMADataChunk **)realloc(*pDataChunks, *pNumDataChunks);
 		if(*pDataChunks==NULL)
 		{
 			*pNumDataChunks=0;
@@ -485,7 +499,7 @@ public:
 	{
 		_ClearSavedFlags();
 		struct _TAMAOLDFILECHUNK_HEAD oldFilemapHead;
-		_OldFileMap_Make(&oldFilemapHead, m_file);
+		_OldFileMap_Make(&oldFilemapHead, &m_file);
 		_UpdateAllDataChunkSavingType(&oldFilemapHead);
 		_OldFileMap_FreeAll(&oldFilemapHead, FALSE);
 		if(!_ExtendFileSize())
@@ -531,7 +545,7 @@ public:
 		BOOL nRet;
 		DWORD dwRefSrcFileAddr = _GetRealSrcFileStartAddr(fileChunk);
 		DWORD dwDstFileAddr = fileChunk->dwStart;
-		if(_isRightShiftFileChunk(fileChunk))
+		if(_TAMAFILECHUNK_isRightShift(fileChunk))
 		{
 			nRet = _ShiftFileDataR(dwRefSrcFileAddr, dwDstFileAddr - dwRefSrcFileAddr);
 		} else {
@@ -739,7 +753,7 @@ public:
 			ASSERT(FALSE);
 			return FALSE; //memory full
 		}
-		TAMADataChunk **ppNextDataChunks = _TAMADATACHUNKS_CreateWith1MemDataChunk(dwSize, 0, srcDataDetached);
+		TAMADataChunk **ppNextDataChunks = _TAMADATACHUNKS_CreateWith1MemDataChunk(dwSize, 0, (LPBYTE)srcDataDetached);
 		if(!ppNextDataChunks)
 		{
 			ASSERT(FALSE);
@@ -795,8 +809,8 @@ public:
 		ASSERT(FALSE);
 		if(pNewUndo)
 		{
-			if(pNewUndo->dataNext)_TAMADataChunks_Release(pNewUndo->dataNext);
-			if(pNewUndo->dataPrev)_TAMADataChunks_Release(pNewUndo->dataPrev);
+			if(pNewUndo->dataNext)_TAMADataChunks_Release(pNewUndo->dataNext, pNewUndo->nDataNext);
+			if(pNewUndo->dataPrev)_TAMADataChunks_Release(pNewUndo->dataPrev, pNewUndo->nDataPrev);
 			free(pNewUndo);
 		}
 		return NULL;
@@ -805,7 +819,7 @@ public:
 	
 	TAMADataChunk** _TAMADATACHUNKS_CreateWith1MemDataChunk(DWORD dwSize, DWORD dwSkipOffset, LPBYTE srcDataDetached)
 	{
-		TAMADataChunk *pDataChunk = _TAMADataChunk_CreateMemAssignRawPointer(dwInsSize, 0, srcDataDetached);
+		TAMADataChunk *pDataChunk = _TAMADataChunk_CreateMemAssignRawPointer(dwSize, 0, srcDataDetached);
 		if(!pDataChunk)
 		{
 			return NULL;
@@ -823,7 +837,7 @@ public:
 // Insert/Delete
 	BOOL Insert(DWORD dwInsStart, LPBYTE srcDataDetached/*Insert()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwInsSize)
 	{
-		TAMAUndoRedo *pNewUndo = _CreateTAMAUndoRedo(UNDO_INS, dwInsStart, NULL, 0, NULL, 0);
+		TAMAUndoRedo *pNewUndo = _TAMAUndoRedo_Create(UNDO_INS, dwInsStart, NULL, 0, NULL, 0);
 		if(!pNewUndo)
 		{
 			ASSERT(FALSE);
@@ -961,7 +975,7 @@ public:
 		}
 		newUndo->dwStart = srcUndo->dwStart;
 		newUndo->bHidden = srcUndo->bHidden;
-		newUndo->dataNext = _TAMADATACHUNKS_Copy(srcUndo->dataPrev);
+		newUndo->dataNext = _TAMADATACHUNKS_Copy(srcUndo->dataPrev, srcUndo->nDataPrev);
 		ASSERT(newUndo->dataNext);
 		if(!newUndo->dataNext)
 		{
@@ -969,11 +983,11 @@ public:
 			return NULL;
 		}
 		newUndo->nDataNext = srcUndo->nDataPrev;
-		newUndo->dataPrev = _TAMADATACHUNKS_Copy(srcUndo->dataNext);
+		newUndo->dataPrev = _TAMADATACHUNKS_Copy(srcUndo->dataNext, srcUndo->nDataNext);
 		ASSERT(newUndo->dataPrev);
 		if(!newUndo->dataPrev)
 		{
-			_TAMADATACHUNKS_Release(newUndo->dataNext);
+			_TAMADataChunks_Release(newUndo->dataNext, newUndo->nDataNext);
 			free(newUndo);
 			return NULL;
 		}
@@ -988,7 +1002,7 @@ public:
 		for(DWORD i=0; i<nData; i++)
 		{
 			ASSERT(dataChunks[i]);
-			pDataChunk[i] = _TAMADataChunk_Copy(dataChunks[i]);
+			pDataChunks[i] = _TAMADataChunk_Copy(dataChunks[i]);
 		}
 		return pDataChunks;
 	}
@@ -1392,7 +1406,7 @@ protected:
 	}
 	BOOL _TAMADataChunks_Release(TAMADataChunk **chunks, DWORD dwChunks, BOOL bFreeRawPointer = TRUE)
 	{
-		for(int i=0; i<dwChunks; i++)
+		for(DWORD i=0; i<dwChunks; i++)
 		{
 			ASSERT(chunks[i]);
 			if(chunks[i])_TAMADataChunk_Release(chunks[i], bFreeRawPointer);
@@ -1466,7 +1480,7 @@ protected:
 			pNewFirstChunk->dwStart = pSplitChunk->dwStart;
 			pNewFirstChunk->dwEnd   = dwSplitPoint-1;
 			pNewFirstChunk->bSaved = pSplitChunk->bSaved;
-			ChunkType type = pSplitChunk->dataChunk->dataType;
+			DataChunkType type = pSplitChunk->dataChunk->dataType;
 			//pNewFirstChunk->dataChunk->dataType = type;
 			switch(type)
 			{
@@ -1526,7 +1540,7 @@ protected:
 			ASSERT(FALSE);
 			return FALSE;
 		}
-		TAMADataChunk *dataChunk = _CreateMemDataChunk(dwInsSize, srcDataDetached);
+		TAMADataChunk *dataChunk = _TAMADataChunk_CreateMemAssignRawPointer(dwInsSize, 0, srcDataDetached);
 		if(!dataChunk)
 		{
 			ASSERT(FALSE);
@@ -1547,15 +1561,15 @@ protected:
 			ASSERT(FALSE);
 			return NULL;
 		}
-		pFileChunk.dwStart = dwStart;
-		pFileChunk.dataChunk = _TAMADataChunk_Copy(pDataChunk);
-		if(!pFileChunk.dataChunk)
+		pFileChunk->dwStart = dwStart;
+		pFileChunk->dataChunk = _TAMADataChunk_Copy(pDataChunk);
+		if(!pFileChunk->dataChunk)
 		{
 			ASSERT(FALSE);
 			free(pFileChunk);
 			return NULL;
 		}
-		pFileChunk.dwEnd = dwStart + pDataChunk->dwSize;
+		pFileChunk->dwEnd = dwStart + pDataChunk->dwSize;
 		return pFileChunk;
 	}
 	
@@ -1581,7 +1595,7 @@ protected:
 		DWORD dwFCStart = dwInsStart;
 		for(DWORD i=0; i<nDataChunks; i++)
 		{
-			TAMADataChunk *pDC = pDataChunks[i];
+			TAMADataChunk *pDC = ppDataChunks[i];
 			ASSERT(pDC);
 			TAMAFILECHUNK *pFileChunk = _TAMADataChunk_CreateFileChunk(pDC, dwFCStart);
 			if(!pFileChunk)
@@ -1676,7 +1690,7 @@ protected:
 		return retDataChunk;
 	}
 	
-	TAMADataChunk* _TAMADataChunk_CreateMemAssignTAMADataBuf(DWORD dwSize, DWORD dwSkipOffset, TAMADataBuf pTAMADataBuf)
+	TAMADataChunk* _TAMADataChunk_CreateMemAssignTAMADataBuf(DWORD dwSize, DWORD dwSkipOffset, TAMADataBuf *pTAMADataBuf)
 	{
 		TAMADataChunk *dataChunk = (TAMADataChunk *)malloc(sizeof(TAMADataChunk));
 		if(dataChunk==NULL)
@@ -1824,7 +1838,7 @@ protected:
 				//nothing to do
 				break;
 			case CHUNK_MEM:
-				_ReleaseTAMADataChunk(pDeleteChunk->dataChunk);
+				_TAMADataChunk_Release(pDeleteChunk->dataChunk);
 				break;
 			default:
 				ASSERT(FALSE);
@@ -1908,7 +1922,7 @@ protected:
 			return FALSE;
 		}
 		pDataChunks[0] = pDC;
-		ASSERT(pFCStart >= dwStart);
+		ASSERT(pFCStart->dwStart >= dwStart);
 		DWORD dwSkipS = pFCStart->dwStart - dwStart;
 		pDC->dwSkipOffset += dwSkipS;
 		pDC->dwSize -= dwSkipS;
@@ -1959,7 +1973,7 @@ protected:
 		TAMAFILECHUNK *pChunk;
 		RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
 		{
-			TAMADATACHUNK *dataChunk = pChunk->dataChunk;
+			TAMADataChunk *dataChunk = pChunk->dataChunk;
 			ASSERT(dataChunk);
 			switch(dataChunk->dataType)
 			{
@@ -1987,11 +2001,11 @@ protected:
 		{
 			TAMAUndoRedo *undo = m_undo[i];
 			ASSERT(undo);
-			TAMADATACHUNK **pDataChunks = undo->dataNext;
+			TAMADataChunk **pDataChunks = undo->dataNext;
 			DWORD nDataChunks = undo->nDataNext;
-			for(size_t j=0; j<nDataChunk; j++)
+			for(size_t j=0; j<nDataChunks; j++)
 			{
-				TAMADATACHUNK *dataChunk = pDataChunks[j];
+				TAMADataChunk *dataChunk = pDataChunks[j];
 				if(dataChunk && dataChunk->dataType==CHUNK_FILE)
 				{
 					ASSERT(dataChunk->dwSize>0);
@@ -2006,9 +2020,9 @@ protected:
 			}
 			pDataChunks = undo->dataPrev;
 			nDataChunks = undo->nDataPrev;
-			for(size_t j=0; j<nDataChunk; j++)
+			for(size_t j=0; j<nDataChunks; j++)
 			{
-				TAMADATACHUNK *dataChunk = pDataChunks[j];
+				TAMADataChunk *dataChunk = pDataChunks[j];
 				if(dataChunk && dataChunk->dataType==CHUNK_FILE)
 				{
 					ASSERT(dataChunk->dwSize>0);
@@ -2047,13 +2061,13 @@ protected:
 		TAMAOLDFILECHUNK *pChunk, *pChunkPrev = NULL;
 		RB_FOREACH(pChunk, _TAMAOLDFILECHUNK_HEAD, pOldFilemapHead)
 		{
-			if(pChunkPrev)_OldFileMap_Free(pChunkPrev);
+			if(pChunkPrev)_OldFileMap_Free(pOldFilemapHead, pChunkPrev);
 			pChunkPrev = pChunk;
 		}
-		if(pChunkPrev)_OldFileMap_Free(pChunkPrev);
+		if(pChunkPrev)_OldFileMap_Free(pOldFilemapHead, pChunkPrev);
 	}
 	
-	void _OldFileMap_Free(TAMAOLDFILECHUNK *pChunk, BOOL bFreeBuffer = TRUE)
+	void _OldFileMap_Free(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, TAMAOLDFILECHUNK *pChunk, BOOL bFreeBuffer = TRUE)
 	{
 		if(bFreeBuffer && pChunk->type==OF_FD && pChunk->pMem)free(pChunk->pMem);
 		RB_REMOVE(_TAMAOLDFILECHUNK_HEAD, pOldFilemapHead, pChunk);
@@ -2090,7 +2104,7 @@ protected:
 		return TRUE;
 	}
 	
-	void _OldFileMap_MeltFF(TAMAOLDFILECHUNK *pChunk)
+	void _OldFileMap_MeltFF(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, TAMAOLDFILECHUNK *pChunk)
 	{
 		ASSERT(pChunk->type==OF_FF);
 		TAMAOLDFILECHUNK *pChunk2 = RB_NEXT(_TAMAOLDFILECHUNK_HEAD, pOldFilemapHead, pChunk);
@@ -2121,7 +2135,7 @@ protected:
 		if(pOldFileChunkS->type == OF_FF && pOldFileChunkS->dwEnd >= dwEnd && dwNewFileAddr - pOldFileChunkS->dwNewFileAddr == dwStart - pOldFileChunkS->dwStart)return;
 		if(pOldFileChunkS->dwStart < dwStart && (pOldFileChunkS->type != OF_FF || dwNewFileAddr - pOldFileChunkS->dwNewFileAddr != dwStart - pOldFileChunkS->dwStart))
 		{
-			_OldFileMap_SplitPoint(dwStart);
+			_OldFileMap_SplitPoint(pOldFilemapHead, dwStart);
 			pOldFileChunkS = _OldFileMap_LookUp(pOldFilemapHead, dwStart);
 		}
 		
@@ -2129,7 +2143,7 @@ protected:
 		ASSERT(pOldFileChunkE);
 		if(pOldFileChunkE->dwEnd > dwEnd && (pOldFileChunkE->type != OF_FF || dwNewFileAddr - pOldFileChunkE->dwNewFileAddr != dwStart - pOldFileChunkE->dwStart))
 		{
-			_OldFileMap_SplitPoint(dwEnd+1);
+			_OldFileMap_SplitPoint(pOldFilemapHead, dwEnd+1);
 			pOldFileChunkE = _OldFileMap_LookUp(pOldFilemapHead, dwEnd);
 		}
 		
@@ -2142,14 +2156,14 @@ protected:
 				pChunk->dwNewFileAddr = dwNewFileAddr - (dwStart - pChunk->dwStart);
 				ASSERT(pChunk->dwNewFileAddr < dwNewFileAddr);
 			}
-			OldFileMap_MeltFF(pChunk);
+			_OldFileMap_MeltFF(pOldFilemapHead, pChunk);
 			if(pChunk->dwEnd >= dwEnd)break;
 			pChunk = RB_NEXT(_TAMAOLDFILECHUNK_HEAD, pOldFilemapHead, pChunk);
 			ASSERT(pChunk);
 		}
 	}
 	
-	void _OldFileMap_MeltFD(TAMAOLDFILECHUNK *pChunk)
+	void _OldFileMap_MeltFD(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, TAMAOLDFILECHUNK *pChunk)
 	{
 		ASSERT(pChunk->type==OF_FD);
 		TAMAOLDFILECHUNK *pChunk2 = RB_NEXT(_TAMAOLDFILECHUNK_HEAD, pOldFilemapHead, pChunk);
@@ -2178,7 +2192,7 @@ protected:
 		if(pOldFileChunkS->type == OF_FD && pOldFileChunkS->dwEnd >= dwEnd)return;
 		if(pOldFileChunkS->type == OF_NOREF && pOldFileChunkS->dwStart < dwStart)
 		{
-			_OldFileMap_SplitPoint(dwStart);
+			_OldFileMap_SplitPoint(pOldFilemapHead, dwStart);
 			pOldFileChunkS = _OldFileMap_LookUp(pOldFilemapHead, dwStart);
 		}
 		
@@ -2186,7 +2200,7 @@ protected:
 		ASSERT(pOldFileChunkE);
 		if(pOldFileChunkE->type == OF_NOREF && pOldFileChunkE->dwEnd > dwEnd)
 		{
-			_OldFileMap_SplitPoint(dwEnd+1);
+			_OldFileMap_SplitPoint(pOldFilemapHead, dwEnd+1);
 			pOldFileChunkE = _OldFileMap_LookUp(pOldFilemapHead, dwEnd);
 		}
 		
@@ -2197,7 +2211,7 @@ protected:
 			{
 				pChunk->type = OF_FD;
 				pChunk->pMem = NULL;
-				_OldFileMap_MeltFD(pChunk);
+				_OldFileMap_MeltFD(pOldFilemapHead, pChunk);
 			}
 			if(pChunk->dwEnd >= dwEnd)break;
 			pChunk = RB_NEXT(_TAMAOLDFILECHUNK_HEAD, pOldFilemapHead, pChunk);
