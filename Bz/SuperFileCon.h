@@ -198,7 +198,7 @@ public:
 				m_bReadOnly = FALSE;//options.bReadOnlyOpen;
 				_FileMap_DestroyAll();
 				_UndoRedo_DestroyAll();
-				BOOL bRetInsertMem = _FileMap_InsertMem(0, pData, m_dwTotal);
+				BOOL bRetInsertMem = _FileMap_InsertMemAssign(0, pData, m_dwTotal);
 				ATLASSERT(bRetInsertMem);
 			}
 		}
@@ -696,8 +696,8 @@ public:
 
 	DWORD _TAMAFILECHUNK_GetRemain(TAMAFILECHUNK *pFileChunk, DWORD dwStartOffset)
 	{
-		if(dwStartOffset < pFileChunk->dwStart || pFileChunk->dwEnd < dwStartOffset)return 0;
-		return pFileChunk->dwEnd - dwStartOffset + 1;
+		if(pFileChunk->dwStart <= dwStartOffset && dwStartOffset <= pFileChunk->dwEnd) return pFileChunk->dwEnd - dwStartOffset + 1;
+		return 0; //Error
 	}
 
 	DWORD _TAMAFILECHUNK_Read(LPBYTE dst, TAMAFILECHUNK *pSrcFileChunk, DWORD dwStartOffset, DWORD dwMaxRead)
@@ -733,7 +733,7 @@ public:
 			{
 				void *pSrcStart = _TAMAFILECHUNK_GetRealStartPointer(pSrcFileChunk) + dwShift;
 				memcpy(dst, pSrcStart, dwRemain);
-				return dwReaded;
+				return dwRemain;
 			}
 		}
 		return 0;
@@ -748,14 +748,22 @@ public:
 
 		LPBYTE lpDst1 = (LPBYTE)dst1;
 		DWORD dwRemain = dwSize;
+    DWORD dwReadedAll = 0;
 
 		while(dwRemain > 0 && pReadChunk)
 		{
-			DWORD dwReaded = _TAMAFILECHUNK_Read((LPBYTE)dst1, pReadChunk, dwStart, dwRemain);
+      if(!pReadChunk)
+      {
+        ATLASSERT(FALSE); //Corrupt filemap
+        return FALSE;
+      }
+			DWORD dwReaded = _TAMAFILECHUNK_Read(lpDst1, pReadChunk, dwStart+dwReadedAll, dwRemain);
 			ATLASSERT(dwRemain >= dwReaded);
 			ATLASSERT(dwReaded);
 			if(dwReaded==0)return FALSE;
 			dwRemain -= dwReaded;
+      dwReadedAll += dwReaded;
+      lpDst1 += dwReaded;
 			pReadChunk = RB_NEXT(_TAMAFILECHUNK_HEAD, &m_filemapHead, pReadChunk);
 		}
 
@@ -1184,6 +1192,7 @@ BOOL DeleteData(DWORD dwDelStart, DWORD dwDelSize)
 //			if(IsOutOfMapTama(dwStartOffset) || IsOutOfMapTama(dwLastOffset))return _QueryMapViewTama2(dwStartOffset, dwIdealMapSize);
 //		}
 //		return _GetFileMappingPointerFromFileOffset(dwStartOffset);
+    return NULL;
 	}
 	DWORD GetMapRemain(DWORD dwStart)
 	{
@@ -1568,7 +1577,7 @@ protected:
 		__FileMap_LowInsert(pNewChunk);
 		return pNewChunk;
 	}
-	BOOL _FileMap_InsertMem(DWORD dwInsStart, LPBYTE srcDataDetached, DWORD dwInsSize)
+	BOOL _FileMap_InsertMemAssign(DWORD dwInsStart, LPBYTE srcDataDetached, DWORD dwInsSize)
 	{
 		//DWORD dwInsEnd = _GetEndOffset(dwInsStart, dwInsSize);
 		TAMAFILECHUNK *insChunk = _FileMap_BasicInsert(dwInsStart, dwInsSize);
@@ -1585,6 +1594,35 @@ protected:
 		}
 		insChunk->dataChunk = dataChunk;
 		//insChunk->dwSkipOffset = 0;
+
+		//OptimizeFileMap(insChunk);
+		return TRUE;
+	}
+	BOOL _FileMap_InsertMemCopy(DWORD dwInsStart, LPBYTE pSrcData, DWORD dwInsSize)
+	{
+		LPBYTE pMem = (LPBYTE)malloc(dwInsSize);
+    if(!pMem)
+    {
+      ATLASSERT(FALSE);
+      return FALSE;
+    }
+    memcpy(pMem, pSrcData, dwInsSize);
+		TAMADataChunk *dataChunk = _TAMADataChunk_CreateMemAssignRawPointer(dwInsSize, 0, pMem);
+		if(!dataChunk)
+		{
+			ATLASSERT(FALSE);
+      free(pMem);
+			return FALSE;
+		}
+		TAMAFILECHUNK *insChunk = _FileMap_BasicInsert(dwInsStart, dwInsSize);
+		if(!insChunk)
+		{
+			ATLASSERT(FALSE);
+      free(pMem);
+      _TAMADataChunk_Release(dataChunk);
+			return FALSE;
+		}
+		insChunk->dataChunk = dataChunk;
 
 		//OptimizeFileMap(insChunk);
 		return TRUE;
