@@ -123,87 +123,29 @@ public:
 
 // Open/Overwrite/Save to another file
 	BOOL Open(LPCTSTR lpszPathName)
-	{
-#ifdef DEBUG
-		if (m_bModified) ATLTRACE("Warning: Open replaces an unsaved document.\n");
-#endif
-		m_file.Close();
-		if (FAILED(m_file.Create(lpszPathName, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING)))
-		{
-			LastErrorMessageBox();
-			return FALSE;
-		}
-		_DeleteContents();
-		m_bModified = true;
-
-		// ------ File Mapping ----->
-		DWORD dwSize = _GetFileLengthLimit4G(TRUE);
-		if(dwSize >= MAX_ONMEM) {
-			m_bReadOnly = /*options.bReadOnlyOpen ||*/ ::GetFileAttributes(lpszPathName) & FILE_ATTRIBUTE_READONLY;
-			if(!m_bReadOnly)
-			{
-				m_file.Close();
-				if((FAILED(m_file.Create(lpszPathName, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, OPEN_EXISTING))))  // ReOpen (+Write)
-				{
-					if (FAILED(m_file.Create(lpszPathName, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING))) //Retry open (Read-Only)
-					{
-						LastErrorMessageBox();
-						return FALSE; //Failed open
-					}
-					m_bReadOnly = true;
-				}
-			}
-//			m_pFileMapping = pFile;
-			m_hMapping = ::CreateFileMapping(m_file, NULL, m_bReadOnly ? PAGE_READONLY : PAGE_READWRITE
-				, 0, 0, /*options.bReadOnlyOpen ? 0 : dwSize + options.dwMaxOnMemory,*/ NULL);
-			if(!m_hMapping) {
-				LastErrorMessageBox();
-				m_file.Close();
-				return FALSE;
-			}
-		}
-		// <----- File Mapping ------
-
+  {
 		CWaitCursor wait;
-		if (_GetFileLengthLimit4G() != 0)
-		{
-			m_dwTotalSavedFile = m_dwTotal = _GetFileLengthLimit4G();
-			if(IsFileMapping())
-			{
-				if(!_MapView())
-				{
-					m_file.Close();
-					_DeleteContents();
-					return FALSE;
-				}
-				_FileMap_InsertFile(0, m_dwTotal, 0);
-			} else {
-				LPBYTE pData;
-				if(!(pData = (LPBYTE)malloc(m_dwTotal))) {
-					//AtlMessageBox(NULL, IDS_ERR_MALLOC);
-					m_file.Close();
-					_DeleteContents();
-					return FALSE;
-				}
-				DWORD len = m_file.Read(pData, m_dwTotal);
-				if(len < m_dwTotal) {
-					//AtlMessageBox(NULL, IDS_ERR_READFILE);
-					free(pData);	// ###1.61
-					//pData = NULL;
-					m_file.Close();
-					_DeleteContents();
-					return FALSE;
-				}
-				m_file.Close();
-				m_bReadOnly = FALSE;//options.bReadOnlyOpen;
-				_FileMap_DestroyAll();
-				_UndoRedo_DestroyAll();
-				BOOL bRetInsertMem = _FileMap_InsertMemAssign(0, pData, m_dwTotal);
-				ATLASSERT(bRetInsertMem);
-			}
-		}
-		m_bModified = FALSE;
+    BOOL bReadOnly = FALSE;
+    CAtlFile file;
+    if((FAILED(file.Create(lpszPathName, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, OPEN_EXISTING))))  // Open (+RW)
+    {
+      if (FAILED(file.Create(lpszPathName, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING))) //Retry open (Read-Only)
+      {
+        LastErrorMessageBox();
+        return FALSE; //Failed open
+      }
+      bReadOnly = TRUE;
+    }
+    DWORD dwFileSize = _GetFileLengthLimit4G(&file);
+		if (dwFileSize != 0)
+      _FileMap_InsertFile(0, m_dwTotal, 0);
+
+		_DeleteContents();
+    m_dwTotalSavedFile = m_dwTotal = dwFileSize;
+    m_bReadOnly = bReadOnly;
+    m_file = file;
 		m_filePath = lpszPathName;
+		m_bModified = FALSE;
 
 		return TRUE;
 	}
@@ -274,7 +216,7 @@ public:
 				{
 				case CHUNK_FILE:
 					{
-						if(!_DoShiftFileChunk(fileChunk))return FALSE;
+						if(!_TAMAFILECHUNK_ShiftFileChunk(fileChunk))return FALSE;
 					}
 				case CHUNK_MEM:
 					{
@@ -324,6 +266,7 @@ public:
 					if(!_ShiftAllFileChunksAfterArg(pChunk))
 					{
 						ATLASSERT(FALSE);
+            FatalError();
 						return FALSE;
 					}
 				}
@@ -334,6 +277,7 @@ public:
 			if(!_ShiftAllFileChunksAfterArg(pChunk))
 			{
 				ATLASSERT(FALSE);
+        FatalError();
 				return FALSE;
 			}
 		}
@@ -535,18 +479,10 @@ public:
 		_OldFileMap_Make(&oldFilemapHead, &m_file);
 		_UpdateAllDataChunkSavingType(&oldFilemapHead);
 		_OldFileMap_FreeAll(&oldFilemapHead, FALSE);
-		if(!_ExtendFileSize())
-		{
-			ATLASSERT(FALSE);
-			return FALSE;
-		}
-		if(!_ShiftAllFF())
-		{
-			ATLASSERT(FALSE);
-			return FALSE;
-		}
-		if(!_WriteAllDF())
-		{
+		if(!_ExtendFileSize()
+      || !_ShiftAllFF()
+      || !_WriteAllDF() )
+    {
 			ATLASSERT(FALSE);
 			return FALSE;
 		}
@@ -560,7 +496,7 @@ public:
 		while(fileChunk) {
 			if(!fileChunk->bSaved && fileChunk->dataChunk->dataType == CHUNK_FILE)
 			{
-				if(!_DoShiftFileChunk(fileChunk))
+				if(!_TAMAFILECHUNK_ShiftFileChunk(fileChunk))
 				{
 					ATLASSERT(FALSE);
 					return FALSE;
@@ -570,27 +506,25 @@ public:
 		}
 		return TRUE;
 	}
-	BOOL _DoShiftFileChunk(TAMAFILECHUNK *fileChunk)
+	BOOL _TAMAFILECHUNK_ShiftFileChunk(TAMAFILECHUNK *fileChunk)
 	{
 		ATLASSERT(fileChunk);
 		ATLASSERT(fileChunk->bSaved==FALSE);
 		ATLASSERT(fileChunk->dataChunk->dataType == CHUNK_FILE);
-		BOOL nRet;
-		DWORD dwRefSrcFileAddr = _TAMAFILECHUNK_GetRealStartAddr(fileChunk);
-		DWORD dwDstFileAddr = fileChunk->dwStart;
+		BOOL bRet;
 		if(_TAMAFILECHUNK_isRightShift(fileChunk))
 		{
-			nRet = _ShiftFileDataR(dwRefSrcFileAddr, dwDstFileAddr - dwRefSrcFileAddr);
+			bRet = _TAMAFILECHUNK_ShiftFileChunkR(fileChunk);
 		} else {
-			nRet = _ShiftFileDataL(dwDstFileAddr, dwRefSrcFileAddr - dwDstFileAddr);
+			bRet = _TAMAFILECHUNK_ShiftFileChunkL(fileChunk);
 		}
-		if(!nRet)
+		if(!bRet)
 		{
 			ATLASSERT(FALSE);
 			return FALSE;
 		}
 		fileChunk->bSaved = TRUE;
-		return nRet;
+		return bRet;
 	}
 
 	DWORD _TAMAFILECHUNK_GetRealStartAddr(TAMAFILECHUNK* fileChunk)
@@ -704,9 +638,8 @@ public:
 	{
 		DWORD dwCanRead = _TAMAFILECHUNK_GetRemain(pSrcFileChunk, dwStartOffset);
 		DWORD dwRemain = min(dwCanRead, dwMaxRead);
-		DWORD dwShift = pSrcFileChunk->dwStart - dwStartOffset;
-
-		DWORD dwReaded = 0;
+    ATLASSERT(dwStartOffset >= pSrcFileChunk->dwStart);
+		DWORD dwShift = dwStartOffset - pSrcFileChunk->dwStart;
 
 		TAMADataChunk *dataChunk = pSrcFileChunk->dataChunk;
 
@@ -715,19 +648,8 @@ public:
 		case CHUNK_FILE:
 			{
 				DWORD dwFileStart = _TAMAFILECHUNK_GetRealStartAddr(pSrcFileChunk) + dwShift;
-				LPBYTE lpStart;
-				do
-				{
-					lpStart = QueryMapViewTama2(dwFileStart, min(dwRemain, MAX_MAPSIZE));
-					DWORD dwMapSize = GetMapRemain(dwFileStart);
-					dwMapSize = min(dwMapSize, dwRemain);//if(dwMapSize > dwSize)dwMapSize = dwSize;
-					if(dwMapSize==0) return dwReaded;
-					memcpy(dst, lpStart, dwMapSize);
-					dwRemain -= dwMapSize;
-					dwReaded += dwMapSize;
-				} while(dwRemain > 0);
-
-				return dwReaded;
+        if(SUCCEEDED(m_file.Read(dst, dwRemain)))return dwRemain;
+        else return 0;
 			}
 		case CHUNK_MEM:
 			{
@@ -1071,37 +993,6 @@ public:
 		ATLASSERT(pDataBuf->nRefCount<0xFFffFFff);
 		pDataBuf->nRefCount++;
 	}
-	/*
-BOOL _InsertData(DWORD dwStart, DWORD dwSize, BOOL bIns)
-{
-	BOOL bGlow = false;
-	DWORD nGlow = dwSize - (m_dwTotal - dwStart);
-	if(nGlow <= dwSize //overflow check
-		&& nGlow > 0)
-		bGlow=true;
-	if(!m_pData) {
-		m_pData = (LPBYTE)MemAlloc(dwSize);
-		m_dwTotal = dwSize;
-	} else if(bIns || dwStart == m_dwTotal) {
-			m_pData = (LPBYTE)MemReAlloc(m_pData, m_dwTotal+dwSize);
-			m_dwTotal += dwSize;
-			_ShiftFileDataR(dwStart, dwSize);//memmove(m_pData+dwStart+dwSize, m_pData+dwStart, m_dwTotal - dwStart);
-	} else if(bGlow) {
-			m_pData = (LPBYTE)MemReAlloc(m_pData, m_dwTotal+nGlow);
-			m_dwTotal += nGlow;
-	}
-	ATLASSERT(m_pData != NULL);
-}
-
-BOOL DeleteData(DWORD dwDelStart, DWORD dwDelSize)
-{
-	if(dwDelStart == m_dwTotal) return;
-	ShiftFileDataL(dwDelStart, dwDelSize);//memmove(m_pData+dwPtr, m_pData+dwPtr+dwSize, m_dwTotal-dwPtr-dwSize);
-	m_dwTotal -= dwDelSize;
-	if(!IsFileMapping())
-		m_pData = (LPBYTE)MemReAlloc(m_pData, m_dwTotal);
-	TouchDoc();
-}*/
 
 // Undo/Redo
 	BOOL Undo()
@@ -1180,39 +1071,6 @@ BOOL DeleteData(DWORD dwDelStart, DWORD dwDelSize)
 		return TRUE;
 	}
 
-// File-mapping Operations
-	BOOL	IsFileMapping() { return m_hMapping != NULL; }
-	LPBYTE QueryMapViewTama2(DWORD dwStartOffset, DWORD dwIdealMapSize)
-	{
-//		ATLASSERT(dwIdealMapSize > 0);
-//		if(m_pMapStart)
-//		{
-//			DWORD dwLastOffset = dwStartOffset + dwIdealMapSize-1;
-//			if(dwLastOffset > m_dwTotal-1) dwLastOffset = m_dwTotal-1;
-//			if(IsOutOfMapTama(dwStartOffset) || IsOutOfMapTama(dwLastOffset))return _QueryMapViewTama2(dwStartOffset, dwIdealMapSize);
-//		}
-//		return _GetFileMappingPointerFromFileOffset(dwStartOffset);
-    return NULL;
-	}
-	DWORD GetMapRemain(DWORD dwStart)
-	{
-		if(m_dwTotal==0)return 0;
-		if(m_pMapStart)
-		{
-			DWORD dwMapSize = m_dwFileOffset + m_dwMapSize;
-			if(m_dwFileOffset <= dwStart && dwStart < dwMapSize)return dwMapSize - dwStart;
-		} else {
-			if(m_dwTotal-1 >= dwStart)return m_dwTotal - dwStart;
-		}
-		return 0;
-	}
-	BOOL IsOutOfMapTama(DWORD dwOffset)
-	{
-		if(m_pMapStart)
-		{
-			return (dwOffset < m_dwFileOffset || dwOffset >= m_dwFileOffset + m_dwMapSize);
-		} else return true;
-	}
 
 // 
 	DWORD GetDocSize()
@@ -1246,8 +1104,6 @@ protected:
 
 protected:
 
-//	_inline DWORD	_GetFileOffsetFromFileMappingPointer(LPBYTE pConv) { return pConv-m_pData; }
-//	_inline LPBYTE	_GetFileMappingPointerFromFileOffset(DWORD dwFileOffset) { return dwFileOffset+m_pData; }
 
 	void _DeleteContents() 
 	{
@@ -1265,136 +1121,146 @@ protected:
 //			m_dwBase = 0;
 //			UpdateAllViews(NULL);
 //		}
-		if(IsFileMapping()) {
-			if(m_pDupDoc)
-			{
-				m_pDupDoc->m_pDupDoc = NULL;
-				m_pDupDoc = NULL;
-				m_hMapping = NULL;
-				m_file.Detach();//m_pFileMapping = NULL;
-			} else {
-				ATLVERIFY(::CloseHandle(m_hMapping));
-				m_hMapping = NULL;
-				m_file.Close();
-			}
-		}
+//		if(IsFileMapping()) {
+//			if(m_pDupDoc)
+//			{
+//				m_pDupDoc->m_pDupDoc = NULL;
+//				m_pDupDoc = NULL;
+//				m_hMapping = NULL;
+//				m_file.Detach();//m_pFileMapping = NULL;
+//			} else {
+//				ATLVERIFY(::CloseHandle(m_hMapping));
+//				m_hMapping = NULL;
+//				m_file.Close();
+//			}
+//		}
 
 		m_bReadOnly = FALSE;
 	}
 
+  void* mallocMax(size_t *nIdealSize)
+  {
+    void *pAlloc = NULL;
+    for(size_t nTrySize = *nIdealSize; nTrySize > 2; nTrySize /= 2) {
+      pAlloc = malloc(nTrySize);
+      if(pAlloc)
+      {
+        *nIdealSize = nTrySize;
+        return pAlloc;
+      }
+    }
+    ATLASSERT(FALSE);
+    *nIdealSize = 0;
+    return NULL;
+  }
+  void* mallocMax(DWORD *dwIdealSize)
+  {
+    size_t nIdealSize = *dwIdealSize;
+    void *pAlloc = mallocMax(&nIdealSize);
+    *dwIdealSize = nIdealSize;
+    return pAlloc;
+  }
+
 #define SHIFTBUFSIZE 8*1024*1024
-	BOOL _ShiftFileDataR(DWORD dwInsStart, DWORD dwInsSize)
-	{
-		if(IsFileMapping())
-		{
-			DWORD dwRemain = m_dwTotal - dwInsSize - dwInsStart;
-			if(dwInsSize==0 || dwRemain==0)return TRUE;
-			DWORD dwCopySize = min(SHIFTBUFSIZE, dwRemain);
-			LPBYTE buf = (LPBYTE)malloc(dwCopySize);
-			DWORD dwCurrent = m_dwTotal - dwCopySize;
-			BOOL bRet = FALSE;
-			while(dwRemain!=0)
-			{
-				bRet = Read(buf, dwCurrent-dwInsSize, dwCopySize);
-				if(!bRet)break;
-				bRet = Write(dwCurrent, buf, dwCopySize);
-				if(!bRet)break;
-				dwRemain -= dwCopySize;
+	BOOL _TAMAFILECHUNK_ShiftFileChunkR(TAMAFILECHUNK *fileChunk)
+  {
+		ATLASSERT(fileChunk);
+		ATLASSERT(fileChunk->bSaved==FALSE);
+		ATLASSERT(fileChunk->dataChunk->dataType == CHUNK_FILE);
+
+		DWORD dwInsStart = _TAMAFILECHUNK_GetRealStartAddr(fileChunk);
+    ATLASSERT(fileChunk->dwStart >= dwInsStart);
+		DWORD dwInsSize = fileChunk->dwStart - dwInsStart;
+    ATLASSERT(fileChunk->dwEnd >= fileChunk->dwStart);
+    DWORD dwShiftSize = fileChunk->dwEnd - fileChunk->dwStart +1;
+
+    DWORD dwRemain = dwShiftSize;
+    if(dwInsSize==0 || dwRemain==0)return TRUE;
+    DWORD dwBufSize = SHIFTBUFSIZE;
+    DWORD dwCopySize = min(dwBufSize, dwRemain);
+    LPBYTE buf = (LPBYTE)mallocMax(&dwCopySize);
+    if(!buf)
+    {
+      ATLASSERT(FALSE);
+      return FALSE;
+    }
+    DWORD dwMoveStart = dwInsStart + dwShiftSize - dwCopySize;
+    BOOL bRet = FALSE;
+    while(dwRemain!=0)
+    {
+      if(FAILED(m_file.Seek(dwMoveStart, FILE_BEGIN)) || FAILED(m_file.Read(buf, dwCopySize)))
+      {
+        ATLASSERT(FALSE);
+        break;
+      }
+      if(FAILED(m_file.Seek(dwMoveStart+dwInsSize, FILE_BEGIN)) || FAILED(m_file.Write(buf, dwCopySize)))
+      {
+        ATLASSERT(FALSE);
+        break;
+      }
+      dwRemain -= dwCopySize;
 #ifdef DEBUG
-				if(dwRemain==0)ATLASSERT(dwCurrent-dwInsSize==dwInsStart);
+      if(dwRemain==0)ATLASSERT(dwMoveStart==dwInsStart);
 #endif
-				dwCurrent -= dwCopySize;
-				dwCopySize = min(SHIFTBUFSIZE, dwRemain);
-			}
-			free(buf);
-			return bRet;
-//		} else {
-//			memmove(m_pData+dwInsStart+dwInsSize, m_pData+dwInsStart, m_dwTotal-dwInsSize-dwInsStart);
-//			return TRUE;
-		}
+      dwMoveStart -= dwCopySize;
+      dwCopySize = min(dwCopySize, dwRemain);
+    }
+    free(buf);
+    return bRet;
 	}
-	BOOL _ShiftFileDataL(DWORD dwDelStart, DWORD dwDelSize)
+	BOOL _TAMAFILECHUNK_ShiftFileChunkL(TAMAFILECHUNK *fileChunk)
 	{
-		if(IsFileMapping())
-		{
-			DWORD dwRemain = m_dwTotal-dwDelStart-dwDelSize;
-			if(dwDelSize==0 || dwRemain==0)return TRUE;
-			DWORD dwCopySize = min(SHIFTBUFSIZE, dwRemain);
-			LPBYTE buf = (LPBYTE)malloc(dwCopySize);
-			DWORD dwCurrent = dwDelStart;
-			BOOL bRet = FALSE;
-			while(dwRemain!=0)
-			{
-				bRet = Read(buf, dwCurrent+dwDelSize, dwCopySize);
-				if(!bRet)break;
-				bRet = Write(dwCurrent, buf, dwCopySize);
-				if(!bRet)break;
-				dwRemain -= dwCopySize;
-				dwCurrent += dwCopySize;
-				dwCopySize = min(SHIFTBUFSIZE, dwRemain);
-			}
-			free(buf);
-			return bRet;
-//		} else {
-//			memmove(m_pData+dwDelStart, m_pData+dwDelStart+dwDelSize, m_dwTotal-dwDelStart-dwDelSize);
-//			return TRUE;
-		}
+		ATLASSERT(fileChunk);
+		ATLASSERT(fileChunk->bSaved==FALSE);
+		ATLASSERT(fileChunk->dataChunk->dataType == CHUNK_FILE);
+
+		DWORD dwDelStart = fileChunk->dwStart;
+    ATLASSERT(_TAMAFILECHUNK_GetRealStartAddr(fileChunk) >= dwDelStart);
+		DWORD dwDelSize = _TAMAFILECHUNK_GetRealStartAddr(fileChunk) - dwDelStart;
+    ATLASSERT(fileChunk->dwEnd >= fileChunk->dwStart);
+    DWORD dwShiftSize = fileChunk->dwEnd - fileChunk->dwStart +1;
+
+    DWORD dwRemain = dwShiftSize;
+    if(dwDelSize==0 || dwRemain==0)return TRUE;
+    DWORD dwBufSize = SHIFTBUFSIZE;
+    DWORD dwCopySize = min(dwBufSize, dwRemain);
+    LPBYTE buf = (LPBYTE)mallocMax(&dwCopySize);
+    if(!buf)
+    {
+      ATLASSERT(FALSE);
+      return FALSE;
+    }
+    DWORD dwMoveStart = dwDelStart;
+    BOOL bRet = FALSE;
+    while(dwRemain!=0)
+    {
+      if(FAILED(m_file.Seek(dwMoveStart, FILE_BEGIN)) || FAILED(m_file.Read(buf, dwCopySize)))
+      {
+        ATLASSERT(FALSE);
+        break;
+      }
+      if(FAILED(m_file.Seek(dwMoveStart-dwDelSize, FILE_BEGIN)) || FAILED(m_file.Write(buf, dwCopySize)))
+      {
+        ATLASSERT(FALSE);
+        break;
+      }
+      dwRemain -= dwCopySize;
+      dwMoveStart += dwCopySize;
+      dwCopySize = min(dwCopySize, dwRemain);
+    }
+    free(buf);
+    return bRet;
 	}
 
-	BOOL _MapView()
-	{
-//		m_dwMapSize = m_dwTotal;
-//		m_pData = (LPBYTE)::MapViewOfFile(m_hMapping, m_bReadOnly ? FILE_MAP_READ : FILE_MAP_WRITE, 0, 0, m_dwMapSize);
-//		if(!m_pData) {
-//			m_dwMapSize = MAX_MAPSIZE;
-//			m_pData = (LPBYTE)::MapViewOfFile(m_hMapping, m_bReadOnly ? FILE_MAP_READ : FILE_MAP_WRITE, 0, 0, m_dwMapSize);
-//			if(m_pData) {
-//				m_pMapStart = m_pData;
-//				m_dwFileOffset = 0;
-//			}
-//			else {
-//				LastErrorMessageBox();
-//				return FALSE;
-//			}
-//		}
-//		return TRUE;
-	}
 
-	void _AlignMapSize(DWORD dwStartOffset, DWORD dwIdealMapSize)
+	DWORD _GetFileLengthLimit4G(CAtlFile *file = NULL, BOOL bErrorMsg = FALSE)
 	{
-		m_dwFileOffset = dwStartOffset - (dwStartOffset % m_dwAllocationGranularity);
-		m_dwMapSize = min(max(MAX_MAPSIZE, dwIdealMapSize),  m_dwTotal - m_dwFileOffset);
-		if(m_dwMapSize == 0)
-		{
-			DWORD dwTmp1 = (m_dwTotal - m_dwAllocationGranularity);
-			m_dwFileOffset = dwTmp1 - (dwTmp1 % m_dwAllocationGranularity);
-			m_dwMapSize = m_dwTotal - m_dwFileOffset;
-		}//バグ：ファイルサイズが極端に小さい場合バグる
-	}
-	LPBYTE _QueryMapViewTama2 (DWORD dwStartOffset, DWORD dwIdealMapSize)
-	{
-//		if(dwStartOffset == m_dwTotal && dwStartOffset == m_dwFileOffset + m_dwMapSize) return _GetFileMappingPointerFromFileOffset(dwStartOffset);//バグ？そもそもここに来るのはおかしいのではないか？
-///		ATLVERIFY(::UnmapViewOfFile(m_pMapStart));//ここでマッピング空間への変更が実ファイルへ書き込まれる。後に保存せず閉じる場合はアンドゥで戻す。
-//
-//		_AlignMapSize(dwStartOffset, dwIdealMapSize);
-//
-///		m_pMapStart = (LPBYTE)::MapViewOfFile(m_hMapping, m_bReadOnly ? FILE_MAP_READ : FILE_MAP_WRITE, 0, m_dwFileOffset, m_dwMapSize);
-//		ATLTRACE("MapViewOfFile Doc=%X, %X, Offset:%X, Size:%X\n", this, m_pMapStart, m_dwFileOffset, m_dwMapSize);
-//		if(!m_pMapStart) {
-//			LastErrorMessageBox();
-//			FatalError();
-//			return NULL;
-//		}
-//		m_pData = m_pMapStart - m_dwFileOffset;
-//		return _GetFileMappingPointerFromFileOffset(dwStartOffset);
-	}
-
-	DWORD _GetFileLengthLimit4G(BOOL bErrorMsg = FALSE)
-	{
+    CAtlFile *_file = &m_file;
+    if(file)_file = file;
 		DWORD dwSize = 0;
 		ULARGE_INTEGER ulFileSize;
 		ulFileSize.QuadPart = 0;
-		if(SUCCEEDED(m_file.GetSize(ulFileSize.QuadPart)))
+		if(SUCCEEDED(_file->GetSize(ulFileSize.QuadPart)))
 		{
 			if(ulFileSize.QuadPart > MAX_FILELENGTH)
 			{
@@ -1580,20 +1446,20 @@ protected:
 	BOOL _FileMap_InsertMemAssign(DWORD dwInsStart, LPBYTE srcDataDetached, DWORD dwInsSize)
 	{
 		//DWORD dwInsEnd = _GetEndOffset(dwInsStart, dwInsSize);
-		TAMAFILECHUNK *insChunk = _FileMap_BasicInsert(dwInsStart, dwInsSize);
-		if(!insChunk)
-		{
-			ATLASSERT(FALSE);
-			return FALSE;
-		}
 		TAMADataChunk *dataChunk = _TAMADataChunk_CreateMemAssignRawPointer(dwInsSize, 0, srcDataDetached);
 		if(!dataChunk)
 		{
 			ATLASSERT(FALSE);
 			return FALSE;
 		}
+		TAMAFILECHUNK *insChunk = _FileMap_BasicInsert(dwInsStart, dwInsSize);
+		if(!insChunk)
+		{
+			ATLASSERT(FALSE);
+      _TAMADataChunk_Release(dataChunk);
+			return FALSE;
+		}
 		insChunk->dataChunk = dataChunk;
-		//insChunk->dwSkipOffset = 0;
 
 		//OptimizeFileMap(insChunk);
 		return TRUE;
@@ -1607,26 +1473,14 @@ protected:
       return FALSE;
     }
     memcpy(pMem, pSrcData, dwInsSize);
-		TAMADataChunk *dataChunk = _TAMADataChunk_CreateMemAssignRawPointer(dwInsSize, 0, pMem);
-		if(!dataChunk)
-		{
-			ATLASSERT(FALSE);
+    if(!_FileMap_InsertMemAssign(dwInsStart, pMem, dwInsSize))
+    {
+      ATLASSERT(FALSE);
       free(pMem);
-			return FALSE;
-		}
-		TAMAFILECHUNK *insChunk = _FileMap_BasicInsert(dwInsStart, dwInsSize);
-		if(!insChunk)
-		{
-			ATLASSERT(FALSE);
-      free(pMem);
-      _TAMADataChunk_Release(dataChunk);
-			return FALSE;
-		}
-		insChunk->dataChunk = dataChunk;
-
-		//OptimizeFileMap(insChunk);
-		return TRUE;
-	}
+      return FALSE;
+    }
+    return TRUE;
+  }
 	
 	TAMAFILECHUNK* _TAMADataChunk_CreateFileChunk(TAMADataChunk *pDataChunk, DWORD dwStart)
 	{

@@ -134,6 +134,12 @@ TEST(FileMap, InsertMem1)
     LPBYTE buf = (LPBYTE)malloc(920);
     sfile.Read(buf, 0, 920);
     ASSERT_TRUE(memcmp(buf, pMemAfter, 920)==0);
+    free(buf);
+
+    LPBYTE buf2 = (LPBYTE)malloc(920);
+    sfile.Read(buf2, 55, 30);
+    ASSERT_TRUE(memcmp(buf2, pMemAfter+55, 30)==0);
+    free(buf2);
   }
 }
 int main(int argc, char* argv[])
