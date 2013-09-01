@@ -111,6 +111,10 @@ public:
 	CSuperFileCon(void)
 	{
 		RB_INIT(&m_filemapHead);
+    m_dwTotal = 0;
+    m_dwTotalSavedFile = 0;
+    m_bModified = FALSE;
+    m_savedIndex = m_redoIndex = 0;
 	}
 	~CSuperFileCon(void)
 	{
@@ -137,21 +141,33 @@ public:
       bReadOnly = TRUE;
     }
     DWORD dwFileSize = _GetFileLengthLimit4G(&file);
-		if (dwFileSize != 0)
-      _FileMap_InsertFile(0, m_dwTotal, 0);
 
 		_DeleteContents();
+		if (dwFileSize != 0)
+    {
+      if(!_FileMap_InsertFile(0, dwFileSize, 0))
+      {
+        ATLASSERT(FALSE);
+        _DeleteContents();
+        return FALSE;
+      }
+    }
     m_dwTotalSavedFile = m_dwTotal = dwFileSize;
     m_bReadOnly = bReadOnly;
     m_file = file;
 		m_filePath = lpszPathName;
+    m_dwTotal = dwFileSize;
 		m_bModified = FALSE;
 
 		return TRUE;
 	}
 	void _FileMap_DestroyAll()
 	{
-		_FileMap_Del(0, m_dwTotal);
+    TAMAFILECHUNK *fileChunk, *nextFileChunk;
+    RB_FOREACH_SAFE(fileChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead, nextFileChunk)
+    {
+      _FileMap_Remove(fileChunk);
+    }
 		ATLASSERT(__FileMap_LowMin()==NULL);
 	}
 	void _UndoRedo_DestroyAll()
@@ -242,9 +258,8 @@ public:
 		ATLASSERT(memChunk);
 		ATLASSERT(memChunk->dataChunk->dataType == CHUNK_MEM);
 		ATLASSERT(memChunk->dataChunk->dataMem->pData);
-		m_file.Seek(memChunk->dwStart);
 		DWORD dwWriteSize = memChunk->dwEnd - memChunk->dwStart +1;
-		return SUCCEEDED(m_file.Write(_TAMAFILECHUNK_GetRealStartPointer(memChunk), dwWriteSize));
+		return SUCCEEDED(m_file.Seek(memChunk->dwStart)) && SUCCEEDED(m_file.Write(_TAMAFILECHUNK_GetRealStartPointer(memChunk), dwWriteSize));
 	}
 	BOOL _TAMAFILECHUNK_isRightShift(TAMAFILECHUNK *fileChunk)
 	{
@@ -648,8 +663,8 @@ public:
 		case CHUNK_FILE:
 			{
 				DWORD dwFileStart = _TAMAFILECHUNK_GetRealStartAddr(pSrcFileChunk) + dwShift;
-        if(SUCCEEDED(m_file.Read(dst, dwRemain)))return dwRemain;
-        else return 0;
+        if(FAILED(m_file.Seek(dwFileStart, FILE_BEGIN)) || FAILED(m_file.Read(dst, dwRemain)))return 0;
+        return dwRemain;
 			}
 		case CHUNK_MEM:
 			{
@@ -697,7 +712,20 @@ public:
 		if(bRet)memcpy(dst2, dst1, dwSize);
 		return bRet;
 	}
-	BOOL Write(DWORD dwStart, void *srcDataDetached/*Write()失敗した場合は呼び出し元で開放すること*/, DWORD dwSize/*, BOOL bNotCopy = FALSE*/)
+	BOOL Write(void *srcData, DWORD dwStart, DWORD dwSize)
+	{
+    void *pData = (void *)malloc(dwSize);
+    if(!pData)
+    {
+      ATLASSERT(FALSE);
+      return FALSE;
+    }
+    memcpy(pData, srcData, dwSize);
+    BOOL bRet = WriteAssign(pData, dwStart, dwSize);
+    if(!bRet)free(pData);
+    return bRet;
+  }
+	BOOL WriteAssign(void *srcDataDetached/*Write()失敗した場合は呼び出し元で開放すること*/, DWORD dwStart, DWORD dwSize)
 	{
 		DWORD dwNewTotal = dwStart + dwSize;
 		if(dwNewTotal < dwStart)
@@ -1083,16 +1111,9 @@ public:
 protected:
 	CAtlFile m_file;
 	CString m_filePath;
-//	LPBYTE	m_pData; //メモリ内のアドレス。ファイル内アドレスで0に当たるアドレスを示す。ただし部分的なファイルマッピングの場合がある。その場合m_pDataからマッピング領域が始まっているとは限らない、m_pDataは擬似的なアドレスになっている
-	DWORD	m_dwTotal;
+  DWORD	m_dwTotal;
 	DWORD	m_dwTotalSavedFile;
-	HANDLE	m_hMapping;
-	LPBYTE	m_pMapStart;	// ###1.61　マッピング領域先端（メモリ内のアドレス）
-	DWORD   m_dwFileOffset; //データファイルのマッピング開始アドレス（ファイル内のアドレス）
-	DWORD	m_dwMapSize; //データファイルのマッピングサイズ
-	DWORD	m_dwAllocationGranularity;
 	BOOL	m_bReadOnly;
-	DWORD	m_dwBase;		// ###1.63
 
 	BOOL	m_bModified;
 	CSuperFileCon* m_pDupDoc;
@@ -1107,35 +1128,15 @@ protected:
 
 	void _DeleteContents() 
 	{
-//		if(m_pData) {
-//			if(IsFileMapping()) {
-//				ATLVERIFY(::UnmapViewOfFile(m_pMapStart ? m_pMapStart : m_pData));
-//				m_pMapStart = NULL;
-//				m_dwFileOffset = 0;
-//				m_dwMapSize = 0;
-//			}
-			//else
-			//	free(m_pData);
-//			m_pData = NULL;
-//			m_dwTotal = 0;
-//			m_dwBase = 0;
 //			UpdateAllViews(NULL);
-//		}
-//		if(IsFileMapping()) {
-//			if(m_pDupDoc)
-//			{
-//				m_pDupDoc->m_pDupDoc = NULL;
-//				m_pDupDoc = NULL;
-//				m_hMapping = NULL;
-//				m_file.Detach();//m_pFileMapping = NULL;
-//			} else {
-//				ATLVERIFY(::CloseHandle(m_hMapping));
-//				m_hMapping = NULL;
-//				m_file.Close();
-//			}
-//		}
-
-		m_bReadOnly = FALSE;
+		m_file.Close();
+    _FileMap_DestroyAll();
+    _UndoRedo_DestroyAll();
+    m_filePath = _T("");
+    m_dwTotal = 0;
+    m_dwTotalSavedFile = 0;
+    m_bModified = FALSE;
+    m_savedIndex = m_redoIndex = 0;
 	}
 
   void* mallocMax(size_t *nIdealSize)
@@ -1309,6 +1310,7 @@ protected:
 			if(chunks[i])_TAMADataChunk_Release(chunks[i], bFreeRawPointer);
 		}
 		free(chunks);
+    return TRUE;
 	}
 	// TRUE  - nRefCount==0
 	// FALSE - nRefCount!=0
@@ -1684,7 +1686,7 @@ protected:
 	BOOL _FileMap_Del(DWORD dwDelStart, DWORD dwDelSize)
 	{
 		DWORD dwDelEnd = _GetEndOffset(dwDelStart, dwDelSize);
-		__FileMap_Del2(dwDelEnd, dwDelSize);
+		return __FileMap_Del2(dwDelEnd, dwDelSize);
 	}
 
 	BOOL _FileMap_Shift(DWORD dwShiftStart, DWORD dwShiftSize, BOOL bPlus = TRUE)
@@ -1736,6 +1738,11 @@ protected:
 	{
 		return RB_MIN(_TAMAFILECHUNK_HEAD, &m_filemapHead);
 	}
+
+#define RB_FOREACH_REVERSE_SAFE_NOXINIT(x, name, head, y)			\
+	for (;					\
+	    ((x) != NULL) && ((y) = name##_RB_PREV(x), 1);		\
+	     (x) = (y))
 	
 	//low-level internal function for _FileMap_Del()... (not include to shift chunks)
 	BOOL __FileMap_DeleteRange(DWORD dwStart, DWORD dwSize)
@@ -1750,22 +1757,20 @@ protected:
 
 		TAMAFILECHUNK findChunk;
 		findChunk.key = dwEnd;
-		TAMAFILECHUNK *pDeleteChunk, *pChunk;
-		pDeleteChunk = __FileMap_LowFind(&findChunk);
-		if(pDeleteChunk==NULL)
+		TAMAFILECHUNK *pPrevChunk;
+		TAMAFILECHUNK *pChunk = __FileMap_LowFind(&findChunk);
+		if(pChunk==NULL)
 		{
 			//Merge (Restore split)
 			ATLASSERT(FALSE);
 			return FALSE;
 		}
-		pChunk = __FileMap_LowPrev(pDeleteChunk);
-		while(pChunk && pChunk->dwEnd < dwStart)
-		{
-			pChunk = __FileMap_LowPrev(pDeleteChunk);
-			_FileMap_Remove(pDeleteChunk);
-			pDeleteChunk = pChunk;
-		}
-		if(pDeleteChunk)_FileMap_Remove(pDeleteChunk);
+    RB_FOREACH_REVERSE_SAFE_NOXINIT(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead, pPrevChunk)
+    {
+			_FileMap_Remove(pChunk);
+      if(pPrevChunk->dwEnd < dwStart)break;
+    }
+    return TRUE;
 	}
 	
 	TAMAFILECHUNK* __FileMap_LowRemove(TAMAFILECHUNK *pRemove)
@@ -1840,7 +1845,7 @@ protected:
 		)
 		{
 			ATLASSERT(FALSE);//fatal error
-			exit(-1);
+			FatalError();
 			return FALSE;
 		}
 		//OptimizeFileMap(sideChunk);
@@ -1891,8 +1896,8 @@ protected:
 			return FALSE;
 		}
 		pDataChunks[0] = pDC;
-		ATLASSERT(pFCStart->dwStart >= dwStart);
-		DWORD dwSkipS = pFCStart->dwStart - dwStart;
+		ATLASSERT(dwStart >= pFCStart->dwStart);
+		DWORD dwSkipS = dwStart - pFCStart->dwStart;
 		pDC->dwSkipOffset += dwSkipS;
 		pDC->dwSize -= dwSkipS;
 		

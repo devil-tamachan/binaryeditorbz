@@ -94,10 +94,46 @@ TEST(FileMap, InsertFile1)
   }
 }
 
-void fillRandMT(unsigned long *pMem, DWORD ulCount, unsigned long seed)
+void fillRandMT32(unsigned long *pMem, DWORD ulCount, unsigned long seed)
 {
   init_genrand(seed);
   for(DWORD i=0; i<ulCount; i++)pMem[i] = genrand_int32();
+}
+
+void fillRandMT(LPBYTE pMem, DWORD dwByte, unsigned long seed)
+{
+  fillRandMT32((unsigned long*)pMem, dwByte/4, seed);
+  if(dwByte % 4 != 0)
+  {
+    LPBYTE pCurrent = pMem + dwByte - (dwByte % 4);
+    unsigned long ul = genrand_int32();
+    LPBYTE pUl = (LPBYTE)&ul;
+    for(int i=0; i<dwByte%4; i++, pCurrent++)
+      *pCurrent = pUl[i];
+  }
+}
+
+bool CreateTestFile(LPCSTR filename, DWORD dwSize, BYTE **ppBuf = NULL)
+{
+  FILE *fp = fopen(filename, "wb");
+  if(!fp)return false;
+  BYTE *pBuf = (LPBYTE)malloc(dwSize);
+  if(!pBuf)
+  {
+    fclose(fp);
+    return false;
+  }
+  fillRandMT(pBuf, dwSize, time(NULL));
+  if(fwrite(pBuf, dwSize, 1, fp)!=1)
+  {
+    fclose(fp);
+    return false;
+  }
+  fflush(fp);
+  fclose(fp);
+  if(ppBuf)*ppBuf = pBuf;
+  else free(pBuf);
+  return true;
 }
 
 void memInsert(LPBYTE pMemDst, DWORD *dwMemDst, DWORD dwInsPos, LPBYTE pMemSrc, DWORD dwInsSize)
@@ -109,12 +145,11 @@ void memInsert(LPBYTE pMemDst, DWORD *dwMemDst, DWORD dwInsPos, LPBYTE pMemSrc, 
 
 
 TEST(FileMap, InsertMem1)
-{//_FileMap_InsertFile, _FileMap_LookUp, _FileMap_Shift, _FileMap_SplitPoint, _TAMAFILECHUNK_Copy
+{
 	CSuperFileCon sfile;
   ASSERT_EQ(0, sfile._FileMap_DEBUG_GetCount());
-  unsigned long *pMem = (unsigned long *)malloc(sizeof(unsigned long)*5000);//5000*8=40000bytes
-  fillRandMT(pMem, 5000, time(NULL));
-  LPBYTE pMemSrc = (LPBYTE)pMem;
+  LPBYTE pMemSrc = (LPBYTE)malloc(40000);//5000*8=40000bytes
+  fillRandMT(pMemSrc, 40000, time(NULL));
   LPBYTE pMemAfter = (LPBYTE)malloc(sizeof(unsigned long)*5000);//5000*8=40000bytes
 
   DWORD dwMemAfter = 0;
@@ -132,15 +167,40 @@ TEST(FileMap, InsertMem1)
     ASSERT_TRUE(sfile._FileMap_InsertMemCopy(200, pMemSrc+1800, 20));
     ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
     LPBYTE buf = (LPBYTE)malloc(920);
-    sfile.Read(buf, 0, 920);
+    ASSERT_TRUE(buf!=NULL);
+    ASSERT_TRUE(sfile.Read(buf, 0, 920)==TRUE);
     ASSERT_TRUE(memcmp(buf, pMemAfter, 920)==0);
     free(buf);
 
     LPBYTE buf2 = (LPBYTE)malloc(920);
-    sfile.Read(buf2, 55, 30);
+    ASSERT_TRUE(buf2!=NULL);
+    ASSERT_TRUE(sfile.Read(buf2, 55, 30)==TRUE);
     ASSERT_TRUE(memcmp(buf2, pMemAfter+55, 30)==0);
     free(buf2);
   }
+}
+TEST(FileMap, PublicMethod1)
+{
+  LPBYTE pBufOrig;
+  ASSERT_TRUE(CreateTestFile("test1.bin", 5000, &pBufOrig));
+  ASSERT_TRUE(CopyFileA("test1.bin", "testSFC.bin", FALSE)!=0);
+	CSuperFileCon sfile;
+  ASSERT_TRUE(sfile.Open(_T("testSFC.bin"))==TRUE);
+  LPBYTE pBufSFC = (LPBYTE)malloc(8000);
+  ASSERT_TRUE(pBufSFC!=NULL);
+  ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+  ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+
+  LPBYTE pBufTmp = (LPBYTE)malloc(8000);
+  ASSERT_TRUE(pBufTmp!=NULL);
+  fillRandMT(pBufTmp, 400, time(NULL));
+  ASSERT_TRUE(sfile.Write(pBufTmp, 678, 400)==TRUE);
+  ASSERT_EQ(3, sfile._FileMap_DEBUG_GetCount());
+  ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+  ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
+
+  free(pBufSFC);
+  free(pBufOrig);
 }
 int main(int argc, char* argv[])
 {
