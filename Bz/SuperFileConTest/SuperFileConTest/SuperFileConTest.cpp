@@ -94,13 +94,13 @@ TEST(FileMap, InsertFile1)
   }
 }
 
-void fillRandMT32(unsigned long *pMem, DWORD ulCount, unsigned long seed)
+void fillRandMT32(unsigned long *pMem, DWORD ulCount, unsigned long seed = 0)
 {
-  init_genrand(seed);
+  if(seed)init_genrand(seed);
   for(DWORD i=0; i<ulCount; i++)pMem[i] = genrand_int32();
 }
 
-void fillRandMT(LPBYTE pMem, DWORD dwByte, unsigned long seed)
+void fillRandMT(LPBYTE pMem, DWORD dwByte, unsigned long seed = 0)
 {
   fillRandMT32((unsigned long*)pMem, dwByte/4, seed);
   if(dwByte % 4 != 0)
@@ -198,7 +198,40 @@ TEST(FileMap, PublicMethod1)
   ASSERT_EQ(3, sfile._FileMap_DEBUG_GetCount());
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
   ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
+  memcpy(pBufOrig+678, pBufTmp, 400);
+  ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
 
+  fillRandMT(pBufTmp, 800);
+  ASSERT_TRUE(sfile.Write(pBufTmp, 1500, 800)==TRUE);
+  ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+  ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
+  memcpy(pBufOrig+1500, pBufTmp, 800);
+  ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+
+  fillRandMT(pBufTmp, 1000);
+  ASSERT_TRUE(sfile.Write(pBufTmp, 700, 1000)==TRUE);
+  ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+  ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
+  memcpy(pBufOrig+700, pBufTmp, 1000);
+  ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+
+  LPBYTE pBufS1 = (LPBYTE)malloc(5000);
+  ASSERT_TRUE(pBufS1!=NULL);
+  memcpy(pBufS1, pBufSFC, 5000);
+
+  fillRandMT(pBufTmp, 200);
+  ASSERT_TRUE(sfile.Write(pBufTmp, 680, 200)==TRUE);
+  ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+  ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
+  memcpy(pBufOrig+680, pBufTmp, 200);
+  ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+
+  ASSERT_TRUE(sfile.Undo()==TRUE);
+  ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+  ASSERT_TRUE(memcmp(pBufS1, pBufSFC, 5000)==0);
+
+
+  free(pBufTmp);
   free(pBufSFC);
   free(pBufOrig);
 }
