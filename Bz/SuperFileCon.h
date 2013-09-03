@@ -256,7 +256,8 @@ public:
 		ATLASSERT(memChunk->dataChunk->dataType == CHUNK_MEM);
 		ATLASSERT(memChunk->dataChunk->dataMem->pData);
 		DWORD dwWriteSize = memChunk->dwEnd - memChunk->dwStart +1;
-		return SUCCEEDED(m_file.Seek(memChunk->dwStart)) && SUCCEEDED(m_file.Write(_TAMAFILECHUNK_GetRealStartPointer(memChunk), dwWriteSize));
+    ATLTRACE("WriteMem: 0x%08X, %u (0x%X, %u)\n", memChunk->dwStart, memChunk->dwStart, dwWriteSize, dwWriteSize);
+		return SUCCEEDED(m_file.Seek(memChunk->dwStart, FILE_BEGIN)) && SUCCEEDED(m_file.Write(_TAMAFILECHUNK_GetRealStartPointer(memChunk), dwWriteSize));
 	}
 	BOOL _TAMAFILECHUNK_isRightShift(TAMAFILECHUNK *fileChunk)
 	{
@@ -307,6 +308,7 @@ public:
 				pChunk->bSaved = TRUE;
 			}
 		}
+    return TRUE;
 	}
 	BOOL _Debug_SearchUnSavedChunk()
 	{
@@ -390,7 +392,7 @@ public:
 					}
 					//nRemain -= nNextChunkSize;
 					
-					if(nRemain < 0)break;
+					if(nRemain == 0)break;
 					
 					pOldFileChunkNext = RB_NEXT(_TAMAOLDFILECHUNK_HEAD, pOldFilemapHead, pOldFileChunkNext);
 					if(pOldFileChunkNext==NULL)
@@ -402,6 +404,7 @@ public:
 				}
 			}
 		}
+    return TRUE;
 	}
 	TAMADataChunk* _OldFileMap_Conv2TAMADataChunk(TAMAOLDFILECHUNK *pOldFileChunk, DWORD *pNRemain)
 	{
@@ -502,6 +505,7 @@ public:
 		ATLASSERT(!_Debug_SearchUnSavedChunk());
 #endif
 		//_UndoRedo_CreateRefSrcFileDataChunk();
+    return TRUE;
 	}
 	BOOL _ShiftAllFileChunksAfterArg(TAMAFILECHUNK *fileChunk)
 	{
@@ -563,8 +567,11 @@ public:
 
 	BOOL Save() //ã‘‚«•Û‘¶
 	{
+    if(m_bReadOnly || !m_file.m_h)return FALSE;
 		CWaitCursor wait;
-    return _Save_ProccessAllChunks();
+    BOOL bRet = _Save_ProccessAllChunks();
+    m_file.Flush();
+    return bRet;
 
 //		if(IsFileMapping())
 //		{
@@ -1800,8 +1807,6 @@ protected:
 		switch(pDeleteChunk->dataChunk->dataType)
 		{
 			case CHUNK_FILE:
-				//nothing to do
-				break;
 			case CHUNK_MEM:
 				_TAMADataChunk_Release(pDeleteChunk->dataChunk);
 				break;
@@ -1974,7 +1979,7 @@ protected:
 				if(dataChunk->dwSize > 0)
 				{
 					DWORD dwOldFileAddrS = _TAMADataChunk_GetRealStartAddr(dataChunk);
-					DWORD dwOldFileAddrE = dwOldFileAddrE + dataChunk->dwSize - 1;
+					DWORD dwOldFileAddrE = dwOldFileAddrS + dataChunk->dwSize - 1;
 					_OldFileMap_FF(pOldFilemapHead, dwOldFileAddrS, dwOldFileAddrE, pChunk->dwStart);
 					//dataChunk->savingType = DC_FF;
 				}
@@ -2003,7 +2008,7 @@ protected:
 					if(dataChunk->dwSize > 0)
 					{
 						DWORD dwOldFileAddrS = _TAMADataChunk_GetRealStartAddr(dataChunk);
-						DWORD dwOldFileAddrE = dwOldFileAddrE + dataChunk->dwSize - 1;
+						DWORD dwOldFileAddrE = dwOldFileAddrS + dataChunk->dwSize - 1;
 						_OldFileMap_FD(pOldFilemapHead, dwOldFileAddrS, dwOldFileAddrE);
 						//dataChunk->savingType = DC_FD;
 					}
@@ -2020,7 +2025,7 @@ protected:
 					if(dataChunk->dwSize > 0)
 					{
 						DWORD dwOldFileAddrS = _TAMADataChunk_GetRealStartAddr(dataChunk);
-						DWORD dwOldFileAddrE = dwOldFileAddrE + dataChunk->dwSize - 1;
+						DWORD dwOldFileAddrE = dwOldFileAddrS + dataChunk->dwSize - 1;
 						_OldFileMap_FD(pOldFilemapHead, dwOldFileAddrS, dwOldFileAddrE);
 						//dataChunk->savingType = DC_FD;
 					}
@@ -2052,10 +2057,10 @@ protected:
 		TAMAOLDFILECHUNK *pChunk, *pChunkPrev = NULL;
 		RB_FOREACH(pChunk, _TAMAOLDFILECHUNK_HEAD, pOldFilemapHead)
 		{
-			if(pChunkPrev)_OldFileMap_Free(pOldFilemapHead, pChunkPrev);
+			if(pChunkPrev)_OldFileMap_Free(pOldFilemapHead, pChunkPrev, bFreeBuffer);
 			pChunkPrev = pChunk;
 		}
-		if(pChunkPrev)_OldFileMap_Free(pOldFilemapHead, pChunkPrev);
+		if(pChunkPrev)_OldFileMap_Free(pOldFilemapHead, pChunkPrev, bFreeBuffer);
 	}
 	
 	void _OldFileMap_Free(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, TAMAOLDFILECHUNK *pChunk, BOOL bFreeBuffer = TRUE)
@@ -2143,6 +2148,7 @@ protected:
 		if(pOldFileChunkE->dwEnd > dwEnd && (pOldFileChunkE->type != OF_FF || dwNewFileAddr - pOldFileChunkE->dwNewFileAddr != dwStart - pOldFileChunkE->dwStart))
 		{
 			_OldFileMap_SplitPoint(pOldFilemapHead, dwEnd+1);
+			pOldFileChunkS = _OldFileMap_LookUp(pOldFilemapHead, dwStart);
 			pOldFileChunkE = _OldFileMap_LookUp(pOldFilemapHead, dwEnd);
 		}
 		
@@ -2153,7 +2159,7 @@ protected:
 			{
 				pChunk->type = OF_FF;
 				pChunk->dwNewFileAddr = dwNewFileAddr - (dwStart - pChunk->dwStart);
-				ATLASSERT(pChunk->dwNewFileAddr < dwNewFileAddr);
+				ATLASSERT(pChunk->dwNewFileAddr >= dwNewFileAddr);
 			}
 			_OldFileMap_MeltFF(pOldFilemapHead, pChunk);
 			if(pChunk->dwEnd >= dwEnd)break;
@@ -2200,6 +2206,7 @@ protected:
 		if(pOldFileChunkE->type == OF_NOREF && pOldFileChunkE->dwEnd > dwEnd)
 		{
 			_OldFileMap_SplitPoint(pOldFilemapHead, dwEnd+1);
+			pOldFileChunkS = _OldFileMap_LookUp(pOldFilemapHead, dwStart);
 			pOldFileChunkE = _OldFileMap_LookUp(pOldFilemapHead, dwEnd);
 		}
 		
@@ -2218,6 +2225,7 @@ protected:
 		}
 	}
 
+#ifdef GTEST
 #ifdef _DEBUG
   bool _FileMap_DEBUG_ValidationCheck()
   {
@@ -2259,6 +2267,6 @@ protected:
     return c;
   }
 #endif
-
+#endif
 
 };

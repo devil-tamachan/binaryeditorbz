@@ -1,5 +1,54 @@
 #include <gtest/gtest.h>
+#include <windows.h>
+#include <atltrace.h>//ATLTRACE
+#include <atlcoll.h>
+#define GTEST
 
+DWORD g_dwMallocCounter = 0;
+CRBMap<void *, size_t> *g_pRBMap = NULL;
+void initMallocSimpleCheck()
+{
+  g_dwMallocCounter = 0;
+  if(g_pRBMap)
+  {
+    delete g_pRBMap;
+    g_pRBMap = NULL;
+  }
+  g_pRBMap = new CRBMap<void *, size_t>();
+}
+void* mallocSimpleCheck(size_t size)
+{
+  g_dwMallocCounter++;
+  void *ret = malloc(size);
+  if(ret && g_pRBMap)
+  {
+    //ATLTRACE("+0x%08X (%Iu)\n", ret, size);
+    g_pRBMap->SetAt(ret, size);
+  }
+  return ret;
+}
+void freeSimpleCheck(void *pMem)
+{
+  if(pMem && g_pRBMap)
+  {
+    //ATLTRACE("-0x%08X (%Iu)\n", pMem, g_pRBMap->Lookup(pMem)->m_value);
+    g_pRBMap->RemoveKey(pMem);
+  }
+  g_dwMallocCounter--;
+  free(pMem);
+}
+void traceMallocLeak()
+{
+  POSITION pos = g_pRBMap->GetHeadPosition();
+  while(pos)
+  {
+    CRBMap<void *, size_t>::CPair *pair = g_pRBMap->GetNext(pos);
+    ATLTRACE("!0x%08X (%u)\n", pair->m_key, pair->m_value);
+  }
+}
+
+#define malloc mallocSimpleCheck
+#define free freeSimpleCheck
 #define private public
 #define protected public
 
@@ -7,6 +56,8 @@
 
 #undef private
 #undef protected
+#undef malloc
+#undef free
 
 #include "mt19937ar.h"
 #include <time.h>
@@ -181,6 +232,7 @@ TEST(FileMap, InsertMem1)
 }
 TEST(FileMap, PublicMethod1)
 {
+  initMallocSimpleCheck();
   LPBYTE pBufOrig;
   ASSERT_TRUE(CreateTestFile("test1.bin", 5000, &pBufOrig));
   ASSERT_TRUE(CopyFileA("test1.bin", "testSFC.bin", FALSE)!=0);
@@ -190,6 +242,15 @@ TEST(FileMap, PublicMethod1)
   ASSERT_TRUE(pBufSFC!=NULL);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
   ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+
+  ASSERT_EQ(0, sfile.m_undo.GetCount());
+  ASSERT_EQ(0, sfile.GetUndoCount());
+  ASSERT_EQ(0, sfile.GetRedoCount());
+  ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+
+  LPBYTE pBufS4 = (LPBYTE)malloc(5000);
+  ASSERT_TRUE(pBufS4!=NULL);
+  memcpy(pBufS4, pBufSFC, 5000);
 
   LPBYTE pBufTmp = (LPBYTE)malloc(8000);
   ASSERT_TRUE(pBufTmp!=NULL);
@@ -201,6 +262,15 @@ TEST(FileMap, PublicMethod1)
   memcpy(pBufOrig+678, pBufTmp, 400);
   ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
 
+  ASSERT_EQ(1, sfile.m_undo.GetCount());
+  ASSERT_EQ(1, sfile.GetUndoCount());
+  ASSERT_EQ(0, sfile.GetRedoCount());
+  ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+
+  LPBYTE pBufS3 = (LPBYTE)malloc(5000);
+  ASSERT_TRUE(pBufS3!=NULL);
+  memcpy(pBufS3, pBufSFC, 5000);
+
   fillRandMT(pBufTmp, 800);
   ASSERT_TRUE(sfile.Write(pBufTmp, 1500, 800)==TRUE);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
@@ -208,12 +278,26 @@ TEST(FileMap, PublicMethod1)
   memcpy(pBufOrig+1500, pBufTmp, 800);
   ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
 
+  ASSERT_EQ(2, sfile.m_undo.GetCount());
+  ASSERT_EQ(2, sfile.GetUndoCount());
+  ASSERT_EQ(0, sfile.GetRedoCount());
+  ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+
+  LPBYTE pBufS2 = (LPBYTE)malloc(5000);
+  ASSERT_TRUE(pBufS2!=NULL);
+  memcpy(pBufS2, pBufSFC, 5000);
+
   fillRandMT(pBufTmp, 1000);
   ASSERT_TRUE(sfile.Write(pBufTmp, 700, 1000)==TRUE);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
   ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
   memcpy(pBufOrig+700, pBufTmp, 1000);
   ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+
+  ASSERT_EQ(3, sfile.m_undo.GetCount());
+  ASSERT_EQ(3, sfile.GetUndoCount());
+  ASSERT_EQ(0, sfile.GetRedoCount());
+  ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
 
   LPBYTE pBufS1 = (LPBYTE)malloc(5000);
   ASSERT_TRUE(pBufS1!=NULL);
@@ -226,14 +310,96 @@ TEST(FileMap, PublicMethod1)
   memcpy(pBufOrig+680, pBufTmp, 200);
   ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
 
+  ASSERT_EQ(4, sfile.m_undo.GetCount());
+  ASSERT_EQ(4, sfile.GetUndoCount());
+  ASSERT_EQ(0, sfile.GetRedoCount());
+  ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+
   ASSERT_TRUE(sfile.Undo()==TRUE);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
   ASSERT_TRUE(memcmp(pBufS1, pBufSFC, 5000)==0);
 
+  ASSERT_EQ(4, sfile.m_undo.GetCount());
+  ASSERT_EQ(3, sfile.GetUndoCount());
+  ASSERT_EQ(1, sfile.GetRedoCount());
+  ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+
+  ASSERT_TRUE(sfile.Redo()==TRUE);
+  ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+  ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+
+  ASSERT_EQ(4, sfile.m_undo.GetCount());
+  ASSERT_EQ(4, sfile.GetUndoCount());
+  ASSERT_EQ(0, sfile.GetRedoCount());
+  ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+
+  ASSERT_TRUE(sfile.Undo()==TRUE);
+  ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+  ASSERT_TRUE(memcmp(pBufS1, pBufSFC, 5000)==0);
+
+  ASSERT_EQ(4, sfile.m_undo.GetCount());
+  ASSERT_EQ(3, sfile.GetUndoCount());
+  ASSERT_EQ(1, sfile.GetRedoCount());
+  ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+
+  ASSERT_TRUE(sfile.Undo()==TRUE);
+  ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+  ASSERT_TRUE(memcmp(pBufS2, pBufSFC, 5000)==0);
+
+  ASSERT_EQ(4, sfile.m_undo.GetCount());
+  ASSERT_EQ(2, sfile.GetUndoCount());
+  ASSERT_EQ(2, sfile.GetRedoCount());
+  ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+
+  ASSERT_TRUE(sfile.Undo()==TRUE);
+  ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+  ASSERT_TRUE(memcmp(pBufS3, pBufSFC, 5000)==0);
+
+  ASSERT_EQ(4, sfile.m_undo.GetCount());
+  ASSERT_EQ(1, sfile.GetUndoCount());
+  ASSERT_EQ(3, sfile.GetRedoCount());
+  ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+
+  ASSERT_TRUE(sfile.Undo()==TRUE);
+  ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+  ASSERT_TRUE(memcmp(pBufS4, pBufSFC, 5000)==0);
+
+  ASSERT_EQ(4, sfile.m_undo.GetCount());
+  ASSERT_EQ(0, sfile.GetUndoCount());
+  ASSERT_EQ(4, sfile.GetRedoCount());
+  ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+
+  ASSERT_TRUE(sfile.Undo()==FALSE);
+  memcpy(pBufOrig, pBufS4, 5000);
+
+  fillRandMT(pBufTmp, 50);
+  ASSERT_TRUE(sfile.Write(pBufTmp, 200, 50)==TRUE);
+  ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+  ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
+  memcpy(pBufOrig+200, pBufTmp, 50);
+  ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+
+  ASSERT_EQ(1, sfile.m_undo.GetCount());
+  ASSERT_EQ(1, sfile.GetUndoCount());
+  ASSERT_EQ(0, sfile.GetRedoCount());
+  ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+
+  ASSERT_TRUE(sfile.Save());
+
+  sfile.Close();
+
+  FILE *fpSFC = fopen("testSFC.bin", "rb");
+  ASSERT_TRUE(fpSFC!=NULL);
+  ASSERT_TRUE(fread(pBufSFC, 5000, 1, fpSFC)==1);
+  fclose(fpSFC);
+  ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
 
   free(pBufTmp);
   free(pBufSFC);
   free(pBufOrig);
+
+  traceMallocLeak();
+  ASSERT_EQ(0, g_dwMallocCounter);
 }
 int main(int argc, char* argv[])
 {
