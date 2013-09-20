@@ -1,3 +1,5 @@
+#include <crtdbg.h>
+
 #include <gtest/gtest.h>
 #include <windows.h>
 #include <atlstr.h>
@@ -39,6 +41,18 @@ void* mallocSimpleCheck(size_t size)
   }
   return ret;
 }
+void* reallocSimpleCheck(void *pMem, size_t size)
+{
+  void *ret = realloc(pMem, size);
+  //printBackTract();
+  if(ret && g_pRBMap)
+  {
+    g_pRBMap->RemoveKey(pMem);
+    g_pRBMap->SetAt(ret, size);
+    ATLTRACE("r0x%08X (%Iu)\n", ret, size);
+  }
+  return ret;
+}
 void freeSimpleCheck(void *pMem)
 {
   if(pMem && g_pRBMap)
@@ -67,6 +81,7 @@ void traceMallocLeak()
 }
 
 #define malloc mallocSimpleCheck
+#define realloc reallocSimpleCheck
 #define free freeSimpleCheck
 #define private public
 #define protected public
@@ -76,6 +91,7 @@ void traceMallocLeak()
 #undef private
 #undef protected
 #undef malloc
+#undef realloc
 #undef free
 
 #include "mt19937ar.h"
@@ -648,9 +664,15 @@ TEST(FileMap, PublicMethod1)
 }
 
 int main(int argc, char* argv[])
-{
+{ 
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF);
   ::testing::GTEST_FLAG(catch_exceptions) = 0;
   ::testing::InitGoogleTest(&argc, argv);
+  ATLTRACE("sizeof(TAMADataBuf): %d (0x%08X)\n", sizeof(TAMADataBuf), sizeof(TAMADataBuf));
+  ATLTRACE("sizeof(TAMADataChunk): %d (0x%08X)\n", sizeof(TAMADataChunk), sizeof(TAMADataChunk));
+  ATLTRACE("sizeof(TAMAUndoRedo): %d (0x%08X)\n", sizeof(TAMAUndoRedo), sizeof(TAMAUndoRedo));
+  ATLTRACE("sizeof(TAMAFILECHUNK): %d (0x%08X)\n", sizeof(TAMAFILECHUNK), sizeof(TAMAFILECHUNK));
+  ATLTRACE("sizeof(TAMAOLDFILECHUNK): %d (0x%08X)\n", sizeof(TAMAOLDFILECHUNK), sizeof(TAMAOLDFILECHUNK));
   RUN_ALL_TESTS();
   getchar();
   return 0;

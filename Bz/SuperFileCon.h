@@ -129,6 +129,7 @@ public:
   // Open/Overwrite/Save to another file
   BOOL Open(LPCTSTR lpszPathName)
   {
+    ATLTRACE("SuperFileCon::Open\n");
     CWaitCursor wait;
     BOOL bReadOnly = FALSE;
     CAtlFile file;
@@ -263,7 +264,7 @@ public:
       ATLASSERT(dataChunk);
       if(dataChunk && dataChunk->savingType == DC_UNKNOWN && dataChunk->dataType==CHUNK_MEM && dataChunk->dataMem == pSearchDataBuf)
       {
-        ATLTRACE("ConvDF --- Skip:0x%08X(%u), Size:0x%08X(%u)\n", dataChunk->dwSkipOffset, dataChunk->dwSkipOffset, dataChunk->dwSize, dataChunk->dwSize);
+        ATLTRACE("ConvDF(0x%08X,0x%08X) --- Skip:0x%08X(%u), Size:0x%08X(%u)\n", dataChunk, dataChunk->dataMem, dataChunk->dwSkipOffset, dataChunk->dwSkipOffset, dataChunk->dwSize, dataChunk->dwSize);
         DWORD Ts = dataChunk->dwSkipOffset;
         DWORD dwTargetSize = dataChunk->dwSize;
         ATLASSERT(dwTargetSize > 0);
@@ -301,6 +302,7 @@ public:
         {
           DWORD dwMiddleSize = dwTargetSize - dwRightSplitSize;
           _TAMADataBuf_Release(dataChunk->dataMem);
+          dataChunk->dataMem = NULL;
           dataChunk->dataType = CHUNK_FILE;
           dataChunk->dataFileAddr = dwTargetNewStartFileAddr;
           dataChunk->dwSize = dwMiddleSize;
@@ -321,7 +323,7 @@ public:
             ATLASSERT(FALSE);
             return FALSE;
           }
-          ATLTRACE("  Right --- Skip:0x%08X(%u), Size:0x%08X(%u)\n", rightDataChunk->dwSkipOffset, rightDataChunk->dwSkipOffset, rightDataChunk->dwSize, rightDataChunk->dwSize);
+          ATLTRACE("  Right(0x%08X) --- Skip:0x%08X(%u), Size:0x%08X(%u)\n", rightDataChunk, rightDataChunk->dwSkipOffset, rightDataChunk->dwSkipOffset, rightDataChunk->dwSize, rightDataChunk->dwSize);
           //rightDataChunk->savingType = DC_DONE;
           BOOL bRetInsert = _TAMADATACHUNKS_Insert(ppDataChunks, pNumDataChunks, i+1, rightDataChunk);
           if(!bRetInsert)
@@ -382,6 +384,7 @@ public:
     {
       TAMADataChunk *dataChunk = memChunk->dataChunk;
       _TAMADataBuf_Release(dataChunk->dataMem);
+      dataChunk->dataMem = NULL;
       dataChunk->dataType = CHUNK_FILE;
       dataChunk->dataFileAddr = memChunk->dwStart;
       dataChunk->dwSize = dwWriteSize;
@@ -543,7 +546,7 @@ public:
     {
     case OF_FD:
       {
-        TAMADataBuf *pTAMADataBuf = _TAMADataBuf_CreateAssign(pOldFileChunk->pMem, 0);
+        TAMADataBuf *pTAMADataBuf = pOldFileChunk->pDataBuf;
         ATLASSERT(pTAMADataBuf);
         dataChunk = _TAMADataChunk_CreateMemAssignTAMADataBuf(nChunkSize, dwSkip, pTAMADataBuf);
         ATLASSERT(dataChunk);
@@ -569,6 +572,9 @@ public:
     {
       pDataBuf->pData = pData;
       pDataBuf->nRefCount = nRefCount;
+#ifdef TRACE_TAMADATABUF
+      ATLTRACE("cDataBuf(0x%08X) nRefCount: %d\n", pDataBuf, pDataBuf->nRefCount);
+#endif
     }
     return pDataBuf;
   }
@@ -578,7 +584,7 @@ public:
     ATLASSERT(pDataBuf);
     if(!pDataBuf)return NULL;
 
-    pDataBuf->pData = (LPBYTE)malloc(sizeof(dwNewAlloc));
+    pDataBuf->pData = (LPBYTE)malloc(dwNewAlloc);
     ATLASSERT(pDataBuf->pData);
     if(!pDataBuf->pData)
     {
@@ -586,17 +592,25 @@ public:
       return NULL;
     }
     pDataBuf->nRefCount = nRefCount;
+#ifdef TRACE_TAMADATABUF
+    ATLTRACE("cDataBuf(0x%08X) nRefCount: %d\n", pDataBuf, pDataBuf->nRefCount);
+#endif
     return pDataBuf;
   }
   DWORD _TAMAOLDFILECHUNK_GetSize(TAMAOLDFILECHUNK *oldFileChunk)
   {
-    ATLASSERT(oldFileChunk);
+    if(!oldFileChunk)
+    {
+      ATLASSERT(FALSE);
+      return 0;
+    }
     return oldFileChunk->dwEnd - oldFileChunk->dwStart + 1;
   }
   BOOL _TAMADATACHUNKS_Insert(TAMADataChunk ***pDataChunks, DWORD *pNumDataChunks, DWORD nInsertIndex, TAMADataChunk *pInsertDataChunk)
   {
     ATLASSERT(*pNumDataChunks!=0xffFFffFF);
     ATLASSERT(nInsertIndex<=*pNumDataChunks);
+    ATLTRACE("_TAMADATACHUNKS_Insert: 0x%08X\n", pInsertDataChunk);
     (*pNumDataChunks)++;
     *pDataChunks = (TAMADataChunk **)realloc(*pDataChunks, (*pNumDataChunks)*sizeof(TAMADataChunk *));
     if(*pDataChunks==NULL)
@@ -616,7 +630,7 @@ public:
     struct _TAMAOLDFILECHUNK_HEAD oldFilemapHead;
     _OldFileMap_Make(&oldFilemapHead, &m_file);
     _UpdateAllDataChunkSavingType(&oldFilemapHead);
-    _OldFileMap_FreeAll(&oldFilemapHead, FALSE);
+    _OldFileMap_FreeAll(&oldFilemapHead, TRUE);//FALSE);
     if(!_ExtendFileSize()
       || !_ShiftAllFF()
       || !_WriteAllDF() )
@@ -693,7 +707,7 @@ public:
   {
     if(m_bReadOnly || !m_file.m_h)return FALSE;
     CWaitCursor wait;
-    ATLTRACE("Save()\n");
+    ATLTRACE("SuperFileCon::Save\n");
     BOOL bRet = _Save_ProccessAllChunks();
     m_dwTotalSavedFile = m_dwTotal;
     _RemoveNeedlessHiddenNode();
@@ -747,6 +761,7 @@ public:
   //	}
   void Close()
   {
+    ATLTRACE("SuperFileCon::Close\n");
     _DeleteContents();
     m_file.Close();
   }
@@ -787,6 +802,7 @@ public:
   // Read/OverWrite
   BOOL Read(void *dst1, DWORD dwStart, DWORD dwSize)
   {
+    //ATLTRACE("SuperFileCon::Read(), dwStart: %u(0x%08X), dwSize: %u(0x%08X)\n", dwStart, dwStart ,dwSize, dwSize);
     if(!m_file.m_h)return FALSE;
     TAMAFILECHUNK *pReadChunk;
     pReadChunk = _FileMap_LookUp(dwStart);
@@ -824,6 +840,7 @@ public:
   BOOL Write(void *srcData, DWORD dwStart, DWORD dwSize)
   {
     if(!m_file.m_h)return FALSE;
+    ATLTRACE("SuperFileCon::Write(), dwStart: %u(0x%08X), dwSize: %u(0x%08X)\n", dwStart, dwStart ,dwSize, dwSize);
     void *pData = (void *)malloc(dwSize);
     if(!pData)
     {
@@ -934,6 +951,7 @@ err_TAMAUndoRedoCreate:
   // Insert/Delete
   BOOL Insert(DWORD dwInsStart, LPBYTE srcData, DWORD dwInsSize)
   {
+    ATLTRACE("SuperFileCon::Insert\n");
     if(!m_file.m_h || dwInsSize==0)return FALSE;
     LPBYTE pData = (LPBYTE)malloc(dwInsSize);
     if(!pData)
@@ -975,6 +993,7 @@ err_TAMAUndoRedoCreate:
   }
   BOOL Delete(DWORD dwDelStart, DWORD dwDelSize)
   {
+    ATLTRACE("SuperFileCon::Delete\n");
     if(!m_file.m_h || dwDelSize==0)return FALSE;
     TAMAUndoRedo *pNewUndo = _TAMAUndoRedo_Create(UNDO_DEL, dwDelStart, NULL, 0, NULL, 0);
     if(!pNewUndo)
@@ -1123,7 +1142,7 @@ err_TAMAUndoRedoCreate:
       free(newUndo);
       return NULL;
     }
-    newUndo->nDataPrev = srcUndo->nDataPrev;
+    newUndo->nDataPrev = srcUndo->nDataNext;
 
     return newUndo;
   }
@@ -1148,6 +1167,7 @@ err_TAMAUndoRedoCreate:
       ATLASSERT(FALSE);
       return NULL;
     }
+    ATLTRACE("_TAMADataChunk_Copy(0x%08X)\n", newChunk);
     memcpy(newChunk, dataChunk, sizeof(TAMADataChunk));
     switch(dataChunk->dataType)
     {
@@ -1171,12 +1191,16 @@ err_TAMAUndoRedoCreate:
   {
     ATLASSERT(pDataBuf->nRefCount<0xFFffFFff);
     pDataBuf->nRefCount++;
+#ifdef TRACE_TAMADATABUF
+    ATLTRACE("+DataBuf(0x%08X) nRefCount: %d -> %d\n", pDataBuf, pDataBuf->nRefCount-1, pDataBuf->nRefCount);
+#endif
   }
 
   // Undo/Redo
   BOOL Undo()
   {
     if(!m_file.m_h || GetUndoCount()==0)return FALSE;
+    ATLTRACE("SuperFileCon::Undo\n");
     TAMAUndoRedo *undo = m_undo[--m_redoIndex];
     switch(undo->mode)
     {
@@ -1207,6 +1231,7 @@ err_TAMAUndoRedoCreate:
   BOOL Redo()
   {
     if(!m_file.m_h || GetRedoCount()==0)return FALSE;
+    ATLTRACE("SuperFileCon::Redo\n");
     TAMAUndoRedo *undo = m_undo[m_redoIndex++];
     switch(undo->mode)
     {
@@ -1505,6 +1530,9 @@ protected:
       ATLASSERT(FALSE);
       return FALSE;
     }
+#ifdef TRACE_TAMADATABUF
+    ATLTRACE("-DataBuf(0x%08X) nRefCount: %d -> %d\n", pDataBuf, pDataBuf->nRefCount, pDataBuf->nRefCount-1);
+#endif
     if(pDataBuf->nRefCount==0 || --(pDataBuf->nRefCount) == 0)
     {
       if(pDataBuf->pData && bFreeRawPointer)free(pDataBuf->pData);
@@ -1776,6 +1804,7 @@ protected:
       ATLASSERT(FALSE);
       return NULL;
     }
+    ATLTRACE("_TAMADataChunk_CreateFileChunk(0x%08X)\n", dataChunk);
     dataChunk->dataType = CHUNK_FILE;
     dataChunk->dataFileAddr = dwStartFileSpace;
     dataChunk->dwSize = dwSize;
@@ -1809,9 +1838,13 @@ protected:
       ATLASSERT(FALSE);
       return NULL;
     }
+    ATLTRACE("_TAMADataChunk_CreateMemAssignTAMADataBuf(0x%08X)\n", dataChunk);
     if(pTAMADataBuf)
     {
       pTAMADataBuf->nRefCount++;
+#ifdef TRACE_TAMADATABUF
+      ATLTRACE("+DataBuf(0x%08X) nRefCount: %d -> %d\n", pTAMADataBuf, pTAMADataBuf->nRefCount-1, pTAMADataBuf->nRefCount);
+#endif
       dataChunk->dataMem = pTAMADataBuf;
     }
     dataChunk->dataType = CHUNK_MEM;
@@ -1827,6 +1860,7 @@ protected:
       ATLASSERT(FALSE);
       return NULL;
     }
+    ATLTRACE("_TAMADataChunk_CreateMemNew(0x%08X)\n", dataChunk);
     TAMADataBuf *pTAMADataBuf = _TAMADataBuf_CreateNew(dwSize, 1/*nRefCount*/);
     if(!pTAMADataBuf)
     {
@@ -2198,9 +2232,10 @@ protected:
       {
         ATLASSERT(pOldFileChunk->dwEnd > pOldFileChunk->dwStart);
         DWORD dwReadSize = pOldFileChunk->dwEnd - pOldFileChunk->dwStart + 1;
-        pOldFileChunk->pMem = (LPBYTE)malloc(dwReadSize);
-        if(pOldFileChunk->pMem==NULL || FAILED(pFile->Seek(pOldFileChunk->dwStart, FILE_BEGIN)) || FAILED(pFile->Read(pOldFileChunk->pMem, dwReadSize)))
+        pOldFileChunk->pDataBuf = _TAMADataBuf_CreateNew(dwReadSize, 1/*nRefCount*/);
+        if(pOldFileChunk->pDataBuf==NULL || FAILED(pFile->Seek(pOldFileChunk->dwStart, FILE_BEGIN)) || FAILED(pFile->Read(pOldFileChunk->pDataBuf->pData, dwReadSize)))
         {
+          ATLASSERT(FALSE);
           _OldFileMap_FreeAll(pOldFilemapHead, TRUE);
           return FALSE;
         }
@@ -2211,18 +2246,16 @@ protected:
 
   void _OldFileMap_FreeAll(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, BOOL bFreeBuffer = TRUE)
   {
-    TAMAOLDFILECHUNK *pChunk, *pChunkPrev = NULL;
-    RB_FOREACH(pChunk, _TAMAOLDFILECHUNK_HEAD, pOldFilemapHead)
+    TAMAOLDFILECHUNK *pChunk, *pChunkNext;
+    RB_FOREACH_SAFE(pChunk, _TAMAOLDFILECHUNK_HEAD, pOldFilemapHead, pChunkNext)
     {
-      if(pChunkPrev)_OldFileMap_Free(pOldFilemapHead, pChunkPrev, bFreeBuffer);
-      pChunkPrev = pChunk;
+      _OldFileMap_Free(pOldFilemapHead, pChunk, bFreeBuffer);
     }
-    if(pChunkPrev)_OldFileMap_Free(pOldFilemapHead, pChunkPrev, bFreeBuffer);
   }
 
   void _OldFileMap_Free(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, TAMAOLDFILECHUNK *pChunk, BOOL bFreeBuffer = TRUE)
   {
-    if(bFreeBuffer && pChunk->type==OF_FD && pChunk->pMem)free(pChunk->pMem);
+    if(bFreeBuffer && pChunk->type==OF_FD && pChunk->pDataBuf)_TAMADataBuf_Release(pChunk->pDataBuf);
     RB_REMOVE(_TAMAOLDFILECHUNK_HEAD, pOldFilemapHead, pChunk);
     free(pChunk);
   }
@@ -2239,6 +2272,7 @@ protected:
   {
     TAMAOLDFILECHUNK *pSplitChunk;
     pSplitChunk = _OldFileMap_LookUp(pOldFilemapHead, dwSplitPoint);
+    ATLASSERT(pSplitChunk->type!=OF_FD);
     if(!pSplitChunk)
     {
       //ATLASSERT(FALSE);
@@ -2373,7 +2407,7 @@ protected:
       if(pChunk->type == OF_NOREF)
       {
         pChunk->type = OF_FD;
-        pChunk->pMem = NULL;
+        pChunk->pDataBuf = NULL;
         _OldFileMap_MeltFD(pOldFilemapHead, pChunk);
       }
       if(pChunk->dwEnd >= dwEnd)break;
@@ -2383,7 +2417,7 @@ protected:
   }
 
 #ifdef GTEST
-#ifdef _DEBUG
+//#ifdef _DEBUG
   bool _FileMap_DEBUG_ValidationCheck()
   {
     DWORD nextStart = 0;
@@ -2441,7 +2475,7 @@ protected:
     }
     return FALSE;
   }
-#endif
+//#endif
 #endif
 
 };
