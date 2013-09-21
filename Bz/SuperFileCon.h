@@ -284,7 +284,7 @@ public:
             return FALSE;
           }
           ATLTRACE("  Left  --- Skip:0x%08X(%u), Size:0x%08X(%u)\n", leftDataChunk->dwSkipOffset, leftDataChunk->dwSkipOffset, leftDataChunk->dwSize, leftDataChunk->dwSize);
-          //leftDataChunk->savingType = DC_DONE;
+          leftDataChunk->savingType = DC_UNKNOWN;
           BOOL bRetInsert = _TAMADATACHUNKS_Insert(ppDataChunks, pNumDataChunks, i, leftDataChunk);
           if(!bRetInsert)
           {
@@ -324,7 +324,7 @@ public:
             return FALSE;
           }
           ATLTRACE("  Right(0x%08X) --- Skip:0x%08X(%u), Size:0x%08X(%u)\n", rightDataChunk, rightDataChunk->dwSkipOffset, rightDataChunk->dwSkipOffset, rightDataChunk->dwSize, rightDataChunk->dwSize);
-          //rightDataChunk->savingType = DC_DONE;
+          rightDataChunk->savingType = DC_UNKNOWN;
           BOOL bRetInsert = _TAMADATACHUNKS_Insert(ppDataChunks, pNumDataChunks, i+1, rightDataChunk);
           if(!bRetInsert)
           {
@@ -610,7 +610,9 @@ public:
   {
     ATLASSERT(*pNumDataChunks!=0xffFFffFF);
     ATLASSERT(nInsertIndex<=*pNumDataChunks);
+#ifdef TRACE_DATACHUNKS
     ATLTRACE("_TAMADATACHUNKS_Insert: 0x%08X\n", pInsertDataChunk);
+#endif
     (*pNumDataChunks)++;
     *pDataChunks = (TAMADataChunk **)realloc(*pDataChunks, (*pNumDataChunks)*sizeof(TAMADataChunk *));
     if(*pDataChunks==NULL)
@@ -1167,7 +1169,9 @@ err_TAMAUndoRedoCreate:
       ATLASSERT(FALSE);
       return NULL;
     }
+#ifdef TRACE_DATACHUNK
     ATLTRACE("_TAMADataChunk_Copy(0x%08X)\n", newChunk);
+#endif
     memcpy(newChunk, dataChunk, sizeof(TAMADataChunk));
     switch(dataChunk->dataType)
     {
@@ -1804,7 +1808,9 @@ protected:
       ATLASSERT(FALSE);
       return NULL;
     }
+#ifdef TRACE_DATACHUNK
     ATLTRACE("_TAMADataChunk_CreateFileChunk(0x%08X)\n", dataChunk);
+#endif
     dataChunk->dataType = CHUNK_FILE;
     dataChunk->dataFileAddr = dwStartFileSpace;
     dataChunk->dwSize = dwSize;
@@ -1838,7 +1844,9 @@ protected:
       ATLASSERT(FALSE);
       return NULL;
     }
+#ifdef TRACE_DATACHUNK
     ATLTRACE("_TAMADataChunk_CreateMemAssignTAMADataBuf(0x%08X)\n", dataChunk);
+#endif
     if(pTAMADataBuf)
     {
       pTAMADataBuf->nRefCount++;
@@ -1860,7 +1868,9 @@ protected:
       ATLASSERT(FALSE);
       return NULL;
     }
+#ifdef TRACE_DATACHUNK
     ATLTRACE("_TAMADataChunk_CreateMemNew(0x%08X)\n", dataChunk);
+#endif
     TAMADataBuf *pTAMADataBuf = _TAMADataBuf_CreateNew(dwSize, 1/*nRefCount*/);
     if(!pTAMADataBuf)
     {
@@ -2233,6 +2243,9 @@ protected:
         ATLASSERT(pOldFileChunk->dwEnd > pOldFileChunk->dwStart);
         DWORD dwReadSize = pOldFileChunk->dwEnd - pOldFileChunk->dwStart + 1;
         pOldFileChunk->pDataBuf = _TAMADataBuf_CreateNew(dwReadSize, 1/*nRefCount*/);
+#ifdef TRACE_READFILE
+        ATLTRACE("ConvFD: Start:0x%08X(%u), Size:0x%08X(%u)\n", pOldFileChunk->dwStart, pOldFileChunk->dwStart, dwReadSize, dwReadSize);
+#endif
         if(pOldFileChunk->pDataBuf==NULL || FAILED(pFile->Seek(pOldFileChunk->dwStart, FILE_BEGIN)) || FAILED(pFile->Read(pOldFileChunk->pDataBuf->pData, dwReadSize)))
         {
           ATLASSERT(FALSE);

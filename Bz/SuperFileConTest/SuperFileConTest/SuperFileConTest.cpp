@@ -8,6 +8,8 @@
 #include <atlutil.h>
 #define GTEST
 
+#define TRACE_READFILE
+
 //void printBackTract()
 //{
 //  CStringA str;
@@ -562,10 +564,6 @@ TEST(FileMap, PublicMethod1)
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5535)==TRUE);
-  ASSERT_TRUE(memcmp(pBufS5, pBufSFC, 4980)==0);
-  ASSERT_TRUE(memcmp(pBufS5, pBufSFC, 4981)==0);
-  ASSERT_TRUE(memcmp(pBufS5, pBufSFC, 4999)==0);
-  ASSERT_TRUE(memcmp(pBufS5, pBufSFC, 5000)==0);
   ASSERT_TRUE(memcmp(pBufS5, pBufSFC, 5535)==0);
   ASSERT_EQ(5535, sfile.m_dwTotal);
 
@@ -579,6 +577,24 @@ TEST(FileMap, PublicMethod1)
   {
     ASSERT_TRUE(sfile.Save()==TRUE);
     ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(5535, sfile.m_dwTotal);
+
+    fpSFC = fopen("testSFC.bin", "rb");
+    ASSERT_TRUE(fpSFC!=NULL);
+    memset(pBufSFC, 0, 8000);
+    ASSERT_TRUE(fread(pBufSFC, 5535, 1, fpSFC)==1);
+    fclose(fpSFC);
+    ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5535)==0);
+
+    memset(pBufSFC, 0, 8000);
+    ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5535)==TRUE);
+    ASSERT_TRUE(memcmp(pBufS6, pBufSFC, 5535)==0);
+
+    ASSERT_TRUE(sfile.Save()==TRUE);
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(5535, sfile.m_dwTotal);
+
+
     ASSERT_TRUE(sfile.Undo()==TRUE);
     ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
     ASSERT_TRUE(sfile.Undo()==TRUE);
