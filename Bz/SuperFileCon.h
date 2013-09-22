@@ -173,7 +173,13 @@ public:
   }
   void _UndoRedo_DestroyAll()
   {
-    _UndoRedo_RemoveRange(0, m_undo.GetCount());
+    size_t nUndoCount = m_undo.GetCount();
+    for(size_t i=0;i<nUndoCount;i++)
+    {
+      _UndoRedo_ReleaseByIndex(i);
+    }
+    m_undo.RemoveAll();
+    m_savedIndex = m_redoIndex = m_dwHiddenStart = m_dwHiddenSize = 0;
     ATLASSERT(m_undo.GetCount()==0);
   }
   void _ClearSavedFlags()
@@ -885,8 +891,7 @@ public:
 
     TAMADataChunk **pPrevDataChunks = NULL;
     DWORD nPrevDataChunks = 0;
-    BOOL bRet = _FileMap_CreateTAMADataChunks(dwStart, nPrevSize, &pPrevDataChunks, &nPrevDataChunks);
-    if(!bRet)
+    if(!_FileMap_CreateTAMADataChunks(dwStart, nPrevSize, &pPrevDataChunks, &nPrevDataChunks))
     {
       ATLASSERT(FALSE);
       _TAMADataChunks_Release(ppNextDataChunks, 1, FALSE/*bFreeRawPointer*/);
@@ -896,12 +901,22 @@ public:
     pNewUndo->dataPrev = pPrevDataChunks;
     pNewUndo->nDataPrev = nPrevDataChunks;
 
-    _UndoRedo_Add(pNewUndo);
+    if(!_UndoRedo_Add(pNewUndo))
+    {
+      ATLASSERT(FALSE);
+      _TAMADataChunks_Release(ppNextDataChunks, 1, FALSE/*bFreeRawPointer*/);
+      _TAMADataChunks_Release(pPrevDataChunks, nPrevDataChunks, TRUE/*bFreeRawPointer*/);
+      free(pNewUndo);
+      return FALSE;
+    }
 
     if(!_FileMap_OverWriteTAMADataChunks(dwStart, pNewUndo->dataNext, pNewUndo->nDataNext, 0))
     {
       ATLASSERT(FALSE);
-      if(m_undo.GetCount() > 0)_UndoRedo_RemoveByIndex(m_undo.GetCount()-1, FALSE);
+      pNewUndo->dataNext = NULL;
+      pNewUndo->nDataNext = 0;
+      if(m_undo.GetCount() > 0)_UndoRedo_RemoveByIndex(m_undo.GetCount()-1, TRUE/*bFreeRawPointer*/);
+      _TAMADataChunks_Release(ppNextDataChunks, 1, FALSE/*bFreeRawPointer*/);
       return FALSE;
     }
     //m_dwTotal += dwGlow;
@@ -985,10 +1000,20 @@ err_TAMAUndoRedoCreate:
     pNewUndo->dataNext = ppNextDataChunks;
     pNewUndo->nDataNext = 1;
 
-    _UndoRedo_Add(pNewUndo);
+    if(!_UndoRedo_Add(pNewUndo))
+    {
+      ATLASSERT(FALSE);
+      _TAMADataChunks_Release(ppNextDataChunks, 1, FALSE/*bFreeRawPointer*/);
+      free(pNewUndo);
+      return FALSE;
+    }
 
-    BOOL bRetInsertMem = _FileMap_InsertTAMADataChunks(dwInsStart, pNewUndo->dataNext, 1, dwInsSize);
-    ATLASSERT(bRetInsertMem);
+    if(!_FileMap_InsertTAMADataChunks(dwInsStart, pNewUndo->dataNext, 1, dwInsSize))
+    {
+      ATLASSERT(FALSE);
+      if(m_undo.GetCount() > 0)_UndoRedo_RemoveByIndex(m_undo.GetCount()-1, FALSE/*bFreeRawPointer*/);
+      return FALSE;
+    }
     m_dwTotal += dwInsSize;
     ATLASSERT(m_dwTotal > dwInsSize);
     return TRUE;
@@ -1005,8 +1030,7 @@ err_TAMAUndoRedoCreate:
     }
     TAMADataChunk **pDataChunks = NULL;
     DWORD nDataChunks = 0;
-    BOOL bRet = _FileMap_CreateTAMADataChunks(dwDelStart, dwDelSize, &pDataChunks, &nDataChunks);
-    if(!bRet)
+    if(!_FileMap_CreateTAMADataChunks(dwDelStart, dwDelSize, &pDataChunks, &nDataChunks))
     {
       ATLASSERT(FALSE);
       free(pNewUndo);
@@ -1015,10 +1039,20 @@ err_TAMAUndoRedoCreate:
     pNewUndo->dataPrev = pDataChunks;
     pNewUndo->nDataPrev = nDataChunks;
 
-    _UndoRedo_Add(pNewUndo);
+    if(!_UndoRedo_Add(pNewUndo))
+    {
+      ATLASSERT(FALSE);
+      _TAMADataChunks_Release(pDataChunks, nDataChunks, TRUE/*bFreeRawPointer*/);
+      free(pNewUndo);
+      return FALSE;
+    }
 
-    BOOL bRetFileMapDel = _FileMap_Del(dwDelStart, dwDelSize);
-    ATLASSERT(bRetFileMapDel);
+    if(!_FileMap_Del(dwDelStart, dwDelSize))
+    {
+      ATLASSERT(FALSE);
+      if(m_undo.GetCount() > 0)_UndoRedo_RemoveByIndex(m_undo.GetCount()-1, TRUE/*bFreeRawPointer*/);
+      return FALSE;
+    }
     ATLASSERT(m_dwTotal >= dwDelSize);
     m_dwTotal -= dwDelSize;
     return TRUE;
@@ -1054,15 +1088,15 @@ err_TAMAUndoRedoCreate:
   }
   inline BOOL _UndoRedo_Add(TAMAUndoRedo *undo)
   {
-    _PreNewUndo();
+    if(!_PreNewUndo())return FALSE;
     m_redoIndex++;
     m_undo.Add(undo);
     return TRUE;
   }
-  BOOL _CompactHiddenNode()
-  {
-    return TRUE;
-  }
+  //BOOL _CompactHiddenNode()
+  //{
+  //  return TRUE;
+  //}
   inline void _RemoveNeedlessHiddenNode()
   {
     if(m_dwHiddenSize==0)return;
@@ -1477,19 +1511,37 @@ protected:
     return dwSize;
   }
 
-  inline void _UndoRedo_RemoveRange(size_t delStartIndex, size_t nDelSize)
+  BOOL inline _UndoRedo_RemoveRange(size_t delStartIndex, size_t nDelSize, BOOL bFreeRawPointer = TRUE)
   {
+    ATLASSERT(nDelSize);
     for(size_t i=0;i<nDelSize;i++)
     {
-      _UndoRedo_ReleaseByIndex(delStartIndex+i);
+      if(!_UndoRedo_ReleaseByIndex(delStartIndex+i, bFreeRawPointer))
+      {
+        ATLASSERT(FALSE);
+        FatalError();
+        return FALSE;
+      }
     }
     m_undo.RemoveAt(delStartIndex, nDelSize);
     if(delStartIndex<m_savedIndex)m_savedIndex -= nDelSize;
     if(delStartIndex<m_redoIndex)m_redoIndex -= nDelSize;
+    if(delStartIndex<m_dwHiddenStart)m_dwHiddenStart -= nDelSize;
+    return TRUE;
   }
-  BOOL inline _UndoRedo_RemoveByIndex(size_t nIndex, BOOL bFreeRawPointer = TRUE)	{	if(_UndoRedo_Release(m_undo.GetAt(nIndex), bFreeRawPointer)){ m_undo.RemoveAt(nIndex); return TRUE; }
-  return FALSE;}
-  BOOL inline _UndoRedo_ReleaseByIndex(size_t nIndex)	{ return _UndoRedo_Release(m_undo.GetAt(nIndex)); }
+  BOOL inline _UndoRedo_RemoveByIndex(size_t nDelIndex, BOOL bFreeRawPointer = TRUE)
+  {
+    if(!_UndoRedo_Release(m_undo.GetAt(nDelIndex), bFreeRawPointer))return FALSE;
+    m_undo.RemoveAt(nDelIndex);
+    if(nDelIndex < m_savedIndex)m_savedIndex--;
+    if(nDelIndex < m_redoIndex)m_redoIndex--;
+    if(nDelIndex < m_dwHiddenStart)m_dwHiddenStart--;
+    return TRUE;
+  }
+  BOOL inline _UndoRedo_ReleaseByIndex(size_t nIndex, BOOL bFreeRawPointer = TRUE)
+  {
+    return _UndoRedo_Release(m_undo.GetAt(nIndex), bFreeRawPointer);
+  }
   BOOL inline _UndoRedo_Release(TAMAUndoRedo *undo, BOOL bFreeRawPointer = TRUE)
   {
     if(undo==NULL)
