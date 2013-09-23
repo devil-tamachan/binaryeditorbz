@@ -572,7 +572,7 @@ void CBZFormView::InitListMember(int iTag)
 				sVal = SeparateByComma64(qval, true);
 				break;
 			case 12://float
-				sVal.Format(_T("%f"), val);
+				sVal.Format(_T("%f"), *((float*)&val));
 				break;
 			case 9://double
 				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
