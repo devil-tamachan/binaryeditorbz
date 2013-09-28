@@ -31,8 +31,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define FILE_MAPPING	// ###1.60
 
-#include "SuperFileCon.h"
-
 class CBZDoc : public CDocument
 {
 public: // create from serialization only

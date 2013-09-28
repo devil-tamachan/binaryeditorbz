@@ -70,8 +70,10 @@ static int cmpTAMAFILECHUNK(TAMAFILECHUNK *c1, TAMAFILECHUNK *c2)
   return (dw1>dw2)?1:-1;
 }
 RB_HEAD(_TAMAFILECHUNK_HEAD, _TAMAFILECHUNK);
-RB_PROTOTYPE(_TAMAFILECHUNK_HEAD, _TAMAFILECHUNK, linkage, cmpTAMAFILECHUNK);
-RB_GENERATE(_TAMAFILECHUNK_HEAD, _TAMAFILECHUNK, linkage, cmpTAMAFILECHUNK);
+//RB_PROTOTYPE(_TAMAFILECHUNK_HEAD, _TAMAFILECHUNK, linkage, cmpTAMAFILECHUNK);
+//RB_GENERATE(_TAMAFILECHUNK_HEAD, _TAMAFILECHUNK, linkage, cmpTAMAFILECHUNK);
+RB_PROTOTYPE_INTERNAL(_TAMAFILECHUNK_HEAD, _TAMAFILECHUNK, linkage, cmpTAMAFILECHUNK, inline);
+RB_GENERATE_INTERNAL(_TAMAFILECHUNK_HEAD, _TAMAFILECHUNK, linkage, cmpTAMAFILECHUNK, inline);
 
 
 typedef enum {	OF_NOREF, OF_FD, OF_FF } OldFileType;
@@ -100,8 +102,10 @@ static int cmpTAMAOLDFILECHUNK(TAMAOLDFILECHUNK *c1, TAMAOLDFILECHUNK *c2)
   return (dw1>dw2)?1:-1;
 }
 RB_HEAD(_TAMAOLDFILECHUNK_HEAD, _TAMAOLDFILECHUNK);
-RB_PROTOTYPE(_TAMAOLDFILECHUNK_HEAD, _TAMAOLDFILECHUNK, linkage, cmpTAMAOLDFILECHUNK);
-RB_GENERATE(_TAMAOLDFILECHUNK_HEAD, _TAMAOLDFILECHUNK, linkage, cmpTAMAOLDFILECHUNK);
+//RB_PROTOTYPE(_TAMAOLDFILECHUNK_HEAD, _TAMAOLDFILECHUNK, linkage, cmpTAMAOLDFILECHUNK);
+//RB_GENERATE(_TAMAOLDFILECHUNK_HEAD, _TAMAOLDFILECHUNK, linkage, cmpTAMAOLDFILECHUNK);
+RB_PROTOTYPE_INTERNAL(_TAMAOLDFILECHUNK_HEAD, _TAMAOLDFILECHUNK, linkage, cmpTAMAOLDFILECHUNK, inline);
+RB_GENERATE_INTERNAL(_TAMAOLDFILECHUNK_HEAD, _TAMAOLDFILECHUNK, linkage, cmpTAMAOLDFILECHUNK, inline);
 
 
 
@@ -222,7 +226,7 @@ public:
       }
     }
   }
-  BOOL _ExtendFileSize()
+  BOOL _Save_ExtendFileSize()
   {
     if(m_dwTotal <= m_dwTotalSavedFile)return TRUE;
     if(FAILED(m_file.SetSize(m_dwTotal)))return FALSE;
@@ -404,7 +408,7 @@ public:
     if(fileChunk->dwStart < _TAMAFILECHUNK_GetRealStartAddr(fileChunk))return FALSE;
     return TRUE;
   }
-  BOOL _ShiftAllFF()
+  BOOL _Save_ShiftAllFF()
   {
     TAMAFILECHUNK *pLastFileChunk = NULL;
     TAMAFILECHUNK *pChunk;
@@ -415,7 +419,7 @@ public:
         pLastFileChunk = pChunk;
         if(_TAMAFILECHUNK_isRightShift(pChunk))
         {
-          if(!_ShiftAllFileChunksAfterArg(pChunk))
+          if(!_Save_ShiftAllFileChunksAfterArg(pChunk))
           {
             ATLASSERT(FALSE);
             FatalError();
@@ -426,7 +430,7 @@ public:
     }
     if(pLastFileChunk && !pLastFileChunk->bSaved)
     {
-      if(!_ShiftAllFileChunksAfterArg(pChunk))
+      if(!_Save_ShiftAllFileChunksAfterArg(pChunk))
       {
         ATLASSERT(FALSE);
         FatalError();
@@ -435,7 +439,7 @@ public:
     }
     return TRUE;
   }
-  BOOL _WriteAllDF()
+  BOOL _Save_WriteAllDF()
   {
     TAMAFILECHUNK *pChunk;
     RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
@@ -449,7 +453,7 @@ public:
     }
     return TRUE;
   }
-  void _UpdateAllDataChunkSavingType(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead)
+  void _Save_UpdateAllDataChunkSavingType(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead)
   {
     _ClearDataChunkSavingFlag();
 
@@ -637,23 +641,25 @@ public:
     _ClearSavedFlags();
     struct _TAMAOLDFILECHUNK_HEAD oldFilemapHead;
     _OldFileMap_Make(&oldFilemapHead, &m_file);
-    _UpdateAllDataChunkSavingType(&oldFilemapHead);
+    _Save_UpdateAllDataChunkSavingType(&oldFilemapHead);
     _OldFileMap_FreeAll(&oldFilemapHead, TRUE);//FALSE);
-    if(!_ExtendFileSize()
-      || !_ShiftAllFF()
-      || !_WriteAllDF() )
+    if(!_Save_ExtendFileSize()
+      || !_Save_ShiftAllFF()
+      || !_Save_WriteAllDF() )
     {
       ATLASSERT(FALSE);
       return FALSE;
     }
+#ifdef GTEST
 #ifdef DEBUG
     ATLASSERT(!_Debug_SearchUnSavedChunk());
-#endif
+#endif //DEBUG
+#endif //GTEST
     //_UndoRedo_CreateRefSrcFileDataChunk();
     m_savedIndex = m_redoIndex;
     return TRUE;
   }
-  BOOL _ShiftAllFileChunksAfterArg(TAMAFILECHUNK *fileChunk)
+  BOOL _Save_ShiftAllFileChunksAfterArg(TAMAFILECHUNK *fileChunk)
   {
     while(fileChunk) {
       if(!fileChunk->bSaved && fileChunk->dataChunk->dataType == CHUNK_FILE)
@@ -1100,6 +1106,12 @@ err_TAMAUndoRedoCreate:
   inline void _RemoveNeedlessHiddenNode()
   {
     if(m_dwHiddenSize==0)return;
+#ifdef DEBUG
+    for(DWORD i=0; i<m_dwHiddenSize; i++)
+    {
+      ATLASSERT(m_undo[m_dwHiddenStart + i]->bHidden==TRUE);
+    }
+#endif
     _UndoRedo_RemoveRange(m_dwHiddenStart, m_dwHiddenSize);
     /*
     size_t nStartIndex = m_dwHiddenStart;
@@ -1158,6 +1170,7 @@ err_TAMAUndoRedoCreate:
       newUndo->mode = UNDO_INS;
       break;
     case UNDO_OVR:
+      newUndo->mode = UNDO_OVR;
       break;
     }
     newUndo->dwStart = srcUndo->dwStart;
@@ -1239,7 +1252,14 @@ err_TAMAUndoRedoCreate:
   {
     if(!m_file.m_h || GetUndoCount()==0)return FALSE;
     ATLTRACE("SuperFileCon::Undo\n");
-    TAMAUndoRedo *undo = m_undo[--m_redoIndex];
+    m_redoIndex--;
+    if(m_dwHiddenSize!=0 && m_redoIndex < m_undo.GetCount() && m_undo[m_redoIndex]->bHidden)
+    {
+      m_redoIndex-=m_dwHiddenSize;
+      ATLASSERT(m_undo[m_redoIndex+1]->bHidden);
+    }
+    ATLASSERT(m_undo[m_redoIndex]->bHidden==FALSE);
+    TAMAUndoRedo *undo = m_undo[m_redoIndex];
     switch(undo->mode)
     {
     case UNDO_INS:
@@ -1270,7 +1290,14 @@ err_TAMAUndoRedoCreate:
   {
     if(!m_file.m_h || GetRedoCount()==0)return FALSE;
     ATLTRACE("SuperFileCon::Redo\n");
-    TAMAUndoRedo *undo = m_undo[m_redoIndex++];
+    ATLASSERT(m_undo[m_redoIndex]->bHidden==FALSE);
+    TAMAUndoRedo *undo = m_undo[m_redoIndex];
+    m_redoIndex++;
+    if(m_dwHiddenSize!=0 && m_redoIndex < m_undo.GetCount() && m_undo[m_redoIndex]->bHidden)
+    {
+      m_redoIndex+=m_dwHiddenSize;
+      ATLASSERT(m_undo[m_redoIndex-1]->bHidden);
+    }
     switch(undo->mode)
     {
     case UNDO_INS:
@@ -2047,7 +2074,7 @@ protected:
     return TRUE;
   }
 
-  TAMAFILECHUNK* __FileMap_LowRemove(TAMAFILECHUNK *pRemove)
+  inline TAMAFILECHUNK* __FileMap_LowRemove(TAMAFILECHUNK *pRemove)
   {
     return RB_REMOVE(_TAMAFILECHUNK_HEAD, &m_filemapHead, pRemove);
   }

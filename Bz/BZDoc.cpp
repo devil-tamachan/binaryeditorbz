@@ -828,7 +828,3 @@ BOOL CBZDoc::SaveModified()
 
 #endif //FILE_MAPPING
 
-
-#include "SuperFileCon.h"
-
-RB_GENERATE(_TAMAFILECHUNK_HEAD, _TAMAFILECHUNK, linkage, cmpTAMAFILECHUNK);

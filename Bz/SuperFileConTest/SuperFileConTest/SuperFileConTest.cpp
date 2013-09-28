@@ -293,7 +293,7 @@ TEST(FileMap, PublicMethod1)
   LPBYTE pBufTmp = (LPBYTE)malloc(8000);
   ASSERT_TRUE(pBufTmp!=NULL);
   fillRandMT(pBufTmp, 400, time(NULL));
-  ASSERT_TRUE(sfile.Write(pBufTmp, 678, 400)==TRUE);
+  ASSERT_TRUE(sfile.Write(pBufTmp, 678, 400)==TRUE);            //Write(Start:678, Size:400)(S-W1-C)
   ASSERT_EQ(3, sfile._FileMap_DEBUG_GetCount());
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
@@ -312,7 +312,7 @@ TEST(FileMap, PublicMethod1)
   memcpy(pBufS3, pBufSFC, 5000);
 
   fillRandMT(pBufTmp, 800);
-  ASSERT_TRUE(sfile.Write(pBufTmp, 1500, 800)==TRUE);
+  ASSERT_TRUE(sfile.Write(pBufTmp, 1500, 800)==TRUE);            //Write(Start:1500, Size:800)(S-W2-C)
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
   ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
@@ -330,7 +330,7 @@ TEST(FileMap, PublicMethod1)
   memcpy(pBufS2, pBufSFC, 5000);
 
   fillRandMT(pBufTmp, 1000);
-  ASSERT_TRUE(sfile.Write(pBufTmp, 700, 1000)==TRUE);
+  ASSERT_TRUE(sfile.Write(pBufTmp, 700, 1000)==TRUE);            //Write(Start:700, Size:1000)(S-W3-C)
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
   ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
@@ -348,7 +348,7 @@ TEST(FileMap, PublicMethod1)
   memcpy(pBufS1, pBufSFC, 5000);
 
   fillRandMT(pBufTmp, 200);
-  ASSERT_TRUE(sfile.Write(pBufTmp, 680, 200)==TRUE);
+  ASSERT_TRUE(sfile.Write(pBufTmp, 680, 200)==TRUE);            //Write(Start:680, Size:200)(S-W4-C)
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
   ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
@@ -361,7 +361,7 @@ TEST(FileMap, PublicMethod1)
   ASSERT_EQ(0, sfile.GetRedoCount());
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
 
-  ASSERT_TRUE(sfile.Undo()==TRUE);
+  ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(S-W3-C-W1)
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
@@ -373,7 +373,7 @@ TEST(FileMap, PublicMethod1)
   ASSERT_EQ(1, sfile.GetRedoCount());
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
 
-  ASSERT_TRUE(sfile.Redo()==TRUE);
+  ASSERT_TRUE(sfile.Redo()==TRUE);                               //Redo(S-W4-C)
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
@@ -385,7 +385,7 @@ TEST(FileMap, PublicMethod1)
   ASSERT_EQ(0, sfile.GetRedoCount());
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
 
-  ASSERT_TRUE(sfile.Undo()==TRUE);
+  ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(S-W3-C-W1)
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
@@ -397,7 +397,7 @@ TEST(FileMap, PublicMethod1)
   ASSERT_EQ(1, sfile.GetRedoCount());
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
 
-  ASSERT_TRUE(sfile.Undo()==TRUE);
+  ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(S-W2-C-W2)
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
@@ -409,7 +409,7 @@ TEST(FileMap, PublicMethod1)
   ASSERT_EQ(2, sfile.GetRedoCount());
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
 
-  ASSERT_TRUE(sfile.Undo()==TRUE);
+  ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(S-W1-C-W3)
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
@@ -421,7 +421,7 @@ TEST(FileMap, PublicMethod1)
   ASSERT_EQ(3, sfile.GetRedoCount());
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
 
-  ASSERT_TRUE(sfile.Undo()==TRUE);
+  ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(S-W4-C)
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
@@ -433,13 +433,13 @@ TEST(FileMap, PublicMethod1)
   ASSERT_EQ(4, sfile.GetRedoCount());
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
 
-  ASSERT_TRUE(sfile.Undo()==FALSE);
+  ASSERT_TRUE(sfile.Undo()==FALSE);                               //Undo(Fail)
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
   memcpy(pBufOrig, pBufS4, 5000);
   ASSERT_EQ(5000, sfile.m_dwTotal);
 
   fillRandMT(pBufTmp, 50);
-  ASSERT_TRUE(sfile.Write(pBufTmp, 200, 50)==TRUE);
+  ASSERT_TRUE(sfile.Write(pBufTmp, 200, 50)==TRUE);              //Write(Start:200, Size:50)(S-W1-C)
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
   ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
@@ -458,7 +458,7 @@ TEST(FileMap, PublicMethod1)
 
   ASSERT_EQ(0, sfile.m_savedIndex);
   ASSERT_EQ(1, sfile.m_redoIndex);
-  ASSERT_TRUE(sfile.Save()==TRUE);
+  ASSERT_TRUE(sfile.Save()==TRUE);                               //Save(W1-CS)
   ASSERT_EQ(1, sfile.m_savedIndex);
   ASSERT_EQ(5000, sfile.m_dwTotal);
 
@@ -472,7 +472,7 @@ TEST(FileMap, PublicMethod1)
   pBufOrig = (LPBYTE)realloc(pBufOrig, 8000);
 
   fillRandMT(pBufTmp, 555);
-  ASSERT_TRUE(sfile.Write(pBufTmp, 4980, 555)==TRUE);
+  ASSERT_TRUE(sfile.Write(pBufTmp, 4980, 555)==TRUE);            //Write(Start:4980, Size:555)(W1-S-W1-C)
   ASSERT_EQ(5535, sfile.m_dwTotal);
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5535)==TRUE);
@@ -491,7 +491,7 @@ TEST(FileMap, PublicMethod1)
 
   ASSERT_EQ(1, sfile.m_savedIndex);
   ASSERT_EQ(2, sfile.m_redoIndex);
-  ASSERT_TRUE(sfile.Save()==TRUE);
+  ASSERT_TRUE(sfile.Save()==TRUE);                               //Save(W2-CS)
   ASSERT_EQ(2, sfile.m_savedIndex);
   ASSERT_EQ(5535, sfile.m_dwTotal);
 
@@ -507,7 +507,7 @@ TEST(FileMap, PublicMethod1)
   ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5535)==0);
 
   fillRandMT(pBufTmp, 420);
-  ASSERT_TRUE(sfile.Write(pBufTmp, 3500, 420)==TRUE);
+  ASSERT_TRUE(sfile.Write(pBufTmp, 3500, 420)==TRUE);            //Write(Start:3500, Size:420)(W2-S-W1-C)
   ASSERT_EQ(5535, sfile.m_dwTotal);
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5535)==TRUE);
@@ -531,7 +531,7 @@ TEST(FileMap, PublicMethod1)
 
   ASSERT_EQ(2, sfile.m_savedIndex);
   ASSERT_EQ(3, sfile.m_redoIndex);
-  ASSERT_TRUE(sfile.Save()==TRUE);
+  ASSERT_TRUE(sfile.Save()==TRUE);                               //Save(W3-CS)
   ASSERT_EQ(3, sfile.m_savedIndex);
   ASSERT_EQ(5535, sfile.m_dwTotal);
 
@@ -546,36 +546,36 @@ TEST(FileMap, PublicMethod1)
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5535)==TRUE);
   ASSERT_TRUE(memcmp(pBufS6, pBufSFC, 5535)==0);
 
-  ASSERT_TRUE(sfile.Undo()==TRUE);
+  ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(W2-C-W1-S)
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5535)==TRUE);
   ASSERT_TRUE(memcmp(pBufS5, pBufSFC, 5535)==0);
   ASSERT_EQ(5535, sfile.m_dwTotal);
 
-  ASSERT_TRUE(sfile.Undo()==TRUE);
+  ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(W1-C-W2-S)
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
   ASSERT_TRUE(memcmp(pBufS7, pBufSFC, 5000)==0);
   ASSERT_EQ(5000, sfile.m_dwTotal);
 
-  ASSERT_TRUE(sfile.Redo()==TRUE);
+  ASSERT_TRUE(sfile.Redo()==TRUE);                               //Redo(W2-C-W1-S)
   ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5535)==TRUE);
   ASSERT_TRUE(memcmp(pBufS5, pBufSFC, 5535)==0);
   ASSERT_EQ(5535, sfile.m_dwTotal);
 
-  ASSERT_TRUE(sfile.Redo()==TRUE);
+  ASSERT_TRUE(sfile.Redo()==TRUE);                               //Redo(W3-CS)
   memset(pBufSFC, 0, 8000);
   ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5535)==TRUE);
   ASSERT_TRUE(memcmp(pBufS6, pBufSFC, 5535)==0);
   ASSERT_EQ(5535, sfile.m_dwTotal);
 
-  //HiddenNodeMakeTest
+  //HiddenNodeMakeTest1
   {
-    ASSERT_TRUE(sfile.Save()==TRUE);
+    ASSERT_TRUE(sfile.Save()==TRUE);                               //Save(W3-CS)
     ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
     ASSERT_EQ(5535, sfile.m_dwTotal);
 
@@ -590,14 +590,14 @@ TEST(FileMap, PublicMethod1)
     ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5535)==TRUE);
     ASSERT_TRUE(memcmp(pBufS6, pBufSFC, 5535)==0);
 
-    ASSERT_TRUE(sfile.Save()==TRUE);
+    ASSERT_TRUE(sfile.Save()==TRUE);                               //Save
     ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
     ASSERT_EQ(5535, sfile.m_dwTotal);
 
 
-    ASSERT_TRUE(sfile.Undo()==TRUE);
+    ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(W2-C-W1-S)
     ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
-    ASSERT_TRUE(sfile.Undo()==TRUE);
+    ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(W1-C-W2-S)
     ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
 
     ASSERT_EQ(3, sfile.m_undo.GetCount());
@@ -611,7 +611,7 @@ TEST(FileMap, PublicMethod1)
     memcpy(pBufOrig, pBufS7, 8000);
 
     fillRandMT(pBufTmp, 333);
-    ASSERT_TRUE(sfile.Write(pBufTmp, 2500, 333)==TRUE);
+    ASSERT_TRUE(sfile.Write(pBufTmp, 2500, 333)==TRUE);            //Write(Start:2500, Size:333)(W1-R[W2-S-RW2]-W1-C)
     memset(pBufSFC, 0, 8000);
     ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
     ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
@@ -625,6 +625,12 @@ TEST(FileMap, PublicMethod1)
     ATLTRACE("m_undo[3]: bHidden=%s\n", sfile.m_undo[3]->bHidden ? "TRUE":"FALSE");
     ATLTRACE("m_undo[4]: bHidden=%s\n", sfile.m_undo[4]->bHidden ? "TRUE":"FALSE");
     ATLTRACE("m_undo[5]: bHidden=%s\n", sfile.m_undo[5]->bHidden ? "TRUE":"FALSE");
+    ASSERT_TRUE(sfile.m_undo[0]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[1]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[2]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[3]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[4]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[5]->bHidden==FALSE);
     ASSERT_EQ(6, sfile.m_undo.GetCount());
     ASSERT_EQ(2, sfile.GetUndoCount());
     ASSERT_EQ(0, sfile.GetRedoCount());
@@ -634,7 +640,7 @@ TEST(FileMap, PublicMethod1)
   }
   //HiddenNodeDeleteTest1(Left)
   {
-    ASSERT_TRUE(sfile.Save()==TRUE);
+    ASSERT_TRUE(sfile.Save()==TRUE);                               //Save(W2-CS)
     ASSERT_EQ(2, sfile.m_undo.GetCount());
     ASSERT_EQ(2, sfile.GetUndoCount());
     ASSERT_EQ(0, sfile.GetRedoCount());
@@ -643,6 +649,8 @@ TEST(FileMap, PublicMethod1)
     ASSERT_EQ(2, sfile.m_redoIndex);
     ATLTRACE("m_undo[0]: bHidden=%s\n", sfile.m_undo[0]->bHidden ? "TRUE":"FALSE");
     ATLTRACE("m_undo[1]: bHidden=%s\n", sfile.m_undo[1]->bHidden ? "TRUE":"FALSE");
+    ASSERT_TRUE(sfile.m_undo[0]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[1]->bHidden==FALSE);
 
     fpSFC = fopen("testSFC.bin", "rb");
     ASSERT_TRUE(fpSFC!=NULL);
@@ -652,7 +660,7 @@ TEST(FileMap, PublicMethod1)
     ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
 
     fillRandMT(pBufTmp, 111);
-    ASSERT_TRUE(sfile.Write(pBufTmp, 150, 111)==TRUE);
+    ASSERT_TRUE(sfile.Write(pBufTmp, 150, 111)==TRUE);            //Write(Start:150, Size:111)(W2-S-W1-C)
     memset(pBufSFC, 0, 8000);
     ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
     ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
@@ -660,7 +668,228 @@ TEST(FileMap, PublicMethod1)
     ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
     ASSERT_EQ(5000, sfile.m_dwTotal);
 
-    ASSERT_TRUE(sfile.Save()==TRUE);
+    ASSERT_TRUE(sfile.Save()==TRUE);                               //Save(W3-CS)
+    fpSFC = fopen("testSFC.bin", "rb");
+    ASSERT_TRUE(fpSFC!=NULL);
+    memset(pBufSFC, 0, 8000);
+    ASSERT_TRUE(fread(pBufSFC, 5000, 1, fpSFC)==1);
+    fclose(fpSFC);
+    ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+  }
+
+  LPBYTE pBufS8 = (LPBYTE)malloc(8000);
+  ASSERT_TRUE(pBufS8!=NULL);
+  memcpy(pBufS8, pBufSFC, 8000);
+
+  //HiddenNodeDeleteTest2(Right)
+  {
+    fillRandMT(pBufTmp, 868);
+    ASSERT_TRUE(sfile.Write(pBufTmp, 120, 868)==TRUE);            //Write(Start:120, Size:868)(W3-S-W1-C)
+    memset(pBufSFC, 0, 8000);
+    ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+    ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
+    memcpy(pBufOrig+120, pBufTmp, 868);
+    ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+    ASSERT_EQ(5000, sfile.m_dwTotal);
+
+    fillRandMT(pBufTmp, 244);
+    ASSERT_TRUE(sfile.Write(pBufTmp, 145, 244)==TRUE);            //Write(Start:145, Size:244)(W3-S-W2-C)
+    memset(pBufSFC, 0, 8000);
+    ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+    ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
+    memcpy(pBufOrig+145, pBufTmp, 244);
+    ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+    ASSERT_EQ(5000, sfile.m_dwTotal);
+
+    ASSERT_TRUE(sfile.Save()==TRUE);                               //Save(W5-CS)
+    fpSFC = fopen("testSFC.bin", "rb");
+    ASSERT_TRUE(fpSFC!=NULL);
+    memset(pBufSFC, 0, 8000);
+    ASSERT_TRUE(fread(pBufSFC, 5000, 1, fpSFC)==1);
+    fclose(fpSFC);
+    ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+    
+    ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(W4-C-W1-S)
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(W3-C-W2-S)
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+
+    ASSERT_EQ(5, sfile.m_undo.GetCount());
+    ASSERT_EQ(3, sfile.GetUndoCount());
+    ASSERT_EQ(2, sfile.GetRedoCount());
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(5, sfile.m_savedIndex);
+    ASSERT_EQ(3, sfile.m_redoIndex);
+    ASSERT_EQ(5000, sfile.m_dwTotal);
+
+    memcpy(pBufOrig, pBufS8, 8000);
+
+    fillRandMT(pBufTmp, 10);
+    ASSERT_TRUE(sfile.Write(pBufTmp, 125, 10)==TRUE);            //Write(Start:125, Size:10)(W3-R[W2-S-RW2]-W1-C)
+    memset(pBufSFC, 0, 8000);
+    ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+    ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
+    memcpy(pBufOrig+125, pBufTmp, 10);
+    ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+    ASSERT_EQ(5000, sfile.m_dwTotal);
+
+    ATLTRACE("m_undo[0]: bHidden=%s\n", sfile.m_undo[0]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[1]: bHidden=%s\n", sfile.m_undo[1]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[2]: bHidden=%s\n", sfile.m_undo[2]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[3]: bHidden=%s\n", sfile.m_undo[3]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[4]: bHidden=%s\n", sfile.m_undo[4]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[5]: bHidden=%s\n", sfile.m_undo[5]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[6]: bHidden=%s\n", sfile.m_undo[6]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[7]: bHidden=%s\n", sfile.m_undo[7]->bHidden ? "TRUE":"FALSE");
+    ASSERT_TRUE(sfile.m_undo[0]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[1]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[2]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[3]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[4]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[5]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[6]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[7]->bHidden==FALSE);
+    ASSERT_EQ(8, sfile.m_undo.GetCount());
+    ASSERT_EQ(4, sfile.GetUndoCount());
+    ASSERT_EQ(0, sfile.GetRedoCount());
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(5, sfile.m_savedIndex);
+    ASSERT_EQ(8, sfile.m_redoIndex);
+    
+    ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(W3-R[W2-S-RW2]-C-W1)
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(7, sfile.m_redoIndex);
+    ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(W2-C-W1-R[W2-S-RW2]-W1)
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(2, sfile.m_redoIndex);
+    ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(W1-C-W2-R[W2-S-RW2]-W1)
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(1, sfile.m_redoIndex);
+
+    ATLTRACE("m_undo[0]: bHidden=%s\n", sfile.m_undo[0]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[1]: bHidden=%s\n", sfile.m_undo[1]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[2]: bHidden=%s\n", sfile.m_undo[2]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[3]: bHidden=%s\n", sfile.m_undo[3]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[4]: bHidden=%s\n", sfile.m_undo[4]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[5]: bHidden=%s\n", sfile.m_undo[5]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[6]: bHidden=%s\n", sfile.m_undo[6]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[7]: bHidden=%s\n", sfile.m_undo[7]->bHidden ? "TRUE":"FALSE");
+    ASSERT_TRUE(sfile.m_undo[0]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[1]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[2]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[3]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[4]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[5]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[6]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[7]->bHidden==FALSE);
+    ASSERT_EQ(8, sfile.m_undo.GetCount());
+    ASSERT_EQ(1, sfile.GetUndoCount());
+    ASSERT_EQ(3, sfile.GetRedoCount());
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(5, sfile.m_savedIndex);
+    ASSERT_EQ(1, sfile.m_redoIndex);
+    
+    ASSERT_TRUE(sfile.Redo()==TRUE);                               //Redo(W2-C-W1-R[W2-S-RW2]-W1)
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(2, sfile.m_redoIndex);
+    ASSERT_TRUE(sfile.Redo()==TRUE);                               //Redo(W3-R[W2-S-RW2]-C-W1)
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(7, sfile.m_redoIndex);
+    ASSERT_TRUE(sfile.Redo()==TRUE);                               //Redo(W3-R[W2-S-RW2]-W1-C)
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(8, sfile.m_redoIndex);
+
+    ATLTRACE("m_undo[0]: bHidden=%s\n", sfile.m_undo[0]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[1]: bHidden=%s\n", sfile.m_undo[1]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[2]: bHidden=%s\n", sfile.m_undo[2]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[3]: bHidden=%s\n", sfile.m_undo[3]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[4]: bHidden=%s\n", sfile.m_undo[4]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[5]: bHidden=%s\n", sfile.m_undo[5]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[6]: bHidden=%s\n", sfile.m_undo[6]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[7]: bHidden=%s\n", sfile.m_undo[7]->bHidden ? "TRUE":"FALSE");
+    ASSERT_TRUE(sfile.m_undo[0]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[1]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[2]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[3]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[4]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[5]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[6]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[7]->bHidden==FALSE);
+    ASSERT_EQ(8, sfile.m_undo.GetCount());
+    ASSERT_EQ(4, sfile.GetUndoCount());
+    ASSERT_EQ(0, sfile.GetRedoCount());
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(5, sfile.m_savedIndex);
+    ASSERT_EQ(8, sfile.m_redoIndex);
+    
+    ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(W3-R[W2-S-RW2]-C-W1)
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(7, sfile.m_redoIndex);
+    ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(W2-C-W1-R[W2-S-RW2]-W1)
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(2, sfile.m_redoIndex);
+    ASSERT_TRUE(sfile.Undo()==TRUE);                               //Undo(W1-C-W2-R[W2-S-RW2]-W1)
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(1, sfile.m_redoIndex);
+
+    ATLTRACE("m_undo[0]: bHidden=%s\n", sfile.m_undo[0]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[1]: bHidden=%s\n", sfile.m_undo[1]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[2]: bHidden=%s\n", sfile.m_undo[2]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[3]: bHidden=%s\n", sfile.m_undo[3]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[4]: bHidden=%s\n", sfile.m_undo[4]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[5]: bHidden=%s\n", sfile.m_undo[5]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[6]: bHidden=%s\n", sfile.m_undo[6]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[7]: bHidden=%s\n", sfile.m_undo[7]->bHidden ? "TRUE":"FALSE");
+    ASSERT_TRUE(sfile.m_undo[0]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[1]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[2]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[3]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[4]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[5]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[6]->bHidden==TRUE);
+    ASSERT_TRUE(sfile.m_undo[7]->bHidden==FALSE);
+    ASSERT_EQ(8, sfile.m_undo.GetCount());
+    ASSERT_EQ(1, sfile.GetUndoCount());
+    ASSERT_EQ(3, sfile.GetRedoCount());
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(5, sfile.m_savedIndex);
+    ASSERT_EQ(1, sfile.m_redoIndex);
+
+    ASSERT_TRUE(sfile.Save()==TRUE);                               //Save(W1-CS-W3)
+    ASSERT_EQ(4, sfile.m_undo.GetCount());
+    ASSERT_EQ(1, sfile.GetUndoCount());
+    ASSERT_EQ(3, sfile.GetRedoCount());
+    ASSERT_TRUE(sfile._FileMap_DEBUG_ValidationCheck());
+    ASSERT_EQ(1, sfile.m_savedIndex);
+    ASSERT_EQ(1, sfile.m_redoIndex);
+    ATLTRACE("m_undo[0]: bHidden=%s\n", sfile.m_undo[0]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[1]: bHidden=%s\n", sfile.m_undo[1]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[2]: bHidden=%s\n", sfile.m_undo[2]->bHidden ? "TRUE":"FALSE");
+    ATLTRACE("m_undo[3]: bHidden=%s\n", sfile.m_undo[3]->bHidden ? "TRUE":"FALSE");
+    ASSERT_TRUE(sfile.m_undo[0]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[1]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[2]->bHidden==FALSE);
+    ASSERT_TRUE(sfile.m_undo[3]->bHidden==FALSE);
+
+    memcpy(pBufOrig, pBufS7, 8000);
+
+    fpSFC = fopen("testSFC.bin", "rb");
+    ASSERT_TRUE(fpSFC!=NULL);
+    memset(pBufSFC, 0, 8000);
+    ASSERT_TRUE(fread(pBufSFC, 5000, 1, fpSFC)==1);
+    fclose(fpSFC);
+    ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+
+    fillRandMT(pBufTmp, 111);
+    ASSERT_TRUE(sfile.Write(pBufTmp, 338, 243)==TRUE);            //Write(Start:338, Size:243)(W1-S-W1-C)
+    memset(pBufSFC, 0, 8000);
+    ASSERT_TRUE(sfile.Read(pBufSFC, 0, 5000)==TRUE);
+    ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)!=0);
+    memcpy(pBufOrig+338, pBufTmp, 243);
+    ASSERT_TRUE(memcmp(pBufOrig, pBufSFC, 5000)==0);
+    ASSERT_EQ(5000, sfile.m_dwTotal);
+
+    ASSERT_TRUE(sfile.Save()==TRUE);                               //Save(W2-CS)
     fpSFC = fopen("testSFC.bin", "rb");
     ASSERT_TRUE(fpSFC!=NULL);
     memset(pBufSFC, 0, 8000);
