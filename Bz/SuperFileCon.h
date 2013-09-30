@@ -229,6 +229,7 @@ public:
   BOOL _Save_ExtendFileSize()
   {
     if(m_dwTotal <= m_dwTotalSavedFile)return TRUE;
+    ATLTRACE("Change File Size: %u -> %u\n", m_dwTotalSavedFile, m_dwTotal);
     if(FAILED(m_file.SetSize(m_dwTotal)))return FALSE;
     TAMAFILECHUNK *fileChunk = __FileMap_LowMax();
     while(fileChunk && fileChunk->dwEnd >= m_dwTotalSavedFile)
@@ -248,8 +249,9 @@ public:
             if(fileChunk->dwStart < m_dwTotalSavedFile-1)
             {
               DWORD dwShiftStart = m_dwTotalSavedFile-1;
+              DWORD dwRestoreOffset = fileChunk->dwEnd;
               _FileMap_SplitPoint(dwShiftStart);
-              fileChunk = RB_MAX(_TAMAFILECHUNK_HEAD, &m_filemapHead);
+              fileChunk = _FileMap_LookUp(dwRestoreOffset);
             }
             if(!_TAMAFILECHUNK_WriteMemChunk(fileChunk))return FALSE;
             fileChunk->bSaved = TRUE;
@@ -430,7 +432,7 @@ public:
     }
     if(pLastFileChunk && !pLastFileChunk->bSaved)
     {
-      if(!_Save_ShiftAllFileChunksAfterArg(pChunk))
+      if(!_Save_ShiftAllFileChunksAfterArg(pLastFileChunk))
       {
         ATLASSERT(FALSE);
         FatalError();
@@ -679,20 +681,23 @@ public:
     ATLASSERT(fileChunk);
     ATLASSERT(fileChunk->bSaved==FALSE);
     ATLASSERT(fileChunk->dataChunk->dataType == CHUNK_FILE);
-    BOOL bRet;
+    BOOL bRet = FALSE;
     if(_TAMAFILECHUNK_isRightShift(fileChunk))
     {
-      bRet = _TAMAFILECHUNK_ShiftFileChunkR(fileChunk);
+      if(!_TAMAFILECHUNK_ShiftFileChunkR(fileChunk))
+      {
+        ATLASSERT(FALSE);
+        return FALSE;
+      }
     } else {
-      bRet = _TAMAFILECHUNK_ShiftFileChunkL(fileChunk);
-    }
-    if(!bRet)
-    {
-      ATLASSERT(FALSE);
-      return FALSE;
+      if(!_TAMAFILECHUNK_ShiftFileChunkL(fileChunk))
+      {
+        ATLASSERT(FALSE);
+        return FALSE;
+      }
     }
     fileChunk->bSaved = TRUE;
-    return bRet;
+    return TRUE;
   }
 
   DWORD _TAMAFILECHUNK_GetRealStartAddr(TAMAFILECHUNK* fileChunk)
@@ -723,6 +728,11 @@ public:
     CWaitCursor wait;
     ATLTRACE("SuperFileCon::Save\n");
     BOOL bRet = _Save_ProccessAllChunks();
+    if(m_dwTotal < m_dwTotalSavedFile)
+    {
+      ATLTRACE("Change File Size: %u -> %u\n", m_dwTotalSavedFile, m_dwTotal);
+      if(FAILED(m_file.SetSize(m_dwTotal)))return FALSE;
+    }
     m_dwTotalSavedFile = m_dwTotal;
     _RemoveNeedlessHiddenNode();
     m_file.Flush();
@@ -972,7 +982,7 @@ err_TAMAUndoRedoCreate:
   }
 
   // Insert/Delete
-  BOOL Insert(DWORD dwInsStart, LPBYTE srcData, DWORD dwInsSize)
+  BOOL Insert(LPBYTE srcData, DWORD dwInsStart, DWORD dwInsSize)
   {
     ATLTRACE("SuperFileCon::Insert\n");
     if(!m_file.m_h || dwInsSize==0)return FALSE;
@@ -983,11 +993,11 @@ err_TAMAUndoRedoCreate:
       return FALSE;
     }
     memcpy(pData, srcData, dwInsSize);
-    BOOL bRet = InsertAssign(dwInsStart, pData, dwInsSize);
+    BOOL bRet = InsertAssign(pData, dwInsStart, dwInsSize);
     if(!bRet)free(pData);
     return bRet;
   }
-  BOOL InsertAssign(DWORD dwInsStart, LPBYTE srcDataDetached/*Insert()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwInsSize)
+  BOOL InsertAssign(LPBYTE srcDataDetached/*Insert()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwInsStart, DWORD dwInsSize)
   {
     if(!m_file.m_h || dwInsSize==0)return FALSE;
     TAMAUndoRedo *pNewUndo = _TAMAUndoRedo_Create(UNDO_INS, dwInsStart, NULL, 0, NULL, 0);
@@ -1020,8 +1030,6 @@ err_TAMAUndoRedoCreate:
       if(m_undo.GetCount() > 0)_UndoRedo_RemoveByIndex(m_undo.GetCount()-1, FALSE/*bFreeRawPointer*/);
       return FALSE;
     }
-    m_dwTotal += dwInsSize;
-    ATLASSERT(m_dwTotal > dwInsSize);
     return TRUE;
   }
   BOOL Delete(DWORD dwDelStart, DWORD dwDelSize)
@@ -1059,8 +1067,6 @@ err_TAMAUndoRedoCreate:
       if(m_undo.GetCount() > 0)_UndoRedo_RemoveByIndex(m_undo.GetCount()-1, TRUE/*bFreeRawPointer*/);
       return FALSE;
     }
-    ATLASSERT(m_dwTotal >= dwDelSize);
-    m_dwTotal -= dwDelSize;
     return TRUE;
   }
   BOOL _PreNewUndo()
@@ -1263,10 +1269,13 @@ err_TAMAUndoRedoCreate:
     switch(undo->mode)
     {
     case UNDO_INS:
+    {
       ATLASSERT(undo->dataNext);
       ATLASSERT(undo->dataNext[0]);
-      _FileMap_Del(undo->dwStart, undo->dataNext[0]->dwSize);
+      DWORD dwNextSize = _TAMADATACHUNKS_GetSumSize(undo->dataNext, undo->nDataNext);
+      _FileMap_Del(undo->dwStart, dwNextSize);
       break;
+    }
     case UNDO_DEL:
       ATLASSERT(undo->dataPrev);
       _FileMap_InsertTAMADataChunks(undo->dwStart, undo->dataPrev, undo->nDataPrev);
@@ -1305,9 +1314,12 @@ err_TAMAUndoRedoCreate:
       _FileMap_InsertTAMADataChunks(undo->dwStart, undo->dataNext, undo->nDataNext);
       break;
     case UNDO_DEL:
-      ATLASSERT(undo->dataPrev);
-      ATLASSERT(undo->dataPrev[0]);
-      _FileMap_Del(undo->dwStart, undo->dataPrev[0]->dwSize);
+      {
+        ATLASSERT(undo->dataPrev);
+        ATLASSERT(undo->dataPrev[0]);
+        DWORD dwPrevSize = _TAMADATACHUNKS_GetSumSize(undo->dataPrev, undo->nDataPrev);
+        _FileMap_Del(undo->dwStart, dwPrevSize);
+      }
       break;
     case UNDO_OVR:
       {
@@ -1445,8 +1457,7 @@ protected:
       return FALSE;
     }
     DWORD dwMoveStart = dwInsStart + dwShiftSize - dwCopySize;
-    BOOL bRet = FALSE;
-    ATLTRACE("ShiftFileR: 0x%08X(%u) (Size:%u) >>> 0x%08X(%u) (Size:%u)\n", dwMoveStart, dwMoveStart, dwCopySize, dwMoveStart, dwMoveStart, dwCopySize);
+    ATLTRACE("ShiftFileR: 0x%08X-0x%08X(%u-%u) (Size:%u) >>>[R 0x%08X(%u)]>>> 0x%08X-0x%08X(%u-%u) (Size:%u)\n", dwMoveStart, dwMoveStart+dwShiftSize-1, dwMoveStart, dwMoveStart+dwShiftSize-1, dwCopySize, dwInsSize, dwInsSize, dwMoveStart+dwInsSize, dwMoveStart+dwInsSize+dwShiftSize-1, dwMoveStart+dwInsSize, dwMoveStart+dwInsSize+dwShiftSize-1, dwCopySize);
     while(dwRemain!=0)
     {
       if(FAILED(m_file.Seek(dwMoveStart, FILE_BEGIN)) || FAILED(m_file.Read(buf, dwCopySize)))
@@ -1467,7 +1478,7 @@ protected:
       dwCopySize = min(dwCopySize, dwRemain);
     }
     free(buf);
-    return bRet;
+    return TRUE;
   }
   BOOL _TAMAFILECHUNK_ShiftFileChunkL(TAMAFILECHUNK *fileChunk)
   {
@@ -1492,16 +1503,15 @@ protected:
       return FALSE;
     }
     DWORD dwMoveStart = dwDelStart;
-    BOOL bRet = FALSE;
-    ATLTRACE("ShiftFileL: 0x%08X(%u) (Size:%u) <<< 0x%08X(%u) (Size:%u)\n", dwMoveStart, dwMoveStart, dwCopySize, dwMoveStart, dwMoveStart, dwCopySize);
+    ATLTRACE("ShiftFileL: 0x%08X-0x%08X(%u-%u) (Size:%u) >>>[L -0x%08X(-%u)]>>> 0x%08X-0x%08X(%u-%u) (Size:%u)\n", dwMoveStart+dwDelSize, dwMoveStart+dwDelSize+dwShiftSize-1, dwMoveStart+dwDelSize, dwMoveStart+dwDelSize+dwShiftSize-1, dwCopySize, dwDelSize, dwDelSize, dwMoveStart, dwMoveStart+dwShiftSize-1, dwMoveStart, dwMoveStart+dwShiftSize-1, dwCopySize);
     while(dwRemain!=0)
     {
-      if(FAILED(m_file.Seek(dwMoveStart, FILE_BEGIN)) || FAILED(m_file.Read(buf, dwCopySize)))
+      if(FAILED(m_file.Seek(dwMoveStart+dwDelSize, FILE_BEGIN)) || FAILED(m_file.Read(buf, dwCopySize)))
       {
         ATLASSERT(FALSE);
         break;
       }
-      if(FAILED(m_file.Seek(dwMoveStart-dwDelSize, FILE_BEGIN)) || FAILED(m_file.Write(buf, dwCopySize)))
+      if(FAILED(m_file.Seek(dwMoveStart, FILE_BEGIN)) || FAILED(m_file.Write(buf, dwCopySize)))
       {
         ATLASSERT(FALSE);
         break;
@@ -1511,7 +1521,7 @@ protected:
       dwCopySize = min(dwCopySize, dwRemain);
     }
     free(buf);
-    return bRet;
+    return TRUE;
   }
 
 
@@ -1854,6 +1864,9 @@ protected:
       return FALSE;
     }
     //OptimizeFileMap(insChunk);
+    
+    m_dwTotal += dwInsSize;
+    ATLASSERT(m_dwTotal > dwInsSize);
 
     return TRUE;
   }
@@ -1980,7 +1993,10 @@ protected:
   BOOL _FileMap_Del(DWORD dwDelStart, DWORD dwDelSize)
   {
     DWORD dwDelEnd = _GetEndOffset(dwDelStart, dwDelSize);
-    return __FileMap_Del2(dwDelEnd, dwDelSize);
+    if(!__FileMap_Del2(dwDelEnd, dwDelSize))return FALSE;
+    ATLASSERT(m_dwTotal >= dwDelSize);
+    m_dwTotal -= dwDelSize;
+    return TRUE;
   }
 
   BOOL _FileMap_Shift(DWORD dwShiftStart, DWORD dwShiftSize, BOOL bPlus = TRUE)
