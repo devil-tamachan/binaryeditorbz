@@ -743,7 +743,7 @@ public:
       FatalError();
       return FALSE;
     }
-    ATLTRACE("--Save()\n");
+    ATLTRACE("--------------Save()\n");
     return bRet;
   }
   //	BOOL SaveAs(LPCTSTR lpszPathName) //名前を付けて保存
@@ -863,7 +863,7 @@ public:
   }
   BOOL Write(void *srcData, DWORD dwStart, DWORD dwSize)
   {
-    if(!m_file.m_h)return FALSE;
+    if(!m_file.m_h || dwSize==0 || dwStart>m_dwTotal)return FALSE;
     ATLTRACE("SuperFileCon::Write(), dwStart: %u(0x%08X), dwSize: %u(0x%08X)\n", dwStart, dwStart ,dwSize, dwSize);
     void *pData = (void *)malloc(dwSize);
     if(!pData)
@@ -878,7 +878,7 @@ public:
   }
   BOOL WriteAssign(void *srcDataDetached/*Write()失敗した場合は呼び出し元で開放すること*/, DWORD dwStart, DWORD dwSize)
   {
-    if(!m_file.m_h)return FALSE;
+    if(!m_file.m_h || dwSize==0 || dwStart>m_dwTotal)return FALSE;
     DWORD dwNewTotal = dwStart + dwSize;
     if(dwNewTotal < dwStart)
     {
@@ -984,8 +984,8 @@ err_TAMAUndoRedoCreate:
   // Insert/Delete
   BOOL Insert(LPBYTE srcData, DWORD dwInsStart, DWORD dwInsSize)
   {
-    ATLTRACE("SuperFileCon::Insert\n");
-    if(!m_file.m_h || dwInsSize==0)return FALSE;
+    if(!m_file.m_h || dwInsSize==0 || dwInsStart>m_dwTotal)return FALSE;
+    ATLTRACE("SuperFileCon::Insert(), dwInsStart: %u(0x%08X), dwSize: %u(0x%08X)\n", dwInsStart, dwInsStart ,dwInsSize, dwInsSize);
     LPBYTE pData = (LPBYTE)malloc(dwInsSize);
     if(!pData)
     {
@@ -999,7 +999,7 @@ err_TAMAUndoRedoCreate:
   }
   BOOL InsertAssign(LPBYTE srcDataDetached/*Insert()失敗した場合は呼び出し元で開放すること*/, DWORD dwInsStart, DWORD dwInsSize)
   {
-    if(!m_file.m_h || dwInsSize==0)return FALSE;
+    if(!m_file.m_h || dwInsSize==0 || dwInsStart>m_dwTotal)return FALSE;
     TAMAUndoRedo *pNewUndo = _TAMAUndoRedo_Create(UNDO_INS, dwInsStart, NULL, 0, NULL, 0);
     if(!pNewUndo)
     {
@@ -1035,7 +1035,7 @@ err_TAMAUndoRedoCreate:
   BOOL Delete(DWORD dwDelStart, DWORD dwDelSize)
   {
     ATLTRACE("SuperFileCon::Delete\n");
-    if(!m_file.m_h || dwDelSize==0)return FALSE;
+    if(!m_file.m_h || dwDelSize==0 || m_dwTotal < dwDelStart+dwDelSize)return FALSE;
     TAMAUndoRedo *pNewUndo = _TAMAUndoRedo_Create(UNDO_DEL, dwDelStart, NULL, 0, NULL, 0);
     if(!pNewUndo)
     {
@@ -1413,13 +1413,16 @@ protected:
   void* mallocMax(size_t *nIdealSize)
   {
     void *pAlloc = NULL;
-    for(size_t nTrySize = *nIdealSize; nTrySize > 2; nTrySize /= 2) {
+    size_t nTrySize = *nIdealSize;
+    while(nTrySize != 0)
+    {
       pAlloc = malloc(nTrySize);
       if(pAlloc)
       {
         *nIdealSize = nTrySize;
         return pAlloc;
       }
+      nTrySize/=2;
     }
     ATLASSERT(FALSE);
     *nIdealSize = 0;
