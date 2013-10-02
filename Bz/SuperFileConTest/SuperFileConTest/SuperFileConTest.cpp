@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 
@@ -91,6 +93,8 @@ void traceMallocLeak()
 #define free freeSimpleCheck
 #define private public
 #define protected public
+
+#define SFC_EASYDEBUG
 
 #include "../../SuperFileCon.h"
 
@@ -271,7 +275,7 @@ TEST(FileMap, DISABLED_InsertMem1)
     free(buf2);
   }
 }
-TEST(FileMap, PublicMethod1)
+TEST(SuperFileCon, PublicMethod1)
 {
   ATLTRACE("\n\nPublicMethod1 --------------------\n\n\n\n");
 
@@ -887,7 +891,7 @@ TEST(FileMap, PublicMethod1)
 }
 
 
-TEST(FileMap, PublicMethod2)
+TEST(SuperFileCon, PublicMethod2)
 {
   ATLTRACE("\n\nPublicMethod2 --------------------\n\n\n\n");
 
@@ -1632,9 +1636,11 @@ TEST(DebugUtil, memDeleteTest)
   ASSERT_TRUE(memcmp(pBufTmp, pBufTmp2, 678)==0);
   ASSERT_TRUE(memcmp(pBufTmp+678+400, pBufTmp2+678, 2000-400-678)==0);
   ASSERT_EQ(2000-400, dwTotal);
+  free(pBufTmp);
+  free(pBufTmp2);
 }
 
-TEST(FileMap, PublicMethod3)
+TEST(SuperFileCon, PublicMethod3)
 {
   ATLTRACE("\n\nPublicMethod3 --------------------\n\n\n\n");
 
@@ -2354,6 +2360,18 @@ TEST(FileMap, PublicMethod3)
 
   traceMallocLeak();
   ASSERT_EQ(0, g_dwMallocCounter);
+}
+
+BOOL EasyDebug(const char *path)
+{
+  FILE *fpEDB = fopen(path, "rb");
+  fclose(fpEDB);
+  return TRUE;
+}
+
+
+TEST(SuperFileCon, PublicMethod4)
+{
 }
 
 int main(int argc, char* argv[])

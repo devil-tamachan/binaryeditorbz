@@ -108,6 +108,10 @@ RB_PROTOTYPE_INTERNAL(_TAMAOLDFILECHUNK_HEAD, _TAMAOLDFILECHUNK, linkage, cmpTAM
 RB_GENERATE_INTERNAL(_TAMAOLDFILECHUNK_HEAD, _TAMAOLDFILECHUNK, linkage, cmpTAMAOLDFILECHUNK, inline);
 
 
+#ifdef SFC_EASYDEBUG
+  typedef enum {	SFCOP_OPEN=0, SFCOP_CLOSE, SFCOP_WRITE, /*SFCOP_READ,*/ SFCOP_INSERT, SFCOP_DELETE, SFCOP_UNDO, SFCOP_REDO, SFCOP_CLEARUNDO, SFCOP_CLEARREDO, SFCOP_SAVE, SFCOP_SAVEAS } SfcOp;
+  const char SfcOpCode[] = {'O', 'C', 'W', 'I', 'D', 'U', 'R', 'u', 'r', 'S', 's'};
+#endif
 
 class CSuperFileCon
 {
@@ -163,6 +167,10 @@ public:
     m_file = file;
     m_filePath = lpszPathName;
     m_dwTotal = dwFileSize;
+#ifdef SFC_EASYDEBUG
+    _EasyDebug_CreateEasyDebugFile();
+    _EasyDebug_OutputOp2(SFCOP_OPEN, m_dwTotal);
+#endif
 
     return TRUE;
   }
@@ -727,6 +735,9 @@ public:
     if(m_bReadOnly || !m_file.m_h)return FALSE;
     CWaitCursor wait;
     ATLTRACE("SuperFileCon::Save\n");
+#ifdef SFC_EASYDEBUG
+    _EasyDebug_OutputOp1(SFCOP_SAVE);
+#endif
     BOOL bRet = _Save_ProccessAllChunks();
     if(m_dwTotal < m_dwTotalSavedFile)
     {
@@ -786,6 +797,10 @@ public:
   void Close()
   {
     ATLTRACE("SuperFileCon::Close\n");
+#ifdef SFC_EASYDEBUG
+    _EasyDebug_OutputOp1(SFCOP_CLOSE);
+    m_dbgFile.Close();
+#endif
     _DeleteContents();
     m_file.Close();
   }
@@ -865,6 +880,9 @@ public:
   {
     if(!m_file.m_h || dwSize==0 || dwStart>m_dwTotal)return FALSE;
     ATLTRACE("SuperFileCon::Write(), dwStart: %u(0x%08X), dwSize: %u(0x%08X)\n", dwStart, dwStart ,dwSize, dwSize);
+#ifdef SFC_EASYDEBUG
+    _EasyDebug_OutputOp3(SFCOP_INSERT, dwStart, dwSize);
+#endif
     void *pData = (void *)malloc(dwSize);
     if(!pData)
     {
@@ -986,6 +1004,9 @@ err_TAMAUndoRedoCreate:
   {
     if(!m_file.m_h || dwInsSize==0 || dwInsStart>m_dwTotal)return FALSE;
     ATLTRACE("SuperFileCon::Insert(), dwInsStart: %u(0x%08X), dwSize: %u(0x%08X)\n", dwInsStart, dwInsStart ,dwInsSize, dwInsSize);
+#ifdef SFC_EASYDEBUG
+    _EasyDebug_OutputOp3(SFCOP_INSERT, dwInsStart, dwInsSize);
+#endif
     LPBYTE pData = (LPBYTE)malloc(dwInsSize);
     if(!pData)
     {
@@ -1034,8 +1055,11 @@ err_TAMAUndoRedoCreate:
   }
   BOOL Delete(DWORD dwDelStart, DWORD dwDelSize)
   {
-    ATLTRACE("SuperFileCon::Delete\n");
     if(!m_file.m_h || dwDelSize==0 || m_dwTotal < dwDelStart+dwDelSize)return FALSE;
+    ATLTRACE("SuperFileCon::Delete\n");
+#ifdef SFC_EASYDEBUG
+    _EasyDebug_OutputOp3(SFCOP_DELETE, dwDelStart, dwDelSize);
+#endif
     TAMAUndoRedo *pNewUndo = _TAMAUndoRedo_Create(UNDO_DEL, dwDelStart, NULL, 0, NULL, 0);
     if(!pNewUndo)
     {
@@ -1258,6 +1282,9 @@ err_TAMAUndoRedoCreate:
   {
     if(!m_file.m_h || GetUndoCount()==0)return FALSE;
     ATLTRACE("SuperFileCon::Undo\n");
+#ifdef SFC_EASYDEBUG
+    _EasyDebug_OutputOp1(SFCOP_UNDO);
+#endif
     m_redoIndex--;
     if(m_dwHiddenSize!=0 && m_redoIndex < m_undo.GetCount() && m_undo[m_redoIndex]->bHidden)
     {
@@ -1299,6 +1326,9 @@ err_TAMAUndoRedoCreate:
   {
     if(!m_file.m_h || GetRedoCount()==0)return FALSE;
     ATLTRACE("SuperFileCon::Redo\n");
+#ifdef SFC_EASYDEBUG
+    _EasyDebug_OutputOp1(SFCOP_REDO);
+#endif
     ATLASSERT(m_undo[m_redoIndex]->bHidden==FALSE);
     TAMAUndoRedo *undo = m_undo[m_redoIndex];
     m_redoIndex++;
@@ -1360,6 +1390,9 @@ err_TAMAUndoRedoCreate:
   }
   BOOL ClearRedo()
   {
+#ifdef SFC_EASYDEBUG
+    _EasyDebug_OutputOp1(SFCOP_CLEARUNDO);
+#endif
     size_t delIndex;
     size_t nDelSize = GetRedoCountCanRemove(&delIndex);
     if(nDelSize>0)_UndoRedo_RemoveRange(delIndex, nDelSize);
@@ -1367,6 +1400,9 @@ err_TAMAUndoRedoCreate:
   }
   BOOL ClearUndo()
   {
+#ifdef SFC_EASYDEBUG
+    _EasyDebug_OutputOp1(SFCOP_CLEARUNDO);
+#endif
     size_t nDelSize = GetUndoCountCanRemove();
     if(nDelSize>0)_UndoRedo_RemoveRange(0, nDelSize);
     return TRUE;
@@ -1389,6 +1425,45 @@ protected:
   DWORD m_dwHiddenSize;
 
   struct _TAMAFILECHUNK_HEAD m_filemapHead;
+#ifdef SFC_EASYDEBUG
+  CAtlFile m_dbgFile;
+
+  BOOL _EasyDebug_CreateEasyDebugFile()
+  {
+    TCHAR tmpDir[_MAX_PATH];
+    TCHAR tmpFile[_MAX_PATH];
+    if(!GetTempPath(_MAX_PATH, tmpDir))return FALSE;
+    if(!GetTempFileName(tmpDir, _T("SFC"), 0, tmpFile))return FALSE;
+    if(FAILED(m_dbgFile.Create(tmpFile, GENERIC_WRITE, FILE_SHARE_READ, CREATE_ALWAYS)))return FALSE;
+    const char header[] = "SFCDBG1";
+    if(FAILED(m_dbgFile.Write(header, 7)))return FALSE;
+    return TRUE;
+  }
+  
+  BOOL _EasyDebug_OutputOp1(SfcOp op)
+  {
+    if(FAILED(m_dbgFile.Write(&(SfcOpCode[op]), 1)))return FALSE;
+    m_dbgFile.Flush();
+    return TRUE;
+  }
+  
+  BOOL _EasyDebug_OutputOp2(SfcOp op, DWORD dw1)
+  {
+    if(FAILED(m_dbgFile.Write(&(SfcOpCode[op]), 1)))return FALSE;
+    if(FAILED(m_dbgFile.Write(&dw1, 4)))return FALSE;
+    m_dbgFile.Flush();
+    return TRUE;
+  }
+  
+  BOOL _EasyDebug_OutputOp3(SfcOp op, DWORD dw1, DWORD dw2)
+  {
+    if(FAILED(m_dbgFile.Write(&(SfcOpCode[op]), 1)))return FALSE;
+    if(FAILED(m_dbgFile.Write(&dw1, 4)))return FALSE;
+    if(FAILED(m_dbgFile.Write(&dw2, 4)))return FALSE;
+    m_dbgFile.Flush();
+    return TRUE;
+  }
+#endif
 
 protected:
 
