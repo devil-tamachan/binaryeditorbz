@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "stdafx.h"
 #include "BZ.h"
 
-#include "BZDoc.h"
+#include "BZDoc2.h"
 #include "BZView.h"
 #include "BZFormVw.h"
 #include "BZInspectView.h"
@@ -224,18 +224,18 @@ void CBZView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	
 	m_pDoc = GetDocument();
 	ASSERT_VALID(m_pDoc);
-#ifdef FILE_MAPPING
-	if(m_pDoc)
-		m_pDoc->QueryMapViewTama2(0, 1);//ファイルサイズが０の場合で、デフォルト設定ではない場合、ファイルマッピングモードで開くとエラー
-	m_nColAddr = (options.bDWordAddr || m_pDoc->IsFileMapping()) ? ADDRCOLUMNS_MAP : ADDRCOLUMNS;
+//#ifdef FILE_MAPPING
+//	if(m_pDoc)
+//		m_pDoc->QueryMapViewTama2(0, 1);//ファイルサイズが０の場合で、デフォルト設定ではない場合、ファイルマッピングモードで開くとエラー
+	m_nColAddr = (options.bDWordAddr) ? ADDRCOLUMNS_MAP : ADDRCOLUMNS;
 	if(GetViewWidth() != VIEWCOLUMNS) {
 		SetViewSize(CSize(VIEWCOLUMNS, 0));
 		m_bResize = FALSE;
 		// ResizeFrame();
 	}
-#else
-	m_nColAddr = ADDRCOLUMNS;
-#endif //FILE_MAPPING
+//#else
+//	m_nColAddr = ADDRCOLUMNS;
+//#endif //FILE_MAPPING
 
 	UpdateDocSize();
 	ScrollToPos(CPoint(0,0));
@@ -282,10 +282,10 @@ void CBZView::Dump(CDumpContext& dc) const
 	CTextView::Dump(dc);
 }
 
-CBZDoc* CBZView::GetDocument() // non-debug version is inline
+CBZDoc2* CBZView::GetDocument() // non-debug version is inline
 {
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CBZDoc)));
-	return (CBZDoc*)m_pDocument;
+	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CBZDoc2)));
+	return (CBZDoc2*)m_pDocument;
 }
 #endif //_DEBUG
 
@@ -370,7 +370,7 @@ void CBZView::OnDraw(CDC* pDC)
 		CTextView::OnDraw(pDC);
 
 	// TODO: add draw code for native data here
-	LPBYTE p  = m_pDoc->GetDocPtr();
+	//LPBYTE p  = m_pDoc->GetDocPtr();
 //	if(!p) return;
 
 	RECT rClip;
@@ -410,18 +410,16 @@ void CBZView::OnDraw(CDC* pDC)
 	}
 	if(!IsToFile() && (pDC->IsPrinting() && m_bBlock))
 		dwTotal = dwEnd;
-	LPBYTE p1 = NULL;
+	//LPBYTE p1 = NULL;
 	CBZView* pView1 = GetBrotherView();
 	if(pView1 /*&& (m_dwTotal == pView1->m_dwTotal)*/)
 	{
-		p1 = pView1->m_pDoc->GetDocPtr();
+		//p1 = pView1->m_pDoc->GetDocPtr();
 		dwTotalP1 = pView1->m_dwTotal;
 	}
 
-#ifdef FILE_MAPPING
-		if(p && !(p = m_pDoc->QueryMapView(p, ofs))) return;
-#endif //FILE_MAPPING
-	InitCharMode(p, ofs);
+//	if(p && !(p = m_pDoc->QueryMapView(p, ofs))) return;
+	InitCharMode(ofs);
 
 	for(/*int */y = rClip.y1; y <= rClip.y2; y++) {
 		Locate(0, y);
@@ -436,8 +434,8 @@ void CBZView::OnDraw(CDC* pDC)
 		SetHeaderColor();
 		DWORD ofs1 = ofs + m_pDoc->m_dwBase;
 #ifdef FILE_MAPPING
-		if(p && !(p = m_pDoc->QueryMapView(p, ofs1))) return;
-		if(p1 && !(p1 = pView1->m_pDoc->QueryMapView(p1, ofs1))) return;
+//		if(p && !(p = m_pDoc->QueryMapView(p, ofs1))) return;
+	//	if(p1 && !(p1 = pView1->m_pDoc->QueryMapView(p1, ofs1))) return;
 
 		if(m_nColAddr > ADDRCOLUMNS) {
 			PutFormatStr("%04X:%04X", HIWORD(ofs1), LOWORD(ofs1));
@@ -463,6 +461,8 @@ void CBZView::OnDraw(CDC* pDC)
 				PutChar(' ', (16-i)*3-1); 
 				break;
 			}
+      BYTE ch0;
+      if(!m_pDoc->Read(&ch0, ofs, 1))return;
 			if(m_bBlock && ofs >= dwBegin && ofs < dwEnd)
 				SetColor(TCOLOR_SELECT);
 			else if(m_pDoc->CheckMark(ofs))
@@ -473,13 +473,14 @@ void CBZView::OnDraw(CDC* pDC)
 				else
 					SetColor(TCOLOR_STRUCT);
 			}
-			else if(p1 && (ofs < dwTotalP1 && (*(p+ofs) != *(p1+ofs))))
+			else if(p1 && (ofs < dwTotalP1 && (ch0 != *(p1+ofs))))
 				SetColor(TCOLOR_MISMATCH);
 			else if(p1 && ofs >= dwTotalP1)
 				SetColor(TCOLOR_OVERBROTHER);
 			else
 				SetColor();
-			PutFormatStr("%02X", *(p + ofs++));
+			PutFormatStr("%02X", ch0);
+      ofs++;
 			if(i < 15)
 				PutChar((i==7) ? '-' : ' ');
 		}
@@ -979,7 +980,7 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	case VK_INSERT:
 		if(!m_pDoc->m_bReadOnly
 #ifdef FILE_MAPPING
-		 && !m_pDoc->IsFileMapping()
+//		 && !m_pDoc->IsFileMapping()
 #endif //FILE_MAPPING
 		) {
 			m_bIns = !m_bIns;
@@ -1040,16 +1041,15 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		if(m_pDoc->m_bReadOnly)
 			goto Error;
 #ifdef FILE_MAPPING
-		if(m_pDoc->IsFileMapping()) goto Error;
+//		if(m_pDoc->IsFileMapping()) goto Error;
 #endif //FILE_MAPPING
 		if(m_bBlock) {
 			CutOrCopy(EDIT_DELETE);
 			return;
 		} else {
-			if(dwNewCaret == m_dwTotal) goto Error;
-			m_pDoc->StoreUndo(dwNewCaret, 1, UNDO_INS);
-			m_pDoc->DeleteData(dwNewCaret, 1);
-			UpdateDocSize();
+			if(dwNewCaret == m_dwTotal
+        || !m_pDoc->Delete(dwNewCaret, 1)) goto Error;
+      UpdateDocSize();
 		}
 		break;
 	default:
@@ -1095,15 +1095,6 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 			else
 				dwSize = 2;
 		}
-		if(m_bIns || (m_dwCaret == m_dwTotal)) {
-#ifdef FILE_MAPPING
-			if(m_pDoc->IsFileMapping()) goto Error;
-#endif //FILE_MAPPING
-			m_pDoc->StoreUndo(m_dwCaret, dwSize, UNDO_DEL);
-			m_pDoc->InsertData(m_dwCaret, dwSize, TRUE);
-			UpdateDocSize();
-		} else
-			m_pDoc->StoreUndo(m_dwCaret, dwSize, UNDO_OVR);
 	}
 	m_bBlock = FALSE;
 	//p = m_pDoc->QueryMapViewTama2(m_dwCaret, 4); //p  = m_pDoc->GetDocPtr() + m_dwCaret;
@@ -1117,8 +1108,8 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 		else
 			goto Error;
 		if(m_bEnterVal) {
-			LPBYTE p = m_pDoc->QueryMapViewTama2(m_dwCaret, 1);
-			BYTE nVal = *p;
+			BYTE nVal = 0;
+      m_pDoc->Read(&nVal, m_dwCaret, 1);
 			nChar |= nVal<<4;
 			m_bEnterVal = FALSE;
 		} else
@@ -1139,16 +1130,22 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 		int len = ConvertCharSet(m_charset, mbs, buffer);
 		if(len) {
 			if(m_charset == CTYPE_UNICODE) len *= 2;
-			pb = (char*)buffer;
-			m_pDoc->memcpyMem2Filemap(m_dwCaret, pb, len);//for_to(i, len) *p++ = *pb++;
+      pb = (char*)buffer;
+      BOOL bInsert = m_bIns || (m_dwCaret == m_dwTotal);
+      if(bInsert)m_pDoc->Insert(buffer, m_dwCaret, len);
+      else m_pDoc->Write(buffer, m_dwCaret, len);
+      UpdateDocSize();
 			MemFree(buffer);
 			Invalidate(FALSE);
 			if(!m_bEnterVal) 
 				MoveCaretTo(m_dwCaret + len);
 		}
 		return;
-	}
-	m_pDoc->memcpyMem2Filemap(m_dwCaret, &nChar, 1);//*p = (BYTE)nChar;
+  }
+  BOOL bInsert = m_bIns || (m_dwCaret == m_dwTotal);
+  if(bInsert)m_pDoc->Insert(&nChar, m_dwCaret, 1);
+  else m_pDoc->Write(&nChar, m_dwCaret, 1);
+  UpdateDocSize();
 	Invalidate(FALSE);
 	if(!m_bEnterVal) {
 		MoveCaretTo(m_dwCaret+1);
@@ -1320,9 +1317,10 @@ CString CBZView::GetStatusInfoText()
 				sResult.Format(_T("%04X:%04X"), HIWORD(m_dwCaret), LOWORD(m_dwCaret));
 			else
 				sResult.Format(_T("%06X"), m_dwCaret);
-#ifdef FILE_MAPPING
-			if(m_pDoc->IsOutOfMap(m_pDoc->GetDocPtr() + m_dwCaret)) return sResult;
-#endif //FILE_MAPPING
+//#ifdef FILE_MAPPING
+			//if(m_pDoc->IsOutOfMap(m_pDoc->GetDocPtr() + m_dwCaret)) return sResult;
+      if(m_dwCaret+m_nBytes >= m_dwTotal)return sResult;
+//#endif //FILE_MAPPING
 			val = GetValue(m_dwCaret, m_nBytes);
 			szFmtHexa[6] = '0'+ m_nBytes * 2;
 			pFmtHexa = szFmtHexa;
@@ -1335,9 +1333,10 @@ CString CBZView::GetStatusInfoText()
 				sResult.Format(_T("%04X:%04X"), HIWORD(m_dwCaret), LOWORD(m_dwCaret));
 			else
 				sResult.Format(_T("%06X"), m_dwCaret);
-#ifdef FILE_MAPPING
-			if(m_pDoc->IsOutOfMap(m_pDoc->GetDocPtr() + m_dwCaret)) return sResult;
-#endif //FILE_MAPPING
+//#ifdef FILE_MAPPING
+			//if(m_pDoc->IsOutOfMap(m_pDoc->GetDocPtr() + m_dwCaret)) return sResult;
+      if(m_dwCaret+8 >= m_dwTotal)return sResult;
+//#endif //FILE_MAPPING
 			ULONGLONG qval = GetValue64(m_dwCaret);
 
 			CString sValue;
@@ -1375,9 +1374,10 @@ void CBZView::OnStatusChar()
 
 int CBZView::GetValue(DWORD dwOffset, int bytes)
 {
-	LPBYTE lpStart = m_pDoc->QueryMapViewTama2(dwOffset, bytes); //LPBYTE p  = m_pDoc->GetDocPtr();
+  unsigned char readBuf[4] = {0};
 	int val = 0;
-	if(!lpStart || m_pDoc->GetMapRemain(dwOffset) < bytes)return 0;
+  if(!m_pDoc->Read(readBuf, dwOffset, bytes)) return 0;
+  LPBYTE lpStart = readBuf;
 	if(dwOffset + bytes > m_dwTotal)
 		val = 0;
 	else {
@@ -1389,41 +1389,58 @@ int CBZView::GetValue(DWORD dwOffset, int bytes)
 	}
 	return val;
 }
+DWORD CBZView::GetDWORD(DWORD dwOffset)
+{
+  DWORD dwRead = 0xBABABABA;
+	if(dwOffset + 4 > m_dwTotal || !m_pDoc->Read(&dwRead, dwOffset, 4))return 0;
+  return SwapDword(dwRead);
+}
+WORD  CBZView::GetWORD(DWORD dwOffset)
+{
+  WORD wRead = 0xBABA;
+	if(dwOffset + 2 > m_dwTotal || !m_pDoc->Read(&wRead, dwOffset, 2))return 0;
+  return SwapWord(wRead);
+}
+BYTE  CBZView::GetBYTE(DWORD dwOffset)
+{
+  BYTE ucRead = 0xBA;
+	if(dwOffset + 1 > m_dwTotal || !m_pDoc->Read(&ucRead, dwOffset, 1))return 0;
+  return ucRead;
+}
 
 ULONGLONG CBZView::GetValue64(DWORD dwOffset)
 {
-	LPBYTE lpStart = m_pDoc->QueryMapViewTama2(dwOffset, 8); //LPBYTE p  = m_pDoc->GetDocPtr();
 	ULONGLONG val = 0;
-	if(!lpStart || m_pDoc->GetMapRemain(dwOffset) < 8)return 0;
+  if(!m_pDoc->Read(&val, dwOffset, 8)) return 0;
 	if(dwOffset + 8 > m_dwTotal)
 		val = 0;
 	else {
-		val = SwapQword(*(ULONGLONG*)lpStart);
+		val = SwapQword(val);
 	}
 	return val;
 }
 
-void CBZView::SetValue(DWORD dwOffset, int bytes, int val)
-{
-	LPBYTE lpStart = m_pDoc->QueryMapViewTama2(dwOffset, bytes); //LPBYTE p  = m_pDoc->GetDocPtr();
-	if(!lpStart || m_pDoc->GetMapRemain(dwOffset) < bytes /*|| dwOffset + bytes > m_dwTotal*/)return;
-	m_pDoc->StoreUndo(dwOffset, bytes, UNDO_OVR);
-	SetValue(lpStart, bytes, val);
-	Invalidate(FALSE);
-	if(m_dwStruct) {
-		CBZFormView* pView = (CBZFormView*)GetWindow(GW_HWNDFIRST);
-		pView->OnSelchangeListTag();
-	}
-}
-
-void  CBZView::SetValue(LPBYTE p, int bytes, int val)
-{
-	switch(bytes) {
-		case 1: *p = val; break;
-		case 2: *(WORD*)p = SwapWord(val); break;
-		case 4: *(DWORD*)p = SwapDword(val); break;
-	}
-}
+//void CBZView::SetValue(DWORD dwOffset, int bytes, int val)
+//{
+//	LPBYTE lpStart = m_pDoc->QueryMapViewTama2(dwOffset, bytes); //LPBYTE p  = m_pDoc->GetDocPtr();
+//	if(!lpStart || m_pDoc->GetMapRemain(dwOffset) < bytes /*|| dwOffset + bytes > m_dwTotal*/)return;
+//	m_pDoc->StoreUndo(dwOffset, bytes, UNDO_OVR);
+//	SetValue(lpStart, bytes, val);
+//	Invalidate(FALSE);
+//	if(m_dwStruct) {
+//		CBZFormView* pView = (CBZFormView*)GetWindow(GW_HWNDFIRST);
+//		pView->OnSelchangeListTag();
+//	}
+//}
+//
+//void  CBZView::SetValue(LPBYTE p, int bytes, int val)
+//{
+//	switch(bytes) {
+//		case 1: *p = val; break;
+//		case 2: *(WORD*)p = SwapWord(val); break;
+//		case 4: *(DWORD*)p = SwapDword(val); break;
+//	}
+//}
 
 /////////////////////////////////////////////////////////////////////////////
 // CBZView Jump
@@ -1548,11 +1565,8 @@ void CBZView::OnJumpFindnext()
 			case '<':
 				if(m_pDoc->m_bReadOnly)
 					AfxMessageBox(IDS_ERR_READONLY);
-				else {
-					if(m_bBlock)
-						FillValue(nResult);
-					else
-						SetValue(m_dwCaret, m_nBytes, nResult);				
+        else {
+          FillValue(nResult);		
 				}
 				SetFocus();
 				break;
@@ -1706,7 +1720,7 @@ int CBZView::ReadHexa(LPCSTR sHexa, LPBYTE& buffer)
 
 void CBZView::OnUpdateEditCut(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_bBlock && !m_pDoc->m_bReadOnly && !m_pDoc->IsFileMapping());
+	pCmdUI->Enable(m_bBlock && !m_pDoc->m_bReadOnly);
 }
 
 void CBZView::OnUpdateEditCopy(CCmdUI* pCmdUI) 
@@ -1740,31 +1754,49 @@ void CBZView::CutOrCopy(CutMode mode)
 	DWORD dwPtr  = BlockBegin();
 	DWORD dwSize = BlockEnd() - dwPtr;
 	if(mode != EDIT_DELETE)
-		m_pDoc->CopyToClipboard(dwPtr, dwSize);
-	if(mode != EDIT_COPY) {
-		m_pDoc->StoreUndo(dwPtr, dwSize, UNDO_INS);
-		m_pDoc->DeleteData(dwPtr, dwSize);
-		m_dwCaret = m_dwOldCaret = dwPtr;
-		m_bBlock = FALSE;
-		GotoCaret();
-		UpdateDocSize();
+  {
+		if(!m_pDoc->CopyToClipboard(dwPtr, dwSize))
+    {
+      if(mode==EDIT_CUT)
+      {
+        ATLASSERT(FALSE);
+        return;//Failed
+      }
+    }
+  } else if(mode != EDIT_COPY) {
+    if(m_pDoc->Delete(dwPtr, dwSize))
+    {
+      m_dwCaret = m_dwOldCaret = dwPtr;
+      m_bBlock = FALSE;
+      GotoCaret();
+      UpdateDocSize();
+    }
 	}
 }
 
 void CBZView::FillValue(int val)
 {
-	DWORD dwStart  = BlockBegin();
-	DWORD dwEnd = BlockEnd();
-	DWORD dwSize = dwEnd - dwStart;
-	m_pDoc->StoreUndo(dwStart, dwSize, UNDO_OVR);
-	
-	DWORD dwCurrent = dwStart;
-	while(dwCurrent < dwEnd) {
-		LPBYTE p = m_pDoc->QueryMapViewTama2(dwCurrent, m_nBytes);
-		if(!p || m_pDoc->GetMapRemain(dwCurrent) < m_nBytes)return;
-		SetValue(p, m_nBytes, val);
-		dwCurrent += m_nBytes;
+  DWORD dwStart, dwEnd, dwSize;
+
+  if(m_bBlock)
+  {
+    dwStart  = BlockBegin();
+    dwEnd = BlockEnd();
+  } else {
+    dwStart = m_dwCaret;
+    dwEnd = dwStart + m_nBytes;
+  }
+  dwSize = dwEnd - dwStart;
+
+  BYTE ucData[4] = {0};
+	switch(m_nBytes) {
+		case 1: ucData[0] = val; break;
+		case 2: *((WORD*)ucData) = SwapWord(val); break;
+		case 4: *((DWORD*)ucData) = SwapDword(val); break;
+    default: ATLASSERT(FALSE); return;
 	}
+
+  m_pDoc->Fill(ucData, m_nBytes, dwStart, dwSize);
 	Invalidate(FALSE);
 }
 
@@ -1781,10 +1813,15 @@ void CBZView::OnEditPaste()
 
 void CBZView::OnEditUndo() 
 {
-	// TODO: Add your command handler code here
-	m_dwCaret = m_pDoc->DoUndo();
-	GotoCaret();
-	UpdateDocSize();
+  DWORD dwRetStart = 0;
+  if(m_pDoc->DoUndo(&dwRetStart))
+  {
+    m_dwCaret = dwRetStart;
+    GotoCaret();
+    UpdateDocSize();
+  } else {
+    ATLASSERT(FALSE);
+  }
 }
 
 void CBZView::OnUpdateEditValue(CCmdUI* pCmdUI) 
@@ -1863,11 +1900,17 @@ void CBZView::OnJumpCompare()
 	// TODO: Add your command handler code here
 	CBZView* pView1 = GetBrotherView();
 	if(!pView1) return;
-	CBZDoc *pDoc1 = pView1->m_pDoc;
+	CBZDoc2 *pDoc1 = pView1->m_pDoc;
+	if(!pDoc1) return;
 	GetMainFrame()->m_wndToolBar.m_combo.SetWindowText(_T(""));
 
-	DWORD len = min(m_dwTotal - m_dwCaret, pView1->m_dwTotal - pView1->m_dwCaret);
-	if(len <= 1) return;
+  DWORD len;
+  {
+    DWORD dwCanRead0 = GetRemainFromCurret();
+    DWORD dwCanRead1 = pView1->GetRemainFromCurret();
+    len = min(dwCanRead0, dwCanRead1);
+    if(len <= 1) return;
+  }
 	len--;
 	DWORD dwCurrent0 =         m_dwCaret+1;
 	DWORD dwCurrent1 = pView1->m_dwCaret+1;
@@ -1916,6 +1959,11 @@ founddiff:
 		return;
 }
 
+_inline DWORD CBZView::GetRemainFromCurret()
+{
+  return m_dwTotal - m_dwCaret;
+}
+
 void CBZView::OnUpdateJumpCompare(CCmdUI* pCmdUI) 
 {
 	// TODO: Add your command update UI handler code here
@@ -1925,6 +1973,13 @@ void CBZView::OnUpdateJumpCompare(CCmdUI* pCmdUI)
 CBZView* CBZView::GetBrotherView()
 {
 	return (CBZView*)GetMainFrame()->GetBrotherView(this);
+}
+
+CBZDoc2* CBZView::GetBrotherDoc()
+{
+  CBZView *pBrotherView = GetBrotherView();
+  if(!pBrotherView)return NULL;
+  return pBrotherView->m_pDoc;
 }
 
 void CBZView::OnByteOrder(UINT nID) 
@@ -1956,30 +2011,38 @@ void CBZView::OnUpdateByteOrder(CCmdUI* pCmdUI)
 	return bTrail ? _ismbstrail(p, p1) : _ismbslead(p, p1);
 }*/
 
-void CBZView::InitCharMode(LPBYTE pTop, DWORD ofs)
+void CBZView::InitCharMode(DWORD ofs)
 {
 	if(!pTop) return;
 	DWORD n = ofs;
-	LPBYTE p = pTop + n;
+	//LPBYTE p = pTop + n;
 	if(m_charset == CTYPE_JIS) {
 		GetCharCode(0x0F);
 		while(n) {
 			n--;
-			BYTE c = *(--p);
+//			BYTE c = *(--p);
+      BYTE c;
+      if(!m_pDoc->Read(&c, n, 1))return;
 			if(c < 0x21 || c > 0x7E) break;
 		}
 		while(n++ < ofs) {
-			GetCharCode(*p++);
+      WORD w = 0;
+      if(!m_pDoc->Read(&w, n, 1))return;
+			GetCharCode(w);
 		}
 	} else if(m_charset == CTYPE_EUC) {
 		GetCharCode(0);
 		while(n) {
 			n--;
-			BYTE c = *(--p);
+			//BYTE c = *(--p);
+      BYTE c;
+      if(!m_pDoc->Read(&c, n, 1))return;
 			if(c < 0xA1 || c > 0xFE) break;
 		}
 		while(n++ < ofs) {
-			GetCharCode(*p++);
+      WORD w = 0;
+      if(!m_pDoc->Read(&w, n, 1))return;
+			GetCharCode(w);
 		}
 	}
 }
@@ -2129,8 +2192,7 @@ int CBZView::ConvertCharSet(CharSet charset, LPCSTR sFind, LPBYTE &buffer)
 
 CharSet CBZView::AutoDetectCharSet()
 {
-	LPBYTE p  = m_pDoc->GetDocPtr();
-	if(!p) return options.charset;
+  if(!m_pDoc->IsOpen()) return options.charset;
 	DWORD dwSize = m_dwTotal;
 	if(dwSize > options.dwDetectMax) dwSize = options.dwDetectMax;
 	CharSet charset = DetectCodeType(0, dwSize);//(p, p + dwSize);
@@ -2147,9 +2209,15 @@ CharSet CBZView::AutoDetectCharSet()
 
 CharSet CBZView::DetectCodeType(DWORD dwStart, DWORD dwMaxSize)//(LPBYTE p, LPBYTE pEnd)
 {
-	LPBYTE p = m_pDoc->QueryMapViewTama2(dwStart, dwMaxSize); //LPBYTE p  = m_pDoc->GetDocPtr();
-	DWORD dwRemain = m_pDoc->GetMapRemain(dwStart);
-	if(!p || dwRemain < 2)return CTYPE_BINARY;
+  if(!m_pDoc)return CTYPE_BINARY;
+  CSuperFileCon *pSFC = m_pDoc->m_pSFC;
+  if(!pSFC || !pSFC->IsOpen())return CTYPE_BINARY;
+  CSFCCache cache(pSFC, 1024*1024);
+  cache.Cache(dwStart, dwMaxSize);
+  LPBYTE p = cache.CacheForce(dwStart, 2);
+	//LPBYTE p = m_pDoc->QueryMapViewTama2(dwStart, dwMaxSize); //LPBYTE p  = m_pDoc->GetDocPtr();
+	//DWORD dwRemain = m_pDoc->GetMapRemain(dwStart);
+	if(!p/* || dwRemain < 2*/)return CTYPE_BINARY;
 
 	if(*(WORD*)p == 0xFEFF) {
 		options.bByteOrder = FALSE;		// ### 1.54a
@@ -2159,16 +2227,21 @@ CharSet CBZView::DetectCodeType(DWORD dwStart, DWORD dwMaxSize)//(LPBYTE p, LPBY
 		options.bByteOrder = TRUE;
 		return CTYPE_UNICODE;
 	}
-	if(*(WORD*)p == 0xBBEF && dwRemain > 3 && *(p+2) == 0xBF) {
-		return CTYPE_UTF8;
+	if(*(WORD*)p == 0xBBEF)
+  {
+    DWORD dwRemain = cache.GetRemain(dwStart);
+    if(dwRemain >= 3 && *(p+2) == 0xBF)return CTYPE_UTF8;
 	}
 
 	DWORD dwCurrent = dwStart;
 	DWORD flag = DT_SJIS | DT_JIS | DT_EUC | DT_UTF8;
 	while(dwCurrent < dwStart + dwMaxSize)//(p < pEnd)
 	{
-		p = m_pDoc->QueryMapViewTama2(dwCurrent, 2);
-		dwRemain = m_pDoc->GetMapRemain(dwCurrent);
+    p = cache.CacheForce(dwCurrent, 2);
+    if(!p/* || dwRemain < 2*/)return CTYPE_BINARY;
+    DWORD dwRemain = cache.GetRemain(dwCurrent);
+		//p = m_pDoc->QueryMapViewTama2(dwCurrent, 2);
+		//dwRemain = m_pDoc->GetMapRemain(dwCurrent);
 		BYTE c = (BYTE)*p++; dwCurrent++;//BYTE c = (BYTE)*p++;
 		if(c == '\n') {
 			if(flag == DT_SJIS || flag == DT_EUC || flag & DT_UNICODE) break;
@@ -2394,13 +2467,21 @@ DWORD CBZView::stristrBinaryW1(LPCWSTR searchTextW, BYTE nSearchTextW, DWORD dwS
 
 	DWORD dwNeedSize = (nSearchTextW+1)*2;
 	DWORD dwCurrent=dwStart;
+	DWORD dwFileSize = m_pDoc->GetDocSize();
+  LPWORD pInputBuf = (LPWORD)malloc(dwNeedSize);
 	while(dwCurrent < m_dwTotal-2)
 	{
-		LPWORD p = (LPWORD)m_pDoc->QueryMapViewTama2(dwCurrent, dwNeedSize);
-		if(!p || m_pDoc->GetMapRemain(dwCurrent) < dwNeedSize)break;//err
-		if(wcsnicmp(searchTextW, (const wchar_t*)p, nSearchTextW)==0)return dwCurrent;
-		dwCurrent += skipTable[p[nSearchTextW]]*2;
+    DWORD dwReadSize = dwFileSize - dwCurrent;
+    if(dwReadSize > dwNeedSize)dwReadSize = dwNeedSize;
+    if(!m_pDoc->Read(pInputBuf, dwCurrent, dwNeedSize)) break;//err
+    if(wcsnicmp(searchTextW, (const wchar_t*)pInputBuf, nSearchTextW)==0)
+    {
+      free(pInputBuf);
+      return dwCurrent;
+    }
+		dwCurrent += skipTable[pInputBuf[nSearchTextW]]*2;
 	}
+  free(pInputBuf);
 	return 0xFFFFffff; // error
 }
 void CBZView::preQuickSearchWI4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD *skipTable)
@@ -2422,14 +2503,22 @@ DWORD CBZView::stristrBinaryW4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD dw
 
 	DWORD dwNeedSize = (nSearchTextW+1)*2;
 	DWORD dwCurrent=dwStart;
+	DWORD dwFileSize = m_pDoc->GetDocSize();
+  LPWORD pInputBuf = (LPWORD)malloc(dwNeedSize);
 	while(dwCurrent < m_dwTotal-2)
 	{
-		LPWORD p = (LPWORD)m_pDoc->QueryMapViewTama2(dwCurrent, dwNeedSize);
-		if(!p || m_pDoc->GetMapRemain(dwCurrent) < dwNeedSize)break;//err
-		if(wcsnicmp(searchTextW, (const wchar_t*)p, nSearchTextW)==0)return dwCurrent;
-		dwCurrent += skipTable[p[nSearchTextW]]*2;
+    DWORD dwReadSize = dwFileSize - dwCurrent;
+    if(dwReadSize > dwNeedSize)dwReadSize = dwNeedSize;
+    if(!m_pDoc->Read(pInputBuf, dwCurrent, dwNeedSize)) break;//err
+		if(wcsnicmp(searchTextW, (const wchar_t*)pInputBuf, nSearchTextW)==0)
+    {
+      free(pInputBuf);
+      return dwCurrent;
+    }
+		dwCurrent += skipTable[pInputBuf[nSearchTextW]]*2;
 	}
-	return 0xFFFFffff; // error
+  free(pInputBuf);
+  return 0xFFFFffff; // error
 }
 DWORD CBZView::stristrBinaryW(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD dwStart)
 {
@@ -2456,13 +2545,23 @@ DWORD CBZView::stristrBinaryA(LPCSTR searchText, DWORD dwStart)
 	DWORD skipTable[0x100];
 	preQuickSearchAI(searchText, nSearchText, skipTable);
 	DWORD dwCurrent=dwStart;
+	DWORD dwFileSize = m_pDoc->GetDocSize();
+  const DWORD dwInputBuf = nSearchText+1;
+  LPBYTE pInputBuf = (LPBYTE)malloc(dwInputBuf);
 	while(dwCurrent < m_dwTotal-1)
 	{
-		LPBYTE p = m_pDoc->QueryMapViewTama2(dwCurrent, nSearchText+1);
-		if(!p || m_pDoc->GetMapRemain(dwCurrent) < nSearchText+1)break;//err
-		if(strnicmp(searchText, (const char*)p, nSearchText)==0)return dwCurrent;
-		dwCurrent += skipTable[p[nSearchText]];
+    DWORD dwReadSize = dwFileSize - dwCurrent;
+    if(dwReadSize > dwInputBuf)dwReadSize = dwInputBuf;
+    if(!m_pDoc->Read(pInputBuf, dwCurrent, dwReadSize)) break;//err
+
+		if(strnicmp(searchText, (const char*)pInputBuf, nSearchText)==0)
+    {
+      free(pInputBuf);
+      return dwCurrent;
+    }
+		dwCurrent += skipTable[pInputBuf[nSearchText]];
 	}
+  free(pInputBuf);
 	return 0xFFFFffff; // error
 }
 void CBZView::preQuickSearch(LPBYTE searchByte, unsigned int nSearchByte, DWORD* skipTable)
@@ -2475,12 +2574,22 @@ DWORD CBZView::strstrBinary(LPBYTE searchByte, unsigned int nSearchByte, DWORD d
 	DWORD skipTable[0x100];
 	preQuickSearch(searchByte, nSearchByte, skipTable);
 	DWORD dwCurrent=dwStart;
+	DWORD dwFileSize = m_pDoc->GetDocSize();
+  const DWORD dwInputBuf = nSearchByte+1;
+  LPBYTE pInputBuf = (LPBYTE)malloc(dwInputBuf);
 	while(dwCurrent < m_dwTotal-1)
 	{
-		LPBYTE p = m_pDoc->QueryMapViewTama2(dwCurrent, nSearchByte+1);
-		if(!p || m_pDoc->GetMapRemain(dwCurrent) < nSearchByte+1)break;//err
-		if(memcmp(searchByte, p, nSearchByte)==0)return dwCurrent;
-		dwCurrent += skipTable[p[nSearchByte]];
+    DWORD dwReadSize = dwFileSize - dwCurrent;
+    if(dwReadSize > dwInputBuf)dwReadSize = dwInputBuf;
+    if(!m_pDoc->Read(pInputBuf, dwCurrent, dwReadSize)) break;//err
+
+		if(memcmp(searchByte, pInputBuf, nSearchByte)==0)
+    {
+      free(pInputBuf);
+      return dwCurrent;
+    }
+		dwCurrent += skipTable[pInputBuf[nSearchByte]];
 	}
+  free(pInputBuf);
 	return 0xFFFFffff; // error
 }

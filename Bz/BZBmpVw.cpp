@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BZ.h"
 #include "BZView.h"
 #include "BZBmpVw.h"
-#include "BZDoc.h"
+#include "BZDoc2.h"
 #include "Splitter.h"
 #include "MainFrm.h"
 
@@ -48,7 +48,6 @@ IMPLEMENT_DYNCREATE(CBZBmpView, CScrollView)
 
 CBZBmpView::CBZBmpView()
 {
-	m_hBmp = NULL;
 	m_lpbi = NULL;
 	m_tooltipLastAddress = 0xffffffff;
 	m_isLButtonDown = false;
@@ -56,7 +55,6 @@ CBZBmpView::CBZBmpView()
 
 CBZBmpView::~CBZBmpView()
 {
-	if(m_hBmp) ::DeleteObject(m_hBmp);
 	if(m_lpbi) MemFree(m_lpbi);
 }
 
@@ -138,7 +136,7 @@ void CBZBmpView::OnInitialUpdate()
 {
 	CScrollView::OnInitialUpdate();
 
-	CBZDoc* pDoc = (CBZDoc*)GetDocument();
+	CBZDoc2* pDoc = (CBZDoc2*)GetDocument();
 	DWORD dwTotal = pDoc->GetDocSize();
 	if(dwTotal < (DWORD)options.nBmpWidth) return;
 
@@ -157,19 +155,6 @@ void CBZBmpView::OnInitialUpdate()
 
 	CDC* pDC = GetDC();
 	HDC hDC = pDC->m_hDC;
-	if(m_hBmp) {
-		::DeleteObject(m_hBmp);
-		m_hBmp = NULL;
-	}
-
-#ifdef FILE_MAPPING
-	if(!pDoc->IsFileMapping())
-#endif //FILE_MAPPING
-	{
-		m_hBmp = ::CreateDIBitmap(hDC, m_lpbi, CBM_INIT, pDoc->GetDocPtr(), (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS);
-		if(!m_hBmp)
-			ErrorMessageBox();
-	}
 
 	// TODO: calculate the total size of this view
 	CSize cView = m_cBmp;
@@ -211,61 +196,43 @@ BOOL CBZBmpView::OnEraseBkgnd(CDC* pDC)
 void CBZBmpView::OnDraw(CDC* pDC)
 {
 	pDC->SetBkColor(RGB(255,255,255));
-	CMemDC pMemDC(pDC);
-	if(m_hBmp) {
-		HDC hDC = pMemDC->m_hDC;
-		HDC hDCSrc = ::CreateCompatibleDC(hDC);
-		HBITMAP hBmpOld = (HBITMAP)::SelectObject(hDCSrc, m_hBmp);
-		if(options.nBmpZoom == 1)
-			::BitBlt(hDC, BMPSPACE/*dstX*/, BMPSPACE/*dstY*/, m_cBmp.cx/*dstW*/, m_cBmp.cy/*dstH*/
-					, hDCSrc, 0/*srcX*/, 0/*srcY*/, SRCCOPY);
-		else
-			::StretchBlt(hDC, BMPSPACE/*dstX*/, BMPSPACE/*dstY*/
-				, m_cBmp.cx * options.nBmpZoom/*dstW*/, m_cBmp.cy * options.nBmpZoom/*dstH*/
-				, hDCSrc, 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, m_cBmp.cy/*srcH*/, SRCCOPY);
+  CMemDC pMemDC(pDC);
 
-		::SelectObject(hDCSrc, hBmpOld);
-		//::DeleteDC(hDC);
-	} else {
-		CBZDoc* pDoc = (CBZDoc*)GetDocument();
-		ASSERT(pDoc);
-		if(pDoc->GetDocPtr()==NULL)return;
+  CBZDoc2* pDoc = (CBZDoc2*)GetDocument();
+  ASSERT(pDoc);
+  if(!pDoc->IsOpen())return; //if(pDoc->GetDocPtr()==NULL)return;
 
-		CRect rClip;
-		pMemDC->GetClipBox(rClip);
+  CRect rClip;
+  pMemDC->GetClipBox(rClip);
 
-		rClip.top -= rClip.top % options.nBmpZoom;
-		rClip.bottom += rClip.bottom % options.nBmpZoom;
+  rClip.top -= rClip.top % options.nBmpZoom;
+  rClip.bottom += rClip.bottom % options.nBmpZoom;
 
-		int nSpaceTop = (rClip.top < BMPSPACE) ? BMPSPACE - rClip.top : 0;
-		long nBottom = m_cBmp.cy * options.nBmpZoom + BMPSPACE;
-		if(rClip.bottom >= nBottom)
-			rClip.bottom = nBottom;
+  int nSpaceTop = (rClip.top < BMPSPACE) ? BMPSPACE - rClip.top : 0;
+  long nBottom = m_cBmp.cy * options.nBmpZoom + BMPSPACE;
+  if(rClip.bottom >= nBottom)
+    rClip.bottom = nBottom;
 
-		int nBmpHeight = (rClip.Height() - nSpaceTop) / options.nBmpZoom;
-		m_lpbi->biHeight = -nBmpHeight;
+  int nBmpHeight = (rClip.Height() - nSpaceTop) / options.nBmpZoom;
+  m_lpbi->biHeight = -nBmpHeight;
 
-		ATLTRACE("Clip: left=%ld, top=%ld(0x%08lX) %dx%d\n", rClip.left, rClip.top, rClip.top, rClip.Width(), rClip.Height());
-		DWORD dwOffset = ((DWORD)rClip.top - (DWORD)(BMPSPACE - nSpaceTop)) / (DWORD)options.nBmpZoom * (DWORD)m_cBmp.cx;
-		ATLTRACE("DWORD dwOffset 0x%08X = ((DWORD)rClip.top 0x%08X - (DWORD)(BMPSPACE 0x%X - nSpaceTop 0x%X)) * (DWORD)m_cBmp.cx 0x%08X / (DWORD)options.nBmpZoom 0x%08X;\n", dwOffset, (DWORD)rClip.top, BMPSPACE, nSpaceTop, m_cBmp.cx, options.nBmpZoom);
-		dwOffset*=(DWORD)(options.nBmpColorWidth/8);
-		ATLTRACE("dwOffset 0x%08X *=(DWORD)(options.nBmpColorWidth %ld /8);\n", dwOffset, options.nBmpColorWidth);
+  ATLTRACE("Clip: left=%ld, top=%ld(0x%08lX) %dx%d\n", rClip.left, rClip.top, rClip.top, rClip.Width(), rClip.Height());
+  DWORD dwOffset = ((DWORD)rClip.top - (DWORD)(BMPSPACE - nSpaceTop)) / (DWORD)options.nBmpZoom * (DWORD)m_cBmp.cx;
+  ATLTRACE("DWORD dwOffset 0x%08X = ((DWORD)rClip.top 0x%08X - (DWORD)(BMPSPACE 0x%X - nSpaceTop 0x%X)) * (DWORD)m_cBmp.cx 0x%08X / (DWORD)options.nBmpZoom 0x%08X;\n", dwOffset, (DWORD)rClip.top, BMPSPACE, nSpaceTop, m_cBmp.cx, options.nBmpZoom);
+  dwOffset*=(DWORD)(options.nBmpColorWidth/8);
+  ATLTRACE("dwOffset 0x%08X *=(DWORD)(options.nBmpColorWidth %ld /8);\n", dwOffset, options.nBmpColorWidth);
 
-#ifdef FILE_MAPPING
-		//pDoc->QueryMapView(pDoc->GetDocPtr(), dwOffset);
-		DWORD dwIdeaSize = m_cBmp.cx * nBmpHeight * (options.nBmpColorWidth/8);
-		LPBYTE lpBits = pDoc->QueryMapViewTama2(dwOffset, dwIdeaSize);
-		ASSERT(pDoc->GetMapRemain(dwOffset) >= dwIdeaSize);
-#elif
-		LPBYTE lpBits = pDoc->GetDocPtr() + dwOffset;
-#endif //FILE_MAPPING
-
-		::StretchDIBits(pMemDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
-				, m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
-				, 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, nBmpHeight/*srcH*/
-				, lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
-
-	}
+  DWORD dwReadSize = m_cBmp.cx * nBmpHeight * (options.nBmpColorWidth/8);
+  LPBYTE lpBits = (LPBYTE)malloc(dwReadSize);
+  if(!lpBits)return;
+  if(pDoc->Read(lpBits, dwOffset, dwReadSize))
+  {
+    ::StretchDIBits(pMemDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
+      , m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
+      , 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, nBmpHeight/*srcH*/
+      , lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
+  }
+  free(lpBits);
 }
 
 /////////////////////////////////////////////////////////////////////////////

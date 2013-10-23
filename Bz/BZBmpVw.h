@@ -41,7 +41,6 @@ protected:
 
 // Attributes
 private:
-	HBITMAP m_hBmp;
 	SIZE	m_cBmp;
 	LPBITMAPINFOHEADER m_lpbi;
 	WTL::CToolTipCtrl m_tooltip;

@@ -2,7 +2,7 @@
 //	or project specific include files that are used frequently, but
 //		are changed infrequently
 //
-
+#define FILE_MAPPING
 
 #define VC_EXTRALEAN		// Windows ヘッダーから使用されていない部分を除外します。
 #define WINVER 0x0501 //XP
@@ -51,9 +51,14 @@
 
 #include "MemDC.h"
 
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
+#endif
 
+#define SFC_EASYDEBUG
 #include "SuperFileCon.h"
+#include "SFCCache.h"
 
 /*
 #ifdef _UNICODE

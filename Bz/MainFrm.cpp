@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BZ.h"
 
 #include "MainFrm.h"
-#include "BZDoc.h"
+#include "BZDoc2.h"
 #include "BZView.h"
 #include "BZBmpVw.h"
 #include "BZFormVw.h"
@@ -292,9 +292,9 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 		m_pSplitter->CreateStatic(this, nRow + 1, (nCol + 1) * (bSubView + 1));
 
 		if(!pDoc2) {
-			pDoc2 = new CBZDoc;
+			pDoc2 = new CBZDoc2;
 			pDocTemp->CDocTemplate::AddDocument(pDoc2);
-			((CBZDoc*)pDoc)->DuplicateDoc((CBZDoc*)pDoc2);
+			((CBZDoc2*)pDoc)->DuplicateDoc((CBZDoc2*)pDoc2);
 			pDocTemp->SetDocument(pDoc2);
 		}
 		int r = 0;
@@ -579,7 +579,7 @@ void CMainFrame::OnUpdateViewBitmap(CCmdUI* pCmdUI)
 {
 	// TODO: Add your command update UI handler code here
 	pCmdUI->SetCheck(m_bBmpView);
-	CBZDoc* pDoc = (CBZDoc*)(GetActiveView()->GetDocument());
+	CBZDoc2* pDoc = (CBZDoc2*)(GetActiveView()->GetDocument());
 	pCmdUI->Enable(pDoc->GetDocSize() >= (DWORD)(options.nBmpWidth * (options.nBmpColorWidth/8)) /* && !m_nSplitView*/);
 }
 
@@ -623,7 +623,7 @@ void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
 //	CFrameWnd::OnUpdateFrameTitle(bAddToTitle);
 
-	CBZDoc* pDoc = (CBZDoc*)GetActiveDocument();
+	CBZDoc2* pDoc = (CBZDoc2*)GetActiveDocument();
 	if(pDoc) {
 		CString s(AfxGetAppName());
 		s += " - ";
@@ -631,7 +631,7 @@ void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 		if(!(options.barState & BARSTATE_FULLPATH) || sPath.IsEmpty())
 			sPath = pDoc->GetTitle();
 		s += sPath;
-		s += pDoc->IsFileMapping()?_T(" (FileMap)"):_T(" (Mem)");
+//		s += pDoc->IsFileMapping()?_T(" (FileMap)"):_T(" (Mem)");
 		if(pDoc->IsModified())
 			s += " *";
 		SetWindowText(s);

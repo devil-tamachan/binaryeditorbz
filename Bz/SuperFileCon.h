@@ -108,9 +108,13 @@ RB_PROTOTYPE_INTERNAL(_TAMAOLDFILECHUNK_HEAD, _TAMAOLDFILECHUNK, linkage, cmpTAM
 RB_GENERATE_INTERNAL(_TAMAOLDFILECHUNK_HEAD, _TAMAOLDFILECHUNK, linkage, cmpTAMAOLDFILECHUNK, inline);
 
 
+//#ifdef SFC_EASYDEBUG
+  typedef enum {	SFCOP_OPEN=0, SFCOP_CLOSE, SFCOP_WRITE, /*SFCOP_READ,*/ SFCOP_INSERT, SFCOP_DELETE, SFCOP_UNDO, SFCOP_REDO, SFCOP_CLEARUNDO, SFCOP_CLEARREDO, SFCOP_SAVE, SFCOP_SAVEAS, SFCOP_FATALERROR, SFCOP_FILL } SfcOp;
+  const char SfcOpCode[] = {'O', 'C', 'W', 'I', 'D', 'U', 'R', 'u', 'r', 'S', 's', '!', 'F'};
+//#endif
 #ifdef SFC_EASYDEBUG
-  typedef enum {	SFCOP_OPEN=0, SFCOP_CLOSE, SFCOP_WRITE, /*SFCOP_READ,*/ SFCOP_INSERT, SFCOP_DELETE, SFCOP_UNDO, SFCOP_REDO, SFCOP_CLEARUNDO, SFCOP_CLEARREDO, SFCOP_SAVE, SFCOP_SAVEAS } SfcOp;
-  const char SfcOpCode[] = {'O', 'C', 'W', 'I', 'D', 'U', 'R', 'u', 'r', 'S', 's'};
+#include <intrin.h>
+#pragma intrinsic(_ReturnAddress)
 #endif
 
 class CSuperFileCon
@@ -128,10 +132,23 @@ public:
   {
     _DeleteContents();
   }
-
-  void FatalError()
+  
+  __declspec(noinline) void FatalError()
   {
+#ifdef SFC_EASYDEBUG
+    DWORD dwRetAddr = (DWORD)_ReturnAddress();
+    _EasyDebug_OutputOp2(SFCOP_FATALERROR, dwRetAddr);
+    m_dbgFile.Close();
+#endif
     exit(-1);
+  }
+
+  DWORD GetRemain(DWORD dwStart)
+  {
+    if(!m_file.m_h)return 0;
+    DWORD dwFileSize = GetSize();
+    if(dwFileSize>dwStart)return dwFileSize - dwStart;
+    return 0;
   }
 
   // Open/Overwrite/Save to another file
@@ -876,6 +893,31 @@ public:
     if(bRet)memcpy(dst2, dst1, dwSize);
     return bRet;
   }
+  BOOL Fill(LPBYTE pData, DWORD dwDataSize, DWORD dwStart, DWORD dwFillSize)
+  {
+    if(!m_file.m_h || dwFillSize==0 || dwDataSize==0 || dwStart>m_dwTotal)return FALSE;
+    ATLTRACE("SuperFileCon::Fill(), dwDataSize: %u(0x%08X), dwFillSize: %u(0x%08X)\n", dwDataSize, dwDataSize ,dwFillSize, dwFillSize);
+#ifdef SFC_EASYDEBUG
+    _EasyDebug_OutputOp3(SFCOP_FILL, dwDataSize, dwFillSize);
+#endif
+    LPBYTE pNewData = (LPBYTE)malloc(dwFillSize);
+    if(!pNewData)
+    {
+      ATLASSERT(FALSE);
+      return FALSE;
+    }
+    DWORD dwRemain = dwFillSize;
+    LPBYTE pOut = pNewData;
+    for(; dwDataSize <= dwRemain; pOut+=dwDataSize, dwRemain-=dwDataSize)
+    {
+      memcpy(pOut, pData, dwDataSize);
+    }
+    if(dwRemain)memcpy(pOut, pData, dwRemain);
+
+    BOOL bRet = WriteAssign(pNewData, dwStart, dwFillSize);
+    if(!bRet)free(pNewData);
+    return bRet;
+  }
   BOOL Write(void *srcData, DWORD dwStart, DWORD dwSize)
   {
     if(!m_file.m_h || dwSize==0 || dwStart>m_dwTotal)return FALSE;
@@ -1278,7 +1320,7 @@ err_TAMAUndoRedoCreate:
   }
 
   // Undo/Redo
-  BOOL Undo()
+  BOOL Undo(DWORD *pRetStart = NULL)
   {
     if(!m_file.m_h || GetUndoCount()==0)return FALSE;
     ATLTRACE("SuperFileCon::Undo\n");
@@ -1318,11 +1360,12 @@ err_TAMAUndoRedoCreate:
       }
     default:
       ATLASSERT(FALSE);
-      break;
+      return FALSE;
     }
+    if(pRetStart)*pRetStart = undo->dwStart;
     return TRUE;
   }
-  BOOL Redo()
+  BOOL Redo(DWORD *pRetStart = NULL)
   {
     if(!m_file.m_h || GetRedoCount()==0)return FALSE;
     ATLTRACE("SuperFileCon::Redo\n");
@@ -1362,8 +1405,9 @@ err_TAMAUndoRedoCreate:
       }
     default:
       ATLASSERT(FALSE);
-      break;
+      return FALSE;
     }
+    if(pRetStart)*pRetStart = undo->dwStart;
     return TRUE;
   }
   size_t GetUndoCount()
@@ -1406,6 +1450,23 @@ err_TAMAUndoRedoCreate:
     size_t nDelSize = GetUndoCountCanRemove();
     if(nDelSize>0)_UndoRedo_RemoveRange(0, nDelSize);
     return TRUE;
+  }
+  
+  DWORD GetSize()
+  {
+    if(!m_file.m_h)return 0;
+    return m_dwTotal;
+  }
+
+  BOOL IsModified()
+  {
+    if(!m_file.m_h)return FALSE;
+    return m_savedIndex != m_redoIndex;
+  }
+
+  BOOL IsOpen()
+  {
+    return m_file.m_h!=0;
   }
 
 
@@ -1466,12 +1527,6 @@ protected:
 #endif
 
 protected:
-
-  BOOL IsModified()
-  {
-    return m_savedIndex != m_redoIndex;
-  }
-
 
   void _DeleteContents() 
   {

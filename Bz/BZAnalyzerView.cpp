@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BZAnalyzerView.h"
 #include "ProgressDialog.h"
 #include "zlib.h"
-#include "BZDoc.h"
+#include "BZDoc2.h"
 #include "Splitter.h"
 //#include "..\..\CFolderDialog\folderdlg.h"//atldlgs.hからCFolderDialogだけ切り取ったもの。shlobj.hのinclude, CFolderDialogImpl, CFolderDialog, ATL_NO_VTABLEを__declspec(novtable)に変更, ATLTRACEをコメントアウトしたもの。代わりにWTLのatldlgs.hをインクルードしても良い。CPL感染するので同梱しない。
 
@@ -152,66 +152,58 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 
 	int iListIndex = -1;
 
-	CBZDoc* pDoc = (CBZDoc*)GetDocument();
+	CBZDoc2* pDoc = (CBZDoc2*)GetDocument();
 	ASSERT(pDoc);
-	LPBYTE p  = pDoc->GetDocPtr();
-	DWORD filesize = pDoc->GetDocSize();
+//	LPBYTE p  = pDoc->GetDocPtr();
+	DWORD dwFileSize = pDoc->GetDocSize();
 
 	unsigned int outbufsize = 1;
-	LPBYTE outbuf = (LPBYTE)malloc(outbufsize);
+	LPBYTE pOutBuf = (LPBYTE)malloc(outbufsize);
 	int inflateStatus = Z_OK;
 
-	for(DWORD ofs_inflateStart = 0; ofs_inflateStart < filesize-1/*-2以上でもいいかも*/; ofs_inflateStart++)
-	{
-#ifdef FILE_MAPPING
-		if(p && !(p = pDoc->QueryMapViewTama2(ofs_inflateStart, 1000))) return;
-		DWORD dwRemain = pDoc->GetMapRemain(ofs_inflateStart);
-		if(dwRemain<2)
-		{
-			MessageBox(_T("FileMapping Error"), _T("ERROR"), MB_OK);
-			free(outbuf);
-			return;
-		}
-#endif //FILE_MAPPING
-		if(!IsZlibDeflate(*p, *(p+1)))continue;
+  const DWORD dwInputBuf = 1000;
+  const DWORD dwDecodeMax = 100;
+  const DWORD dwLoopInc = dwInputBuf - dwDecodeMax;
+  LPBYTE pInputBuf = (LPBYTE)malloc(dwInputBuf);
 
-		z_stream z = {0};
-		z.next_out = outbuf;
-		z.avail_out = outbufsize;
+  if(pInputBuf && pOutBuf && pDoc->IsOpen())
+  {
+    for(DWORD ofs_inflateStart = 0; ofs_inflateStart < dwFileSize-1/*-2以上でもいいかも*/; ofs_inflateStart+=dwLoopInc)
+    {
+      DWORD dwReadSize = dwFileSize - ofs_inflateStart;
+      if(dwReadSize > dwInputBuf)dwReadSize = dwInputBuf;
+      if(!pDoc->Read(pInputBuf, ofs_inflateStart, dwReadSize)) break;
 
-		DWORD dwSize_Nokori = dwRemain;
-		if(inflateInit(&z)!=Z_OK)continue;
-		/*do*/ {
-		/*	if(z.avail_out==0)
-			{
-				z.next_out = outbuf;
-				z.avail_out = outbufsize;
-				//リスト追加
-				CString str;
-				str.Format("0x%08X", ofs_inflateStart);
-				m_resultList.InsertItem(++iListIndex, str);
-			//	m_resultList.SetItemText(0, 1, "5000");
-				break;
-			}*/
-			DWORD dwSize = min(min(dwRemain, dwSize_Nokori), 100);
-			z.next_in = p;
-			z.avail_in = dwSize;
-			inflateStatus = inflate(&z, Z_NO_FLUSH);
-			dwSize_Nokori -= dwSize;
-//バグ：設定のファイルマッピングのサイズが１０バイトくらい以下だと誤判定するかも。ループで最低５０バイト程度は供給しないと
-		} /*while(dwSize_Nokori > 0 && inflateStatus==Z_OK);*/
-		if(inflateStatus==Z_OK||inflateStatus==Z_STREAM_END)
-		{
-			CString str;
-			str.Format(_T("0x%08X"), ofs_inflateStart);
-			m_resultList.InsertItem(++iListIndex, str);
-		//	m_resultList.SetItemText(0, 1, "5000");
-		}
-		TRACE(_T("BZAnalyzerView(0x%08X) inflateStatus==%d\n"),ofs_inflateStart , inflateStatus);
-		inflateEnd(&z);
-	}
+      for(DWORD i=0; i<dwLoopInc; i++)
+      {
+        if(dwReadSize < 2 || !IsZlibDeflate(*pInputBuf, *(pInputBuf+1)))continue;
 
-	free(outbuf);
+        z_stream z = {0};
+        z.next_out = pOutBuf;
+        z.avail_out = outbufsize;
+
+        if(inflateInit(&z)!=Z_OK)continue;
+
+        DWORD dwDecodeSize = min(dwReadSize-i, dwDecodeMax);
+        z.next_in = pInputBuf+i;
+        z.avail_in = dwDecodeSize;
+        inflateStatus = inflate(&z, Z_NO_FLUSH);
+
+        if(inflateStatus==Z_OK||inflateStatus==Z_STREAM_END)
+        {
+          CString str;
+          str.Format(_T("0x%08X"), ofs_inflateStart);
+          m_resultList.InsertItem(++iListIndex, str);
+          //	m_resultList.SetItemText(0, 1, "5000");
+        }
+        TRACE(_T("BZAnalyzerView(0x%08X) inflateStatus==%d\n"),ofs_inflateStart , inflateStatus);
+        inflateEnd(&z);
+      }
+    }
+  }
+
+  if(pInputBuf)free(pInputBuf);
+	if(pOutBuf)free(pOutBuf);
 	
 //	m_resultList.InsertItem(++iListIndex, "End");
 }
@@ -309,14 +301,10 @@ HRESULT CBZAnalyzerView::SaveFile(LPCTSTR pathOutputDir, unsigned long ulStartAd
 {
 	TCHAR pathOutput[_MAX_PATH];
 
-	CBZDoc* pDoc = (CBZDoc*)GetDocument();
+	CBZDoc2* pDoc = (CBZDoc2*)GetDocument();
 	ASSERT(pDoc);
-	LPBYTE p  = pDoc->GetDocPtr();
-	if(p==NULL)
-	{
-		MessageBox(_T("GetDocPtr() error"), _T("Error"), MB_OK);
-		return E_FAIL;
-	}
+//	LPBYTE p  = pDoc->GetDocPtr();
+  if(!pDoc->IsOpen())return E_FAIL;
 
 	int retMakePath = MakeExportPath(pathOutput, pathOutputDir, ulStartAddr);
 	FILE *fp;
@@ -345,6 +333,7 @@ HRESULT CBZAnalyzerView::SaveFile(LPCTSTR pathOutputDir, unsigned long ulStartAd
 	z_stream z = {0};
 	z.next_out = outbuf;
 	z.avail_out = outbufsize;
+	z.avail_out = 0;
 	int inflateStatus = Z_OK;
 
 	if(inflateInit(&z)!=Z_OK)
@@ -354,26 +343,26 @@ HRESULT CBZAnalyzerView::SaveFile(LPCTSTR pathOutputDir, unsigned long ulStartAd
 	}
 
 	DWORD nextOffset = ulStartAddr;
-	DWORD dwTotal = pDoc->GetDocSize();
+	DWORD dwFileSize = pDoc->GetDocSize();
+  const DWORD dwReadMax = 0x100000;
+  LPBYTE pInputBuf = (LPBYTE)malloc(dwReadMax);
+  if(!pInputBuf)goto saveerr2;
 	
 	do {
 		if(z.avail_in==0)
 		{
-			if(nextOffset>=dwTotal)goto saveerr2;
-#ifdef FILE_MAPPING
-			p = pDoc->QueryMapViewTama2(nextOffset, 0x100000);
-			DWORD dwRemain = pDoc->GetMapRemain(nextOffset);
-			if(dwRemain==0)
+			if(nextOffset>=dwFileSize)goto saveerr3;
+
+      DWORD dwReadSize = dwFileSize - nextOffset;
+      if(dwReadSize > dwReadMax)dwReadSize = dwReadMax;
+      if(!pDoc->Read(pInputBuf, nextOffset, dwReadSize))
 			{
-				MessageBox(_T("FileMapping Error"), _T("ERROR"), MB_OK);
-				goto saveerr2;
+				MessageBox(_T("Read Error"), _T("ERROR"), MB_OK);
+				goto saveerr3;
 			}
-#endif //FILE_MAPPING
-			DWORD dwSize = min(dwRemain, 0x100000);
-			z.next_in = p;
-			z.avail_in = dwSize;
-			nextOffset+=dwSize;
-			p+=dwSize;
+			z.next_in = pInputBuf;
+			z.avail_in = dwReadSize;
+			nextOffset+=dwReadSize;
 		}
 		inflateStatus = inflate(&z, Z_NO_FLUSH);
 		if(z.avail_out==0)
@@ -381,7 +370,7 @@ HRESULT CBZAnalyzerView::SaveFile(LPCTSTR pathOutputDir, unsigned long ulStartAd
 			if(fwrite(outbuf, 1, outbufsize, fp)!=outbufsize)
 			{
 				MessageBox(_T("fwrite error"), _T("Error"), MB_OK);
-				goto saveerr2;
+				goto saveerr3;
 			}
 			z.next_out = outbuf;
 			z.avail_out = outbufsize;
@@ -396,24 +385,27 @@ HRESULT CBZAnalyzerView::SaveFile(LPCTSTR pathOutputDir, unsigned long ulStartAd
 			if(fwrite(outbuf, 1, nokori, fp)!=nokori)
 			{
 				MessageBox(_T("fwrite error2"), _T("Error"), MB_OK);
-				goto saveerr2;
+				goto saveerr3;
 			}
 		}
 	} else {
 //		MessageBox("inflate error", "Error", MB_OK);
-		goto saveerr2;
+		goto saveerr3;
 	}
 
 	if(_ftelli64(fp)<=0)
 	{
-		goto saveerr2;
+		goto saveerr3;
 	}
 
 	inflateEnd(&z);
 	fclose(fp);
+  free(pInputBuf);
 
 	return S_OK;
 
+saveerr3:
+  free(pInputBuf);
 
 saveerr2:
 	inflateEnd(&z);

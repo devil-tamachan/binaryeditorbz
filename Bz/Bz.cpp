@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BZ.h"
 
 #include "MainFrm.h"
-#include "BZDoc.h"
+#include "BZDoc2.h"
 #include "BZView.h"
 #include <shlobj.h>
 
@@ -149,7 +149,7 @@ http://social.msdn.microsoft.com/Forums/en/vcgeneral/thread/c3feab0f-601b-4ca6-b
 	CBZDocTemplate* pDocTemplate;
 	pDocTemplate = new CBZDocTemplate(
 		IDR_MAINFRAME,
-		RUNTIME_CLASS(CBZDoc),
+		RUNTIME_CLASS(CBZDoc2),
 		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
 		RUNTIME_CLASS(CBZView));
 

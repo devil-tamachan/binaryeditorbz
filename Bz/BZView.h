@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "TextView.h"
 
-class CBZDoc;
+class CBZDoc2;
 
 enum CutMode { EDIT_COPY, EDIT_CUT, EDIT_DELETE };
 class CBZView : public CTextView
@@ -54,7 +54,7 @@ private:
 	BOOL	m_bCaretOnChar;
 	BOOL	m_bEnterVal;
 	int		m_timer;
-	CBZDoc*	m_pDoc;
+	CBZDoc2*	m_pDoc;
 	DWORD	m_dwPrint;
 	int		m_nPageLen;
 	CharSet m_charset;
@@ -64,13 +64,16 @@ private:
 	static BOOL  m_bLoadEbcDic;
 
 public:
-	CBZDoc*	GetDocument();
+	CBZDoc2*	GetDocument();
 // Operations
 public:
 	BOOL	GotoCaret();
 	int		GetValue(DWORD ofs, int bytes);
 	ULONGLONG GetValue64(DWORD ofs);
-	void	SetValue(DWORD ofs, int bytes, int val);
+	DWORD GetDWORD(DWORD dwOffset);
+  WORD  GetWORD(DWORD dwOffset);
+  BYTE  GetBYTE(DWORD dwOffset);
+	//void	SetValue(DWORD ofs, int bytes, int val);
 	void	FillValue(int val);
 	void	Activate();
 	void	UpdateStatusInfo();
@@ -97,13 +100,15 @@ private:
 	DWORD	BlockBegin() { return m_dwBlock < m_dwCaret ? m_dwBlock : m_dwCaret; };
 	DWORD	BlockEnd() { return m_dwBlock > m_dwCaret ? m_dwBlock : m_dwCaret; } ;
 	CBZView* GetBrotherView();
+	CBZDoc2* GetBrotherDoc();
+  DWORD GetRemainFromCurret();
 	void	ChangeFont(LOGFONT& logFont);
-	void	SetValue(LPBYTE p, int bytes, int val);
+	//void	SetValue(LPBYTE p, int bytes, int val);
 	//BOOL	IsMBS(LPBYTE pTop, DWORD ofs, BOOL bTrail);
 	CharSet AutoDetectCharSet();
 	int ConvertCharSet(CharSet charset, LPCSTR sFind, LPBYTE &buffer);
 	CharSet DetectCodeType(DWORD dwStart = 0, DWORD dwMaxSize = 0xFFFFffff);//(LPBYTE p, LPBYTE pEnd);
-	void InitCharMode(LPBYTE pTop, DWORD ofs);
+	void InitCharMode(DWORD ofs);
 	WORD GetCharCode(WORD c, DWORD ofs = 0);
 	void SetColor(TextColor n = TCOLOR_TEXT);
 	void SetHeaderColor();
@@ -215,8 +220,8 @@ public:
 };
 
 #ifndef _DEBUG  // debug version in BZView.cpp
-inline CBZDoc* CBZView::GetDocument()
-   { return (CBZDoc*)m_pDocument; }
+inline CBZDoc2* CBZView::GetDocument()
+   { return (CBZDoc2*)m_pDocument; }
 #endif
 
 
