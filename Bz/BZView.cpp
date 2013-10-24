@@ -437,6 +437,7 @@ void CBZView::OnDraw(CDC* pDC)
 //		if(p && !(p = m_pDoc->QueryMapView(p, ofs1))) return;
 	//	if(p1 && !(p1 = pView1->m_pDoc->QueryMapView(p1, ofs1))) return;
 
+    //描画: 先頭のアドレス
 		if(m_nColAddr > ADDRCOLUMNS) {
 			PutFormatStr("%04X:%04X", HIWORD(ofs1), LOWORD(ofs1));
 			SetColor();
@@ -454,6 +455,7 @@ void CBZView::OnDraw(CDC* pDC)
 				PutStr(" ");
 			}
 		}
+    //描画: Hex表示 (x16バイト)
 		DWORD ofs0 = ofs;
 		for_to(i,16) {
 			if(ofs >= dwTotal) {
@@ -473,9 +475,9 @@ void CBZView::OnDraw(CDC* pDC)
 				else
 					SetColor(TCOLOR_STRUCT);
 			}
-			else if(p1 && (ofs < dwTotalP1 && (ch0 != *(p1+ofs))))
+			else if(pView1 && (ofs < dwTotalP1 && (ch0 != *(p1+ofs))))
 				SetColor(TCOLOR_MISMATCH);
-			else if(p1 && ofs >= dwTotalP1)
+			else if(pView1 && ofs >= dwTotalP1)
 				SetColor(TCOLOR_OVERBROTHER);
 			else
 				SetColor();
@@ -494,6 +496,7 @@ void CBZView::OnDraw(CDC* pDC)
 		bool fPutSkip = FALSE;
 #endif
 
+    //描画: 右側文字表示
 		for_to_(i,16) {
 			if(ofs >= dwTotal) {
 				SetColor();

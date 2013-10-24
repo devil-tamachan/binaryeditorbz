@@ -12,11 +12,11 @@ IMPLEMENT_DYNCREATE(CBZDoc2, CDocument)
 
 CBZDoc2::CBZDoc2() : m_pSFC(NULL), m_pSFCCache(NULL)
 {
-	m_dwBase = 0;
+  m_dwBase = 0;
 
-	//ReCreate restore
-	m_restoreCaret = 0;
-	//m_restoreScroll = {0};
+  //ReCreate restore
+  m_restoreCaret = 0;
+  //m_restoreScroll = {0};
 }
 
 CBZDoc2::~CBZDoc2()
@@ -31,11 +31,11 @@ BEGIN_MESSAGE_MAP(CBZDoc2, CDocument)
   ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, &CBZDoc2::OnUpdateEditUndo)
   ON_COMMAND(ID_EDIT_READONLYOPEN, &CBZDoc2::OnEditReadOnlyOpen)
   ON_UPDATE_COMMAND_UI(ID_EDIT_READONLYOPEN, &CBZDoc2::OnUpdateEditReadOnlyOpen)
-	ON_COMMAND(ID_INDICATOR_INS, OnEditReadOnly)
-	ON_UPDATE_COMMAND_UI_RANGE(ID_FILE_SAVE, ID_FILE_SAVE_AS, OnUpdateFileSave)
-//  ON_COMMAND(ID_FILE_SAVE, &CBZDoc2::OnFileSave)
-ON_COMMAND(ID_FILE_SAVE, &CBZDoc2::OnFileSave)
-ON_COMMAND(ID_FILE_SAVE_AS, &CBZDoc2::OnFileSaveAs)
+  ON_COMMAND(ID_INDICATOR_INS, OnEditReadOnly)
+  ON_UPDATE_COMMAND_UI_RANGE(ID_FILE_SAVE, ID_FILE_SAVE_AS, OnUpdateFileSave)
+  //  ON_COMMAND(ID_FILE_SAVE, &CBZDoc2::OnFileSave)
+  ON_COMMAND(ID_FILE_SAVE, &CBZDoc2::OnFileSave)
+  ON_COMMAND(ID_FILE_SAVE_AS, &CBZDoc2::OnFileSaveAs)
 END_MESSAGE_MAP()
 
 
@@ -44,13 +44,13 @@ END_MESSAGE_MAP()
 #ifdef _DEBUG
 void CBZDoc2::AssertValid() const
 {
-	CDocument::AssertValid();
+  CDocument::AssertValid();
 }
 
 #ifndef _WIN32_WCE
 void CBZDoc2::Dump(CDumpContext& dc) const
 {
-	CDocument::Dump(dc);
+  CDocument::Dump(dc);
 }
 #endif
 #endif //_DEBUG
@@ -61,12 +61,12 @@ void CBZDoc2::Dump(CDumpContext& dc) const
 void CBZDoc2::Serialize(CArchive& ar)
 {
   /*
-	if (ar.IsStoring())
-	{
-	}
-	else
-	{
-	}
+  if (ar.IsStoring())
+  {
+  }
+  else
+  {
+  }
   */
 }
 #endif
@@ -76,22 +76,22 @@ void CBZDoc2::Serialize(CArchive& ar)
 
 void CBZDoc2::OnEditReadOnly()
 {
-	m_bReadOnly = !m_bReadOnly;	
+  m_bReadOnly = !m_bReadOnly;	
 }
 
 void CBZDoc2::OnUpdateEditReadOnly(CCmdUI *pCmdUI)
 {
-	pCmdUI->SetCheck(m_bReadOnly);
+  pCmdUI->SetCheck(m_bReadOnly);
 }
 
 void CBZDoc2::OnEditReadOnlyOpen()
 {
-	options.bReadOnlyOpen = !options.bReadOnlyOpen;
+  options.bReadOnlyOpen = !options.bReadOnlyOpen;
 }
 
 void CBZDoc2::OnUpdateEditReadOnlyOpen(CCmdUI *pCmdUI)
 {
-	pCmdUI->SetCheck(options.bReadOnlyOpen);
+  pCmdUI->SetCheck(options.bReadOnlyOpen);
 }
 
 void CBZDoc2::OnUpdateEditUndo(CCmdUI *pCmdUI)
@@ -101,93 +101,103 @@ void CBZDoc2::OnUpdateEditUndo(CCmdUI *pCmdUI)
 
 void CBZDoc2::OnUpdateFileSave(CCmdUI* pCmdUI) 
 {
-	// TODO: Add your command update UI handler code here
-	pCmdUI->Enable(!m_bReadOnly);
+  // TODO: Add your command update UI handler code here
+  pCmdUI->Enable(!m_bReadOnly);
 }
 
 
 
 DWORD CBZDoc2::PasteFromClipboard(DWORD dwStart, BOOL bIns)
 {
-  if(!m_pSFC)return FALSE;
-	AfxGetMainWnd()->OpenClipboard();
-	HGLOBAL hMem;
-	DWORD dwSize;
-	LPBYTE pMem;
-	if(hMem = ::GetClipboardData(RegisterClipboardFormat(_T("BinaryData2")))) {
+  if(!m_pSFC)goto ERR_PASTECLIP1;
+  AfxGetMainWnd()->OpenClipboard();
+  HGLOBAL hMem;
+  DWORD dwSize;
+  LPBYTE pMem;
+  if(hMem = ::GetClipboardData(RegisterClipboardFormat(_T("BinaryData2")))) {
     DWORD dwMemSize = GlobalSize(hMem);
-		pMem = (LPBYTE)::GlobalLock(hMem);
-		dwSize = *((DWORD*)(pMem));
-    if(dwMemSize < sizeof(DWORD) || dwSize > dwMemSize-sizeof(DWORD))
-    {
-      ::GlobalUnlock(hMem);
-      ::CloseClipboard();
-      return 0;
+    pMem = (LPBYTE)::GlobalLock(hMem);
+    if(!pMem)goto ERR_PASTECLIP3;
+    dwSize = *((DWORD*)(pMem));
+    if(dwMemSize < sizeof(DWORD) || dwSize > dwMemSize-sizeof(DWORD))goto ERR_PASTECLIP3;
+    pMem += sizeof(DWORD);
+  } else if(hMem = GetClipboardData(CF_TEXT)) {
+    DWORD dwMemSize = GlobalSize(hMem);
+    pMem = (LPBYTE)::GlobalLock(hMem);
+    if(!pMem)goto ERR_PASTECLIP3;
+    dwSize = strnlen_s((LPCSTR)pMem, dwMemSize);
+  } else {
+    /*		UINT uFmt = 0;
+    while(uFmt = ::EnumClipboardFormats(uFmt)) {
+    CString sName;
+    ::GetClipboardFormatName(uFmt, sName.GetBuffer(MAX_PATH), MAX_PATH);
+    sName.ReleaseBuffer();
+    TRACE("clip 0x%X:%s\n", uFmt, sName);
     }
-		pMem += sizeof(DWORD);
-	} else if(hMem = GetClipboardData(CF_TEXT)) {
-    DWORD dwMemSize = GlobalSize(hMem);
-		pMem = (LPBYTE)::GlobalLock(hMem);
-		dwSize = strnlen_s((LPCSTR)pMem, dwMemSize);
-	} else {
-/*		UINT uFmt = 0;
-		while(uFmt = ::EnumClipboardFormats(uFmt)) {
-			CString sName;
-			::GetClipboardFormatName(uFmt, sName.GetBuffer(MAX_PATH), MAX_PATH);
-			sName.ReleaseBuffer();
-			TRACE("clip 0x%X:%s\n", uFmt, sName);
-		}
-
-		return 0;
-*/		if(!(hMem = ::GetClipboardData(::EnumClipboardFormats(0))))
-			return 0;
-		pMem = (LPBYTE)::GlobalLock(hMem);
-		dwSize = ::GlobalSize(hMem);
-	}
-	if(!dwSize) return 0;
+    return 0;
+    */
+    hMem = ::GetClipboardData(::EnumClipboardFormats(0));
+    if(!hMem)goto ERR_PASTECLIP2;
+    pMem = (LPBYTE)::GlobalLock(hMem);
+    if(!pMem)goto ERR_PASTECLIP3;
+    dwSize = ::GlobalSize(hMem);
+  }
+  if(!dwSize)goto ERR_PASTECLIP3;
   DWORD dwTotal = m_pSFC->GetSize();
-	if(bIns || dwStart == dwTotal)
+  if(bIns || dwStart == dwTotal)
+  {
     m_pSFC->Insert(pMem, dwStart, dwSize);
-	else
+    m_pSFCCache->Clear(dwStart);
+  } else {
     m_pSFC->Write(pMem, dwStart, dwSize);
-	::GlobalUnlock(hMem);
-	::CloseClipboard();
-	return dwStart+dwSize;
+    m_pSFCCache->Clear(dwStart, dwSize);
+  }
+  ::GlobalUnlock(hMem);
+  ::CloseClipboard();
+  return dwStart+dwSize;
+
+ERR_PASTECLIP3:
+  ::GlobalUnlock(hMem);
+ERR_PASTECLIP2:
+  ::CloseClipboard();
+ERR_PASTECLIP1:
+  m_pSFCCache->Clear();
+  return 0;
 }
 
 BOOL CBZDoc2::CopyToClipboard(DWORD dwStart, DWORD dwSize)
 {
   if(!m_pSFC)return FALSE;
-	HGLOBAL hMemTxt = ::GlobalAlloc(GMEM_MOVEABLE, dwSize + 1);
-	HGLOBAL hMemBin = ::GlobalAlloc(GMEM_MOVEABLE, dwSize + sizeof(dwSize));
+  HGLOBAL hMemTxt = ::GlobalAlloc(GMEM_MOVEABLE, dwSize + 1);
+  HGLOBAL hMemBin = ::GlobalAlloc(GMEM_MOVEABLE, dwSize + sizeof(dwSize));
   if(!hMemTxt || !hMemBin)
   {
-		AfxMessageBox(IDS_ERR_COPY);
+    AfxMessageBox(IDS_ERR_COPY);
     goto CClip_ERR2;
   }
-	LPBYTE pMemTxt  = (LPBYTE)::GlobalLock(hMemTxt);
-	LPBYTE pMemBin  = (LPBYTE)::GlobalLock(hMemBin);
+  LPBYTE pMemTxt  = (LPBYTE)::GlobalLock(hMemTxt);
+  LPBYTE pMemBin  = (LPBYTE)::GlobalLock(hMemBin);
   if(!pMemTxt || !pMemBin)
   {
-		AfxMessageBox(IDS_ERR_COPY);
+    AfxMessageBox(IDS_ERR_COPY);
     goto CClip_ERR1;
   }
 
   if(!m_pSFC->ReadTwin(pMemTxt, pMemBin + sizeof(dwSize), dwStart, dwSize))
-	{
-		AfxMessageBox(IDS_ERR_COPY);
+  {
+    AfxMessageBox(IDS_ERR_COPY);
     goto CClip_ERR1;
-	}
-	*(pMemTxt + dwSize) = '\0';
-	*((DWORD*)(pMemBin)) = dwSize;
+  }
+  *(pMemTxt + dwSize) = '\0';
+  *((DWORD*)(pMemBin)) = dwSize;
 
-	::GlobalUnlock(hMemTxt);
-	::GlobalUnlock(hMemBin);
-	AfxGetMainWnd()->OpenClipboard();
-	::EmptyClipboard();
-	::SetClipboardData(CF_TEXT, hMemTxt);
-	::SetClipboardData(RegisterClipboardFormat(_T("BinaryData2")), hMemBin);
-	::CloseClipboard();
+  ::GlobalUnlock(hMemTxt);
+  ::GlobalUnlock(hMemBin);
+  AfxGetMainWnd()->OpenClipboard();
+  ::EmptyClipboard();
+  ::SetClipboardData(CF_TEXT, hMemTxt);
+  ::SetClipboardData(RegisterClipboardFormat(_T("BinaryData2")), hMemBin);
+  ::CloseClipboard();
   return TRUE;
 
 CClip_ERR1:
@@ -201,9 +211,9 @@ CClip_ERR2:
 
 BOOL CBZDoc2::OnNewDocument()
 {
-	if (!CDocument::OnNewDocument())
-		return FALSE;
-	return TRUE;
+  if (!CDocument::OnNewDocument())
+    return FALSE;
+  return TRUE;
 }
 
 BOOL CBZDoc2::OnOpenDocument(LPCTSTR lpszPathName)
@@ -217,7 +227,7 @@ BOOL CBZDoc2::OnOpenDocument(LPCTSTR lpszPathName)
     MessageBox(NULL, mes, lpszPathName, MB_OK);
     return FALSE;
   }
-	DeleteContents();
+  DeleteContents();
   m_pSFC = pSFC;
   m_pSFCCache = new CSFCCache(m_pSFC, SFCC_CACHESIZE);
   return TRUE;
@@ -225,13 +235,13 @@ BOOL CBZDoc2::OnOpenDocument(LPCTSTR lpszPathName)
 
 void CBZDoc2::DeleteContents()
 {
-	m_dwBase = 0;
-	m_restoreCaret = 0;
-	//m_restoreScroll = {0};
+  m_dwBase = 0;
+  m_restoreCaret = 0;
+  //m_restoreScroll = {0};
 
   ReleaseSFC();
-//	m_arrMarks.RemoveAll();
-	SetModifiedFlag(FALSE);
+  //	m_arrMarks.RemoveAll();
+  SetModifiedFlag(FALSE);
 
   CDocument::DeleteContents();
 }
@@ -250,7 +260,7 @@ void CBZDoc2::OnFileSave()
     MessageBox(NULL, _T("Save Error"), _T("Error"), MB_OK);
     return;
   }
-	SetModifiedFlag(FALSE);
+  SetModifiedFlag(FALSE);
 }
 
 void CBZDoc2::OnFileSaveAs()
