@@ -109,15 +109,18 @@ public:
     return TRUE;
   }
 
-  LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize)
+  LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize = 0)
   {
     if(!m_pCache || !m_pSFC || !m_pSFC->IsOpen())goto ERR_CACHE2;
-    LPBYTE pCacheTry = _GetLPBYTE(dwStart, dwIdealSize);
-    if(pCacheTry)return pCacheTry;
 
     DWORD dwFileRemain = m_pSFC->GetRemain(dwStart);
     if(dwFileRemain==0)goto ERR_CACHE2;
     DWORD dwReadSize = dwIdealSize;
+    if(dwReadSize==0)dwReadSize = min(m_dwCacheAllocSize, dwFileRemain);
+
+    LPBYTE pCacheTry = _GetLPBYTE(dwStart, dwReadSize);
+    if(pCacheTry)return pCacheTry;
+
     if(dwReadSize > dwFileRemain)dwReadSize = dwFileRemain;
     if(dwReadSize > m_dwCacheAllocSize)dwReadSize = m_dwCacheAllocSize;
     if(!m_pSFC->Read(m_pCache, dwStart, dwReadSize))goto ERR_CACHE2;
@@ -138,7 +141,7 @@ ERR_CACHE2:
     LPBYTE pCacheTry = _GetLPBYTE(dwStart, dwNeedSize);
     if(pCacheTry)return pCacheTry;
 
-    pCacheTry = Cache(dwStart, CACHEMAX);
+    pCacheTry = Cache(dwStart);
     DWORD dwRemain = GetRemain(dwStart);
     if(dwRemain > dwNeedSize)return pCacheTry;
 

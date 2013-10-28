@@ -2016,7 +2016,7 @@ void CBZView::OnUpdateByteOrder(CCmdUI* pCmdUI)
 
 void CBZView::InitCharMode(DWORD ofs)
 {
-	if(!pTop) return;
+	//if(!pTop) return;
 	DWORD n = ofs;
 	//LPBYTE p = pTop + n;
 	if(m_charset == CTYPE_JIS) {
@@ -2024,28 +2024,33 @@ void CBZView::InitCharMode(DWORD ofs)
 		while(n) {
 			n--;
 //			BYTE c = *(--p);
-      BYTE c;
-      if(!m_pDoc->Read(&c, n, 1))return;
-			if(c < 0x21 || c > 0x7E) break;
+      //BYTE c;
+      //if(!m_pDoc->Read(&c, n, 1))return;
+      LPBYTE pC = m_pDoc->CacheForce(n, 1);
+      if(!pC)return;
+			if(*pC < 0x21 || *pC > 0x7E) break;
 		}
 		while(n++ < ofs) {
-      WORD w = 0;
-      if(!m_pDoc->Read(&w, n, 1))return;
-			GetCharCode(w);
+      //WORD w = 0;
+      //if(!m_pDoc->Read(&w, n, 1))return;
+      LPBYTE pC = m_pDoc->CacheForce(n, 1);
+			GetCharCode(*pC);
 		}
 	} else if(m_charset == CTYPE_EUC) {
 		GetCharCode(0);
 		while(n) {
 			n--;
 			//BYTE c = *(--p);
-      BYTE c;
-      if(!m_pDoc->Read(&c, n, 1))return;
-			if(c < 0xA1 || c > 0xFE) break;
+      //BYTE c;
+      //if(!m_pDoc->Read(&c, n, 1))return;
+      LPBYTE pC = m_pDoc->CacheForce(n, 1);
+			if(*pC < 0xA1 || *pC > 0xFE) break;
 		}
 		while(n++ < ofs) {
       WORD w = 0;
-      if(!m_pDoc->Read(&w, n, 1))return;
-			GetCharCode(w);
+      //if(!m_pDoc->Read(&w, n, 1))return;
+      LPBYTE pC = m_pDoc->CacheForce(n, 1);
+			GetCharCode(*pC);
 		}
 	}
 }
@@ -2212,12 +2217,9 @@ CharSet CBZView::AutoDetectCharSet()
 
 CharSet CBZView::DetectCodeType(DWORD dwStart, DWORD dwMaxSize)//(LPBYTE p, LPBYTE pEnd)
 {
-  if(!m_pDoc)return CTYPE_BINARY;
-  CSuperFileCon *pSFC = m_pDoc->m_pSFC;
-  if(!pSFC || !pSFC->IsOpen())return CTYPE_BINARY;
-  CSFCCache cache(pSFC, 1024*1024);
-  cache.Cache(dwStart, dwMaxSize);
-  LPBYTE p = cache.CacheForce(dwStart, 2);
+  if(!m_pDoc || !m_pDoc->IsOpen())return CTYPE_BINARY;
+  m_pDoc->Cache(dwStart, dwMaxSize);
+  LPBYTE p = m_pDoc->CacheForce(dwStart, 2);
 	//LPBYTE p = m_pDoc->QueryMapViewTama2(dwStart, dwMaxSize); //LPBYTE p  = m_pDoc->GetDocPtr();
 	//DWORD dwRemain = m_pDoc->GetMapRemain(dwStart);
 	if(!p/* || dwRemain < 2*/)return CTYPE_BINARY;
@@ -2232,7 +2234,7 @@ CharSet CBZView::DetectCodeType(DWORD dwStart, DWORD dwMaxSize)//(LPBYTE p, LPBY
 	}
 	if(*(WORD*)p == 0xBBEF)
   {
-    DWORD dwRemain = cache.GetRemain(dwStart);
+    DWORD dwRemain = m_pDoc->GetRemainCache(dwStart);
     if(dwRemain >= 3 && *(p+2) == 0xBF)return CTYPE_UTF8;
 	}
 
@@ -2240,9 +2242,9 @@ CharSet CBZView::DetectCodeType(DWORD dwStart, DWORD dwMaxSize)//(LPBYTE p, LPBY
 	DWORD flag = DT_SJIS | DT_JIS | DT_EUC | DT_UTF8;
 	while(dwCurrent < dwStart + dwMaxSize)//(p < pEnd)
 	{
-    p = cache.CacheForce(dwCurrent, 2);
+    p = m_pDoc->CacheForce(dwCurrent, 2);
     if(!p/* || dwRemain < 2*/)return CTYPE_BINARY;
-    DWORD dwRemain = cache.GetRemain(dwCurrent);
+    DWORD dwRemain = m_pDoc->GetRemainCache(dwCurrent);
 		//p = m_pDoc->QueryMapViewTama2(dwCurrent, 2);
 		//dwRemain = m_pDoc->GetMapRemain(dwCurrent);
 		BYTE c = (BYTE)*p++; dwCurrent++;//BYTE c = (BYTE)*p++;
@@ -2470,21 +2472,14 @@ DWORD CBZView::stristrBinaryW1(LPCWSTR searchTextW, BYTE nSearchTextW, DWORD dwS
 
 	DWORD dwNeedSize = (nSearchTextW+1)*2;
 	DWORD dwCurrent=dwStart;
-	DWORD dwFileSize = m_pDoc->GetDocSize();
-  LPWORD pInputBuf = (LPWORD)malloc(dwNeedSize);
+  m_pDoc->Cache(dwStart);
 	while(dwCurrent < m_dwTotal-2)
 	{
-    DWORD dwReadSize = dwFileSize - dwCurrent;
-    if(dwReadSize > dwNeedSize)dwReadSize = dwNeedSize;
-    if(!m_pDoc->Read(pInputBuf, dwCurrent, dwNeedSize)) break;//err
-    if(wcsnicmp(searchTextW, (const wchar_t*)pInputBuf, nSearchTextW)==0)
-    {
-      free(pInputBuf);
-      return dwCurrent;
-    }
-		dwCurrent += skipTable[pInputBuf[nSearchTextW]]*2;
+    LPBYTE p = m_pDoc->CacheForce(dwCurrent, dwNeedSize);
+    if(!p)break;//err
+    if(wcsnicmp(searchTextW, (const wchar_t*)p, nSearchTextW)==0)return dwCurrent;
+		dwCurrent += skipTable[p[nSearchTextW]]*2;
 	}
-  free(pInputBuf);
 	return 0xFFFFffff; // error
 }
 void CBZView::preQuickSearchWI4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD *skipTable)
@@ -2499,28 +2494,21 @@ void CBZView::preQuickSearchWI4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD *
 		else if('a' <= wc && wc <= 'z')	skipTable[wc-0x20] = nSearchTextW - i;
 	}
 }
-DWORD CBZView::stristrBinaryW4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD dwStart)
+DWORD CBZView::stristrBinaryW4(LPCWSTR pSearchTextW, DWORD nSearchTextW, DWORD dwStart)
 {
 	DWORD skipTable[0x10000];
-	preQuickSearchWI4(searchTextW, nSearchTextW, skipTable);
+	preQuickSearchWI4(pSearchTextW, nSearchTextW, skipTable);
 
 	DWORD dwNeedSize = (nSearchTextW+1)*2;
 	DWORD dwCurrent=dwStart;
-	DWORD dwFileSize = m_pDoc->GetDocSize();
-  LPWORD pInputBuf = (LPWORD)malloc(dwNeedSize);
+  m_pDoc->Cache(dwStart);
 	while(dwCurrent < m_dwTotal-2)
 	{
-    DWORD dwReadSize = dwFileSize - dwCurrent;
-    if(dwReadSize > dwNeedSize)dwReadSize = dwNeedSize;
-    if(!m_pDoc->Read(pInputBuf, dwCurrent, dwNeedSize)) break;//err
-		if(wcsnicmp(searchTextW, (const wchar_t*)pInputBuf, nSearchTextW)==0)
-    {
-      free(pInputBuf);
-      return dwCurrent;
-    }
-		dwCurrent += skipTable[pInputBuf[nSearchTextW]]*2;
+    LPBYTE p = m_pDoc->CacheForce(dwCurrent, dwNeedSize);
+    if(!p)break;//err
+		if(wcsnicmp(pSearchTextW, (const wchar_t*)p, nSearchTextW)==0)return dwCurrent;
+		dwCurrent += skipTable[p[nSearchTextW]]*2;
 	}
-  free(pInputBuf);
   return 0xFFFFffff; // error
 }
 DWORD CBZView::stristrBinaryW(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD dwStart)
@@ -2542,57 +2530,41 @@ void CBZView::preQuickSearchAI(LPCSTR searchText, DWORD nSearchText, DWORD *skip
 		else if('a' <= ch && ch <= 'z')	skipTable[ch-0x20] = nSearchText - i;
 	}
 }
-DWORD CBZView::stristrBinaryA(LPCSTR searchText, DWORD dwStart)
+DWORD CBZView::stristrBinaryA(LPCSTR pSearchText, DWORD dwStart)
 {
-	DWORD nSearchText = strlen(searchText);
+	DWORD nSearchText = strlen(pSearchText);
 	DWORD skipTable[0x100];
-	preQuickSearchAI(searchText, nSearchText, skipTable);
+	preQuickSearchAI(pSearchText, nSearchText, skipTable);
 	DWORD dwCurrent=dwStart;
-	DWORD dwFileSize = m_pDoc->GetDocSize();
-  const DWORD dwInputBuf = nSearchText+1;
-  LPBYTE pInputBuf = (LPBYTE)malloc(dwInputBuf);
+  m_pDoc->Cache(dwStart);
 	while(dwCurrent < m_dwTotal-1)
 	{
-    DWORD dwReadSize = dwFileSize - dwCurrent;
-    if(dwReadSize > dwInputBuf)dwReadSize = dwInputBuf;
-    if(!m_pDoc->Read(pInputBuf, dwCurrent, dwReadSize)) break;//err
+    LPBYTE p = m_pDoc->CacheForce(dwCurrent, nSearchText+1); //なんで+1なのかな？？？保留
+    if(!p)break;//err
 
-		if(strnicmp(searchText, (const char*)pInputBuf, nSearchText)==0)
-    {
-      free(pInputBuf);
-      return dwCurrent;
-    }
-		dwCurrent += skipTable[pInputBuf[nSearchText]];
+		if(strnicmp(pSearchText, (const char*)p, nSearchText)==0)return dwCurrent;
+		dwCurrent += skipTable[p[nSearchText]];
 	}
-  free(pInputBuf);
 	return 0xFFFFffff; // error
 }
-void CBZView::preQuickSearch(LPBYTE searchByte, unsigned int nSearchByte, DWORD* skipTable)
+void CBZView::preQuickSearch(LPBYTE pSearchByte, unsigned int nSearchByte, DWORD* skipTable)
 {
 	for(int j=0;j<0x100;j++)skipTable[j] = nSearchByte+1;
-	for(DWORD i=0;i<nSearchByte;i++)skipTable[searchByte[i]] = nSearchByte - i;
+	for(DWORD i=0;i<nSearchByte;i++)skipTable[pSearchByte[i]] = nSearchByte - i;
 }
-DWORD CBZView::strstrBinary(LPBYTE searchByte, unsigned int nSearchByte, DWORD dwStart)
+DWORD CBZView::strstrBinary(LPBYTE pSearchStr, unsigned int nSearchStr, DWORD dwStart)
 {
-	DWORD skipTable[0x100];
-	preQuickSearch(searchByte, nSearchByte, skipTable);
-	DWORD dwCurrent=dwStart;
-	DWORD dwFileSize = m_pDoc->GetDocSize();
-  const DWORD dwInputBuf = nSearchByte+1;
-  LPBYTE pInputBuf = (LPBYTE)malloc(dwInputBuf);
-	while(dwCurrent < m_dwTotal-1)
-	{
-    DWORD dwReadSize = dwFileSize - dwCurrent;
-    if(dwReadSize > dwInputBuf)dwReadSize = dwInputBuf;
-    if(!m_pDoc->Read(pInputBuf, dwCurrent, dwReadSize)) break;//err
+  DWORD skipTable[0x100];
+  preQuickSearch(pSearchStr, nSearchStr, skipTable);
+  DWORD dwCurrent=dwStart;
+  m_pDoc->Cache(dwStart);
+  while(dwCurrent < m_dwTotal-1)
+  {
+    LPBYTE p = m_pDoc->CacheForce(dwCurrent, nSearchStr+1); //なんで+1なのかな？？？保留
+    if(!p)break;//err
 
-		if(memcmp(searchByte, pInputBuf, nSearchByte)==0)
-    {
-      free(pInputBuf);
-      return dwCurrent;
-    }
-		dwCurrent += skipTable[pInputBuf[nSearchByte]];
-	}
-  free(pInputBuf);
-	return 0xFFFFffff; // error
+    if(memcmp(pSearchStr, p, nSearchStr)==0)return dwCurrent;
+    dwCurrent += skipTable[p[nSearchStr]];
+  }
+  return 0xFFFFffff; // error
 }
