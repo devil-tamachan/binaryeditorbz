@@ -223,16 +223,26 @@ void CBZBmpView::OnDraw(CDC* pDC)
   ATLTRACE("dwOffset 0x%08X *=(DWORD)(options.nBmpColorWidth %ld /8);\n", dwOffset, options.nBmpColorWidth);
 
   DWORD dwReadSize = m_cBmp.cx * nBmpHeight * (options.nBmpColorWidth/8);
-  LPBYTE lpBits = (LPBYTE)malloc(dwReadSize);
-  if(!lpBits)return;
-  if(pDoc->Read(lpBits, dwOffset, dwReadSize))
+  if(dwReadSize<=pDoc->GetMaxCacheSize())
   {
-    ::StretchDIBits(pMemDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
+    LPBYTE p = pDoc->CacheForce(dwOffset, dwReadSize);
+    if(p)
+      ::StretchDIBits(pMemDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
       , m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
       , 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, nBmpHeight/*srcH*/
-      , lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
+      , p/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
+  } else {
+    LPBYTE lpBits = (LPBYTE)malloc(dwReadSize);
+    if(!lpBits)return;
+    if(pDoc->Read(lpBits, dwOffset, dwReadSize))
+    {
+      ::StretchDIBits(pMemDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
+        , m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
+        , 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, nBmpHeight/*srcH*/
+        , lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
+    }
+    free(lpBits);
   }
-  free(lpBits);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -265,7 +275,7 @@ void CBZBmpView::OnLButtonDown(UINT nFlags, CPoint point)
 	if(point.x >= 0 && point.x < options.nBmpWidth && point.y >= 0) {
 		DWORD dwPtr = point.y*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (point.x * (options.nBmpColorWidth/8));
 		CBZView* pView = (CBZView*)GetNextWindow();
-		if(dwPtr < pView->m_dwTotal) {
+    if(dwPtr < pView->GetFileSize()) {
 			pView->m_dwCaret = dwPtr;
 			pView->GotoCaret();
 			//pView->Activate();
@@ -286,7 +296,7 @@ void CBZBmpView::OnMouseMove(UINT nFlags, CPoint point)
 		if(currentAddress != m_tooltipLastAddress)
 		{
 			CBZView* pView = (CBZView*)GetNextWindow();
-			if(currentAddress < pView->m_dwTotal) {
+			if(currentAddress < pView->GetFileSize()) {
 				if(m_isLButtonDown)
 				{
 					pView->m_dwCaret = currentAddress;

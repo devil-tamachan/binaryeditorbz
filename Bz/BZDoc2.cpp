@@ -17,6 +17,21 @@ CBZDoc2::CBZDoc2() : m_pSFC(NULL), m_pSFCCache(NULL)
   //ReCreate restore
   m_restoreCaret = 0;
   //m_restoreScroll = {0};
+  m_bReadOnly = FALSE;
+}
+
+void CBZDoc2::DeleteContents()
+{
+  m_dwBase = 0;
+  m_restoreCaret = 0;
+  //m_restoreScroll = {0};
+  m_bReadOnly = FALSE;
+
+  ReleaseSFC();
+  m_arrMarks.RemoveAll();
+  SetModifiedFlag(FALSE);
+
+  CDocument::DeleteContents();
 }
 
 CBZDoc2::~CBZDoc2()
@@ -101,7 +116,6 @@ void CBZDoc2::OnUpdateEditUndo(CCmdUI *pCmdUI)
 
 void CBZDoc2::OnUpdateFileSave(CCmdUI* pCmdUI) 
 {
-  // TODO: Add your command update UI handler code here
   pCmdUI->Enable(!m_bReadOnly);
 }
 
@@ -221,7 +235,7 @@ BOOL CBZDoc2::OnOpenDocument(LPCTSTR lpszPathName)
   CSuperFileCon *pSFC = new CSuperFileCon();
   if(!pSFC || !pSFC->Open(lpszPathName))
   {
-    ATLASSERT(FALSE);
+//    ATLASSERT(FALSE);
     CString mes;
     mes.LoadString(AFX_IDP_INVALID_FILENAME);
     MessageBox(NULL, mes, lpszPathName, MB_OK);
@@ -231,19 +245,6 @@ BOOL CBZDoc2::OnOpenDocument(LPCTSTR lpszPathName)
   m_pSFC = pSFC;
   m_pSFCCache = new CSFCCache(m_pSFC, SFCC_CACHESIZE);
   return TRUE;
-}
-
-void CBZDoc2::DeleteContents()
-{
-  m_dwBase = 0;
-  m_restoreCaret = 0;
-  //m_restoreScroll = {0};
-
-  ReleaseSFC();
-  //	m_arrMarks.RemoveAll();
-  SetModifiedFlag(FALSE);
-
-  CDocument::DeleteContents();
 }
 
 //BOOL CBZDoc2::OnSaveDocument(LPCTSTR lpszPathName)
@@ -276,4 +277,52 @@ void CBZDoc2::OnFileSaveAs()
     //}
     //SetModifiedFlag(FALSE);
   }
+}
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CBZDoc2 Mark
+
+void CBZDoc2::SetMark(DWORD dwPtr)
+{
+  for_to(i, m_arrMarks.GetSize()) {
+    DWORD dwTotal = GetDocSize();
+    if(m_arrMarks[i] == dwPtr) {
+      m_arrMarks.RemoveAt(i);
+      return;
+    } else if(m_arrMarks[i] >= dwTotal) {
+      m_arrMarks.RemoveAt(i);
+    }
+  }
+  m_arrMarks.Add(dwPtr);
+}
+
+BOOL CBZDoc2::CheckMark(DWORD dwPtr)
+{
+  for_to(i,  m_arrMarks.GetSize()) {
+    if(m_arrMarks[i] == dwPtr)
+      return TRUE;
+  }
+  return FALSE;
+}
+
+DWORD CBZDoc2::JumpToMark(DWORD dwStart)
+{
+  DWORD dwTotal = GetDocSize();
+  DWORD dwNext = dwTotal;
+Retry:
+  for_to(i, m_arrMarks.GetSize()) {
+    if(m_arrMarks[i] > dwStart && m_arrMarks[i] < dwNext)
+      dwNext = m_arrMarks[i];
+  }
+  if(dwNext == dwTotal && dwStart) {
+    dwStart = 0;
+    goto Retry;
+  }
+  if(dwNext < dwTotal)
+    return dwNext;
+  return INVALID;
 }

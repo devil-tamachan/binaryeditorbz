@@ -61,11 +61,58 @@ public:
   DWORD PasteFromClipboard(DWORD dwStart, BOOL bIns);
   BOOL CopyToClipboard(DWORD dwStart, DWORD dwSize);
 
-  _inline DWORD GetRemainCache(DWORD dwStart)                  { m_pSFCCache ? m_pSFCCache->GetRemain(dwStart) : FALSE; }
-  _inline BOOL ClearCache(DWORD dwStart = 0, DWORD dwSize = 0) { m_pSFCCache ? m_pSFCCache->Clear(dwStart, dwSize) : FALSE; }
-  _inline LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize = 0)       { m_pSFCCache ? m_pSFCCache->Cache(dwStart, dwIdealSize) : FALSE; }
-  _inline LPBYTE CacheForce(DWORD dwStart, DWORD dwNeedSize)   { m_pSFCCache ? m_pSFCCache->CacheForce(dwStart, dwNeedSize) : FALSE; }
+  _inline DWORD GetMaxCacheSize() { return m_pSFCCache ? m_pSFCCache->GetMaxCacheSize() : 0; }
+  _inline DWORD GetRemainCache(DWORD dwStart)                  { return m_pSFCCache ? m_pSFCCache->GetRemain(dwStart) : 0; }
+  _inline BOOL ClearCache(DWORD dwStart = 0, DWORD dwSize = 0) { return m_pSFCCache ? m_pSFCCache->Clear(dwStart, dwSize) : FALSE; }
+//#ifndef _DEBUG
+#if 1
+  _inline LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize = 0)   { return m_pSFCCache ? m_pSFCCache->Cache(dwStart, dwIdealSize) : NULL; }
+  _inline LPBYTE CacheForce(DWORD dwStart, DWORD dwNeedSize)   { return m_pSFCCache ? m_pSFCCache->CacheForce(dwStart, dwNeedSize) : NULL; }
+#else
+  _inline LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize = 0)
+  {
+    if(m_pSFCCache)
+    {
+      LPBYTE p = m_pSFCCache->Cache(dwStart, dwIdealSize);
+      if(p)
+      {
+        DWORD dwDebug = GetRemainCache(dwStart);
+        LPBYTE pDebug = (LPBYTE)malloc(dwDebug);
+        if(!Read(pDebug, dwStart, dwDebug))ATLASSERT(FALSE);
+        if(memcmp(pDebug, p, dwDebug)!=0)ATLASSERT(FALSE);
+      }
+      return p;
+    } else return NULL;
+  }
+  _inline LPBYTE CacheForce(DWORD dwStart, DWORD dwNeedSize)
+  {
+    if(m_pSFCCache)
+    {
+      LPBYTE p = m_pSFCCache->CacheForce(dwStart, dwNeedSize);
+      if(p)
+      {
+        LPBYTE pDebug = (LPBYTE)malloc(dwNeedSize);
+        if(!Read(pDebug, dwStart, dwNeedSize))ATLASSERT(FALSE);
+        if(memcmp(pDebug, p, dwNeedSize)!=0)ATLASSERT(FALSE);
+      }
+      return p;
+    } else return NULL;
+  }
+#endif
 
+public:
+	void	SetMark(DWORD dwPtr);
+	BOOL	CheckMark(DWORD dwPtr);
+	DWORD	JumpToMark(DWORD dwPtr);
+private:
+	CDWordArray m_arrMarks;
+
+public:
+  BOOL IsReadOnly() { return m_bReadOnly; }
+private:
+  DWORD m_bReadOnly;
+
+public:
   void ReleaseSFC()
   {
     if(m_pSFC)

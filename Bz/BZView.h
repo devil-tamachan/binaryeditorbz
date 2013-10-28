@@ -40,7 +40,7 @@ protected: // create from serialization only
 
 // Attributes
 public:
-	DWORD	m_dwTotal;
+	//DWORD	m_dwTotal;
 	DWORD	m_dwCaret;
 	DWORD	m_dwStruct;
 	DWORD	m_dwStructTag;
@@ -67,6 +67,7 @@ public:
 	CBZDoc2*	GetDocument();
 // Operations
 public:
+  DWORD GetFileSize();
 	BOOL	GotoCaret();
 	int		GetValue(DWORD ofs, int bytes);
 	ULONGLONG GetValue64(DWORD ofs);
