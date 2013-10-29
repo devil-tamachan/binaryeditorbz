@@ -113,6 +113,7 @@ public:
       ATLASSERT(FALSE);
       return FALSE;
     }
+    if(m_dwCacheSize==0)return TRUE;
     if(dwStart==0 && dwSize==0)
     {
       _ClearInternalCacheData();

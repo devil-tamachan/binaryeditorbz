@@ -57,6 +57,11 @@ public:
     m_pSFCCache->Clear();
     return m_pSFC ? m_pSFC->Undo(pRetStart) : FALSE;
   }
+  _inline BOOL DoRedo(DWORD *pRetStart = NULL)
+  {
+    m_pSFCCache->Clear();
+    return m_pSFC ? m_pSFC->Redo(pRetStart) : FALSE;
+  }
 
   DWORD PasteFromClipboard(DWORD dwStart, BOOL bIns);
   BOOL CopyToClipboard(DWORD dwStart, DWORD dwSize);
@@ -144,6 +149,7 @@ public:
   afx_msg void OnEditReadOnly();
   afx_msg void OnUpdateEditReadOnly(CCmdUI *pCmdUI);
   afx_msg void OnUpdateEditUndo(CCmdUI *pCmdUI);
+  afx_msg void OnUpdateEditRedo(CCmdUI *pCmdUI);
   afx_msg void OnEditReadOnlyOpen();
   afx_msg void OnUpdateEditReadOnlyOpen(CCmdUI *pCmdUI);
   afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);

@@ -142,6 +142,7 @@ BEGIN_MESSAGE_MAP(CBZView, CTextView)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdateEditPaste)
 	ON_WM_CHAR()
 	ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
+	ON_COMMAND(ID_EDIT_REDO, OnEditRedo)
 	ON_COMMAND(ID_JUMP_COMPARE, OnJumpCompare)
 	ON_UPDATE_COMMAND_UI(ID_JUMP_COMPARE, OnUpdateJumpCompare)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_VALUE, OnUpdateEditValue)
@@ -505,7 +506,7 @@ void CBZView::OnDraw(CDC* pDC)
 
     //•`‰æ: ‰E‘¤•¶Žš•\Ž¦
 		for_to_(i,16) {
-			if(ofs >= dwTotal) {
+			if(ofs >= dwTotal || (m_charset == CTYPE_UNICODE && ofs+1 >= dwTotal)) {
 				SetColor();
 				PutChar(' ', 16-i);
 				ofs++;
@@ -1007,6 +1008,7 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		) {
 			m_bIns = !m_bIns;
 			InitCaret();
+	m_bEnterVal = FALSE;
 			return;
 		}
 		goto Error;
@@ -1134,6 +1136,8 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 			BYTE nVal = 0;
       m_pDoc->Read(&nVal, m_dwCaret, 1);
 			nChar |= nVal<<4;
+      m_pDoc->DoUndo();
+      dwTotal = GetFileSize();
 			m_bEnterVal = FALSE;
 		} else
 			m_bEnterVal = TRUE;
@@ -1843,6 +1847,19 @@ void CBZView::OnEditUndo()
 {
   DWORD dwRetStart = 0;
   if(m_pDoc->DoUndo(&dwRetStart))
+  {
+    m_dwCaret = dwRetStart;
+    GotoCaret();
+    UpdateDocSize();
+  } else {
+    ATLASSERT(FALSE);
+  }
+}
+
+void CBZView::OnEditRedo() 
+{
+  DWORD dwRetStart = 0;
+  if(m_pDoc->DoRedo(&dwRetStart))
   {
     m_dwCaret = dwRetStart;
     GotoCaret();

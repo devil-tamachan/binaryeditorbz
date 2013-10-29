@@ -255,6 +255,7 @@ BEGIN
     POPUP "編集(&E)"
     BEGIN
         MENUITEM "元に戻す(&U)\tCtrl+Z",            ID_EDIT_UNDO
+        MENUITEM "やり直し(&R)\tCtrl+Y",            ID_EDIT_REDO
         MENUITEM SEPARATOR
         MENUITEM "切り取り(&T)\tCtrl+X",            ID_EDIT_CUT
         MENUITEM "コピー(&C)\tCtrl+C",             ID_EDIT_COPY
@@ -394,6 +395,7 @@ BEGIN
     "W",            ID_EDIT_READONLY,       VIRTKEY, CONTROL, NOINVERT
     "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
 END
 
 
@@ -605,7 +607,8 @@ BEGIN
     ID_EDIT_CUT             "選択範囲を切り取ってクリップボードに移動します。\n切り取り"
     ID_EDIT_PASTE           "クリップボードの内容を貼り付けます。\n貼り付け"
     ID_EDIT_SELECT_ALL      "ドキュメント全体を選択します。\nすべて選択"
-    ID_EDIT_UNDO            "直前に行った操作を取り消します。\n元に戻す"
+    ID_EDIT_UNDO            "直前に行った操作を元に戻します。\n元に戻す"
+    ID_EDIT_REDO            "取り消した操作をやり直します。\nやり直し"
 END
 
 STRINGTABLE 

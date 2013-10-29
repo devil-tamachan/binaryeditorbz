@@ -44,6 +44,7 @@ BEGIN_MESSAGE_MAP(CBZDoc2, CDocument)
   ON_COMMAND(ID_EDIT_READONLY, &CBZDoc2::OnEditReadOnly)
   ON_UPDATE_COMMAND_UI(ID_EDIT_READONLY, &CBZDoc2::OnUpdateEditReadOnly)
   ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, &CBZDoc2::OnUpdateEditUndo)
+  ON_UPDATE_COMMAND_UI(ID_EDIT_REDO, &CBZDoc2::OnUpdateEditRedo)
   ON_COMMAND(ID_EDIT_READONLYOPEN, &CBZDoc2::OnEditReadOnlyOpen)
   ON_UPDATE_COMMAND_UI(ID_EDIT_READONLYOPEN, &CBZDoc2::OnUpdateEditReadOnlyOpen)
   ON_COMMAND(ID_INDICATOR_INS, OnEditReadOnly)
@@ -112,6 +113,11 @@ void CBZDoc2::OnUpdateEditReadOnlyOpen(CCmdUI *pCmdUI)
 void CBZDoc2::OnUpdateEditUndo(CCmdUI *pCmdUI)
 {
   pCmdUI->Enable(m_pSFC && m_pSFC->GetUndoCount()!=0);
+}
+
+void CBZDoc2::OnUpdateEditRedo(CCmdUI *pCmdUI)
+{
+  pCmdUI->Enable(m_pSFC && m_pSFC->GetRedoCount()!=0);
 }
 
 void CBZDoc2::OnUpdateFileSave(CCmdUI* pCmdUI) 

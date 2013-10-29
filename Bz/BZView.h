@@ -182,6 +182,7 @@ protected:
 	afx_msg void OnUpdateEditPaste(CCmdUI* pCmdUI);
 	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnEditUndo();
+	afx_msg void OnEditRedo();
 	afx_msg void OnJumpCompare();
 	afx_msg void OnUpdateJumpCompare(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditValue(CCmdUI* pCmdUI);

@@ -1620,7 +1620,7 @@ protected:
       return FALSE;
     }
     DWORD dwMoveStart = dwInsStart + dwShiftSize - dwCopySize;
-    ATLTRACE("ShiftFileR: 0x%08X-0x%08X(%u-%u) (Size:%u) >>>[R 0x%08X(%u)]>>> 0x%08X-0x%08X(%u-%u) (Size:%u)\n", dwMoveStart, dwMoveStart+dwShiftSize-1, dwMoveStart, dwMoveStart+dwShiftSize-1, dwCopySize, dwInsSize, dwInsSize, dwMoveStart+dwInsSize, dwMoveStart+dwInsSize+dwShiftSize-1, dwMoveStart+dwInsSize, dwMoveStart+dwInsSize+dwShiftSize-1, dwCopySize);
+    ATLTRACE("ShiftFileR: 0x%08X-0x%08X(%u-%u) (Size:%u) >>>[R 0x%08X(%u)]>>> 0x%08X-0x%08X(%u-%u) (Size:%u)\n", dwInsStart, dwInsStart+dwShiftSize-1, dwInsStart, dwInsStart+dwShiftSize-1, dwShiftSize, dwInsSize, dwInsSize, dwInsStart+dwInsSize, dwInsStart+dwInsSize+dwShiftSize-1, dwInsStart+dwInsSize, dwInsStart+dwInsSize+dwShiftSize-1, dwShiftSize);
     while(dwRemain!=0)
     {
       if(FAILED(m_file.Seek(dwMoveStart, FILE_BEGIN)) || FAILED(m_file.Read(buf, dwCopySize)))
@@ -1637,8 +1637,8 @@ protected:
 #ifdef DEBUG
       if(dwRemain==0)ATLASSERT(dwMoveStart==dwInsStart);
 #endif
-      dwMoveStart -= dwCopySize;
       dwCopySize = min(dwCopySize, dwRemain);
+      dwMoveStart -= dwCopySize;
     }
     free(buf);
     return TRUE;
@@ -1680,8 +1680,8 @@ protected:
         break;
       }
       dwRemain -= dwCopySize;
-      dwMoveStart += dwCopySize;
       dwCopySize = min(dwCopySize, dwRemain);
+      dwMoveStart += dwCopySize;
     }
     free(buf);
     return TRUE;
@@ -2237,7 +2237,6 @@ protected:
 
     TAMAFILECHUNK findChunk;
     findChunk.key = dwEnd;
-    TAMAFILECHUNK *pPrevChunk;
     TAMAFILECHUNK *pChunk = __FileMap_LowFind(&findChunk);
     if(pChunk==NULL)
     {
@@ -2245,10 +2244,11 @@ protected:
       ATLASSERT(FALSE);
       return FALSE;
     }
+    TAMAFILECHUNK *pPrevChunk;
     RB_FOREACH_REVERSE_SAFE_NOXINIT(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead, pPrevChunk)
     {
       _FileMap_Remove(pChunk);
-      if(pPrevChunk->dwEnd < dwStart)break;
+      if(!pPrevChunk || pPrevChunk->dwEnd < dwStart)break;
     }
     return TRUE;
   }
