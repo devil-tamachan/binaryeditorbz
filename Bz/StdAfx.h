@@ -58,7 +58,6 @@
 
 #define SFC_EASYDEBUG
 #include "SuperFileCon.h"
-#include "SFCCache.h"
 
 /*
 #ifdef _UNICODE

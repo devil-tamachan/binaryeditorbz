@@ -39,6 +39,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <atlctrls.h>//for atlctrlx.h
 #include <atlctrlx.h>//WTL::CWaitCursor
 #include "tree.h"
+//#include "SFCCache.h"
+//class CSFCCache;
 
 #define MAX_FILELENGTH  0xFFFFFFF0
 #define MAX_ONMEM 1024 * 1024
@@ -139,8 +141,8 @@ RB_GENERATE_INTERNAL(_TAMAOLDFILECHUNK_HEAD, _TAMAOLDFILECHUNK, linkage, cmpTAMA
 
 
 //#ifdef SFC_EASYDEBUG
-  typedef enum {	SFCOP_OPEN=0, SFCOP_CLOSE, SFCOP_WRITE, /*SFCOP_READ,*/ SFCOP_INSERT, SFCOP_DELETE, SFCOP_UNDO, SFCOP_REDO, SFCOP_CLEARUNDO, SFCOP_CLEARREDO, SFCOP_SAVE, SFCOP_SAVEAS, SFCOP_FATALERROR, SFCOP_FILL } SfcOp;
-  const char SfcOpCode[] = {'O', 'C', 'W', 'I', 'D', 'U', 'R', 'u', 'r', 'S', 's', '!', 'F'};
+  typedef enum {	SFCOP_OPEN=0, SFCOP_CLOSE, SFCOP_WRITE, /*SFCOP_READ,*/ SFCOP_INSERT, SFCOP_DELETE, SFCOP_UNDO, SFCOP_REDO, SFCOP_CLEARUNDO, SFCOP_CLEARREDO, SFCOP_SAVE, SFCOP_SAVEAS, SFCOP_FATALERROR, SFCOP_FILL, SFCOP_CLOSE_REOPEN } SfcOp;
+  const char SfcOpCode[] = {'O', 'C', 'W', 'I', 'D', 'U', 'R', 'u', 'r', 'S', 's', '!', 'F', 'c'};
 //#endif
 #ifdef SFC_EASYDEBUG
 #include <intrin.h>
@@ -151,16 +153,29 @@ class CSuperFileCon
 {
 public:
 
-  CSuperFileCon(void)
+  CSuperFileCon(void) : m_pCache(NULL), m_dwCacheStart(0), m_dwCacheSize(0), m_dwCacheAllocSize(SFCC_CACHESIZE)
   {
     RB_INIT(&m_filemapHead);
     m_dwTotal = 0;
     m_dwTotalSavedFile = 0;
     m_savedIndex = m_redoIndex = m_dwHiddenStart = m_dwHiddenSize = 0;
+    
+    //m_dwCacheAllocSize = SFCC_CACHESIZE;
+    m_pCache = (LPBYTE)malloc(m_dwCacheAllocSize);
+    if(!m_pCache)
+    {
+      ATLASSERT(FALSE);
+      m_dwCacheAllocSize = 0;
+    }
   }
   ~CSuperFileCon(void)
   {
     _DeleteContents();
+    if(m_pCache)
+    {
+      free(m_pCache);
+      m_pCache = NULL;
+    }
   }
   
   __declspec(noinline) void FatalError()
@@ -168,7 +183,7 @@ public:
 #ifdef SFC_EASYDEBUG
     DWORD dwRetAddr = (DWORD)_ReturnAddress();
     _EasyDebug_OutputOp2(SFCOP_FATALERROR, dwRetAddr);
-    m_dbgFile.Close();
+    _EasyDebug_Close();
 #endif
     exit(-1);
   }
@@ -846,7 +861,7 @@ public:
     ATLTRACE("SuperFileCon::Close\n");
 #ifdef SFC_EASYDEBUG
     _EasyDebug_OutputOp1(SFCOP_CLOSE);
-    m_dbgFile.Close();
+    _EasyDebug_Close();
 #endif
     _DeleteContents();
     m_file.Close();
@@ -925,6 +940,13 @@ public:
   }
   BOOL Fill(LPBYTE pData, DWORD dwDataSize, DWORD dwStart, DWORD dwFillSize)
   {
+    BOOL bRet = _Fill(pData, dwDataSize, dwStart, dwFillSize);
+    if(bRet)ClearCache(dwStart);
+    else ClearCache();
+    return bRet;
+  }
+  BOOL _Fill(LPBYTE pData, DWORD dwDataSize, DWORD dwStart, DWORD dwFillSize)
+  {
     if(!m_file.m_h || dwFillSize==0 || dwDataSize==0 || dwStart>m_dwTotal)return FALSE;
     ATLTRACE("SuperFileCon::Fill(), dwDataSize: %u(0x%08X), dwFillSize: %u(0x%08X)\n", dwDataSize, dwDataSize ,dwFillSize, dwFillSize);
 #ifdef SFC_EASYDEBUG
@@ -967,6 +989,13 @@ public:
     return bRet;
   }
   BOOL WriteAssign(void *srcDataDetached/*Write()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwStart, DWORD dwSize)
+  {
+    BOOL bRet = _WriteAssign(srcDataDetached, dwStart, dwSize);
+    if(bRet)ClearCache(dwStart, dwSize);
+    else ClearCache();
+    return bRet;
+  }
+  BOOL _WriteAssign(void *srcDataDetached/*Write()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwStart, DWORD dwSize)
   {
     if(!m_file.m_h || dwSize==0 || dwStart>m_dwTotal)return FALSE;
     DWORD dwNewTotal = dwStart + dwSize;
@@ -1092,6 +1121,13 @@ err_TAMAUndoRedoCreate:
   }
   BOOL InsertAssign(LPBYTE srcDataDetached/*Insert()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwInsStart, DWORD dwInsSize)
   {
+    BOOL bRet = _InsertAssign(srcDataDetached, dwInsStart, dwInsSize);
+    if(bRet)ClearCache(dwInsStart);
+    else ClearCache();
+    return bRet;
+  }
+  BOOL _InsertAssign(LPBYTE srcDataDetached/*Insert()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwInsStart, DWORD dwInsSize)
+  {
     if(!m_file.m_h || dwInsSize==0 || dwInsStart>m_dwTotal)return FALSE;
     TAMAUndoRedo *pNewUndo = _TAMAUndoRedo_Create(UNDO_INS, dwInsStart, NULL, 0, NULL, 0);
     if(!pNewUndo)
@@ -1126,6 +1162,13 @@ err_TAMAUndoRedoCreate:
     return TRUE;
   }
   BOOL Delete(DWORD dwDelStart, DWORD dwDelSize)
+  {
+    BOOL bRet = _Delete(dwDelStart, dwDelSize);
+    if(bRet)ClearCache(dwDelStart);
+    else ClearCache();
+    return bRet;
+  }
+  BOOL _Delete(DWORD dwDelStart, DWORD dwDelSize)
   {
     if(!m_file.m_h || dwDelSize==0 || m_dwTotal < dwDelStart+dwDelSize)return FALSE;
     ATLTRACE("SuperFileCon::Delete\n");
@@ -1352,6 +1395,11 @@ err_TAMAUndoRedoCreate:
   // Undo/Redo
   BOOL Undo(DWORD *pRetStart = NULL)
   {
+    ClearCache();
+    return _Undo(pRetStart);
+  }
+  BOOL _Undo(DWORD *pRetStart = NULL)
+  {
     if(!m_file.m_h || GetUndoCount()==0)return FALSE;
     ATLTRACE("SuperFileCon::Undo\n");
 #ifdef SFC_EASYDEBUG
@@ -1396,6 +1444,11 @@ err_TAMAUndoRedoCreate:
     return TRUE;
   }
   BOOL Redo(DWORD *pRetStart = NULL)
+  {
+    ClearCache();
+    return _Redo(pRetStart);
+  }
+  BOOL _Redo(DWORD *pRetStart = NULL)
   {
     if(!m_file.m_h || GetRedoCount()==0)return FALSE;
     ATLTRACE("SuperFileCon::Redo\n");
@@ -1498,6 +1551,150 @@ err_TAMAUndoRedoCreate:
   {
     return m_file.m_h!=0;
   }
+  
+private:
+  _inline LPBYTE _GetLPBYTE(DWORD dwStart, DWORD dwSize)
+  {
+    //if(!m_pCache || !m_pSFC || !m_pSFC->IsOpen())
+    //{
+    //  ATLASSERT(FALSE);
+    //  return NULL;
+    //}
+    if(dwStart >= m_dwCacheStart && dwStart+dwSize <= m_dwCacheStart+m_dwCacheSize)
+    {
+      DWORD dwDiff = dwStart-m_dwCacheStart;
+      return m_pCache + dwDiff;
+    }
+    return NULL;
+  }
+  _inline void _ClearInternalCacheData()
+  {
+    m_dwCacheStart = 0;
+    m_dwCacheSize = 0;
+  }
+public:
+  DWORD GetMaxCacheSize() { return m_dwCacheAllocSize; }
+  DWORD GetRemainCache(DWORD dwStart)
+  {
+    DWORD dwCacheEndPlus1 = m_dwCacheStart+m_dwCacheSize;
+    if(m_pCache && (dwStart >= m_dwCacheStart || dwStart <= dwCacheEndPlus1))return dwCacheEndPlus1-dwStart;
+    return 0;
+  }
+
+  BOOL ClearCache(DWORD dwStart = 0, DWORD dwSize = 0)
+  {
+    if(!IsOpen())
+    {
+      //ATLASSERT(FALSE);
+      //return FALSE;
+      _ClearInternalCacheData();
+      return TRUE;
+    }
+    if(m_dwCacheSize==0)return TRUE;
+    if(dwStart==0 && dwSize==0)
+    {
+      _ClearInternalCacheData();
+      return TRUE;
+    }
+    DWORD dwEnd = dwStart += dwSize - 1;
+    if(dwSize==0 || dwEnd < dwStart)dwEnd = 0xFFffFFff;
+    DWORD dwCacheEnd = m_dwCacheStart + m_dwCacheSize - 1;
+    if(dwEnd < m_dwCacheStart || dwCacheEnd < dwStart)return FALSE;
+    DWORD dwDelStart = dwStart;
+    if(dwDelStart < m_dwCacheStart)dwDelStart = m_dwCacheStart;
+    DWORD dwDelEnd = dwEnd;
+    if(dwDelEnd > dwCacheEnd)dwDelEnd = dwCacheEnd;
+    DWORD dwLeftSize = dwDelStart - m_dwCacheStart;
+    DWORD dwRightSize = dwCacheEnd - dwDelEnd;
+    if(dwRightSize > 0)
+    {
+      DWORD dwDiff = dwDelEnd + 1 - m_dwCacheStart;
+      memmove(m_pCache, m_pCache + dwDiff, dwRightSize);
+      m_dwCacheStart = dwDelEnd + 1;
+      m_dwCacheSize = dwRightSize;
+    } else if(dwLeftSize > 0) {
+      m_dwCacheSize = dwLeftSize;
+    } else {
+      _ClearInternalCacheData();
+    }
+    return TRUE;
+  }
+
+#ifdef SFCC_CHECKCACHE
+  _inline const LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize = 0)
+  {
+    LPBYTE p = _Cache(dwStart, dwIdealSize);
+    if(p)
+    {
+      DWORD dwDebug = GetRemainCache(dwStart);
+      LPBYTE pDebug = (LPBYTE)malloc(dwDebug);
+      if(!Read(pDebug, dwStart, dwDebug))ATLASSERT(FALSE);
+      if(memcmp(pDebug, p, dwDebug)!=0)ATLASSERT(FALSE);
+    }
+    return p;
+  }
+  const LPBYTE _Cache(DWORD dwStart, DWORD dwIdealSize = 0)
+#else
+  const LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize = 0)
+#endif
+  {
+    if(!IsOpen())goto ERR_CACHE2;
+
+    DWORD dwFileRemain = GetRemain(dwStart);
+    if(dwFileRemain==0)goto ERR_CACHE2;
+    DWORD dwReadSize = dwIdealSize;
+    if(dwReadSize==0)dwReadSize = min(m_dwCacheAllocSize, dwFileRemain);
+
+    LPBYTE pCacheTry = _GetLPBYTE(dwStart, dwReadSize);
+    if(pCacheTry)return pCacheTry;
+
+    if(dwReadSize > dwFileRemain)dwReadSize = dwFileRemain;
+    if(dwReadSize > m_dwCacheAllocSize)dwReadSize = m_dwCacheAllocSize;
+    if(!Read(m_pCache, dwStart, dwReadSize))goto ERR_CACHE2;
+    m_dwCacheStart = dwStart;
+    m_dwCacheSize = dwReadSize;
+    return m_pCache;
+
+ERR_CACHE2:
+    _ClearInternalCacheData();
+    //ERR_CACHE:
+    //ATLASSERT(FALSE);
+    return NULL;
+  }
+
+#ifdef SFCC_CHECKCACHE
+  const LPBYTE CacheForce(DWORD dwStart, DWORD dwNeedSize)
+  {
+    LPBYTE p = _CacheForce(dwStart, dwNeedSize);
+    if(p)
+    {
+      LPBYTE pDebug = (LPBYTE)malloc(dwNeedSize);
+      if(!Read(pDebug, dwStart, dwNeedSize))ATLASSERT(FALSE);
+      if(memcmp(pDebug, p, dwNeedSize)!=0)ATLASSERT(FALSE);
+    }
+    return p;
+  }
+  const LPBYTE _CacheForce(DWORD dwStart, DWORD dwNeedSize)
+#else
+  const LPBYTE CacheForce(DWORD dwStart, DWORD dwNeedSize)
+#endif
+  {
+    if(!IsOpen())goto ERR_CACHEFORCE2;
+    LPBYTE pCacheTry = _GetLPBYTE(dwStart, dwNeedSize);
+    if(pCacheTry)return pCacheTry;
+
+    pCacheTry = Cache(dwStart);
+    DWORD dwCacheRemain = GetRemainCache(dwStart);
+    if(dwCacheRemain >= dwNeedSize)return pCacheTry;
+
+    //goto ERR_CACHEFORCE2;
+
+ERR_CACHEFORCE2:
+    _ClearInternalCacheData();
+    //ERR_CACHEFORCE:
+    //ATLASSERT(FALSE);
+    return NULL;
+  }
 
 
 protected:
@@ -1516,18 +1713,31 @@ protected:
   DWORD m_dwHiddenSize;
 
   struct _TAMAFILECHUNK_HEAD m_filemapHead;
+  
+  static const DWORD SFCC_CACHESIZE = 1024*1024*1; //1MB
+  DWORD m_dwCacheStart;
+  DWORD m_dwCacheSize;
+  DWORD m_dwCacheAllocSize;
+  LPBYTE m_pCache;
+  
 #ifdef SFC_EASYDEBUG
   CAtlFile m_dbgFile;
 
   BOOL _EasyDebug_CreateEasyDebugFile()
   {
-    TCHAR tmpDir[_MAX_PATH];
-    TCHAR tmpFile[_MAX_PATH];
-    if(!GetTempPath(_MAX_PATH, tmpDir))return FALSE;
-    if(!GetTempFileName(tmpDir, _T("SFC"), 0, tmpFile))return FALSE;
-    if(FAILED(m_dbgFile.Create(tmpFile, GENERIC_WRITE, FILE_SHARE_READ, CREATE_ALWAYS)))return FALSE;
-    const char header[] = "SFCDBG1";
-    if(FAILED(m_dbgFile.Write(header, 7)))return FALSE;
+    if(m_dbgFile.m_h)
+    {
+      _EasyDebug_OutputOp1(SFCOP_CLOSE_REOPEN);
+      //_EasyDebug_Close();
+    } else {
+      TCHAR tmpDir[_MAX_PATH];
+      TCHAR tmpFile[_MAX_PATH];
+      if(!GetTempPath(_MAX_PATH, tmpDir))return FALSE;
+      if(!GetTempFileName(tmpDir, _T("SFC"), 0, tmpFile))return FALSE;
+      if(FAILED(m_dbgFile.Create(tmpFile, GENERIC_WRITE, FILE_SHARE_READ, CREATE_ALWAYS)))return FALSE;
+      const char header[] = "SFCDBG1";
+      if(FAILED(m_dbgFile.Write(header, 7)))return FALSE;
+    }
     return TRUE;
   }
   
@@ -1554,6 +1764,12 @@ protected:
     m_dbgFile.Flush();
     return TRUE;
   }
+  
+  BOOL _EasyDebug_Close()
+  {
+    m_dbgFile.Close();
+    return TRUE;
+  }
 #endif
 
 protected:
@@ -1568,6 +1784,7 @@ protected:
     m_dwTotal = 0;
     m_dwTotalSavedFile = 0;
     m_savedIndex = m_redoIndex = m_dwHiddenStart = m_dwHiddenSize = 0;
+    ClearCache();
   }
 
   void* mallocMax(size_t *nIdealSize)
@@ -2498,7 +2715,7 @@ protected:
     {
       if(pOldFileChunk->type==OF_FD)
       {
-        ATLASSERT(pOldFileChunk->dwEnd > pOldFileChunk->dwStart);
+        ATLASSERT(pOldFileChunk->dwEnd >= pOldFileChunk->dwStart);
         DWORD dwReadSize = pOldFileChunk->dwEnd - pOldFileChunk->dwStart + 1;
         pOldFileChunk->pDataBuf = _TAMADataBuf_CreateNew(dwReadSize, 1/*nRefCount*/);
 #ifdef TRACE_READFILE

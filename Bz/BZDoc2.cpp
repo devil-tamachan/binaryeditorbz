@@ -10,7 +10,7 @@
 
 IMPLEMENT_DYNCREATE(CBZDoc2, CDocument)
 
-CBZDoc2::CBZDoc2() : m_pSFC(NULL), m_pSFCCache(NULL)
+CBZDoc2::CBZDoc2() : m_pSFC(NULL)
 {
   m_dwBase = 0;
 
@@ -167,10 +167,8 @@ DWORD CBZDoc2::PasteFromClipboard(DWORD dwStart, BOOL bIns)
   if(bIns || dwStart == dwTotal)
   {
     m_pSFC->Insert(pMem, dwStart, dwSize);
-    m_pSFCCache->Clear(dwStart);
   } else {
     m_pSFC->Write(pMem, dwStart, dwSize);
-    m_pSFCCache->Clear(dwStart, dwSize);
   }
   ::GlobalUnlock(hMem);
   ::CloseClipboard();
@@ -181,7 +179,6 @@ ERR_PASTECLIP3:
 ERR_PASTECLIP2:
   ::CloseClipboard();
 ERR_PASTECLIP1:
-  m_pSFCCache->Clear();
   return 0;
 }
 
@@ -249,7 +246,6 @@ BOOL CBZDoc2::OnOpenDocument(LPCTSTR lpszPathName)
   }
   DeleteContents();
   m_pSFC = pSFC;
-  m_pSFCCache = new CSFCCache(m_pSFC, SFCC_CACHESIZE);
   return TRUE;
 }
 
