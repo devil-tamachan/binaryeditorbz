@@ -31,10 +31,10 @@ public:
   _inline BOOL DoUndo(DWORD *pRetStart = NULL) { return m_pSFC ? m_pSFC->Undo(pRetStart) : FALSE; }
   _inline BOOL DoRedo(DWORD *pRetStart = NULL) { return m_pSFC ? m_pSFC->Redo(pRetStart) : FALSE; }
 
-  _inline const LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize = 0) { return m_pSFC ? m_pSFC->Cache(dwStart, dwIdealSize) : FALSE; }
-  _inline const LPBYTE CacheForce(DWORD dwStart, DWORD dwNeedSize) { return m_pSFC ? m_pSFC->CacheForce(dwStart, dwNeedSize) : FALSE; }
-  _inline DWORD GetMaxCacheSize() { return m_pSFC ? m_pSFC->GetMaxCacheSize() : FALSE; }
-  _inline DWORD GetRemainCache(DWORD dwStart) { return m_pSFC ? m_pSFC->GetRemainCache(dwStart) : FALSE; }
+  _inline const LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize = 0) { return m_pSFC ? m_pSFC->Cache(dwStart, dwIdealSize) : NULL; }
+  _inline const LPBYTE CacheForce(DWORD dwStart, DWORD dwNeedSize) { return m_pSFC ? m_pSFC->CacheForce(dwStart, dwNeedSize) : NULL; }
+  _inline DWORD GetMaxCacheSize()             { return m_pSFC ? m_pSFC->GetMaxCacheSize() : 0; }
+  _inline DWORD GetRemainCache(DWORD dwStart) { return m_pSFC ? m_pSFC->GetRemainCache(dwStart) : 0; }
 
   DWORD PasteFromClipboard(DWORD dwStart, BOOL bIns);
   BOOL CopyToClipboard(DWORD dwStart, DWORD dwSize);
@@ -47,6 +47,23 @@ private:
 	CDWordArray m_arrMarks;
 
 public:
+  void DuplicateDoc(CBZDoc2* pDstDoc)
+  {
+    if(m_pSFC->AddRef())pDstDoc->m_pSFC = m_pSFC;
+    pDstDoc->m_bReadOnly = m_bReadOnly;
+    pDstDoc->m_dwBase = m_dwBase;
+    pDstDoc->SetTitle(GetTitle());
+    CString s = GetPathName();
+    if(!s.IsEmpty())
+      pDstDoc->SetPathName(s);
+    //	pDstDoc->UpdateAllViews(NULL);
+
+    //Restore infomation
+    pDstDoc->m_restoreCaret = m_restoreCaret;
+    pDstDoc->m_restoreScroll = m_restoreScroll;
+  }
+
+public:
   BOOL IsReadOnly() { return m_bReadOnly; }
 private:
   DWORD m_bReadOnly;
@@ -56,8 +73,12 @@ public:
   {
     if(m_pSFC)
     {
-      m_pSFC->Close();
-      delete m_pSFC;
+      m_pSFC->DecRef();
+      if(m_pSFC->GetRefCount()==0)
+      {
+        m_pSFC->Close();
+        delete m_pSFC;
+      }
       m_pSFC = NULL;
     }
   }

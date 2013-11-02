@@ -294,7 +294,7 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 		if(!pDoc2) {
 			pDoc2 = new CBZDoc2;
 			pDocTemp->CDocTemplate::AddDocument(pDoc2);
-//			((CBZDoc2*)pDoc)->DuplicateDoc((CBZDoc2*)pDoc2);
+			((CBZDoc2*)pDoc)->DuplicateDoc((CBZDoc2*)pDoc2);
 			pDocTemp->SetDocument(pDoc2);
 		}
 		int r = 0;

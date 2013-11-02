@@ -159,6 +159,7 @@ public:
     m_dwTotal = 0;
     m_dwTotalSavedFile = 0;
     m_savedIndex = m_redoIndex = m_dwHiddenStart = m_dwHiddenSize = 0;
+    m_dwRefCount = 1;
     
     //m_dwCacheAllocSize = SFCC_CACHESIZE;
     m_pCache = (LPBYTE)malloc(m_dwCacheAllocSize);
@@ -945,7 +946,7 @@ public:
     else ClearCache();
     return bRet;
   }
-  BOOL _Fill(LPBYTE pData, DWORD dwDataSize, DWORD dwStart, DWORD dwFillSize)
+  _inline BOOL _Fill(LPBYTE pData, DWORD dwDataSize, DWORD dwStart, DWORD dwFillSize)
   {
     if(!m_file.m_h || dwFillSize==0 || dwDataSize==0 || dwStart>m_dwTotal)return FALSE;
     ATLTRACE("SuperFileCon::Fill(), dwDataSize: %u(0x%08X), dwFillSize: %u(0x%08X)\n", dwDataSize, dwDataSize ,dwFillSize, dwFillSize);
@@ -988,14 +989,14 @@ public:
     if(!bRet)free(pData);
     return bRet;
   }
-  BOOL WriteAssign(void *srcDataDetached/*Write()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwStart, DWORD dwSize)
+  _inline BOOL WriteAssign(void *srcDataDetached/*Write()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwStart, DWORD dwSize)
   {
     BOOL bRet = _WriteAssign(srcDataDetached, dwStart, dwSize);
     if(bRet)ClearCache(dwStart, dwSize);
     else ClearCache();
     return bRet;
   }
-  BOOL _WriteAssign(void *srcDataDetached/*Write()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwStart, DWORD dwSize)
+  _inline BOOL _WriteAssign(void *srcDataDetached/*Write()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwStart, DWORD dwSize)
   {
     if(!m_file.m_h || dwSize==0 || dwStart>m_dwTotal)return FALSE;
     DWORD dwNewTotal = dwStart + dwSize;
@@ -1119,14 +1120,14 @@ err_TAMAUndoRedoCreate:
     if(!bRet)free(pData);
     return bRet;
   }
-  BOOL InsertAssign(LPBYTE srcDataDetached/*Insert()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwInsStart, DWORD dwInsSize)
+  _inline BOOL InsertAssign(LPBYTE srcDataDetached/*Insert()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwInsStart, DWORD dwInsSize)
   {
     BOOL bRet = _InsertAssign(srcDataDetached, dwInsStart, dwInsSize);
     if(bRet)ClearCache(dwInsStart);
     else ClearCache();
     return bRet;
   }
-  BOOL _InsertAssign(LPBYTE srcDataDetached/*Insert()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwInsStart, DWORD dwInsSize)
+  _inline BOOL _InsertAssign(LPBYTE srcDataDetached/*Insert()Ž¸”s‚µ‚½ê‡‚ÍŒÄ‚Ño‚µŒ³‚ÅŠJ•ú‚·‚é‚±‚Æ*/, DWORD dwInsStart, DWORD dwInsSize)
   {
     if(!m_file.m_h || dwInsSize==0 || dwInsStart>m_dwTotal)return FALSE;
     TAMAUndoRedo *pNewUndo = _TAMAUndoRedo_Create(UNDO_INS, dwInsStart, NULL, 0, NULL, 0);
@@ -1168,7 +1169,7 @@ err_TAMAUndoRedoCreate:
     else ClearCache();
     return bRet;
   }
-  BOOL _Delete(DWORD dwDelStart, DWORD dwDelSize)
+  _inline BOOL _Delete(DWORD dwDelStart, DWORD dwDelSize)
   {
     if(!m_file.m_h || dwDelSize==0 || m_dwTotal < dwDelStart+dwDelSize)return FALSE;
     ATLTRACE("SuperFileCon::Delete\n");
@@ -1398,7 +1399,7 @@ err_TAMAUndoRedoCreate:
     ClearCache();
     return _Undo(pRetStart);
   }
-  BOOL _Undo(DWORD *pRetStart = NULL)
+  _inline BOOL _Undo(DWORD *pRetStart = NULL)
   {
     if(!m_file.m_h || GetUndoCount()==0)return FALSE;
     ATLTRACE("SuperFileCon::Undo\n");
@@ -1448,7 +1449,7 @@ err_TAMAUndoRedoCreate:
     ClearCache();
     return _Redo(pRetStart);
   }
-  BOOL _Redo(DWORD *pRetStart = NULL)
+  _inline BOOL _Redo(DWORD *pRetStart = NULL)
   {
     if(!m_file.m_h || GetRedoCount()==0)return FALSE;
     ATLTRACE("SuperFileCon::Redo\n");
@@ -1621,7 +1622,7 @@ public:
   }
 
 #ifdef SFCC_CHECKCACHE
-  _inline const LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize = 0)
+  const LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize = 0)
   {
     LPBYTE p = _Cache(dwStart, dwIdealSize);
     if(p)
@@ -1695,14 +1696,42 @@ ERR_CACHEFORCE2:
     //ATLASSERT(FALSE);
     return NULL;
   }
+  
+  
+  BOOL AddRef()
+  {
+    if(m_dwRefCount==0xFFffFFff)
+    {
+      ATLASSERT(FALSE);
+      return FALSE;
+    }
+    m_dwRefCount++;
+    return TRUE;
+  }
+  BOOL DecRef()
+  {
+    if(m_dwRefCount==0)
+    {
+      ATLASSERT(FALSE);
+      return FALSE;
+    }
+    m_dwRefCount--;
+    return TRUE;
+  }
+  _inline DWORD GetRefCount()
+  {
+    return m_dwRefCount;
+  }
 
 
-protected:
+private:
   CAtlFile m_file;
   CString m_filePath;
   DWORD	m_dwTotal;
   DWORD	m_dwTotalSavedFile;
   BOOL	m_bReadOnly;
+  
+  DWORD m_dwRefCount;
 
   CSuperFileCon* m_pDupDoc;
   CAtlArray<TAMAUndoRedo*> m_undo;
@@ -1772,7 +1801,7 @@ protected:
   }
 #endif
 
-protected:
+private:
 
   void _DeleteContents() 
   {
