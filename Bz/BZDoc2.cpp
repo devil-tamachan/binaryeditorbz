@@ -49,7 +49,6 @@ BEGIN_MESSAGE_MAP(CBZDoc2, CDocument)
   ON_UPDATE_COMMAND_UI(ID_EDIT_READONLYOPEN, &CBZDoc2::OnUpdateEditReadOnlyOpen)
   ON_COMMAND(ID_INDICATOR_INS, OnEditReadOnly)
   ON_UPDATE_COMMAND_UI_RANGE(ID_FILE_SAVE, ID_FILE_SAVE_AS, OnUpdateFileSave)
-  //  ON_COMMAND(ID_FILE_SAVE, &CBZDoc2::OnFileSave)
   ON_COMMAND(ID_FILE_SAVE, &CBZDoc2::OnFileSave)
   ON_COMMAND(ID_FILE_SAVE_AS, &CBZDoc2::OnFileSaveAs)
 END_MESSAGE_MAP()
@@ -92,19 +91,18 @@ void CBZDoc2::Serialize(CArchive& ar)
 
 void CBZDoc2::OnEditReadOnly()
 {
-  m_bReadOnly = !m_bReadOnly;	
+  if(m_pSFC && !m_pSFC->IsReadOnly()) m_bReadOnly = !m_bReadOnly;	
 }
-
 void CBZDoc2::OnUpdateEditReadOnly(CCmdUI *pCmdUI)
 {
   pCmdUI->SetCheck(m_bReadOnly);
+  pCmdUI->Enable(m_pSFC && !m_pSFC->IsReadOnly());
 }
 
 void CBZDoc2::OnEditReadOnlyOpen()
 {
   options.bReadOnlyOpen = !options.bReadOnlyOpen;
 }
-
 void CBZDoc2::OnUpdateEditReadOnlyOpen(CCmdUI *pCmdUI)
 {
   pCmdUI->SetCheck(options.bReadOnlyOpen);
@@ -114,7 +112,6 @@ void CBZDoc2::OnUpdateEditUndo(CCmdUI *pCmdUI)
 {
   pCmdUI->Enable(m_pSFC && m_pSFC->GetUndoCount()!=0);
 }
-
 void CBZDoc2::OnUpdateEditRedo(CCmdUI *pCmdUI)
 {
   pCmdUI->Enable(m_pSFC && m_pSFC->GetRedoCount()!=0);
@@ -245,6 +242,7 @@ BOOL CBZDoc2::OnOpenDocument(LPCTSTR lpszPathName)
     return FALSE;
   }
   DeleteContents();
+  m_bReadOnly = pSFC->IsReadOnly();
   m_pSFC = pSFC;
   return TRUE;
 }

@@ -1722,6 +1722,11 @@ ERR_CACHEFORCE2:
   {
     return m_dwRefCount;
   }
+  
+  _inline BOOL IsReadOnly()
+  {
+    return m_bReadOnly;
+  }
 
 
 private:
