@@ -153,21 +153,24 @@ class CSuperFileCon
 {
 public:
 
-  CSuperFileCon(void) : m_pCache(NULL), m_dwCacheStart(0), m_dwCacheSize(0), m_dwCacheAllocSize(SFCC_CACHESIZE)
+  CSuperFileCon(void)
   {
     RB_INIT(&m_filemapHead);
     m_dwTotal = 0;
     m_dwTotalSavedFile = 0;
+    m_bReadOnly = FALSE;
     m_savedIndex = m_redoIndex = m_dwHiddenStart = m_dwHiddenSize = 0;
     m_dwRefCount = 1;
     
-    //m_dwCacheAllocSize = SFCC_CACHESIZE;
+    m_dwCacheStart = m_dwCacheSize = 0;
+    m_dwCacheAllocSize = SFCC_CACHESIZE;
     m_pCache = (LPBYTE)malloc(m_dwCacheAllocSize);
     if(!m_pCache)
     {
       ATLASSERT(FALSE);
       m_dwCacheAllocSize = 0;
     }
+    _EasyDebug_CreateEasyDebugFile();
   }
   ~CSuperFileCon(void)
   {
@@ -191,7 +194,7 @@ public:
 
   DWORD GetRemain(DWORD dwStart)
   {
-    if(!m_file.m_h)return 0;
+    //if(!m_file.m_h)return 0;
     DWORD dwFileSize = GetSize();
     if(dwFileSize>dwStart)return dwFileSize - dwStart;
     return 0;
@@ -709,6 +712,7 @@ public:
     (*pDataChunks)[nInsertIndex] = pInsertDataChunk;
     return TRUE;
   }
+  
   BOOL _Save_ProccessAllChunks()
   {
     _ClearSavedFlags();
@@ -732,6 +736,31 @@ public:
     m_savedIndex = m_redoIndex;
     return TRUE;
   }
+  
+  BOOL _SaveAS_ProccessAllChunks()
+  {
+    /*_ClearSavedFlags();
+    struct _TAMAOLDFILECHUNK_HEAD oldFilemapHead;
+    _OldFileMap_Make(&oldFilemapHead, &m_file);
+    _Save_UpdateAllDataChunkSavingType(&oldFilemapHead);
+    _OldFileMap_FreeAll(&oldFilemapHead, TRUE);//FALSE);
+    if(!_Save_ExtendFileSize()
+      || !_Save_ShiftAllFF()
+      || !_Save_WriteAllDF() )
+    {
+      ATLASSERT(FALSE);
+      return FALSE;
+    }
+#ifdef GTEST
+#ifdef DEBUG
+    ATLASSERT(!_Debug_SearchUnSavedChunk());
+#endif //DEBUG
+#endif //GTEST
+    //_UndoRedo_CreateRefSrcFileDataChunk();
+    m_savedIndex = m_redoIndex;*/
+    return TRUE;
+  }
+  
   BOOL _Save_ShiftAllFileChunksAfterArg(TAMAFILECHUNK *fileChunk)
   {
     while(fileChunk) {
@@ -820,43 +849,31 @@ public:
     ATLTRACE("--------------Save()\n");
     return bRet;
   }
-  //	BOOL SaveAs(LPCTSTR lpszPathName) //名前を付けて保存
-  //	{
-  //		CWaitCursor wait;
-  //
-  //		if(IsFileMapping())
-  //		{
-  //			//pFile = m_pFileMapping;
-  //
-  //			BOOL bResult = (m_pMapStart) ? ::FlushViewOfFile(m_pMapStart, m_dwMapSize) : ::FlushViewOfFile(m_pData, m_dwTotal);
-  //			if(!bResult) {
-  //				LastErrorMessageBox();
-  //				return FALSE;
-  //			}
-  //		} else {
-  //			CAtlFile newFile;
-  //			if (FAILED(newFile.Create(lpszPathName, GENERIC_READ | GENERIC_WRITE, 0, CREATE_ALWAYS)))
-  //			{
-  //				LastErrorMessageBox();
-  //				return FALSE;
-  //			}
-  //
-  //			if(FAILED(newFile.Write(m_pData, m_dwTotal))
-  //				/*	|| FAILED(m_file.Flush())*/)
-  //			{
-  //				LastErrorMessageBox();
-  //				newFile.Close();
-  //				return FALSE;
-  //			}
-  //			newFile.Close();
-  //		}
-  //		//m_dwUndoSaved = m_dwUndo;		// ###1.54
-  //		//TouchDoc();
-  //
-  //		m_bModified = FALSE;
-  //
-  //		return TRUE;
-  //	}
+  
+  BOOL SaveAs(LPCTSTR lpszPathName) //名前を付けて保存
+  {
+    ATLTRACE("SuperFileCon::SaveAs(%s)\n", lpszPathName);
+#ifdef SFC_EASYDEBUG
+    _EasyDebug_OutputOp1(SFCOP_SAVEAS);
+#endif
+    return _SaveAs(lpszPathName);
+  }
+  
+private:
+  BOOL _SaveAs(LPCTSTR lpszPathName)
+  {
+    if(m_file.m_h)return FALSE; //手抜き。通常の"名前をつけて保存"は未実装。"新しいファイル"から保存するところだけ実装
+    CAtlFile file;
+    if((FAILED(file.Create(lpszPathName, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, CREATE_ALWAYS))))  // Open (+RW)
+    {
+      LastErrorMessageBox();
+      return FALSE; //Failed open
+    }
+    m_file = file;
+    return Save();
+  }
+  
+public:
   void Close()
   {
     ATLTRACE("SuperFileCon::Close\n");
@@ -905,7 +922,7 @@ public:
   BOOL Read(void *dst1, DWORD dwStart, DWORD dwSize)
   {
     //ATLTRACE("SuperFileCon::Read(), dwStart: %u(0x%08X), dwSize: %u(0x%08X)\n", dwStart, dwStart ,dwSize, dwSize);
-    if(!m_file.m_h)return FALSE;
+    //if(!m_file.m_h)return FALSE;
     TAMAFILECHUNK *pReadChunk;
     pReadChunk = _FileMap_LookUp(dwStart);
     if(!pReadChunk)return FALSE;
@@ -948,7 +965,7 @@ public:
   }
   _inline BOOL _Fill(LPBYTE pData, DWORD dwDataSize, DWORD dwStart, DWORD dwFillSize)
   {
-    if(!m_file.m_h || dwFillSize==0 || dwDataSize==0 || dwStart>m_dwTotal)return FALSE;
+    if(/*!m_file.m_h ||*/ dwFillSize==0 || dwDataSize==0 || dwStart>m_dwTotal)return FALSE;
     ATLTRACE("SuperFileCon::Fill(), dwDataSize: %u(0x%08X), dwFillSize: %u(0x%08X)\n", dwDataSize, dwDataSize ,dwFillSize, dwFillSize);
 #ifdef SFC_EASYDEBUG
     _EasyDebug_OutputOp3(SFCOP_FILL, dwDataSize, dwFillSize);
@@ -973,7 +990,7 @@ public:
   }
   BOOL Write(void *srcData, DWORD dwStart, DWORD dwSize)
   {
-    if(!m_file.m_h || dwSize==0 || dwStart>m_dwTotal)return FALSE;
+    if(/*!m_file.m_h ||*/ dwSize==0 || dwStart>m_dwTotal)return FALSE;
     ATLTRACE("SuperFileCon::Write(), dwStart: %u(0x%08X), dwSize: %u(0x%08X)\n", dwStart, dwStart ,dwSize, dwSize);
 #ifdef SFC_EASYDEBUG
     _EasyDebug_OutputOp3(SFCOP_INSERT, dwStart, dwSize);
@@ -998,7 +1015,7 @@ public:
   }
   _inline BOOL _WriteAssign(void *srcDataDetached/*Write()失敗した場合は呼び出し元で開放すること*/, DWORD dwStart, DWORD dwSize)
   {
-    if(!m_file.m_h || dwSize==0 || dwStart>m_dwTotal)return FALSE;
+    if(/*!m_file.m_h ||*/ dwSize==0 || dwStart>m_dwTotal)return FALSE;
     DWORD dwNewTotal = dwStart + dwSize;
     if(dwNewTotal < dwStart)
     {
@@ -1104,7 +1121,7 @@ err_TAMAUndoRedoCreate:
   // Insert/Delete
   BOOL Insert(LPBYTE srcData, DWORD dwInsStart, DWORD dwInsSize)
   {
-    if(!m_file.m_h || dwInsSize==0 || dwInsStart>m_dwTotal)return FALSE;
+    if(/*!m_file.m_h ||*/ dwInsSize==0 || dwInsStart>m_dwTotal)return FALSE;
     ATLTRACE("SuperFileCon::Insert(), dwInsStart: %u(0x%08X), dwSize: %u(0x%08X)\n", dwInsStart, dwInsStart ,dwInsSize, dwInsSize);
 #ifdef SFC_EASYDEBUG
     _EasyDebug_OutputOp3(SFCOP_INSERT, dwInsStart, dwInsSize);
@@ -1129,7 +1146,7 @@ err_TAMAUndoRedoCreate:
   }
   _inline BOOL _InsertAssign(LPBYTE srcDataDetached/*Insert()失敗した場合は呼び出し元で開放すること*/, DWORD dwInsStart, DWORD dwInsSize)
   {
-    if(!m_file.m_h || dwInsSize==0 || dwInsStart>m_dwTotal)return FALSE;
+    if(/*!m_file.m_h ||*/ dwInsSize==0 || dwInsStart>m_dwTotal)return FALSE;
     TAMAUndoRedo *pNewUndo = _TAMAUndoRedo_Create(UNDO_INS, dwInsStart, NULL, 0, NULL, 0);
     if(!pNewUndo)
     {
@@ -1171,7 +1188,7 @@ err_TAMAUndoRedoCreate:
   }
   _inline BOOL _Delete(DWORD dwDelStart, DWORD dwDelSize)
   {
-    if(!m_file.m_h || dwDelSize==0 || m_dwTotal < dwDelStart+dwDelSize)return FALSE;
+    if(/*!m_file.m_h ||*/ dwDelSize==0 || m_dwTotal < dwDelStart+dwDelSize)return FALSE;
     ATLTRACE("SuperFileCon::Delete\n");
 #ifdef SFC_EASYDEBUG
     _EasyDebug_OutputOp3(SFCOP_DELETE, dwDelStart, dwDelSize);
@@ -1401,7 +1418,7 @@ err_TAMAUndoRedoCreate:
   }
   _inline BOOL _Undo(DWORD *pRetStart = NULL)
   {
-    if(!m_file.m_h || GetUndoCount()==0)return FALSE;
+    if(/*!m_file.m_h ||*/ GetUndoCount()==0)return FALSE;
     ATLTRACE("SuperFileCon::Undo\n");
 #ifdef SFC_EASYDEBUG
     _EasyDebug_OutputOp1(SFCOP_UNDO);
@@ -1451,7 +1468,7 @@ err_TAMAUndoRedoCreate:
   }
   _inline BOOL _Redo(DWORD *pRetStart = NULL)
   {
-    if(!m_file.m_h || GetRedoCount()==0)return FALSE;
+    if(/*!m_file.m_h ||*/ GetRedoCount()==0)return FALSE;
     ATLTRACE("SuperFileCon::Redo\n");
 #ifdef SFC_EASYDEBUG
     _EasyDebug_OutputOp1(SFCOP_REDO);
@@ -1538,13 +1555,13 @@ err_TAMAUndoRedoCreate:
   
   DWORD GetSize()
   {
-    if(!m_file.m_h)return 0;
+    //if(!m_file.m_h)return 0;
     return m_dwTotal;
   }
 
   BOOL IsModified()
   {
-    if(!m_file.m_h)return FALSE;
+    //if(!m_file.m_h)return FALSE;
     return m_savedIndex != m_redoIndex;
   }
 
@@ -1584,13 +1601,11 @@ public:
 
   BOOL ClearCache(DWORD dwStart = 0, DWORD dwSize = 0)
   {
-    if(!IsOpen())
-    {
-      //ATLASSERT(FALSE);
-      //return FALSE;
-      _ClearInternalCacheData();
-      return TRUE;
-    }
+    //if(!IsOpen())
+    //{
+    //  _ClearInternalCacheData();
+    //  return TRUE;
+    //}
     if(m_dwCacheSize==0)return TRUE;
     if(dwStart==0 && dwSize==0)
     {
@@ -1639,7 +1654,7 @@ public:
   const LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize = 0)
 #endif
   {
-    if(!IsOpen())goto ERR_CACHE2;
+    //if(!IsOpen())goto ERR_CACHE2;
 
     DWORD dwFileRemain = GetRemain(dwStart);
     if(dwFileRemain==0)goto ERR_CACHE2;
@@ -1680,7 +1695,7 @@ ERR_CACHE2:
   const LPBYTE CacheForce(DWORD dwStart, DWORD dwNeedSize)
 #endif
   {
-    if(!IsOpen())goto ERR_CACHEFORCE2;
+    //if(!IsOpen())goto ERR_CACHEFORCE2;
     LPBYTE pCacheTry = _GetLPBYTE(dwStart, dwNeedSize);
     if(pCacheTry)return pCacheTry;
 
@@ -1690,7 +1705,7 @@ ERR_CACHE2:
 
     //goto ERR_CACHEFORCE2;
 
-ERR_CACHEFORCE2:
+//ERR_CACHEFORCE2:
     _ClearInternalCacheData();
     //ERR_CACHEFORCE:
     //ATLASSERT(FALSE);
@@ -1727,6 +1742,11 @@ ERR_CACHEFORCE2:
   {
     return m_bReadOnly;
   }
+  
+  CString GetFilePath()
+  {
+    return m_filePath;
+  }
 
 
 private:
@@ -1738,7 +1758,6 @@ private:
   
   DWORD m_dwRefCount;
 
-  CSuperFileCon* m_pDupDoc;
   CAtlArray<TAMAUndoRedo*> m_undo;
   size_t m_savedIndex;
   size_t m_redoIndex;
@@ -1817,8 +1836,9 @@ private:
     m_filePath = _T("");
     m_dwTotal = 0;
     m_dwTotalSavedFile = 0;
+    m_bReadOnly = FALSE;
     m_savedIndex = m_redoIndex = m_dwHiddenStart = m_dwHiddenSize = 0;
-    ClearCache();
+    _ClearInternalCacheData();
   }
 
   void* mallocMax(size_t *nIdealSize)
@@ -2280,7 +2300,7 @@ private:
     //OptimizeFileMap(insChunk);
     
     m_dwTotal += dwInsSize;
-    ATLASSERT(m_dwTotal > dwInsSize);
+    ATLASSERT(m_dwTotal >= dwInsSize);
 
     return TRUE;
   }
@@ -2580,7 +2600,8 @@ private:
     //OptimizeFileMap(sideChunk);
 
     TAMAFILECHUNK *fileChunk = __FileMap_LowMax();
-    m_dwTotal = fileChunk->dwEnd+1;
+    if(fileChunk==NULL)m_dwTotal = 0;
+    else m_dwTotal = fileChunk->dwEnd+1;
 
     return TRUE;
   }
@@ -2959,7 +2980,7 @@ private:
       nextStart=pChunk->dwEnd+1;
     }
     TAMAFILECHUNK *pMaxChunk = __FileMap_LowMax();
-    if(m_dwTotal != pMaxChunk->dwEnd + 1)
+    if(!pMaxChunk || m_dwTotal != pMaxChunk->dwEnd + 1)
     {
       ATLASSERT(FALSE);
       return false;

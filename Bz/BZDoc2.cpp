@@ -18,6 +18,7 @@ CBZDoc2::CBZDoc2() : m_pSFC(NULL)
   m_restoreCaret = 0;
   //m_restoreScroll = {0};
   m_bReadOnly = FALSE;
+  //m_pSFC = new CSuperFileCon();
 }
 
 void CBZDoc2::DeleteContents()
@@ -28,6 +29,7 @@ void CBZDoc2::DeleteContents()
   m_bReadOnly = FALSE;
 
   ReleaseSFC();
+  m_pSFC = new CSuperFileCon();
   m_arrMarks.RemoveAll();
   SetModifiedFlag(FALSE);
 
@@ -37,6 +39,21 @@ void CBZDoc2::DeleteContents()
 CBZDoc2::~CBZDoc2()
 {
   ReleaseSFC();
+}
+void CBZDoc2::PreCloseFrame(CFrameWnd* /*pFrameArg*/)
+{
+  if(m_pSFC && m_pSFC->IsModified())
+  {
+    CString filePath = m_pSFC->GetFilePath();
+    if(filePath == "")filePath.LoadString(AFX_IDS_UNTITLED);
+    CString msgAskSave;
+    AfxFormatString1(msgAskSave, AFX_IDP_ASK_TO_SAVE, filePath);
+    UINT nResult = AfxMessageBox(msgAskSave, MB_YESNOCANCEL, AFX_IDP_ASK_TO_SAVE);
+    if(nResult==IDYES)
+    {
+      OnFileSave();
+    }
+  }
 }
 
 
@@ -48,7 +65,8 @@ BEGIN_MESSAGE_MAP(CBZDoc2, CDocument)
   ON_COMMAND(ID_EDIT_READONLYOPEN, &CBZDoc2::OnEditReadOnlyOpen)
   ON_UPDATE_COMMAND_UI(ID_EDIT_READONLYOPEN, &CBZDoc2::OnUpdateEditReadOnlyOpen)
   ON_COMMAND(ID_INDICATOR_INS, OnEditReadOnly)
-  ON_UPDATE_COMMAND_UI_RANGE(ID_FILE_SAVE, ID_FILE_SAVE_AS, OnUpdateFileSave)
+  ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, &CBZDoc2::OnUpdateFileSave)
+  ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, &CBZDoc2::OnUpdateFileSaveAs)
   ON_COMMAND(ID_FILE_SAVE, &CBZDoc2::OnFileSave)
   ON_COMMAND(ID_FILE_SAVE_AS, &CBZDoc2::OnFileSaveAs)
 END_MESSAGE_MAP()
@@ -119,8 +137,13 @@ void CBZDoc2::OnUpdateEditRedo(CCmdUI *pCmdUI)
 
 void CBZDoc2::OnUpdateFileSave(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(!m_bReadOnly);
+  pCmdUI->Enable(!m_bReadOnly && m_pSFC && m_pSFC->IsModified());
 }
+void CBZDoc2::OnUpdateFileSaveAs(CCmdUI *pCmdUI)
+{
+  pCmdUI->Enable(FALSE);
+}
+
 
 
 
@@ -247,16 +270,29 @@ BOOL CBZDoc2::OnOpenDocument(LPCTSTR lpszPathName)
   return TRUE;
 }
 
-//BOOL CBZDoc2::OnSaveDocument(LPCTSTR lpszPathName)
-//{
-//  // TODO: ここに特定なコードを追加するか、もしくは基本クラスを呼び出してください。
-//
-//  return CDocument::OnSaveDocument(lpszPathName);
-//}
+BOOL CBZDoc2::OnSaveDocument(LPCTSTR lpszPathName)
+{
+  return TRUE;
+  //return CDocument::OnSaveDocument(lpszPathName);
+}
 
 void CBZDoc2::OnFileSave()
 {
-  if(!m_pSFC || !m_pSFC->Save())
+  if(!m_pSFC)
+  {
+    MessageBox(NULL, _T("Save Error"), _T("Error"), MB_OK);
+    return;
+  }
+  BOOL bRet = FALSE;
+  if(m_pSFC->IsOpen())
+  {
+    bRet = m_pSFC->Save();
+  } else {
+    WTL::CFileDialog dlg(TRUE, _T("*"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT/*OFN_PATHMUSTEXIST*/, _T("すべてのファイル (*)\0*\0\0"), AfxGetMainWnd()->GetSafeHwnd());
+    if(dlg.DoModal() == IDOK)bRet = m_pSFC->SaveAs(dlg.m_szFileName);
+    else return;
+  }
+  if(!bRet)
   {
     MessageBox(NULL, _T("Save Error"), _T("Error"), MB_OK);
     return;
@@ -264,10 +300,10 @@ void CBZDoc2::OnFileSave()
   SetModifiedFlag(FALSE);
 }
 
-void CBZDoc2::OnFileSaveAs()
+void CBZDoc2::OnFileSaveAs() //MFCからウィンドウを閉じる時にOnFileSaveAs()が呼び出される場合がある。仮実装
 {
   if(!m_pSFC)return;
-  WTL::CFileDialog dlg(TRUE, _T("*"), NULL, OFN_PATHMUSTEXIST, _T("すべてのファイル (*.*)\0*.*\0\0"), AfxGetMainWnd()->GetSafeHwnd());
+  WTL::CFileDialog dlg(TRUE, _T("*"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT/*OFN_PATHMUSTEXIST*/, _T("すべてのファイル (*)\0*\0\0"), AfxGetMainWnd()->GetSafeHwnd());
 
   if(dlg.DoModal() == IDOK){
     //if(!m_pSFC->SaveAs(dlg.m_szFileName))
