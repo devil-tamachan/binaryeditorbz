@@ -85,7 +85,7 @@ private:
 	void	DrawHeader();
 	void	DrawGrid(CDC* pDC, RECT& rClip);
 	void	DrawDummyCaret(CDC* pDC);
-	BOOL	DrawCaret();
+	BOOL	DrawCaret(BOOL OnLButtonDown = FALSE);
 	DWORD	PointToOffset(CPoint pt);
 	void	CutOrCopy(CutMode mode);
 public:

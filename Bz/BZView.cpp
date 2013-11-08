@@ -792,7 +792,7 @@ void CBZView::DrawDummyCaret(CDC* pDC)
 	}
 }
 
-BOOL CBZView::DrawCaret()
+BOOL CBZView::DrawCaret(BOOL bOnLButtonDown)
 {
 	BOOL bDraw = FALSE;
 	POINT ptOrg = GetScrollPos();
@@ -801,7 +801,7 @@ BOOL CBZView::DrawCaret()
 	RECT rClient;
 	GetClientRect(&rClient);
 	PixelToGrid(rClient);
-	DWORD dwBottom = (dwOrg + (rClient.y2 - DUMP_Y) * 16) + 16; //上下が欠けた最下ラインのカレットが表示されないので+16
+  DWORD dwBottom = (dwOrg + (rClient.y2 - DUMP_Y) * 16) + (bOnLButtonDown?16:0); //下が欠けた最下ラインのカレットが表示されないので+16
 	DWORD dwMax = GetFileSize() + 1;
 	if(dwBottom > dwOrg && dwBottom < dwMax)	// ###1.61
 		dwMax = dwBottom;
@@ -918,7 +918,7 @@ void CBZView::OnLButtonDown(UINT nFlags, CPoint point)
 			} else
 				m_dwBlock = ofs;
 			m_dwCaret = ofs;
-			DrawCaret();
+			DrawCaret(TRUE/*bOnLButtonDown*/);
 		}
 		SetCapture();
 	}
