@@ -801,7 +801,7 @@ BOOL CBZView::DrawCaret()
 	RECT rClient;
 	GetClientRect(&rClient);
 	PixelToGrid(rClient);
-	DWORD dwBottom = dwOrg + (rClient.y2 - DUMP_Y) * 16;
+	DWORD dwBottom = (dwOrg + (rClient.y2 - DUMP_Y) * 16) + 16; //上下が欠けた最下ラインのカレットが表示されないので+16
 	DWORD dwMax = GetFileSize() + 1;
 	if(dwBottom > dwOrg && dwBottom < dwMax)	// ###1.61
 		dwMax = dwBottom;
