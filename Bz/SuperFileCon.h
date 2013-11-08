@@ -35,9 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <atlcoll.h>//CAtlArray
 #include <atlfile.h>//CAtlFile
 #include <atlutil.h>//AtlGetErrorDescription
-#include <atlapp.h>//WTL
-#include <atlctrls.h>//for atlctrlx.h
-#include <atlctrlx.h>//WTL::CWaitCursor
 #include "tree.h"
 //#include "SFCCache.h"
 //class CSFCCache;
@@ -192,7 +189,7 @@ public:
     exit(-1);
   }
 
-  DWORD GetRemain(DWORD dwStart)
+  DWORD GetRemainFile(DWORD dwStart)
   {
     //if(!m_file.m_h)return 0;
     DWORD dwFileSize = GetSize();
@@ -204,7 +201,7 @@ public:
   BOOL Open(LPCTSTR lpszPathName)
   {
     ATLTRACE("SuperFileCon::Open\n");
-    CWaitCursor wait;
+    //CWaitCursor wait;
     BOOL bReadOnly = FALSE;
     CAtlFile file;
     if((FAILED(file.Create(lpszPathName, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, OPEN_EXISTING))))  // Open (+RW)
@@ -825,7 +822,7 @@ public:
   BOOL Save() //è„èëÇ´ï€ë∂
   {
     if(m_bReadOnly || !m_file.m_h)return FALSE;
-    CWaitCursor wait;
+    //CWaitCursor wait;
     ATLTRACE("SuperFileCon::Save\n");
 #ifdef SFC_EASYDEBUG
     _EasyDebug_OutputOp1(SFCOP_SAVE);
@@ -1656,7 +1653,7 @@ public:
   {
     //if(!IsOpen())goto ERR_CACHE2;
 
-    DWORD dwFileRemain = GetRemain(dwStart);
+    DWORD dwFileRemain = GetRemainFile(dwStart);
     if(dwFileRemain==0)goto ERR_CACHE2;
     DWORD dwReadSize = dwIdealSize;
     if(dwReadSize==0)dwReadSize = min(m_dwCacheAllocSize, dwFileRemain);
@@ -1767,7 +1764,7 @@ private:
 
   struct _TAMAFILECHUNK_HEAD m_filemapHead;
   
-  static const DWORD SFCC_CACHESIZE = 1024*1024*1; //1MB
+  static const DWORD SFCC_CACHESIZE = 512*1024;//512KB //1024*1024*1; //1MB
   DWORD m_dwCacheStart;
   DWORD m_dwCacheSize;
   DWORD m_dwCacheAllocSize;

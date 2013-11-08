@@ -278,6 +278,7 @@ BOOL CBZDoc2::OnSaveDocument(LPCTSTR lpszPathName)
 
 void CBZDoc2::OnFileSave()
 {
+  CWaitCursor wait;
   if(!m_pSFC)
   {
     MessageBox(NULL, _T("Save Error"), _T("Error"), MB_OK);
