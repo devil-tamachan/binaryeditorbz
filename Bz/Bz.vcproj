@@ -55,7 +55,7 @@
 				ExceptionHandling="2"
 				SmallerTypeCheck="true"
 				RuntimeLibrary="1"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile=".\Debug/Bz.pch"
 				AssemblerListingLocation=".\Debug/"
@@ -194,7 +194,7 @@
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				OptimizeForWindows98="1"
-				LinkTimeCodeGeneration="3"
+				LinkTimeCodeGeneration="1"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -424,32 +424,8 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="BZDoc.cpp"
+				RelativePath=".\BZDoc2.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseUPX|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="BZFormVw.cpp"
@@ -796,7 +772,7 @@
 				>
 			</File>
 			<File
-				RelativePath="BZDoc.h"
+				RelativePath=".\BZDoc2.h"
 				>
 			</File>
 			<File
@@ -861,6 +837,10 @@
 			</File>
 			<File
 				RelativePath="StdAfx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SuperFileCon.h"
 				>
 			</File>
 			<File
