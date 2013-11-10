@@ -423,8 +423,8 @@ void CBZView::OnDraw(CDC* pDC)
 
 //	if(p && !(p = m_pDoc->QueryMapView(p, ofs))) return;
 	InitCharMode(ofs);
-  m_pDoc->Cache(ofs);
-  if(pDoc1)pDoc1->Cache(ofs);
+  m_pDoc->Cache(ofs, 1000);
+  if(pDoc1)pDoc1->Cache(ofs, 1000);
 
 	for(/*int */y = rClip.y1; y <= rClip.y2; y++) {
 		Locate(0, y);
