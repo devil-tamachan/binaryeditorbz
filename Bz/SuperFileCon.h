@@ -208,7 +208,7 @@ public:
     {
       if (FAILED(file.Create(lpszPathName, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING))) //Retry open (Read-Only)
       {
-        LastErrorMessageBox();
+        //LastErrorMessageBox();
         return FALSE; //Failed open
       }
       bReadOnly = TRUE;
@@ -863,7 +863,7 @@ private:
     CAtlFile file;
     if((FAILED(file.Create(lpszPathName, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, CREATE_ALWAYS))))  // Open (+RW)
     {
-      LastErrorMessageBox();
+      //LastErrorMessageBox();
       return FALSE; //Failed open
     }
     m_file = file;
@@ -1663,6 +1663,7 @@ public:
 
     if(dwReadSize > dwFileRemain)dwReadSize = dwFileRemain;
     if(dwReadSize > m_dwCacheAllocSize)dwReadSize = m_dwCacheAllocSize;
+ATLTRACE("ReCache!! (Start:0x%08X, Size:0x%08X)\n", dwStart, dwReadSize);
     if(!Read(m_pCache, dwStart, dwReadSize))goto ERR_CACHE2;
     m_dwCacheStart = dwStart;
     m_dwCacheSize = dwReadSize;
@@ -1693,6 +1694,9 @@ ERR_CACHE2:
 #endif
   {
     //if(!IsOpen())goto ERR_CACHEFORCE2;
+    DWORD dwFileRemain = GetRemainFile(dwStart);
+    if(dwFileRemain<dwNeedSize)return NULL;
+
     LPBYTE pCacheTry = _GetLPBYTE(dwStart, dwNeedSize);
     if(pCacheTry)return pCacheTry;
 
@@ -2066,10 +2070,10 @@ private:
     return FALSE;
   }
 
-  void LastErrorMessageBox()
-  {
-    MessageBox(NULL, AtlGetErrorDescription(::GetLastError(), LANG_USER_DEFAULT), _T("Error"), MB_OK | MB_ICONERROR);
-  }
+  //void LastErrorMessageBox()
+  //{
+  //  MessageBox(NULL, AtlGetErrorDescription(::GetLastError(), LANG_USER_DEFAULT), _T("Error"), MB_OK | MB_ICONERROR);
+  //}
 
   inline TAMAFILECHUNK * _FileMap_LookUp(DWORD dwSearchOffset)
   {
