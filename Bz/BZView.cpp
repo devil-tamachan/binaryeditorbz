@@ -712,6 +712,11 @@ void CBZView::DrawGrid(CDC* pDC, RECT& rClip)
 
 void CBZView::PutUnicodeChar(WORD w)
 {
+  if(w==0x3F)
+  {
+    PutStr("? ");
+    return;
+  }
 	WCHAR wbs[3] = {0};
 	wbs[0] = w;
 	wbs[1] = NULL;
