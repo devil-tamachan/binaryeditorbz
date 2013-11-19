@@ -280,21 +280,20 @@ public:
     {
       ATLTRACE("      Write--- Start: 0x%08X(%u), Size: 0x%08X(%u)\n", dwMoveStart, dwMoveStart, dwCopySize, dwCopySize);
       if(FAILED(m_file.Seek(dwMoveStart, FILE_BEGIN)) || FAILED(m_file.Read(buf, dwCopySize)))
-      {
-        ATLASSERT(FALSE);
-        break;
-      }
+        goto COPYFF_ERR1;
       if(FAILED(pWriteFile->Seek(dwMoveStart, FILE_BEGIN)) || FAILED(pWriteFile->Write(buf, dwCopySize)))
-      {
-        ATLASSERT(FALSE);
-        break;
-      }
+        goto COPYFF_ERR1;
       dwRemain -= dwCopySize;
-      dwMoveStart += dwCopySize;
-      dwCopySize = min(dwCopySize, dwRemain);
+      dwMoveStart += dwCopySize; //Ç±Ç±ÇÃèáî‘ÇÕÇ±ÇÍÇ≈çáÇ¡ÇƒÇÈ
+      dwCopySize = min(dwCopySize, dwRemain); //êGÇÈÇ»
     }
     free(buf);
     return TRUE;
+COPYFF_ERR1:
+    ATLASSERT(FALSE);
+    FatalError();
+    free(buf);
+    return FALSE;
   }
   void _ClearSavedFlags(CAtlFile *pWriteFile, BOOL bSaveAs)
   {
@@ -1928,25 +1927,26 @@ private:
     ATLTRACE("ShiftFileR: 0x%08X-0x%08X(%u-%u) (Size:%u) >>>[R 0x%08X(%u)]>>> 0x%08X-0x%08X(%u-%u) (Size:%u)\n", dwInsStart, dwInsStart+dwShiftSize-1, dwInsStart, dwInsStart+dwShiftSize-1, dwShiftSize, dwInsSize, dwInsSize, dwInsStart+dwInsSize, dwInsStart+dwInsSize+dwShiftSize-1, dwInsStart+dwInsSize, dwInsStart+dwInsSize+dwShiftSize-1, dwShiftSize);
     while(dwRemain!=0)
     {
+      //ATLTRACE("      Read--- Start: 0x%08X, Size: %08X\n", dwMoveStart, dwCopySize);
       if(FAILED(m_file.Seek(dwMoveStart, FILE_BEGIN)) || FAILED(m_file.Read(buf, dwCopySize)))
-      {
-        ATLASSERT(FALSE);
-        break;
-      }
+        goto FFR_ERR1;
+      //ATLTRACE("      Write-- Start: 0x%08X, Size: %08X\n", dwMoveStart+dwInsSize, dwCopySize);
       if(FAILED(pWriteFile->Seek(dwMoveStart+dwInsSize, FILE_BEGIN)) || FAILED(pWriteFile->Write(buf, dwCopySize)))
-      {
-        ATLASSERT(FALSE);
-        break;
-      }
+        goto FFR_ERR1;
       dwRemain -= dwCopySize;
 #ifdef DEBUG
       if(dwRemain==0)ATLASSERT(dwMoveStart==dwInsStart);
 #endif
-      dwMoveStart -= dwCopySize;
-      dwCopySize = min(dwCopySize, dwRemain);
+      dwCopySize = min(dwCopySize, dwRemain); //Ç±Ç±ÇÃèáî‘ÇÕÇ±ÇÍÇ≈çáÇ¡ÇƒÇÈ
+      dwMoveStart -= dwCopySize; //êGÇÈÇ»
     }
     free(buf);
     return TRUE;
+FFR_ERR1:
+    ATLASSERT(FALSE);
+    FatalError();
+    free(buf);
+    return FALSE;
   }
   BOOL _TAMAFILECHUNK_ShiftFileChunkL(TAMAFILECHUNK *fileChunk, CAtlFile *pWriteFile)
   {
@@ -1975,21 +1975,20 @@ private:
     while(dwRemain!=0)
     {
       if(FAILED(m_file.Seek(dwMoveStart+dwDelSize, FILE_BEGIN)) || FAILED(m_file.Read(buf, dwCopySize)))
-      {
-        ATLASSERT(FALSE);
-        break;
-      }
+        goto FFL_ERR1;
       if(FAILED(pWriteFile->Seek(dwMoveStart, FILE_BEGIN)) || FAILED(pWriteFile->Write(buf, dwCopySize)))
-      {
-        ATLASSERT(FALSE);
-        break;
-      }
+        goto FFL_ERR1;
       dwRemain -= dwCopySize;
-      dwMoveStart += dwCopySize;
-      dwCopySize = min(dwCopySize, dwRemain);
+      dwMoveStart += dwCopySize; //Ç±Ç±ÇÃèáî‘ÇÕÇ±ÇÍÇ≈çáÇ¡ÇƒÇÈ
+      dwCopySize = min(dwCopySize, dwRemain); //êGÇÈÇ»
     }
     free(buf);
     return TRUE;
+FFL_ERR1:
+    ATLASSERT(FALSE);
+    FatalError();
+    free(buf);
+    return FALSE;
   }
 
 
