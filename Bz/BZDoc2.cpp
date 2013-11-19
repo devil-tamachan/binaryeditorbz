@@ -141,7 +141,7 @@ void CBZDoc2::OnUpdateFileSave(CCmdUI* pCmdUI)
 }
 void CBZDoc2::OnUpdateFileSaveAs(CCmdUI *pCmdUI)
 {
-  pCmdUI->Enable(FALSE);
+  pCmdUI->Enable(!m_bReadOnly && m_pSFC);
 }
 
 
@@ -303,16 +303,21 @@ void CBZDoc2::OnFileSave()
 
 void CBZDoc2::OnFileSaveAs() //MFCからウィンドウを閉じる時にOnFileSaveAs()が呼び出される場合がある。仮実装
 {
-  if(!m_pSFC)return;
+  CWaitCursor wait;
+  if(!m_pSFC)
+  {
+    MessageBox(NULL, _T("SaveAs Error"), _T("Error"), MB_OK);
+    return;
+  }
   WTL::CFileDialog dlg(TRUE, _T("*"), NULL, OFN_NOVALIDATE | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT/*OFN_PATHMUSTEXIST*/, _T("すべてのファイル (*)\0*\0\0"), AfxGetMainWnd()->GetSafeHwnd());
 
   if(dlg.DoModal() == IDOK){
-    //if(!m_pSFC->SaveAs(dlg.m_szFileName))
-    //{
-    //  MessageBox(NULL, _T("SaveAs Error"), _T("Error"), MB_OK);
-    //  return;
-    //}
-    //SetModifiedFlag(FALSE);
+    if(!m_pSFC->SaveAs(dlg.m_szFileName))
+    {
+      MessageBox(NULL, _T("SaveAs Error"), _T("Error"), MB_OK);
+      return;
+    }
+    SetModifiedFlag(FALSE);
   }
 }
 

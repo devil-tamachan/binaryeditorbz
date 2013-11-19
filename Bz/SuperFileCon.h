@@ -40,8 +40,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //class CSFCCache;
 
 #define MAX_FILELENGTH  0xFFFFFFF0
-#define MAX_ONMEM 1024 * 1024
-#define MAX_MAPSIZE 1024 * 1024 * 64
+
+#define SHIFTBUFSIZE 8*1024*1024
 
 
 typedef enum {	UNDO_INS, UNDO_OVR, UNDO_DEL } UndoMode;
@@ -257,7 +257,46 @@ public:
     m_savedIndex = m_redoIndex = m_dwHiddenStart = m_dwHiddenSize = 0;
     ATLASSERT(m_undo.GetCount()==0);
   }
-  void _ClearSavedFlags()
+  BOOL _CopyFF(TAMAFILECHUNK *pFileChunk, CAtlFile *pWriteFile)
+  {
+    ATLASSERT(pFileChunk);
+    ATLASSERT(pFileChunk->dataChunk->dataType == CHUNK_FILE);
+    
+    DWORD dwCopyStart = pFileChunk->dwStart;
+    DWORD dwCopyAllSize = pFileChunk->dwEnd - pFileChunk->dwStart +1;
+    DWORD dwRemain = dwCopyAllSize;
+    if(dwRemain==0)return TRUE;
+    DWORD dwBufSize = SHIFTBUFSIZE;
+    DWORD dwCopySize = min(dwBufSize, dwRemain);
+    LPBYTE buf = (LPBYTE)mallocMax(&dwCopySize);
+    if(!buf)
+    {
+      ATLASSERT(FALSE);
+      return FALSE;
+    }
+    DWORD dwMoveStart = dwCopyStart;
+    ATLTRACE("_CopyFF--- Start: 0x%08X(%u), Size: 0x%08X(%u)\n", dwMoveStart, dwMoveStart, dwCopyAllSize, dwCopyAllSize);
+    while(dwRemain!=0)
+    {
+      ATLTRACE("      Write--- Start: 0x%08X(%u), Size: 0x%08X(%u)\n", dwMoveStart, dwMoveStart, dwCopySize, dwCopySize);
+      if(FAILED(m_file.Seek(dwMoveStart, FILE_BEGIN)) || FAILED(m_file.Read(buf, dwCopySize)))
+      {
+        ATLASSERT(FALSE);
+        break;
+      }
+      if(FAILED(pWriteFile->Seek(dwMoveStart, FILE_BEGIN)) || FAILED(pWriteFile->Write(buf, dwCopySize)))
+      {
+        ATLASSERT(FALSE);
+        break;
+      }
+      dwRemain -= dwCopySize;
+      dwCopySize = min(dwCopySize, dwRemain);
+      dwMoveStart += dwCopySize;
+    }
+    free(buf);
+    return TRUE;
+  }
+  void _ClearSavedFlags(CAtlFile *pWriteFile, BOOL bSaveAs)
   {
     TAMAFILECHUNK *pChunk;
     RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
@@ -265,7 +304,10 @@ public:
       ATLASSERT(pChunk->dataChunk);
       pChunk->bSaved = FALSE;
       if(pChunk->dataChunk->dataType == CHUNK_FILE && pChunk->dwStart == _TAMAFILECHUNK_GetRealStartAddr(pChunk) /*サイズも確認したほうがいい？*/)
+      {
+        if(bSaveAs)_CopyFF(pChunk, pWriteFile);
         pChunk->bSaved = TRUE; //file change nothing
+      }
     }
   }
   void _ClearDataChunkSavingFlag()
@@ -297,11 +339,11 @@ public:
       }
     }
   }
-  BOOL _Save_ExtendFileSize()
+  BOOL _Save_ExtendFileSize(CAtlFile *pWriteFile)
   {
     if(m_dwTotal <= m_dwTotalSavedFile)return TRUE;
     ATLTRACE("Change File Size: %u -> %u\n", m_dwTotalSavedFile, m_dwTotal);
-    if(FAILED(m_file.SetSize(m_dwTotal)))return FALSE;
+    if(FAILED(pWriteFile->SetSize(m_dwTotal)))return FALSE;
     TAMAFILECHUNK *fileChunk = __FileMap_LowMax();
     while(fileChunk && fileChunk->dwEnd >= m_dwTotalSavedFile)
     {
@@ -311,7 +353,7 @@ public:
         {
         case CHUNK_FILE:
           {
-            if(!_TAMAFILECHUNK_ShiftFileChunk(fileChunk))return FALSE;
+            if(!_TAMAFILECHUNK_ShiftFileChunk(fileChunk, pWriteFile))return FALSE;
             fileChunk->bSaved = TRUE;
           }
           break;
@@ -324,7 +366,7 @@ public:
               _FileMap_SplitPoint(dwShiftStart);
               fileChunk = _FileMap_LookUp(dwRestoreOffset);
             }
-            if(!_TAMAFILECHUNK_WriteMemChunk(fileChunk))return FALSE;
+            if(!_TAMAFILECHUNK_WriteMemChunk(fileChunk, pWriteFile))return FALSE;
             fileChunk->bSaved = TRUE;
           }
           break;
@@ -443,7 +485,7 @@ public:
     }
     return TRUE;
   }
-  BOOL _TAMAFILECHUNK_WriteMemChunk(TAMAFILECHUNK *memChunk)
+  BOOL _TAMAFILECHUNK_WriteMemChunk(TAMAFILECHUNK *memChunk, CAtlFile *pWriteFile)
   {
     ATLASSERT(memChunk);
     ATLASSERT(memChunk->dataChunk);
@@ -453,7 +495,7 @@ public:
     ATLASSERT(dwWriteSize > 0);
     ATLTRACE("WriteMem: 0x%08X, %u (0x%X, %u)\n", memChunk->dwStart, memChunk->dwStart, dwWriteSize, dwWriteSize);
 
-    if(FAILED(m_file.Seek(memChunk->dwStart, FILE_BEGIN)) || FAILED(m_file.Write(_TAMAFILECHUNK_GetRealStartPointer(memChunk), dwWriteSize)))return FALSE;
+    if(FAILED(pWriteFile->Seek(memChunk->dwStart, FILE_BEGIN)) || FAILED(pWriteFile->Write(_TAMAFILECHUNK_GetRealStartPointer(memChunk), dwWriteSize)))return FALSE;
 
     TAMADataBuf *pSearchDataBuf = memChunk->dataChunk->dataMem;
     DWORD dwSkipOffset = memChunk->dataChunk->dwSkipOffset;
@@ -481,7 +523,7 @@ public:
     if(fileChunk->dwStart < _TAMAFILECHUNK_GetRealStartAddr(fileChunk))return FALSE;
     return TRUE;
   }
-  BOOL _Save_ShiftAllFF()
+  BOOL _Save_ShiftAllFF(CAtlFile *pWriteFile)
   {
     TAMAFILECHUNK *pLastFileChunk = NULL;
     TAMAFILECHUNK *pChunk;
@@ -492,7 +534,7 @@ public:
         pLastFileChunk = pChunk;
         if(_TAMAFILECHUNK_isRightShift(pChunk))
         {
-          if(!_Save_ShiftAllFileChunksAfterArg(pChunk))
+          if(!_Save_ShiftAllFileChunksAfterArg(pChunk, pWriteFile))
           {
             ATLASSERT(FALSE);
             FatalError();
@@ -503,7 +545,7 @@ public:
     }
     if(pLastFileChunk && !pLastFileChunk->bSaved)
     {
-      if(!_Save_ShiftAllFileChunksAfterArg(pLastFileChunk))
+      if(!_Save_ShiftAllFileChunksAfterArg(pLastFileChunk, pWriteFile))
       {
         ATLASSERT(FALSE);
         FatalError();
@@ -512,7 +554,7 @@ public:
     }
     return TRUE;
   }
-  BOOL _Save_WriteAllDF()
+  BOOL _Save_WriteAllDF(CAtlFile *pWriteFile)
   {
     TAMAFILECHUNK *pChunk;
     RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
@@ -520,7 +562,7 @@ public:
       if(!pChunk->bSaved)
       {
         ATLASSERT(pChunk->dataChunk->dataType == CHUNK_MEM);
-        if(_TAMAFILECHUNK_WriteMemChunk(pChunk)==FALSE)return FALSE;
+        if(_TAMAFILECHUNK_WriteMemChunk(pChunk, pWriteFile)==FALSE)return FALSE;
         pChunk->bSaved = TRUE;
       }
     }
@@ -710,16 +752,16 @@ public:
     return TRUE;
   }
   
-  BOOL _Save_ProccessAllChunks()
+  BOOL _Save_ProccessAllChunks(CAtlFile *pWriteFile, BOOL bSaveAs)
   {
-    _ClearSavedFlags();
+    _ClearSavedFlags(pWriteFile, bSaveAs);
     struct _TAMAOLDFILECHUNK_HEAD oldFilemapHead;
     _OldFileMap_Make(&oldFilemapHead, &m_file);
     _Save_UpdateAllDataChunkSavingType(&oldFilemapHead);
     _OldFileMap_FreeAll(&oldFilemapHead, TRUE);//FALSE);
-    if(!_Save_ExtendFileSize()
-      || !_Save_ShiftAllFF()
-      || !_Save_WriteAllDF() )
+    if(!_Save_ExtendFileSize(pWriteFile)
+      || !_Save_ShiftAllFF(pWriteFile)
+      || !_Save_WriteAllDF(pWriteFile) )
     {
       ATLASSERT(FALSE);
       return FALSE;
@@ -734,36 +776,12 @@ public:
     return TRUE;
   }
   
-  BOOL _SaveAS_ProccessAllChunks()
-  {
-    /*_ClearSavedFlags();
-    struct _TAMAOLDFILECHUNK_HEAD oldFilemapHead;
-    _OldFileMap_Make(&oldFilemapHead, &m_file);
-    _Save_UpdateAllDataChunkSavingType(&oldFilemapHead);
-    _OldFileMap_FreeAll(&oldFilemapHead, TRUE);//FALSE);
-    if(!_Save_ExtendFileSize()
-      || !_Save_ShiftAllFF()
-      || !_Save_WriteAllDF() )
-    {
-      ATLASSERT(FALSE);
-      return FALSE;
-    }
-#ifdef GTEST
-#ifdef DEBUG
-    ATLASSERT(!_Debug_SearchUnSavedChunk());
-#endif //DEBUG
-#endif //GTEST
-    //_UndoRedo_CreateRefSrcFileDataChunk();
-    m_savedIndex = m_redoIndex;*/
-    return TRUE;
-  }
-  
-  BOOL _Save_ShiftAllFileChunksAfterArg(TAMAFILECHUNK *fileChunk)
+  BOOL _Save_ShiftAllFileChunksAfterArg(TAMAFILECHUNK *fileChunk, CAtlFile *pWriteFile)
   {
     while(fileChunk) {
       if(!fileChunk->bSaved && fileChunk->dataChunk->dataType == CHUNK_FILE)
       {
-        if(!_TAMAFILECHUNK_ShiftFileChunk(fileChunk))
+        if(!_TAMAFILECHUNK_ShiftFileChunk(fileChunk, pWriteFile))
         {
           ATLASSERT(FALSE);
           return FALSE;
@@ -773,7 +791,7 @@ public:
     }
     return TRUE;
   }
-  BOOL _TAMAFILECHUNK_ShiftFileChunk(TAMAFILECHUNK *fileChunk)
+  BOOL _TAMAFILECHUNK_ShiftFileChunk(TAMAFILECHUNK *fileChunk, CAtlFile *pWriteFile)
   {
     ATLASSERT(fileChunk);
     ATLASSERT(fileChunk->bSaved==FALSE);
@@ -781,13 +799,13 @@ public:
     BOOL bRet = FALSE;
     if(_TAMAFILECHUNK_isRightShift(fileChunk))
     {
-      if(!_TAMAFILECHUNK_ShiftFileChunkR(fileChunk))
+      if(!_TAMAFILECHUNK_ShiftFileChunkR(fileChunk, pWriteFile))
       {
         ATLASSERT(FALSE);
         return FALSE;
       }
     } else {
-      if(!_TAMAFILECHUNK_ShiftFileChunkL(fileChunk))
+      if(!_TAMAFILECHUNK_ShiftFileChunkL(fileChunk, pWriteFile))
       {
         ATLASSERT(FALSE);
         return FALSE;
@@ -827,7 +845,7 @@ public:
 #ifdef SFC_EASYDEBUG
     _EasyDebug_OutputOp1(SFCOP_SAVE);
 #endif
-    BOOL bRet = _Save_ProccessAllChunks();
+    BOOL bRet = _Save_ProccessAllChunks(&m_file, FALSE/*bSaveAs*/);
     if(m_dwTotal < m_dwTotalSavedFile)
     {
       ATLTRACE("Change File Size: %u -> %u\n", m_dwTotalSavedFile, m_dwTotal);
@@ -837,7 +855,7 @@ public:
     _RemoveNeedlessHiddenNode();
     m_file.Flush();
     _FileMap_DestroyAll();
-    if(!_FileMap_InsertFile(0, m_dwTotalSavedFile, 0))
+    if(m_dwTotalSavedFile>0 && !_FileMap_InsertFile(0, m_dwTotalSavedFile, 0))
     {
       ATLASSERT(FALSE);
       FatalError();
@@ -849,25 +867,41 @@ public:
   
   BOOL SaveAs(LPCTSTR lpszPathName) //名前を付けて保存
   {
+    if(lpszPathName[0]==NULL)return FALSE;
     ATLTRACE("SuperFileCon::SaveAs(%s)\n", lpszPathName);
 #ifdef SFC_EASYDEBUG
     _EasyDebug_OutputOp1(SFCOP_SAVEAS);
 #endif
-    return _SaveAs(lpszPathName);
+    if(m_filePath==lpszPathName)return Save();
+    else return _SaveAs(lpszPathName);
   }
   
 private:
   BOOL _SaveAs(LPCTSTR lpszPathName)
   {
-    if(m_file.m_h)return FALSE; //手抜き。通常の"名前をつけて保存"は未実装。"新しいファイル"から保存するところだけ実装
-    CAtlFile file;
-    if((FAILED(file.Create(lpszPathName, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, CREATE_ALWAYS))))  // Open (+RW)
+    CAtlFile dstFile;
+    if((FAILED(dstFile.Create(lpszPathName, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, CREATE_ALWAYS))))  // Open (+RW)
     {
       //LastErrorMessageBox();
       return FALSE; //Failed open
     }
-    m_file = file;
-    return Save();
+    ATLTRACE("Change File Size: %u -> %u\n", 0, m_dwTotal);
+    if(FAILED(dstFile.SetSize(m_dwTotal)))return FALSE;
+
+    BOOL bRet = _Save_ProccessAllChunks(&dstFile, TRUE/*bSaveAs*/);
+    m_file = dstFile;
+    m_dwTotalSavedFile = m_dwTotal;
+    _RemoveNeedlessHiddenNode();
+    m_file.Flush();
+    _FileMap_DestroyAll();
+    if(m_dwTotalSavedFile>0 && !_FileMap_InsertFile(0, m_dwTotalSavedFile, 0))
+    {
+      ATLASSERT(FALSE);
+      FatalError();
+      return FALSE;
+    }
+    ATLTRACE("--------------SaveAs()\n");
+    return bRet;
   }
   
 public:
@@ -1868,8 +1902,7 @@ private:
     return pAlloc;
   }
 
-#define SHIFTBUFSIZE 8*1024*1024
-  BOOL _TAMAFILECHUNK_ShiftFileChunkR(TAMAFILECHUNK *fileChunk)
+  BOOL _TAMAFILECHUNK_ShiftFileChunkR(TAMAFILECHUNK *fileChunk, CAtlFile *pWriteFile)
   {
     ATLASSERT(fileChunk);
     ATLASSERT(fileChunk->bSaved==FALSE);
@@ -1900,7 +1933,7 @@ private:
         ATLASSERT(FALSE);
         break;
       }
-      if(FAILED(m_file.Seek(dwMoveStart+dwInsSize, FILE_BEGIN)) || FAILED(m_file.Write(buf, dwCopySize)))
+      if(FAILED(pWriteFile->Seek(dwMoveStart+dwInsSize, FILE_BEGIN)) || FAILED(pWriteFile->Write(buf, dwCopySize)))
       {
         ATLASSERT(FALSE);
         break;
@@ -1915,7 +1948,7 @@ private:
     free(buf);
     return TRUE;
   }
-  BOOL _TAMAFILECHUNK_ShiftFileChunkL(TAMAFILECHUNK *fileChunk)
+  BOOL _TAMAFILECHUNK_ShiftFileChunkL(TAMAFILECHUNK *fileChunk, CAtlFile *pWriteFile)
   {
     ATLASSERT(fileChunk);
     ATLASSERT(fileChunk->bSaved==FALSE);
@@ -1946,7 +1979,7 @@ private:
         ATLASSERT(FALSE);
         break;
       }
-      if(FAILED(m_file.Seek(dwMoveStart, FILE_BEGIN)) || FAILED(m_file.Write(buf, dwCopySize)))
+      if(FAILED(pWriteFile->Seek(dwMoveStart, FILE_BEGIN)) || FAILED(pWriteFile->Write(buf, dwCopySize)))
       {
         ATLASSERT(FALSE);
         break;
