@@ -290,8 +290,8 @@ public:
         break;
       }
       dwRemain -= dwCopySize;
-      dwCopySize = min(dwCopySize, dwRemain);
       dwMoveStart += dwCopySize;
+      dwCopySize = min(dwCopySize, dwRemain);
     }
     free(buf);
     return TRUE;
@@ -1942,8 +1942,8 @@ private:
 #ifdef DEBUG
       if(dwRemain==0)ATLASSERT(dwMoveStart==dwInsStart);
 #endif
-      dwCopySize = min(dwCopySize, dwRemain);
       dwMoveStart -= dwCopySize;
+      dwCopySize = min(dwCopySize, dwRemain);
     }
     free(buf);
     return TRUE;
@@ -1985,8 +1985,8 @@ private:
         break;
       }
       dwRemain -= dwCopySize;
-      dwCopySize = min(dwCopySize, dwRemain);
       dwMoveStart += dwCopySize;
+      dwCopySize = min(dwCopySize, dwRemain);
     }
     free(buf);
     return TRUE;
