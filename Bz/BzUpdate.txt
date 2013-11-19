@@ -1,5 +1,8 @@
 ## CHANGELOG
 
+### 1.9.2 2013/11/20 (devil.tamachan@gmail.com)
+ - (修正) 挿入すると挿入点直後のデータが壊れるバグ (1.9.1で混入)
+
 ### 1.9.1 2013/11/19 (devil.tamachan@gmail.com)
  - (修正) Issue 21 文字コードを UTF-16 にすると "?" が "." と表示される (Special Thanks!: k.yukihiko)
  - (修正) 巨大なファイル(0x80000以上）で削除/挿入した場合、保存時にデータ末尾が壊れるバグ
