@@ -140,8 +140,11 @@ http://social.msdn.microsoft.com/Forums/en/vcgeneral/thread/c3feab0f-601b-4ca6-b
 	LoadStdProfileSettings(10);  // Load standard INI file options (including MRU)
 	options.Load();
 
-	if(options.bLanguage && (m_hInstDll = ::LoadLibrary(_T("BZres_us.dll")))) 
-		AfxSetResourceHandle(m_hInstDll); 
+  if(options.bLanguage && (m_hInstDll = ::LoadLibrary(_T("BZres_us.dll"))))
+  {
+    AfxSetResourceHandle(m_hInstDll);
+    _AtlBaseModule.SetResourceInstance(m_hInstDll);
+  }
 
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views.
