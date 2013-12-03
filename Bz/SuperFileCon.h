@@ -264,8 +264,9 @@ public:
     UINT64 dwCopyAllSize = pFileChunk->dwEnd - pFileChunk->dwStart +1;
     UINT64 dwRemain = dwCopyAllSize;
     if(dwRemain==0)return TRUE;
-    UINT64 dwBufSize = SHIFTBUFSIZE;
-    UINT64 dwCopySize = min(dwBufSize, dwRemain);
+    size_t dwBufSize = SHIFTBUFSIZE;
+    size_t dwCopySize = dwBufSize;
+    if(dwCopySize>dwRemain)dwCopySize = (size_t)dwRemain;
     LPBYTE buf = (LPBYTE)mallocMax(&dwCopySize);
     if(!buf)
     {
@@ -283,7 +284,7 @@ public:
         goto COPYFF_ERR1;
       dwRemain -= dwCopySize;
       dwMoveStart += dwCopySize; //ここの順番はこれで合ってる
-      dwCopySize = min(dwCopySize, dwRemain); //触るな
+      if(dwCopySize>dwRemain)dwCopySize = (size_t)dwRemain; //触るな
     }
     free(buf);
     return TRUE;
@@ -1890,13 +1891,15 @@ private:
     *nIdealSize = 0;
     return NULL;
   }
-  void* mallocMax(size_t *dwIdealSize)
-  {
-    size_t nIdealSize = *dwIdealSize;
-    void *pAlloc = mallocMax(&nIdealSize);
-    *dwIdealSize = nIdealSize;
-    return pAlloc;
-  }
+//#ifndef _WIN64
+//  void* mallocMax(QWORD *dwIdealSize)
+//  {
+//    size_t nIdealSize = *dwIdealSize;
+//    void *pAlloc = mallocMax(&nIdealSize);
+//    *dwIdealSize = nIdealSize;
+//    return pAlloc;
+//  }
+//#endif
 
   BOOL _TAMAFILECHUNK_ShiftFileChunkR(TAMAFILECHUNK *fileChunk, CAtlFile *pWriteFile)
   {
@@ -2807,6 +2810,10 @@ FFL_ERR1:
         }
       }
     }
+    
+#ifndef _WIN64
+    if(!_OldFileMap_FDLimitter())return FALSE;
+#endif
 
     //FDチャンクのメモリ確保。ファイルからデータ読み込み
     TAMAOLDFILECHUNK *pOldFileChunk;
@@ -2829,6 +2836,34 @@ FFL_ERR1:
       }
     }
     return TRUE;
+  }
+
+#ifndef _WIN64
+#define OLDFILEMAP_FD_MAX 50*1024*1024
+/*50MB*/
+#else
+#define OLDFILEMAP_FD_MAX 500*1024*1024
+/*500MB*/
+#endif
+
+  BOOL _OldFileMap_FDLimitter(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead)
+  {
+    TAMAOLDFILECHUNK *pOldFileChunk, *pOldFileChunkNext;
+    RB_FOREACH_SAFE(pOldFileChunk, _TAMAOLDFILECHUNK_HEAD, pOldFilemapHead, pOldFileChunkNext)
+    {
+      if(pOldFileChunk->type==OF_FD)
+      {
+        ATLASSERT(pOldFileChunk->dwEnd >= pOldFileChunk->dwStart);
+        UINT64 dwReadSize = pOldFileChunk->dwEnd - pOldFileChunk->dwStart + 1;
+        while(dwReadSize > OLDFILEMAP_FD_MAX)
+        {
+          UINT64 newStart = pOldFileChunk->dwStart + OLDFILEMAP_FD_MAX;
+          _OldFileMap_SplitPoint(pOldFilemapHead, newStart);
+          pOldFileChunk = _OldFileMap_LookUp(pOldFilemapHead, newStart);
+          dwReadSize = pOldFileChunk->dwEnd - pOldFileChunk->dwStart + 1;
+        }
+      }
+    }
   }
 
   //_TAMAReadFileEx: ReadSizeをDWORD -> size_tに拡張
