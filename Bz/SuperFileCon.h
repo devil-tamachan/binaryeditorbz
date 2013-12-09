@@ -483,6 +483,28 @@ COPYFF_ERR1:
     }
     return TRUE;
   }
+
+  //_TAMAWriteFileEx: nWriteSize‚ðDWORD -> size_t‚ÉŠg’£
+  HRESULT _TAMAWriteFileEx(CAtlFile *pFile, LPBYTE pData, UINT64 dwStart, size_t nWriteSize)
+  {
+    UINT64 dwStartAddr = dwStart;
+    LPBYTE pDataC = pData;
+    ULARGE_INTEGER nRemain;
+    nRemain.QuadPart = nWriteSize;
+    DWORD dwWriteSize = nRemain.LowPart;
+    if(nRemain.QuadPart > 0xFFffFFff)dwWriteSize = 0xFFffFfff;
+    while(nRemain.QuadPart > 0)
+    {
+      if(FAILED(pFile->Seek(dwStartAddr, FILE_BEGIN)) || FAILED(pFile->Write(pDataC, dwWriteSize)))return E_FAIL;
+      nRemain.QuadPart -= dwWriteSize;
+      dwStartAddr += dwWriteSize;
+      pDataC += dwWriteSize;
+      dwWriteSize = nRemain.LowPart;
+      if(nRemain.QuadPart > 0xFFffFFff)dwWriteSize = 0xFFffFfff;
+    }
+    return S_OK;
+  }
+  
   BOOL _TAMAFILECHUNK_WriteMemChunk(TAMAFILECHUNK *memChunk, CAtlFile *pWriteFile)
   {
     ATLASSERT(memChunk);
@@ -490,10 +512,11 @@ COPYFF_ERR1:
     ATLASSERT(memChunk->dataChunk->dataType == CHUNK_MEM);
     ATLASSERT(memChunk->dataChunk->dataMem->pData);
     UINT64 dwWriteSize = memChunk->dwEnd - memChunk->dwStart +1;
+    ATLASSERT(dwWriteSize<=SIZE_MAX);
     ATLASSERT(dwWriteSize > 0);
     ATLTRACE("WriteMem: 0x%08X, %u (0x%X, %u)\n", memChunk->dwStart, memChunk->dwStart, dwWriteSize, dwWriteSize);
 
-    if(FAILED(pWriteFile->Seek(memChunk->dwStart, FILE_BEGIN)) || FAILED(pWriteFile->Write(_TAMAFILECHUNK_GetRealStartPointer(memChunk), dwWriteSize)))return FALSE;
+    if(FAILED(_TAMAWriteFileEx(pWriteFile, _TAMAFILECHUNK_GetRealStartPointer(memChunk), memChunk->dwStart, (size_t)dwWriteSize)))return FALSE;
 
     TAMADataBuf *pSearchDataBuf = memChunk->dataChunk->dataMem;
     UINT64 dwSkipOffset = memChunk->dataChunk->dwSkipOffset;
@@ -652,7 +675,7 @@ COPYFF_ERR1:
     }
     return TRUE;
   }
-  TAMADataChunk* _OldFileMap_Conv2TAMADataChunk(TAMAOLDFILECHUNK *pOldFileChunk, DWORD *pNRemain, UINT64 dwStart)
+  TAMADataChunk* _OldFileMap_Conv2TAMADataChunk(TAMAOLDFILECHUNK *pOldFileChunk, UINT64 *pNRemain, UINT64 dwStart)
   {
     ATLASSERT(pOldFileChunk->dwStart <= dwStart && dwStart <= pOldFileChunk->dwEnd);
     UINT64 dwSkip = dwStart - pOldFileChunk->dwStart;
@@ -985,7 +1008,7 @@ public:
     if(bRet)memcpy(dst2, dst1, dwSize);
     return bRet;
   }
-  BOOL Fill(LPBYTE pData, UINT64 dwDataSize, UINT64 dwStart, UINT64 dwFillSize)
+  BOOL Fill(LPBYTE pData, size_t dwDataSize, UINT64 dwStart, size_t dwFillSize)
   {
     BOOL bRet = _Fill(pData, dwDataSize, dwStart, dwFillSize);
     if(bRet)ClearCache(dwStart);
@@ -1620,11 +1643,16 @@ private:
     m_dwCacheSize = 0;
   }
 public:
-  UINT64 GetMaxCacheSize() { return m_dwCacheAllocSize; }
-  UINT64 GetRemainCache(UINT64 dwStart)
+  size_t GetMaxCacheSize() { return m_dwCacheAllocSize; }
+  size_t GetRemainCache(UINT64 dwStart)
   {
     UINT64 dwCacheEndPlus1 = m_dwCacheStart+m_dwCacheSize;
-    if(m_pCache && (dwStart >= m_dwCacheStart || dwStart <= dwCacheEndPlus1))return dwCacheEndPlus1-dwStart;
+    if(m_pCache && (dwStart >= m_dwCacheStart || dwStart <= dwCacheEndPlus1))
+    {
+      UINT64 dwRemain = dwCacheEndPlus1-dwStart;
+      ATLASSERT(dwRemain<=SIZE_MAX);
+      return (size_t)dwRemain;
+    }
     return 0;
   }
 
@@ -1916,7 +1944,8 @@ private:
     UINT64 dwRemain = dwShiftSize;
     if(dwInsSize==0 || dwRemain==0)return TRUE;
     size_t dwBufSize = SHIFTBUFSIZE;
-    size_t dwCopySize = min(dwBufSize, dwRemain);
+    size_t dwCopySize = dwBufSize;
+    if(dwCopySize>dwRemain)dwCopySize = (size_t)dwRemain;
     LPBYTE buf = (LPBYTE)mallocMax(&dwCopySize);
     if(!buf)
     {
@@ -1937,7 +1966,7 @@ private:
 #ifdef DEBUG
       if(dwRemain==0)ATLASSERT(dwMoveStart==dwInsStart);
 #endif
-      dwCopySize = min(dwCopySize, dwRemain); //‚±‚±‚Ì‡”Ô‚Í‚±‚ê‚Å‡‚Á‚Ä‚é
+      if(dwCopySize>dwRemain)dwCopySize = (size_t)dwRemain; //‚±‚±‚Ì‡”Ô‚Í‚±‚ê‚Å‡‚Á‚Ä‚é
       dwMoveStart -= dwCopySize; //G‚é‚È
     }
     free(buf);
@@ -1963,7 +1992,8 @@ FFR_ERR1:
     UINT64 dwRemain = dwShiftSize;
     if(dwDelSize==0 || dwRemain==0)return TRUE;
     size_t dwBufSize = SHIFTBUFSIZE;
-    size_t dwCopySize = min(dwBufSize, dwRemain);
+    size_t dwCopySize = dwBufSize;
+    if(dwCopySize>dwRemain)dwCopySize = (size_t)dwRemain;
     LPBYTE buf = (LPBYTE)mallocMax(&dwCopySize);
     if(!buf)
     {
@@ -1980,7 +2010,7 @@ FFR_ERR1:
         goto FFL_ERR1;
       dwRemain -= dwCopySize;
       dwMoveStart += dwCopySize; //‚±‚±‚Ì‡”Ô‚Í‚±‚ê‚Å‡‚Á‚Ä‚é
-      dwCopySize = min(dwCopySize, dwRemain); //G‚é‚È
+      if(dwCopySize>dwRemain)dwCopySize = (size_t)dwRemain; //G‚é‚È
     }
     free(buf);
     return TRUE;
@@ -2811,9 +2841,9 @@ FFL_ERR1:
       }
     }
     
-#ifndef _WIN64
-    if(!_OldFileMap_FDLimitter())return FALSE;
-#endif
+//#ifndef _WIN64
+    if(!_OldFileMap_FDLimitter(pOldFilemapHead))return FALSE;
+//#endif
 
     //FDƒ`ƒƒƒ“ƒN‚Ìƒƒ‚ƒŠŠm•ÛBƒtƒ@ƒCƒ‹‚©‚çƒf[ƒ^“Ç‚Ýž‚Ý
     TAMAOLDFILECHUNK *pOldFileChunk;
@@ -2822,7 +2852,9 @@ FFL_ERR1:
       if(pOldFileChunk->type==OF_FD)
       {
         ATLASSERT(pOldFileChunk->dwEnd >= pOldFileChunk->dwStart);
-        UINT64 dwReadSize = pOldFileChunk->dwEnd - pOldFileChunk->dwStart + 1;
+        UINT64 dwReadSize64 = pOldFileChunk->dwEnd - pOldFileChunk->dwStart + 1;
+        ATLASSERT(dwReadSize64<=SIZE_MAX);
+        size_t dwReadSize = (size_t)dwReadSize64;
         pOldFileChunk->pDataBuf = _TAMADataBuf_CreateNew(dwReadSize, 1/*nRefCount*/);
 #ifdef TRACE_READFILE
         ATLTRACE("ConvFD: Start:0x%08X(%u), Size:0x%08X(%u)\n", pOldFileChunk->dwStart, pOldFileChunk->dwStart, dwReadSize, dwReadSize);
@@ -2864,6 +2896,7 @@ FFL_ERR1:
         }
       }
     }
+    return TRUE;
   }
 
   //_TAMAReadFileEx: ReadSize‚ðDWORD -> size_t‚ÉŠg’£
