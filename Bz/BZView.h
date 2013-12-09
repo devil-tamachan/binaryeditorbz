@@ -41,16 +41,16 @@ protected: // create from serialization only
 // Attributes
 public:
 	//DWORD	m_dwTotal;
-	DWORD	m_dwCaret;
+	UINT64	m_dwCaret;
 	DWORD	m_dwStruct;
 	DWORD	m_dwStructTag;
 	int		m_nMember;
 	int		m_nBytes;
 	int		m_nBytesLength;	// ###1.61b
 private:
-	DWORD	m_dwBlock;
+	UINT64	m_dwBlock;
 	BOOL	m_bBlock;
-	DWORD	m_dwOldCaret;
+	UINT64	m_dwOldCaret;
 	BOOL	m_bCaretOnChar;
 	BOOL	m_bEnterVal;
 	int		m_timer;
@@ -69,11 +69,11 @@ public:
 public:
   DWORD GetFileSize();
 	BOOL	GotoCaret();
-	int		GetValue(DWORD ofs, int bytes);
-	ULONGLONG GetValue64(DWORD ofs);
-	DWORD GetDWORD(DWORD dwOffset);
-  WORD  GetWORD(DWORD dwOffset);
-  BYTE  GetBYTE(DWORD dwOffset);
+	int		GetValue(UINT64 ofs, int bytes);
+	ULONGLONG GetValue64(UINT64 ofs);
+	DWORD GetDWORD(UINT64 dwOffset);
+  WORD  GetWORD(UINT64 dwOffset);
+  BYTE  GetBYTE(UINT64 dwOffset);
 	//void	SetValue(DWORD ofs, int bytes, int val);
 	void	FillValue(int val);
 	void	Activate();
@@ -98,8 +98,8 @@ private:
 	void	SetMark();
 	void	JumpToMark();
 //	BOOL	CheckMark(DWORD dwPtr);
-	DWORD	BlockBegin() { return m_dwBlock < m_dwCaret ? m_dwBlock : m_dwCaret; };
-	DWORD	BlockEnd() { return m_dwBlock > m_dwCaret ? m_dwBlock : m_dwCaret; } ;
+	UINT64	BlockBegin() { return m_dwBlock < m_dwCaret ? m_dwBlock : m_dwCaret; };
+	UINT64	BlockEnd() { return m_dwBlock > m_dwCaret ? m_dwBlock : m_dwCaret; } ;
 	CBZView* GetBrotherView();
 	CBZDoc2* GetBrotherDoc();
   DWORD GetRemainFromCurret();

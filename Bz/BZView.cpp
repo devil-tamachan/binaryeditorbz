@@ -1413,7 +1413,7 @@ void CBZView::OnStatusChar()
 	OnCharMode(m_charset + ID_CHAR_ASCII);
 }
 
-int CBZView::GetValue(DWORD dwOffset, int bytes)
+int CBZView::GetValue(UINT64 dwOffset, int bytes)
 {
   unsigned char readBuf[4] = {0};
 	int val = 0;
@@ -1430,26 +1430,26 @@ int CBZView::GetValue(DWORD dwOffset, int bytes)
 	}
 	return val;
 }
-DWORD CBZView::GetDWORD(DWORD dwOffset)
+DWORD CBZView::GetDWORD(UINT64 dwOffset)
 {
   DWORD dwRead = 0xBABABABA;
 	if(dwOffset + 4 > GetFileSize() || !m_pDoc->Read(&dwRead, dwOffset, 4))return 0;
   return SwapDword(dwRead);
 }
-WORD  CBZView::GetWORD(DWORD dwOffset)
+WORD  CBZView::GetWORD(UINT64 dwOffset)
 {
   WORD wRead = 0xBABA;
 	if(dwOffset + 2 > GetFileSize() || !m_pDoc->Read(&wRead, dwOffset, 2))return 0;
   return SwapWord(wRead);
 }
-BYTE  CBZView::GetBYTE(DWORD dwOffset)
+BYTE  CBZView::GetBYTE(UINT64 dwOffset)
 {
   BYTE ucRead = 0xBA;
 	if(dwOffset + 1 > GetFileSize() || !m_pDoc->Read(&ucRead, dwOffset, 1))return 0;
   return ucRead;
 }
 
-ULONGLONG CBZView::GetValue64(DWORD dwOffset)
+ULONGLONG CBZView::GetValue64(UINT64 dwOffset)
 {
 	ULONGLONG val = 0;
   if(!m_pDoc->Read(&val, dwOffset, 8)) return 0;
@@ -1490,7 +1490,7 @@ ULONGLONG CBZView::GetValue64(DWORD dwOffset)
 void CBZView::OnUpdateJump(CCmdUI* pCmdUI) 
 {
 	// TODO: Add your command update UI handler code here
-	pCmdUI->Enable(m_pDoc->GetDocSize());
+	pCmdUI->Enable(m_pDoc->GetDocSize()!=0);
 }
 
 void CBZView::OnJumpStart() 
@@ -1855,7 +1855,7 @@ void CBZView::OnEditPaste()
 
 void CBZView::OnEditUndo() 
 {
-  DWORD dwRetStart = 0;
+  UINT64 dwRetStart = 0;
   if(m_pDoc->DoUndo(&dwRetStart))
   {
     m_dwCaret = dwRetStart;

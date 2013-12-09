@@ -137,7 +137,7 @@ void CBZBmpView::OnInitialUpdate()
 	CScrollView::OnInitialUpdate();
 
 	CBZDoc2* pDoc = (CBZDoc2*)GetDocument();
-	DWORD dwTotal = pDoc->GetDocSize();
+	UINT64 dwTotal = pDoc->GetDocSize();
 	if(dwTotal < (DWORD)options.nBmpWidth) return;
 
 	if(!m_lpbi) 

@@ -19,32 +19,33 @@ public:
 #endif
 #endif
 
-  _inline DWORD	GetDocSize() { return m_pSFC ? m_pSFC->GetSize() : 0; }
+  _inline UINT64	GetDocSize() { return m_pSFC ? m_pSFC->GetSize() : 0; }
   _inline BOOL IsOpen() { return m_pSFC ? m_pSFC->IsOpen() : FALSE; }
 
-  _inline BOOL Read(void *dst1, DWORD dwStart, DWORD dwSize)      { BOOL bRet = m_pSFC ? m_pSFC->Read(dst1, dwStart, dwSize) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
-  _inline BOOL Write(void *pSrcData, DWORD dwStart, DWORD dwSize) { BOOL bRet = m_pSFC ? m_pSFC->Write(pSrcData, dwStart, dwSize) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
-  _inline BOOL Insert(void *pSrcData, DWORD dwInsStart, DWORD dwInsSize) { BOOL bRet = m_pSFC ? m_pSFC->Insert((LPBYTE)pSrcData, dwInsStart, dwInsSize) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
-  _inline BOOL Delete(DWORD dwDelStart, DWORD dwDelSize)                 { BOOL bRet = m_pSFC ? m_pSFC->Delete(dwDelStart, dwDelSize) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
-  _inline BOOL Fill(LPBYTE pData, DWORD dwDataSize, DWORD dwStart, DWORD dwFillSize) { BOOL bRet = m_pSFC ? m_pSFC->Fill(pData, dwDataSize, dwStart, dwFillSize) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
+  _inline BOOL Read(void *dst1, UINT64 dwStart, size_t dwSize)      { BOOL bRet = m_pSFC ? m_pSFC->Read(dst1, dwStart, dwSize) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
+  _inline BOOL Write(void *pSrcData, UINT64 dwStart, size_t dwSize) { BOOL bRet = m_pSFC ? m_pSFC->Write(pSrcData, dwStart, dwSize) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
+  _inline BOOL Insert(void *pSrcData, UINT64 dwInsStart, size_t dwInsSize) { BOOL bRet = m_pSFC ? m_pSFC->Insert((LPBYTE)pSrcData, dwInsStart, dwInsSize) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
+  _inline BOOL Delete(UINT64 dwDelStart, UINT64 dwDelSize)                 { BOOL bRet = m_pSFC ? m_pSFC->Delete(dwDelStart, dwDelSize) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
+  _inline BOOL Fill(LPBYTE pData, DWORD dwDataSize, UINT64 dwStart, DWORD dwFillSize) { BOOL bRet = m_pSFC ? m_pSFC->Fill(pData, dwDataSize, dwStart, dwFillSize) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
 
-  _inline BOOL DoUndo(DWORD *pRetStart = NULL) { BOOL bRet = m_pSFC ? m_pSFC->Undo(pRetStart) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
-  _inline BOOL DoRedo(DWORD *pRetStart = NULL) { BOOL bRet = m_pSFC ? m_pSFC->Redo(pRetStart) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
+  _inline BOOL DoUndo(UINT64 *pRetStart = NULL) { BOOL bRet = m_pSFC ? m_pSFC->Undo(pRetStart) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
+  _inline BOOL DoRedo(UINT64 *pRetStart = NULL) { BOOL bRet = m_pSFC ? m_pSFC->Redo(pRetStart) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
 
   _inline const LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize = 0) { return m_pSFC ? m_pSFC->Cache(dwStart, dwIdealSize) : NULL; }
   _inline const LPBYTE CacheForce(DWORD dwStart, DWORD dwNeedSize) { return m_pSFC ? m_pSFC->CacheForce(dwStart, dwNeedSize) : NULL; }
-  _inline DWORD GetMaxCacheSize()             { return m_pSFC ? m_pSFC->GetMaxCacheSize() : 0; }
-  _inline DWORD GetRemainCache(DWORD dwStart) { return m_pSFC ? m_pSFC->GetRemainCache(dwStart) : 0; }
+  _inline size_t GetMaxCacheSize()             { return m_pSFC ? m_pSFC->GetMaxCacheSize() : 0; }
+  _inline size_t GetRemainCache(DWORD dwStart) { return m_pSFC ? m_pSFC->GetRemainCache(dwStart) : 0; }
 
   DWORD PasteFromClipboard(DWORD dwStart, BOOL bIns);
   BOOL CopyToClipboard(DWORD dwStart, DWORD dwSize);
 
 public:
-	void	SetMark(DWORD dwPtr);
-	BOOL	CheckMark(DWORD dwPtr);
-	DWORD	JumpToMark(DWORD dwPtr);
+  void  CleanInvalidMark();
+	void	SetMark(UINT64 dwPtr);
+	BOOL	CheckMark(UINT64 dwPtr);
+	UINT64	JumpToMark(UINT64 dwPtr);
 private:
-	CDWordArray m_arrMarks;
+	CAtlList<UINT64> m_arrMarks;
 
 public:
   void DuplicateDoc(CBZDoc2* pDstDoc)

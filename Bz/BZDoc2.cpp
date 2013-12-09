@@ -183,7 +183,7 @@ DWORD CBZDoc2::PasteFromClipboard(DWORD dwStart, BOOL bIns)
     dwSize = ::GlobalSize(hMem);
   }
   if(!dwSize)goto ERR_PASTECLIP3;
-  DWORD dwTotal = m_pSFC->GetSize();
+  UINT64 dwTotal = m_pSFC->GetSize();
   if(bIns || dwStart == dwTotal)
   {
     m_pSFC->Insert(pMem, dwStart, dwSize);
@@ -328,43 +328,56 @@ void CBZDoc2::OnFileSaveAs() //MFCからウィンドウを閉じる時にOnFileSaveAs()が呼び
 /////////////////////////////////////////////////////////////////////////////
 // CBZDoc2 Mark
 
-void CBZDoc2::SetMark(DWORD dwPtr)
+
+void CBZDoc2::CleanInvalidMark()
 {
-  for_to(i, m_arrMarks.GetSize()) {
-    DWORD dwTotal = GetDocSize();
-    if(m_arrMarks[i] == dwPtr) {
-      m_arrMarks.RemoveAt(i);
+  UINT64 dwTotal = GetDocSize();
+  while(m_arrMarks.GetCount() > 0)
+  {
+    UINT64 dwCurrent = m_arrMarks.GetTail();
+    if(dwCurrent >= dwTotal)m_arrMarks.RemoveTailNoReturn();
+    else break;
+  }
+}
+
+void CBZDoc2::SetMark(UINT64 dwPtr)
+{
+  CleanInvalidMark();
+  POSITION posCur = m_arrMarks.GetHeadPosition();
+  UINT64 dwTotal = GetDocSize();
+  while(posCur != NULL)
+  {
+    UINT64 dwCurrent = m_arrMarks.GetAt(posCur);
+    if(dwCurrent == dwPtr) {
+      m_arrMarks.RemoveAt(posCur);
+      CleanInvalidMark();
       return;
-    } else if(m_arrMarks[i] >= dwTotal) {
-      m_arrMarks.RemoveAt(i);
+    } else if(dwCurrent > dwPtr) {
+      posCur = m_arrMarks.InsertBefore(posCur, dwPtr);
+      CleanInvalidMark();
+      return;
     }
+    m_arrMarks.GetNext(posCur);
   }
-  m_arrMarks.Add(dwPtr);
+  m_arrMarks.AddTail(dwPtr);
 }
 
-BOOL CBZDoc2::CheckMark(DWORD dwPtr)
+BOOL CBZDoc2::CheckMark(UINT64 dwPtr)
 {
-  for_to(i,  m_arrMarks.GetSize()) {
-    if(m_arrMarks[i] == dwPtr)
-      return TRUE;
-  }
-  return FALSE;
+  return m_arrMarks.Find(dwPtr)!=NULL;
 }
 
-DWORD CBZDoc2::JumpToMark(DWORD dwStart)
+UINT64 CBZDoc2::JumpToMark(UINT64 dwStart)
 {
-  DWORD dwTotal = GetDocSize();
-  DWORD dwNext = dwTotal;
-Retry:
-  for_to(i, m_arrMarks.GetSize()) {
-    if(m_arrMarks[i] > dwStart && m_arrMarks[i] < dwNext)
-      dwNext = m_arrMarks[i];
+  CleanInvalidMark();
+  POSITION posCur = m_arrMarks.GetHeadPosition();
+  UINT64 dwTotal = GetDocSize();
+  while(posCur != NULL)
+  {
+    UINT64 dwCurrent = m_arrMarks.GetAt(posCur);
+    if(dwCurrent > dwStart)return dwCurrent;
+    m_arrMarks.GetNext(posCur);
   }
-  if(dwNext == dwTotal && dwStart) {
-    dwStart = 0;
-    goto Retry;
-  }
-  if(dwNext < dwTotal)
-    return dwNext;
+  if(m_arrMarks.GetCount() > 0)return m_arrMarks.GetHead();
   return INVALID;
 }

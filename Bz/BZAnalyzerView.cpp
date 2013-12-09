@@ -155,7 +155,7 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
 	CBZDoc2* pDoc = (CBZDoc2*)GetDocument();
 	ASSERT(pDoc);
 //	LPBYTE p  = pDoc->GetDocPtr();
-	DWORD dwFileSize = pDoc->GetDocSize();
+	UINT64 dwFileSize = pDoc->GetDocSize();
 
 	unsigned int outbufsize = 1;
 	LPBYTE pOutBuf = (LPBYTE)malloc(outbufsize);
@@ -170,8 +170,10 @@ void CBZAnalyzerView::OnBnClickedAnalyzeStart()
   {
     for(DWORD ofs_inflateStart = 0; ofs_inflateStart < dwFileSize-1/*-2ˆÈã‚Å‚à‚¢‚¢‚©‚à*/; ofs_inflateStart+=dwLoopInc)
     {
-      DWORD dwReadSize = dwFileSize - ofs_inflateStart;
-      if(dwReadSize > dwInputBuf)dwReadSize = dwInputBuf;
+      UINT64 dwRemain64 = dwFileSize - ofs_inflateStart;
+      DWORD dwReadSize;
+      if(dwRemain64 > dwInputBuf)dwReadSize = dwInputBuf;
+      else dwReadSize = (DWORD)dwRemain64;
       if(!pDoc->Read(pInputBuf, ofs_inflateStart, dwReadSize)) break;
 
       for(DWORD i=0; i<dwLoopInc; i++)
@@ -343,7 +345,7 @@ HRESULT CBZAnalyzerView::SaveFile(LPCTSTR pathOutputDir, unsigned long ulStartAd
 	}
 
 	DWORD nextOffset = ulStartAddr;
-	DWORD dwFileSize = pDoc->GetDocSize();
+	UINT64 dwFileSize = pDoc->GetDocSize();
   const DWORD dwReadMax = 0x100000;
   LPBYTE pInputBuf = (LPBYTE)malloc(dwReadMax);
   if(!pInputBuf)goto saveerr2;
@@ -353,8 +355,10 @@ HRESULT CBZAnalyzerView::SaveFile(LPCTSTR pathOutputDir, unsigned long ulStartAd
 		{
 			if(nextOffset>=dwFileSize)goto saveerr3;
 
-      DWORD dwReadSize = dwFileSize - nextOffset;
-      if(dwReadSize > dwReadMax)dwReadSize = dwReadMax;
+      UINT64 dwRemain64 = dwFileSize - nextOffset;
+      DWORD dwReadSize;
+      if(dwRemain64 > dwReadMax)dwReadSize = dwReadMax;
+      else dwReadSize = (DWORD)dwRemain64;
       if(!pDoc->Read(pInputBuf, nextOffset, dwReadSize))
 			{
 				MessageBox(_T("Read Error"), _T("ERROR"), MB_OK);
