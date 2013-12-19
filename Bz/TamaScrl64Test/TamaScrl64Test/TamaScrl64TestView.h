@@ -13,7 +13,7 @@ public:
   {
 		SetMsgHandled(false);
     m_cellV = 18;
-		SetScrollSizeU64V(10, 100);
+		SetScrollSizeU64V(10, _UI64_MAX/16);
     SetScrollPage(1,8);
     SetScrollLine(1,1);
     return 0;
@@ -36,9 +36,10 @@ public:
     dc.FillRect(clip,whiteBrush);
     CPoint pt;
     GetScrollOffset(pt);
+    UINT64 v = GetScrollPosU64V();
     for(int i=0;i<50;i++)
     {
-      str.Format(_T("%ld, step==0x%X, m_u64V==%I64u, m_u64VMax==%I64u"), pt.y+i, m_step, m_u64V, m_u64VMax);
+      str.Format(_T("0x%016I64X, step==0x%08X, m_u64V==%I64u (0x%016I64X), m_u64VMax==%I64u (0x%016I64X)"), v+i, m_step, m_u64V, m_u64V, m_u64VMax, m_u64VMax);
       CRect r(0,i*18+pt.y,300,18);
       dc.TextOut(0, i*18+pt.y, str, str.GetLength());
     }

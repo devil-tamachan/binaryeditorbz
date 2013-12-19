@@ -3,7 +3,7 @@ template <class T>
 class CTamaScrollU64VImpl : public WTL::CScrollImpl< T >
 {
 public:
-  DWORD m_lowV;
+  //DWORD m_lowV;
   DWORD m_step;
   UINT64 m_u64V; // == m_lowV + si.nPos*m_step
   UINT64 m_u64VMax; // ==10 (m_u64V == [0:10])
@@ -12,7 +12,7 @@ public:
   
   CTamaScrollU64VImpl()
   {
-    m_lowV = 0;
+    //m_lowV = 0;
     m_step = UINT_MAX;
     m_u64V = 0;
     m_u64VMax = 0;
@@ -42,24 +42,6 @@ public:
     }
   }
   
- /* void SetScrollPosU64V(UINT64 newU64V, BOOL bRedraw = TRUE)
-  {
-    m_u64V = newY64;
-    int oldOffsetY = m_ptOffset.y;
-    UpdateFromU64V();
-    
-    if(m_ptOffset.y != oldOffsetY)
-    {
-      T* pT = static_cast<T*>(this);
-      ATLASSERT(::IsWindow(pT->m_hWnd));
-      SCROLLINFO si = {sizeof(SCROLLINFO)};
-      si.fMask = SIF_POS;
-      si.nPos = m_ptOffset.y;
-      pT->SetScrollInfo(SB_VERT, &si, bRedraw);
-    }
-    if(bRedraw)pT->Invalidate();
-  }*/
-  
   void AdjustFromU64VMax(BOOL bRedraw = TRUE)
   {
     {//step値を決定
@@ -68,10 +50,10 @@ public:
         m_step = 1;
         m_sizeAll.cy = (int)m_u64VMax;
       } else {
-        m_step = (DWORD)(m_u64VMax / (INT_MAX-1));
+        m_step = (DWORD)(m_u64VMax / (INT_MAX-(m_u64VMax>INT_MAX?2:0)));
         if(m_u64VMax % (INT_MAX-1))m_step++;
         CalcScrolVMax();
-        (m_sizeAll.cy)+=1;
+        (m_sizeAll.cy)+=(m_u64VMax>INT_MAX?2:0);
       }
     }
     if(m_u64V > m_u64VMax)m_u64V = m_u64VMax;
@@ -80,29 +62,22 @@ public:
   
   void UpdateFromU64V()
   {
-    ATLTRACE("UpdateFromU64V +++ m_lowV:0x%08X, m_ptOffset.y:%d, m_sizeAll.cy:%d\n", m_lowV, m_ptOffset.y, m_sizeAll.cy);
+    ATLTRACE("UpdateFromU64V +++ m_ptOffset.y:%d, m_sizeAll.cy:%d\n", m_ptOffset.y, m_sizeAll.cy);
     {//Vの補助値(下位DWORD)を決定
-      m_lowV = (DWORD)(m_u64V % m_step);
+      //m_lowV = (DWORD)(m_u64V % m_step);
     }
     {//Windowsへ渡すスクロールバーの値(int)決定
-      m_ptOffset.y = ConvUINT64_ScrlI32V(m_u64V);
+      m_ptOffset.y = (int)((m_u64V+(m_step>1&&m_u64V?m_step-1:0) / m_step));
       if(m_ptOffset.y > m_sizeAll.cy-(m_sizePage.cy/(int)m_cellV))m_ptOffset.y = m_sizeAll.cy-(m_sizePage.cy/(int)m_cellV);
     }
-    ATLTRACE("UpdateFromU64V --- m_lowV:0x%08X, m_ptOffset.y:%d, m_sizeAll.cy:%d\n", m_lowV, m_ptOffset.y, m_sizeAll.cy);
+    ATLTRACE("UpdateFromU64V --- m_ptOffset.y:%d, m_sizeAll.cy:%d\n", m_ptOffset.y, m_sizeAll.cy);
   }
 
   int CalcScrolVMax()
   {
-    m_sizeAll.cy = ConvUINT64_ScrlI32V(m_u64VMax);
+    m_sizeAll.cy = (int)(m_u64VMax / m_step);
     if(m_u64VMax % m_step) (m_sizeAll.cy)++;
     return m_sizeAll.cy;
-  }
-
-  int ConvUINT64_ScrlI32V(UINT64 u64V)
-  {
-    INT64 newVU64 = (u64V / m_step);
-    newVU64 += (INT64)0;//INT_MIN;
-    return (int)newVU64;
   }
   
   void UpdateFromRawPos()
@@ -114,22 +89,10 @@ public:
     {
       if(si.nTrackPos == m_ptOffset.y)return;
       m_ptOffset.y = si.nTrackPos;
-      m_lowV = 0;
-      m_u64V = ConvOffsetI32_U64(m_ptOffset.y) * m_step;
+      //m_lowV = m_step==1 ? 0 : m_step-1;
+      m_u64V = (UINT64)(m_ptOffset.y) * m_step - (m_ptOffset.y>0?m_step-1:0);
       ATLTRACE("UpdateFromRawPos: %d\n", si.nTrackPos);
     }
-  }
-  
-  UINT64 ConvOffsetI32_U64(int pos)
-  {
-    //ATLTRACE("ConvOffsetI32_U32: %d -> %u\n", pos, ConvOffsetI32_U32(pos));
-    return ConvOffsetI32_U32(pos);
-  }
-  unsigned int ConvOffsetI32_U32(int pos)
-  {
-      INT64 pos64 = pos;
-      pos64 -= (INT64)0;//INT_MIN;
-      return (unsigned int)pos64;
   }
   
   UINT64 GetScrollPosU64V()
@@ -140,7 +103,7 @@ public:
 #ifdef _DEBUG
   void TRACEParams()
   {
-    ATLTRACE("m_lowV:0x%08X, m_step:0x%08X, m_u64V:0x%016I64X, m_u64VMax:0x%016I64X, m_ptOffset.y:%d (0x%08X), m_sizeAll.cy:%d, m_sizePage:%d, m_sizeClient:%d\n", m_lowV, m_step, m_u64V, m_u64VMax, m_ptOffset.y, m_ptOffset.y, m_sizeAll.cy, m_sizePage.cy, m_sizeClient.cy);
+    ATLTRACE("m_step:0x%08X, m_u64V:0x%016I64X, m_u64VMax:0x%016I64X, m_ptOffset.y:%d (0x%08X), m_sizeAll.cy:%d, m_sizePage:%d, m_sizeClient:%d\n", m_step, m_u64V, m_u64VMax, m_ptOffset.y, m_ptOffset.y, m_sizeAll.cy, m_sizePage.cy, m_sizeClient.cy);
   }
 #endif
   

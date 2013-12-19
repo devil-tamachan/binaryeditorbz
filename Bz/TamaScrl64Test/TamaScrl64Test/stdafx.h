@@ -23,7 +23,7 @@ extern WTL::CAppModule _Module;
 #include <atlcrack.h>
 #include <atlmisc.h>
 #include <atlscrl.h>
-#include "..\..\Bz_src\Bz\tamascrlU64V.h"
+#include "..\..\tamascrlU64V.h"
 
 #if defined _M_IX86
   #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
