@@ -945,7 +945,8 @@ public:
 
   size_t _TAMAFILECHUNK_Read(LPBYTE dst, TAMAFILECHUNK *pSrcFileChunk, UINT64 dwStartOffset, size_t dwMaxRead)
   {
-    size_t dwCanRead = (size_t)min(_TAMAFILECHUNK_GetRemain(pSrcFileChunk, dwStartOffset), SIZE_MAX);
+    UINT64 dwCanRead64 = _TAMAFILECHUNK_GetRemain(pSrcFileChunk, dwStartOffset);
+    size_t dwCanRead = (size_t)min(dwCanRead64, SIZE_MAX);
     size_t dwRemain = min(dwCanRead, dwMaxRead);
     ATLASSERT(dwStartOffset >= pSrcFileChunk->dwStart);
     UINT64 dwShift = dwStartOffset - pSrcFileChunk->dwStart;
@@ -1712,7 +1713,8 @@ public:
   {
     //if(!IsOpen())goto ERR_CACHE2;
 
-    size_t dwFileRemain = (size_t)min(GetRemainFile(dwStart), SIZE_MAX);
+    UINT64 dwFileRemain64 = GetRemainFile(dwStart);
+    size_t dwFileRemain = (size_t)min(dwFileRemain64, SIZE_MAX);
     if(dwFileRemain==0)goto ERR_CACHE2;
     size_t dwReadSize = dwIdealSize;
     if(dwReadSize==0)dwReadSize = min(m_dwCacheAllocSize, dwFileRemain);

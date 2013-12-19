@@ -316,9 +316,10 @@ void CBZView::OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo)
 
 void CBZView::SetMaxPrintingPage(CPrintInfo* pInfo)
 {
-  DWORD dwTotal = GetFileSize();
-	DWORD dwSize = (m_bBlock) ? BlockEnd()-(BlockBegin()&~(16-1)) : dwTotal;
-	pInfo->SetMaxPage(dwSize/16/ m_nPageLen + 1);
+  UINT64 dwTotal = GetFileSize();
+	UINT64 dwSize64 = (m_bBlock) ? BlockEnd()-(BlockBegin()&~(16-1)) : dwTotal;
+  UINT64 maxPage64 = dwSize64/16/ m_nPageLen + 1;
+  pInfo->SetMaxPage(maxPage64<=0xFFffFFff ? (DWORD)maxPage64 : 0xFFffFFff);
 }
 
 void CBZView::OnPrint(CDC* pDC, CPrintInfo* pInfo) 
@@ -375,12 +376,12 @@ void CBZView::OnDraw(CDC* pDC)
 //	if(!p) return;
 
 	RECT rClip;
-	DWORD ofs;
-	DWORD dwBegin = BlockBegin();
-	DWORD dwEnd   = BlockEnd();
-	DWORD dwTotal = GetFileSize();
+	UINT64 ofs;
+	UINT64 dwBegin = BlockBegin();
+	UINT64 dwEnd   = BlockEnd();
+	UINT64 dwTotal = GetFileSize();
 
-	DWORD dwTotalP1 = 0;
+	UINT64 dwTotalP1 = 0;
 
 	int y;
 
@@ -437,7 +438,7 @@ void CBZView::OnDraw(CDC* pDC)
 			}
 		}
 		SetHeaderColor();
-		DWORD ofs1 = ofs + m_pDoc->m_dwBase;
+		UINT64 ofs1 = ofs + m_pDoc->m_dwBase;
 #ifdef FILE_MAPPING
 //		if(p && !(p = m_pDoc->QueryMapView(p, ofs1))) return;
 	//	if(p1 && !(p1 = pView1->m_pDoc->QueryMapView(p1, ofs1))) return;
@@ -461,7 +462,7 @@ void CBZView::OnDraw(CDC* pDC)
 			}
 		}
     //描画: Hex表示 (x16バイト)
-		DWORD ofs0 = ofs;
+		UINT64 ofs0 = ofs;
 		for_to(i,16) {
 			if(ofs >= dwTotal) {
 				SetColor();
@@ -774,7 +775,7 @@ void CBZView::DrawDummyCaret(CDC* pDC)
 		GetClientRect(&rClient);
 		PixelToGrid(rClient);
 		DWORD dwBottom = dwOrg + (rClient.y2 - DUMP_Y) * 16;
-		DWORD dwMax = GetFileSize() + 1;
+		UINT64 dwMax = GetFileSize() + 1;
 		if(dwBottom > dwOrg && dwBottom < dwMax)	// ###1.61
 			dwMax = dwBottom;
 		POINT pt;
@@ -807,8 +808,8 @@ BOOL CBZView::DrawCaret()
 	GetClientRect(&rClient);
 	PixelToGrid(rClient);
   DWORD dwBottom = (dwOrg + (rClient.y2 - DUMP_Y) * 16) + 16; //下が欠けた最下ラインのカレットが表示されないので+16
-	DWORD dwMax = GetFileSize() + 1;
-  DWORD dwMax2 = dwMax;
+	UINT64 dwMax = GetFileSize() + 1;
+  UINT64 dwMax2 = dwMax;
 	if(dwBottom > dwOrg && dwBottom < dwMax)	// ###1.61
   {
 		dwMax = dwBottom;
@@ -843,7 +844,7 @@ BOOL CBZView::DrawCaret()
 	return bDraw;
 }
 
-DWORD CBZView::PointToOffset(CPoint pt)
+UINT64 CBZView::PointToOffset(CPoint pt)
 {
 	CRect r;
 	GetClientRect(&r);
@@ -864,8 +865,8 @@ DWORD CBZView::PointToOffset(CPoint pt)
 		pt.x/=3;
 		m_bCaretOnChar = FALSE;
 	}
-	DWORD ofs = (pt.y - DUMP_Y)*16 + pt.x;
-  DWORD dwTotal = GetFileSize();
+	UINT64 ofs = (pt.y - DUMP_Y)*16 + pt.x;
+  UINT64 dwTotal = GetFileSize();
 	return (ofs > dwTotal) ? dwTotal : ofs;
 }
 
@@ -918,7 +919,7 @@ void CBZView::OnLButtonDown(UINT nFlags, CPoint point)
 		Invalidate(FALSE);
 	}
 	BOOL bOnChar = m_bCaretOnChar;
-	DWORD ofs = PointToOffset(point);
+	UINT64 ofs = PointToOffset(point);
 	if(ofs != UINT_MAX) {
 		if(m_dwCaret != ofs || bOnChar != m_bCaretOnChar) {
 			m_dwOldCaret = m_dwCaret;
@@ -947,14 +948,14 @@ void CBZView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
 	if(nFlags & MK_LBUTTON) {
-		DWORD ofs = PointToOffset(point);
+		UINT64 ofs = PointToOffset(point);
 		if(ofs != UINT_MAX) {
 			if(m_timer) {
 				KillTimer(m_timer);
 				m_timer = 0;
 			}
 			if(m_dwCaret != ofs && m_dwBlock != ofs) {
-				DWORD dwCaretOld = m_dwCaret;		// ###1.5
+				UINT64 dwCaretOld = m_dwCaret;		// ###1.5
 				POINT ptCaretOld = m_ptCaret;
 				m_dwCaret = ofs;
 				m_bBlock = TRUE;
@@ -999,8 +1000,8 @@ void CBZView::OnTimer(UINT nIDEvent)
 
 void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 
 {
-	DWORD dwNewCaret = m_dwCaret;
-  DWORD dwTotal = GetFileSize();
+	UINT64 dwNewCaret = m_dwCaret;
+  UINT64 dwTotal = GetFileSize();
 	BOOL bCtrl  = (GetKeyState(VK_CONTROL) < 0);
 	BOOL bShift = (GetKeyState(VK_SHIFT) < 0 || GetKeyState(VK_LBUTTON) < 0);
 	TRACE("KeyDown: %X %d %X\n", nChar, nRepCnt, nFlags);
@@ -1114,7 +1115,7 @@ Error:
 void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) 
 {
 	static UINT preChar = 0;
-  DWORD dwTotal = GetFileSize();
+  UINT64 dwTotal = GetFileSize();
 	//LPBYTE p;
 
 	// TODO: Add your message handler code here and/or call default
@@ -1193,9 +1194,9 @@ Error:
 	return;
 }
 
-void CBZView::MoveCaretTo(DWORD dwNewCaret)
+void CBZView::MoveCaretTo(UINT64 dwNewCaret)
 {
-  DWORD dwTotal = GetFileSize();
+  UINT64 dwTotal = GetFileSize();
 	if(dwNewCaret > dwTotal) {
 		dwNewCaret = dwTotal;
 	}
@@ -1214,7 +1215,7 @@ void CBZView::MoveCaretTo(DWORD dwNewCaret)
 void CBZView::UpdateDocSize()
 {
 	//m_dwTotal = m_pDoc->GetDocSize();
-  DWORD dwTotal = GetFileSize();
+  UINT64 dwTotal = GetFileSize();
 	SIZE cTotal;
 	cTotal.cx = VIEWCOLUMNS;
 	cTotal.cy = dwTotal / 16 + 2;
@@ -1298,13 +1299,13 @@ void CBZView::OnUpdateCharAutoDetect(CCmdUI* pCmdUI)
 
 void CBZView::OnUpdateStatusSize(CCmdUI* pCmdUI)
 {
-  DWORD dwTotal = GetFileSize();
+  UINT64 dwTotal = GetFileSize();
 	if(dwTotal) {
 		CString sResult;
 		if(m_bHexSize)
-			sResult.Format(_T("0x%X"), dwTotal);
+			sResult.Format(_T("0x%I64X"), dwTotal);
 		else
-			sResult = SeparateByComma(dwTotal);
+			sResult = SeparateByComma64(dwTotal);
 		sResult += _T(" bytes");
 		pCmdUI->SetText(sResult);
 		pCmdUI->Enable(TRUE);
@@ -1337,7 +1338,7 @@ void CBZView::OnUpdateStatusInfo(CCmdUI* pCmdUI)
 CString CBZView::GetStatusInfoText()
 {
 	CString sResult;
-  DWORD dwTotal = GetFileSize();
+  UINT64 dwTotal = GetFileSize();
 	if(dwTotal) {
 		LPCTSTR pFmtHexa;
 		int val;
@@ -1505,7 +1506,7 @@ void CBZView::OnJumpEnd()
 	JumpTo(GetFileSize());
 }
 
-void CBZView::JumpTo(DWORD dwNewCaret)
+void CBZView::JumpTo(UINT64 dwNewCaret)
 {
 	BOOL bShift = (::GetKeyState(VK_SHIFT) < 0);
 	if(!m_bBlock && bShift) {
@@ -1552,7 +1553,7 @@ void CBZView::SetMark()
 
 void CBZView::JumpToMark()
 {
-	DWORD dwMark = m_pDoc->JumpToMark(m_dwCaret);
+	UINT64 dwMark = m_pDoc->JumpToMark(m_dwCaret);
 	if(dwMark != INVALID) 
 		JumpTo(dwMark);
 }
@@ -1560,7 +1561,7 @@ void CBZView::JumpToMark()
 void CBZView::OnJumpFindnext() 
 {
 	CTBComboBox* pCombo = &GetMainFrame()->m_wndToolBar.m_combo;
-  DWORD dwTotal = GetFileSize();
+  UINT64 dwTotal = GetFileSize();
 
 	CStringA sFind;
 	{
@@ -1621,10 +1622,10 @@ void CBZView::OnJumpFindnext()
 
 	CWaitCursor wait;	// ###1.61
 
-	DWORD dwStart = m_dwCaret + 1;
+	UINT64 dwStart = m_dwCaret + 1;
 	if(dwStart >= dwTotal-1)return;
 
-	DWORD dwRetAddress = 0xFFFFffff;//err
+	UINT64 dwRetAddress = _UI64_MAX;//err
 
 	int nFind = 0;
 	LPBYTE pFind = NULL;
@@ -1653,7 +1654,7 @@ void CBZView::OnJumpFindnext()
 				dwRetAddress = strstrBinary((LPBYTE)((LPCSTR)sFind), nFind, dwStart);
 		}
 	}
-	if(dwRetAddress==0xFFFFffff)
+	if(dwRetAddress==_UI64_MAX)
 	{
 		AfxMessageBox(IDS_ERR_FINDSTRING);
 		pCombo->SetFocus();
@@ -1793,7 +1794,7 @@ void CBZView::OnEditCopy()
 
 void CBZView::CutOrCopy(CutMode mode)
 {
-	DWORD dwPtr  = BlockBegin();
+	UINT64 dwPtr  = BlockBegin();
 	DWORD dwSize = BlockEnd() - dwPtr;
 	if(mode != EDIT_DELETE)
   {
@@ -1818,7 +1819,8 @@ void CBZView::CutOrCopy(CutMode mode)
 
 void CBZView::FillValue(int val)
 {
-  DWORD dwStart, dwEnd, dwSize;
+  UINT64 dwStart, dwEnd;
+  DWORD dwSize;
 
   if(m_bBlock)
   {
@@ -1868,7 +1870,7 @@ void CBZView::OnEditUndo()
 
 void CBZView::OnEditRedo() 
 {
-  DWORD dwRetStart = 0;
+  UINT64 dwRetStart = 0;
   if(m_pDoc->DoRedo(&dwRetStart))
   {
     m_dwCaret = dwRetStart;
@@ -1898,7 +1900,7 @@ void CBZView::OnEditSelectAll()
 void CBZView::OnUpdateEditSelectAll(CCmdUI* pCmdUI) 
 {
 	// TODO: Add your command update UI handler code here
-	pCmdUI->Enable(m_pDoc->GetDocSize());
+	pCmdUI->Enable(m_pDoc->GetDocSize()!=0);
 }
 
 // ### 1.63
@@ -1950,33 +1952,30 @@ void CBZView::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeact
 	CTextView::OnActivateView(bActivate, pActivateView, pDeactiveView);
 }
 
-_inline DWORD CBZView::GetRemainFromCurret() { return GetFileSize() - m_dwCaret; }
+_inline UINT64 CBZView::GetRemainFromCurret() { return GetFileSize() - m_dwCaret; }
 
 void CBZView::OnJumpCompare() 
 {
-	// TODO: Add your command handler code here
 	CBZView* pView1 = GetBrotherView();
 	if(!pView1) return;
 	CBZDoc2 *pDoc1 = pView1->m_pDoc;
 	if(!pDoc1) return;
 	GetMainFrame()->m_wndToolBar.m_combo.SetWindowText(_T(""));
 
-  DWORD len;//これから比較するバイト量
+  UINT64 len;//これから比較するバイト量
   {
-    DWORD dwCanRead0 = GetRemainFromCurret();
-    DWORD dwCanRead1 = pView1->GetRemainFromCurret();
+    UINT64 dwCanRead0 = GetRemainFromCurret();
+    UINT64 dwCanRead1 = pView1->GetRemainFromCurret();
     len = min(dwCanRead0, dwCanRead1);
     if(len <= 1) return;
   }
 	len--;
-	DWORD dwCurrent0 =         m_dwCaret+1;
-	DWORD dwCurrent1 = pView1->m_dwCaret+1;
+	UINT64 dwCurrent0 =         m_dwCaret+1;
+	UINT64 dwCurrent1 = pView1->m_dwCaret+1;
 	LPBYTE pData0, pData1;
 	do
 	{
-		DWORD maxMapSize = min(len, options.dwMaxMapSize);
-		//pData0 = m_pDoc->QueryMapViewTama2(dwCurrent0, maxMapSize);
-		//pData1 = pDoc1->QueryMapViewTama2(dwCurrent1, maxMapSize);
+		//DWORD maxMapSize = min(len, options.dwMaxMapSize);
     pData0 = m_pDoc->Cache(dwCurrent0);
     pData1 = pDoc1->Cache(dwCurrent1);
 		if(!pData0 || !pData1)
@@ -1984,11 +1983,12 @@ void CBZView::OnJumpCompare()
 			MessageBox(_T("File Mapping Error!"), _T("Error"), MB_OK);
 			return;
 		}
-		//DWORD dwRemain0 = m_pDoc->GetMapRemain(dwCurrent0); //minmax内で直接callすると何度も実行される
-		//DWORD dwRemain1 = pDoc1->GetMapRemain(dwCurrent1); //minmax内で直接callすると何度も実行される
-    DWORD dwRemain0 = m_pDoc->GetRemainCache(dwCurrent0);
-    DWORD dwRemain1 = pDoc1->GetRemainCache(dwCurrent1);
-		DWORD minMapSize = min(min(dwRemain0, dwRemain1), len); //minmax内で直接callすると何度も実行される
+    size_t dwRemain0 = m_pDoc->GetRemainCache(dwCurrent0);
+    size_t dwRemain1 = pDoc1->GetRemainCache(dwCurrent1);
+    size_t len32;
+    if(len > SIZE_MAX)len32 = SIZE_MAX;
+    else len32 = (size_t)len;
+		size_t minMapSize = min(min(dwRemain0, dwRemain1), len32); //minmax内で直接callすると何度も実行される
 		if(minMapSize==0) return;
 		DWORD ofs = MemCompByte2(pData0, pData1, minMapSize);
 		if(ofs!=0xFFFFffff)
@@ -2067,10 +2067,10 @@ void CBZView::OnUpdateByteOrder(CCmdUI* pCmdUI)
 	return bTrail ? _ismbstrail(p, p1) : _ismbslead(p, p1);
 }*/
 
-void CBZView::InitCharMode(DWORD ofs)
+void CBZView::InitCharMode(UINT64 ofs)
 {
 	//if(!pTop) return;
-	DWORD n = ofs;
+	UINT64 n = ofs;
 	//LPBYTE p = pTop + n;
 	if(m_charset == CTYPE_JIS) {
 		GetCharCode(0x0F);
@@ -2108,7 +2108,7 @@ void CBZView::InitCharMode(DWORD ofs)
 	}
 }
 
-WORD CBZView::GetCharCode(WORD c, DWORD ofs)
+WORD CBZView::GetCharCode(WORD c, UINT64 ofs)
 {
 	enum CharMode { CMODE_ASCII, CMODE_ESC, CMODE_ESC1, CMODE_ESC2, CMODE_ESC3, CMODE_KANJI1, CMODE_KANJI2, CMODE_KANA };
 	static CharMode mode;
@@ -2254,7 +2254,7 @@ int CBZView::ConvertCharSet(CharSet charset, LPCSTR sFind, LPBYTE &buffer)
 CharSet CBZView::AutoDetectCharSet()
 {
   if(!m_pDoc->IsOpen()) return options.charset;
-	DWORD dwSize = GetFileSize();
+	UINT64 dwSize = GetFileSize();
 	if(dwSize > options.dwDetectMax) dwSize = options.dwDetectMax;
 	CharSet charset = DetectCodeType(0, dwSize);//(p, p + dwSize);
 	if(charset == CTYPE_BINARY)
@@ -2268,7 +2268,7 @@ CharSet CBZView::AutoDetectCharSet()
 #define DT_EUC 8
 #define DT_UTF8 16		// ### 1.54b
 
-CharSet CBZView::DetectCodeType(DWORD dwStart, DWORD dwMaxSize)//(LPBYTE p, LPBYTE pEnd)
+CharSet CBZView::DetectCodeType(UINT64 dwStart, DWORD dwMaxSize)//(LPBYTE p, LPBYTE pEnd)
 {
   if(!m_pDoc || !m_pDoc->IsOpen())return CTYPE_BINARY;
   m_pDoc->Cache(dwStart, dwMaxSize);
@@ -2287,17 +2287,17 @@ CharSet CBZView::DetectCodeType(DWORD dwStart, DWORD dwMaxSize)//(LPBYTE p, LPBY
 	}
 	if(*(WORD*)p == 0xBBEF)
   {
-    DWORD dwRemain = m_pDoc->GetRemainCache(dwStart);
+    size_t dwRemain = m_pDoc->GetRemainCache(dwStart);
     if(dwRemain >= 3 && *(p+2) == 0xBF)return CTYPE_UTF8;
 	}
 
-	DWORD dwCurrent = dwStart;
+	UINT64 dwCurrent = dwStart;
 	DWORD flag = DT_SJIS | DT_JIS | DT_EUC | DT_UTF8;
 	while(dwCurrent < dwStart + dwMaxSize)//(p < pEnd)
 	{
     p = m_pDoc->CacheForce(dwCurrent, 2);
     if(!p/* || dwRemain < 2*/)return CTYPE_BINARY;
-    DWORD dwRemain = m_pDoc->GetRemainCache(dwCurrent);
+    size_t dwRemain = m_pDoc->GetRemainCache(dwCurrent);
 		//p = m_pDoc->QueryMapViewTama2(dwCurrent, 2);
 		//dwRemain = m_pDoc->GetMapRemain(dwCurrent);
 		BYTE c = (BYTE)*p++; dwCurrent++;//BYTE c = (BYTE)*p++;
@@ -2518,15 +2518,15 @@ void CBZView::preQuickSearchWI1(LPCWSTR searchTextW, BYTE nSearchTextW, BYTE *sk
 		else if('a' <= wc && wc <= 'z')	skipTable[wc-0x20] = nSearchTextW - i;
 	}
 }
-DWORD CBZView::stristrBinaryW1(LPCWSTR searchTextW, BYTE nSearchTextW, DWORD dwStart)
+UINT64 CBZView::stristrBinaryW1(LPCWSTR searchTextW, BYTE nSearchTextW, UINT64 dwStart)
 {
 	BYTE skipTable[0x10000];
 	preQuickSearchWI1(searchTextW, nSearchTextW, skipTable);
 
 	DWORD dwNeedSize = (nSearchTextW+1)*2;
-	DWORD dwCurrent=dwStart;
+	UINT64 dwCurrent=dwStart;
   m_pDoc->Cache(dwStart);
-  DWORD dwTotal = GetFileSize();
+  UINT64 dwTotal = GetFileSize();
 	while(dwCurrent < dwTotal-2)
 	{
     LPBYTE p = m_pDoc->CacheForce(dwCurrent, dwNeedSize);
@@ -2534,7 +2534,7 @@ DWORD CBZView::stristrBinaryW1(LPCWSTR searchTextW, BYTE nSearchTextW, DWORD dwS
     if(wcsnicmp(searchTextW, (const wchar_t*)p, nSearchTextW)==0)return dwCurrent;
 		dwCurrent += skipTable[p[nSearchTextW]]*2;
 	}
-	return 0xFFFFffff; // error
+	return _UI64_MAX; // error
 }
 void CBZView::preQuickSearchWI4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD *skipTable)
 {
@@ -2548,15 +2548,15 @@ void CBZView::preQuickSearchWI4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD *
 		else if('a' <= wc && wc <= 'z')	skipTable[wc-0x20] = nSearchTextW - i;
 	}
 }
-DWORD CBZView::stristrBinaryW4(LPCWSTR pSearchTextW, DWORD nSearchTextW, DWORD dwStart)
+UINT64 CBZView::stristrBinaryW4(LPCWSTR pSearchTextW, DWORD nSearchTextW, UINT64 dwStart)
 {
 	DWORD skipTable[0x10000];
 	preQuickSearchWI4(pSearchTextW, nSearchTextW, skipTable);
 
 	DWORD dwNeedSize = (nSearchTextW+1)*2;
-	DWORD dwCurrent=dwStart;
+	UINT64 dwCurrent=dwStart;
   m_pDoc->Cache(dwStart);
-  DWORD dwTotal = GetFileSize();
+  UINT64 dwTotal = GetFileSize();
 	while(dwCurrent < dwTotal-2)
 	{
     LPBYTE p = m_pDoc->CacheForce(dwCurrent, dwNeedSize);
@@ -2564,9 +2564,9 @@ DWORD CBZView::stristrBinaryW4(LPCWSTR pSearchTextW, DWORD nSearchTextW, DWORD d
 		if(wcsnicmp(pSearchTextW, (const wchar_t*)p, nSearchTextW)==0)return dwCurrent;
 		dwCurrent += skipTable[p[nSearchTextW]]*2;
 	}
-  return 0xFFFFffff; // error
+  return _UI64_MAX; // error
 }
-DWORD CBZView::stristrBinaryW(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD dwStart)
+UINT64 CBZView::stristrBinaryW(LPCWSTR searchTextW, DWORD nSearchTextW, UINT64 dwStart)
 {
 	if(nSearchTextW < 0xFF)
 		return stristrBinaryW1(searchTextW, nSearchTextW, dwStart);
@@ -2585,14 +2585,14 @@ void CBZView::preQuickSearchAI(LPCSTR searchText, DWORD nSearchText, DWORD *skip
 		else if('a' <= ch && ch <= 'z')	skipTable[ch-0x20] = nSearchText - i;
 	}
 }
-DWORD CBZView::stristrBinaryA(LPCSTR pSearchText, DWORD dwStart)
+UINT64 CBZView::stristrBinaryA(LPCSTR pSearchText, UINT64 dwStart)
 {
 	DWORD nSearchText = strlen(pSearchText);
 	DWORD skipTable[0x100];
 	preQuickSearchAI(pSearchText, nSearchText, skipTable);
-	DWORD dwCurrent=dwStart;
+	UINT64 dwCurrent=dwStart;
   m_pDoc->Cache(dwStart);
-  DWORD dwTotal = GetFileSize();
+  UINT64 dwTotal = GetFileSize();
 	while(dwCurrent < dwTotal-1)
 	{
     LPBYTE p = m_pDoc->CacheForce(dwCurrent, nSearchText+1); //なんで+1なのかな？？？保留
@@ -2601,20 +2601,20 @@ DWORD CBZView::stristrBinaryA(LPCSTR pSearchText, DWORD dwStart)
 		if(strnicmp(pSearchText, (const char*)p, nSearchText)==0)return dwCurrent;
 		dwCurrent += skipTable[p[nSearchText]];
 	}
-	return 0xFFFFffff; // error
+	return _UI64_MAX; // error
 }
 void CBZView::preQuickSearch(LPBYTE pSearchByte, unsigned int nSearchByte, DWORD* skipTable)
 {
 	for(int j=0;j<0x100;j++)skipTable[j] = nSearchByte+1;
 	for(DWORD i=0;i<nSearchByte;i++)skipTable[pSearchByte[i]] = nSearchByte - i;
 }
-DWORD CBZView::strstrBinary(LPBYTE pSearchStr, unsigned int nSearchStr, DWORD dwStart)
+UINT64 CBZView::strstrBinary(LPBYTE pSearchStr, unsigned int nSearchStr, UINT64 dwStart)
 {
   DWORD skipTable[0x100];
   preQuickSearch(pSearchStr, nSearchStr, skipTable);
-  DWORD dwCurrent=dwStart;
+  UINT64 dwCurrent=dwStart;
   m_pDoc->Cache(dwStart);
-  DWORD dwTotal = GetFileSize();
+  UINT64 dwTotal = GetFileSize();
   while(dwCurrent < dwTotal-1)
   {
     LPBYTE p = m_pDoc->CacheForce(dwCurrent, nSearchStr+1); //なんで+1なのかな？？？保留
@@ -2623,7 +2623,7 @@ DWORD CBZView::strstrBinary(LPBYTE pSearchStr, unsigned int nSearchStr, DWORD dw
     if(memcmp(pSearchStr, p, nSearchStr)==0)return dwCurrent;
     dwCurrent += skipTable[p[nSearchStr]];
   }
-  return 0xFFFFffff; // error
+  return _UI64_MAX; // error
 }
 
-DWORD CBZView::GetFileSize() { return m_pDoc ? m_pDoc->GetDocSize() : 0; }
+UINT64 CBZView::GetFileSize() { return m_pDoc ? m_pDoc->GetDocSize() : 0; }

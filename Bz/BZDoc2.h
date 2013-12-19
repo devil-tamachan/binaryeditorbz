@@ -31,10 +31,10 @@ public:
   _inline BOOL DoUndo(UINT64 *pRetStart = NULL) { BOOL bRet = m_pSFC ? m_pSFC->Undo(pRetStart) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
   _inline BOOL DoRedo(UINT64 *pRetStart = NULL) { BOOL bRet = m_pSFC ? m_pSFC->Redo(pRetStart) : FALSE; /*SetModifiedFlag(m_pSFC->IsModified());*/ return bRet; }
 
-  _inline const LPBYTE Cache(DWORD dwStart, DWORD dwIdealSize = 0) { return m_pSFC ? m_pSFC->Cache(dwStart, dwIdealSize) : NULL; }
-  _inline const LPBYTE CacheForce(DWORD dwStart, DWORD dwNeedSize) { return m_pSFC ? m_pSFC->CacheForce(dwStart, dwNeedSize) : NULL; }
+  _inline const LPBYTE Cache(UINT64 dwStart, size_t dwIdealSize = 0) { return m_pSFC ? m_pSFC->Cache(dwStart, dwIdealSize) : NULL; }
+  _inline const LPBYTE CacheForce(UINT64 dwStart, size_t dwNeedSize) { return m_pSFC ? m_pSFC->CacheForce(dwStart, dwNeedSize) : NULL; }
   _inline size_t GetMaxCacheSize()             { return m_pSFC ? m_pSFC->GetMaxCacheSize() : 0; }
-  _inline size_t GetRemainCache(DWORD dwStart) { return m_pSFC ? m_pSFC->GetRemainCache(dwStart) : 0; }
+  _inline size_t GetRemainCache(UINT64 dwStart) { return m_pSFC ? m_pSFC->GetRemainCache(dwStart) : 0; }
 
   DWORD PasteFromClipboard(DWORD dwStart, BOOL bIns);
   BOOL CopyToClipboard(DWORD dwStart, DWORD dwSize);
@@ -84,7 +84,7 @@ public:
     }
   }
   DWORD	m_dwBase;		// ###1.63
-  DWORD	m_restoreCaret;
+  UINT64	m_restoreCaret;
   POINT	m_restoreScroll;
 
 private:

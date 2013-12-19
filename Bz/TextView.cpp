@@ -269,7 +269,7 @@ void CTextView::SetTextSize(SIZE cTotal)
 POINT CTextView::GetScrollPos()
 {
 	POINT pt;
-	SCROLLINFO sbi;
+	SCROLLINFO sbi = { sizeof(SCROLLINFO) };
 	GetScrollInfo(SB_VERT, &sbi, SIF_POS);
 	pt.y = sbi.nPos;
 	GetScrollInfo(SB_HORZ, &sbi, SIF_POS);
@@ -279,8 +279,8 @@ POINT CTextView::GetScrollPos()
 
 void CTextView::ScrollToPos(POINT pt)
 {
-	SCROLLINFO sbi;
-	sbi.fMask = SIF_POS;
+	SCROLLINFO sbi = { sizeof(SCROLLINFO), SIF_POS };
+	//sbi.fMask = SIF_POS;
 	sbi.nPos = pt.y;
 	SetScrollInfo(SB_VERT, &sbi, TRUE);
 }
@@ -301,7 +301,7 @@ void CTextView::InitScrollBar()	// ### 1.62
 	GetClientRect(r);
 	CSize cView(r.Width() / m_cell.cx, r.Height() / m_cell.cy);
 
-	SCROLLINFO sbi;
+	SCROLLINFO sbi = { sizeof(SCROLLINFO) };
 	sbi.fMask = SIF_RANGE | SIF_PAGE;
 	sbi.nMin  = 0;
 	sbi.nMax  = m_cTotal.cx;
@@ -384,7 +384,7 @@ void CTextView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 
 void CTextView::OnScrollBar(int nBar, UINT nSBCode)
 {
-	SCROLLINFO sbi;
+	SCROLLINFO sbi = { sizeof(SCROLLINFO) };
 
 	GetScrollInfo(nBar, &sbi, SIF_ALL);
 //	TRACE("SBCode:%d, Pos:%d, Track:%d\n",nSBCode, sbi.nPos, sbi.nTrackPos);
@@ -426,7 +426,7 @@ BOOL CTextView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 
 void CTextView::ScrlBarRange(int nBar, LONG& val)
 {
-	SCROLLINFO sbi;
+	SCROLLINFO sbi = { sizeof(SCROLLINFO) };
 	GetScrollInfo(nBar, &sbi, SIF_ALL);
 	LONG nMax = sbi.nMax - sbi.nPage +1;
 	val = min(max(val, sbi.nMin), nMax);

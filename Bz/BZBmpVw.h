@@ -41,7 +41,7 @@ protected:
 
 // Attributes
 private:
-	SIZE	m_cBmp;
+	long	m_cBmpX;
 	LPBITMAPINFOHEADER m_lpbi;
 	WTL::CToolTipCtrl m_tooltip;
 	DWORD m_tooltipLastAddress;

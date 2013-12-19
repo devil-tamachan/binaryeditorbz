@@ -144,9 +144,12 @@ void CBZBmpView::OnInitialUpdate()
 		m_lpbi = (LPBITMAPINFOHEADER)MemAlloc(sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*256/*256pallet*/);
 
 	m_lpbi->biSize = sizeof(BITMAPINFOHEADER);
-	m_cBmp.cx = options.nBmpWidth;
-	m_cBmp.cy = dwTotal / (options.nBmpWidth * (options.nBmpColorWidth/8));
-	Make8bitBITMAPINFOHEADER(m_lpbi, m_cBmp.cx, -m_cBmp.cy/*top-down DIB*/);
+	m_cBmpX = options.nBmpWidth;
+	UINT64 cBmpY64 = dwTotal / (UINT64)(options.nBmpWidth * (options.nBmpColorWidth/8));
+  long cBmpYN;
+  if(cBmpY64 > -LONG_MIN)cBmpYN = LONG_MIN;
+  else cBmpYN = -((long)cBmpY64);
+	Make8bitBITMAPINFOHEADER(m_lpbi, m_cBmpX, cBmpYN/*top-down DIB*/);
 
 
 	DWORD* pRGB = (DWORD*)(m_lpbi+1);
@@ -157,9 +160,9 @@ void CBZBmpView::OnInitialUpdate()
 	HDC hDC = pDC->m_hDC;
 
 	// TODO: calculate the total size of this view
-	CSize cView = m_cBmp;
-	cView.cx = cView.cx * options.nBmpZoom + BMPSPACE*2;
-	cView.cy = cView.cy * options.nBmpZoom + BMPSPACE*2;
+	CSize cView;// = m_cBmp;
+	cView.cx = m_cBmpX * options.nBmpZoom + BMPSPACE*2;
+	cView.cy = cBmpY64 * options.nBmpZoom + BMPSPACE*2;
 	SetScrollSizes(MM_TEXT, cView);
 	
 	TRACE("cView.cy=%X\n", GetTotalSize().cy);
@@ -217,19 +220,19 @@ void CBZBmpView::OnDraw(CDC* pDC)
   m_lpbi->biHeight = -nBmpHeight;
 
   ATLTRACE("Clip: left=%ld, top=%ld(0x%08lX) %dx%d\n", rClip.left, rClip.top, rClip.top, rClip.Width(), rClip.Height());
-  DWORD dwOffset = ((DWORD)rClip.top - (DWORD)(BMPSPACE - nSpaceTop)) / (DWORD)options.nBmpZoom * (DWORD)m_cBmp.cx;
-  ATLTRACE("DWORD dwOffset 0x%08X = ((DWORD)rClip.top 0x%08X - (DWORD)(BMPSPACE 0x%X - nSpaceTop 0x%X)) * (DWORD)m_cBmp.cx 0x%08X / (DWORD)options.nBmpZoom 0x%08X;\n", dwOffset, (DWORD)rClip.top, BMPSPACE, nSpaceTop, m_cBmp.cx, options.nBmpZoom);
+  DWORD dwOffset = ((DWORD)rClip.top - (DWORD)(BMPSPACE - nSpaceTop)) / (DWORD)options.nBmpZoom * (DWORD)m_cBmpX;
+  ATLTRACE("DWORD dwOffset 0x%08X = ((DWORD)rClip.top 0x%08X - (DWORD)(BMPSPACE 0x%X - nSpaceTop 0x%X)) * (DWORD)m_cBmp.cx 0x%08X / (DWORD)options.nBmpZoom 0x%08X;\n", dwOffset, (DWORD)rClip.top, BMPSPACE, nSpaceTop, m_cBmpX, options.nBmpZoom);
   dwOffset*=(DWORD)(options.nBmpColorWidth/8);
   ATLTRACE("dwOffset 0x%08X *=(DWORD)(options.nBmpColorWidth %ld /8);\n", dwOffset, options.nBmpColorWidth);
 
-  DWORD dwReadSize = m_cBmp.cx * nBmpHeight * (options.nBmpColorWidth/8);
+  DWORD dwReadSize = m_cBmpX * nBmpHeight * (options.nBmpColorWidth/8);
   if(dwReadSize<=pDoc->GetMaxCacheSize())
   {
     LPBYTE p = pDoc->CacheForce(dwOffset, dwReadSize);
     if(p)
       ::StretchDIBits(pMemDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
-      , m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
-      , 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, nBmpHeight/*srcH*/
+      , m_cBmpX * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
+      , 0/*srcX*/, 0/*srcY*/, m_cBmpX/*srcW*/, nBmpHeight/*srcH*/
       , p/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
   } else {
     LPBYTE lpBits = (LPBYTE)malloc(dwReadSize);
@@ -237,8 +240,8 @@ void CBZBmpView::OnDraw(CDC* pDC)
     if(pDoc->Read(lpBits, dwOffset, dwReadSize))
     {
       ::StretchDIBits(pMemDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
-        , m_cBmp.cx * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
-        , 0/*srcX*/, 0/*srcY*/, m_cBmp.cx/*srcW*/, nBmpHeight/*srcH*/
+        , m_cBmpX * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
+        , 0/*srcX*/, 0/*srcY*/, m_cBmpX/*srcW*/, nBmpHeight/*srcH*/
         , lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
     }
     free(lpBits);
@@ -337,7 +340,7 @@ void CBZBmpView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	ATLTRACE("OnVScroll\n");
 	// TODO: Add your message handler code here and/or call default
 	if(nSBCode == SB_THUMBTRACK) {		// ### 1.54
-		SCROLLINFO si;
+		SCROLLINFO si = { sizeof(SCROLLINFO) };
 		GetScrollInfo(SB_VERT, &si, SIF_TRACKPOS);
 		TRACE("nPos, nTrackPos=%u, %d\n", nPos, si.nTrackPos);
 		nPos = si.nTrackPos;

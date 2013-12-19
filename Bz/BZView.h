@@ -42,8 +42,8 @@ protected: // create from serialization only
 public:
 	//DWORD	m_dwTotal;
 	UINT64	m_dwCaret;
-	DWORD	m_dwStruct;
-	DWORD	m_dwStructTag;
+	UINT64	m_dwStruct;
+	UINT64	m_dwStructTag;
 	int		m_nMember;
 	int		m_nBytes;
 	int		m_nBytesLength;	// ###1.61b
@@ -55,7 +55,7 @@ private:
 	BOOL	m_bEnterVal;
 	int		m_timer;
 	CBZDoc2*	m_pDoc;
-	DWORD	m_dwPrint;
+	UINT64	m_dwPrint;
 	int		m_nPageLen;
 	CharSet m_charset;
 	static BOOL m_bHexSize;
@@ -67,7 +67,7 @@ public:
 	CBZDoc2*	GetDocument();
 // Operations
 public:
-  DWORD GetFileSize();
+  UINT64 GetFileSize();
 	BOOL	GotoCaret();
 	int		GetValue(UINT64 ofs, int bytes);
 	ULONGLONG GetValue64(UINT64 ofs);
@@ -86,10 +86,10 @@ private:
 	void	DrawGrid(CDC* pDC, RECT& rClip);
 	void	DrawDummyCaret(CDC* pDC);
 	BOOL	DrawCaret();
-	DWORD	PointToOffset(CPoint pt);
+	UINT64	PointToOffset(CPoint pt);
 	void	CutOrCopy(CutMode mode);
 public:
-	void	MoveCaretTo(DWORD dwNewCaret/*, bool bFirst=true*/);
+	void	MoveCaretTo(UINT64 dwNewCaret/*, bool bFirst=true*/);
 private:
 	void	UpdateDocSize();
 	BOOL	CalcHexa(LPCSTR sExp, long& nResult);
@@ -102,19 +102,19 @@ private:
 	UINT64	BlockEnd() { return m_dwBlock > m_dwCaret ? m_dwBlock : m_dwCaret; } ;
 	CBZView* GetBrotherView();
 	CBZDoc2* GetBrotherDoc();
-  DWORD GetRemainFromCurret();
+  UINT64 GetRemainFromCurret();
 	void	ChangeFont(LOGFONT& logFont);
 	//void	SetValue(LPBYTE p, int bytes, int val);
 	//BOOL	IsMBS(LPBYTE pTop, DWORD ofs, BOOL bTrail);
 	CharSet AutoDetectCharSet();
 	int ConvertCharSet(CharSet charset, LPCSTR sFind, LPBYTE &buffer);
-	CharSet DetectCodeType(DWORD dwStart = 0, DWORD dwMaxSize = 0xFFFFffff);//(LPBYTE p, LPBYTE pEnd);
-	void InitCharMode(DWORD ofs);
-	WORD GetCharCode(WORD c, DWORD ofs = 0);
+	CharSet DetectCodeType(UINT64 dwStart = 0, DWORD dwMaxSize = 0xFFFFffff);//(LPBYTE p, LPBYTE pEnd);
+	void InitCharMode(UINT64 ofs);
+	WORD GetCharCode(WORD c, UINT64 ofs = 0);
 	void SetColor(TextColor n = TCOLOR_TEXT);
 	void SetHeaderColor();
 	CString GetStatusInfoText();
-	void JumpTo(DWORD dwNewCaret);
+	void JumpTo(UINT64 dwNewCaret);
 	void SetMaxPrintingPage(CPrintInfo* pInfo);		// ### 1.54
 	void PutUnicodeChar(WORD w);					// ### 1.54b
 	void OnDoubleClick();							// ### 1.62
@@ -123,14 +123,14 @@ private:
 
 	// Quick Search Algorithm
 	void preQuickSearchWI1(LPCWSTR searchTextW, BYTE nSearchTextW, BYTE *skipTable);
-	DWORD stristrBinaryW1(LPCWSTR searchTextW, BYTE nSearchTextW, DWORD dwStart);
+	UINT64 stristrBinaryW1(LPCWSTR searchTextW, BYTE nSearchTextW, UINT64 dwStart);
 	void preQuickSearchWI4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD *skipTable);
-	DWORD stristrBinaryW4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD dwStart);
-	DWORD stristrBinaryW(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD dwStart);
+	UINT64 stristrBinaryW4(LPCWSTR searchTextW, DWORD nSearchTextW, UINT64 dwStart);
+	UINT64 stristrBinaryW(LPCWSTR searchTextW, DWORD nSearchTextW, UINT64 dwStart);
 	void preQuickSearchAI(LPCSTR searchText, DWORD nSearchText, DWORD *skipTable);
-	DWORD stristrBinaryA(LPCSTR searchText, DWORD dwStart);
+	UINT64 stristrBinaryA(LPCSTR searchText, UINT64 dwStart);
 	void preQuickSearch(LPBYTE searchByte, unsigned int nSearchByte, DWORD* skipTable);
-	DWORD strstrBinary(LPBYTE searchByte, unsigned int nSearchByte, DWORD dwStart);
+	UINT64 strstrBinary(LPBYTE searchByte, unsigned int nSearchByte, UINT64 dwStart);
 
 public:
 	void ReCreateBackup();
