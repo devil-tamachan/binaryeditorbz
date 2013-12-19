@@ -1,4 +1,7 @@
 
+#define SB_WHEELUP   10
+#define SB_WHEELDOWN 11
+
 template <class T>
 class CTamaScrollU64VImpl : public WTL::CScrollImpl< T >
 {
@@ -62,15 +65,15 @@ public:
   
   void UpdateFromU64V()
   {
-    ATLTRACE("UpdateFromU64V +++ m_ptOffset.y:%d, m_sizeAll.cy:%d\n", m_ptOffset.y, m_sizeAll.cy);
+    ATLTRACE("UpdateFromU64V +++ m_ptOffset.y:%d (0x%08X), m_sizeAll.cy:%d (0x%08X), m_u64V: 0x%016I64X\n", m_ptOffset.y, m_ptOffset.y, m_sizeAll.cy, m_sizeAll.cy, m_u64V);
     {//Vの補助値(下位DWORD)を決定
       //m_lowV = (DWORD)(m_u64V % m_step);
     }
     {//Windowsへ渡すスクロールバーの値(int)決定
-      m_ptOffset.y = (int)((m_u64V+(m_step>1&&m_u64V?m_step-1:0) / m_step));
+      m_ptOffset.y = (int)(((m_u64V+(m_step>1&&m_u64V?m_step-1:0)) / m_step));
       if(m_ptOffset.y > m_sizeAll.cy-(m_sizePage.cy/(int)m_cellV))m_ptOffset.y = m_sizeAll.cy-(m_sizePage.cy/(int)m_cellV);
     }
-    ATLTRACE("UpdateFromU64V --- m_ptOffset.y:%d, m_sizeAll.cy:%d\n", m_ptOffset.y, m_sizeAll.cy);
+    ATLTRACE("UpdateFromU64V --- m_ptOffset.y:%d (0x%08X), m_sizeAll.cy:%d (0x%08X), m_u64V: 0x%016I64X\n", m_ptOffset.y, m_ptOffset.y, m_sizeAll.cy, m_sizeAll.cy, m_u64V);
   }
 
   int CalcScrolVMax()
@@ -87,11 +90,12 @@ public:
     ATLASSERT(::IsWindow(pT->m_hWnd));
     if(pT->GetScrollInfo(SB_VERT, &si))
     {
+      ATLTRACE("UpdateFromRawPos +++ %d (0x%08X), m_u64V: 0x%016I64X\n", si.nTrackPos, si.nTrackPos, m_u64V);
       if(si.nTrackPos == m_ptOffset.y)return;
       m_ptOffset.y = si.nTrackPos;
       //m_lowV = m_step==1 ? 0 : m_step-1;
       m_u64V = (UINT64)(m_ptOffset.y) * m_step - (m_ptOffset.y>0?m_step-1:0);
-      ATLTRACE("UpdateFromRawPos: %d\n", si.nTrackPos);
+      ATLTRACE("UpdateFromRawPos --- %d (0x%08X), m_u64V: 0x%016I64X\n", si.nTrackPos, si.nTrackPos, m_u64V);
     }
   }
   
@@ -146,6 +150,21 @@ public:
       case SB_PAGEDOWN:
       {
         UINT64 newV = m_u64V +cxySizePage;
+        if(newV < m_u64V || newV > m_u64VMax)m_u64V = m_u64VMax;
+        else m_u64V = newV;
+        UpdateFromU64V();
+        break;
+      }
+      case SB_WHEELUP:
+        ATLTRACE("SB_WHEELUP --- -(%d)\n", m_nWheelLines);
+        if(m_u64V >= m_nWheelLines)m_u64V -= m_nWheelLines;//m_nWheelLines;
+        else m_u64V = 0;
+        UpdateFromU64V();
+        break;
+      case SB_WHEELDOWN:
+      {
+        ATLTRACE("SB_WHEELDOWN--- +(%d)\n", cxySizeLine);
+        UINT64 newV = m_u64V +m_nWheelLines;//m_nWheelLines;
         if(newV < m_u64V || newV > m_u64VMax)m_u64V = m_u64VMax;
         else m_u64V = newV;
         UpdateFromU64V();
@@ -207,6 +226,13 @@ public:
 
     return 0;
   }
+
+  LRESULT OnMouseWheel(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+  {
+    int zDelta = (int)GET_WHEEL_DELTA_WPARAM(wParam);
+    DoScroll(SB_VERT, zDelta > 0 ? SB_WHEELUP : SB_WHEELDOWN, (int&)m_ptOffset.y, m_sizeAll.cy, m_sizePage.cy, m_sizeLine.cy);
+    return 0;
+  }
 };
 
 template <class T, class TBase = ATL::CWindow, class TWinTraits = ATL::CControlWinTraits>
@@ -216,9 +242,9 @@ public:
   BEGIN_MSG_MAP(CTamaScrollWindowU64VImpl)
     MESSAGE_HANDLER(WM_VSCROLL, CScrollImpl< T >::OnVScroll)
     MESSAGE_HANDLER(WM_HSCROLL, CScrollImpl< T >::OnHScroll)
-    MESSAGE_HANDLER(WM_MOUSEWHEEL, CScrollImpl< T >::OnMouseWheel)
+    MESSAGE_HANDLER(WM_MOUSEWHEEL, CTamaScrollU64VImpl< T >::OnMouseWheel)
 #if !((_WIN32_WINNT >= 0x0400) || (_WIN32_WINDOWS > 0x0400))
-    MESSAGE_HANDLER(m_uMsgMouseWheel, CScrollImpl< T >::OnMouseWheel)
+    MESSAGE_HANDLER(m_uMsgMouseWheel, CTamaScrollU64VImpl< T >::OnMouseWheel)
 #endif // !((_WIN32_WINNT >= 0x0400) || (_WIN32_WINDOWS > 0x0400))
     MESSAGE_HANDLER(WM_MOUSEHWHEEL, CScrollImpl< T >::OnMouseHWheel)
     MESSAGE_HANDLER(WM_SETTINGCHANGE, CScrollImpl< T >::OnSettingChange)
