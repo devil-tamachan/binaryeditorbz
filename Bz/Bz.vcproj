@@ -396,7 +396,7 @@
 				>
 			</File>
 			<File
-				RelativePath="BZBmpVw.cpp"
+				RelativePath="BZBmpVw2.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -768,7 +768,11 @@
 				>
 			</File>
 			<File
-				RelativePath="BZBmpVw.h"
+				RelativePath="BZBmpVw2.h"
+				>
+			</File>
+			<File
+				RelativePath=".\BZCoreData.h"
 				>
 			</File>
 			<File
