@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "MainFrm.h"
 #include "BZDoc2.h"
 #include "BZView.h"
-#include "BZBmpVw.h"
+#include "BZBmpVw2.h"
 #include "BZFormVw.h"
 #include "BZInspectView.h"
 #include "BZAnalyzerView.h"

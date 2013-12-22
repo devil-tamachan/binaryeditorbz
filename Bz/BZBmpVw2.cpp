@@ -28,12 +28,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "stdafx.h"
-#include "BZ.h"
-#include "BZView.h"
-#include "BZBmpVw.h"
-#include "BZDoc2.h"
-#include "Splitter.h"
-#include "MainFrm.h"
+//#include "BZ.h"
+//#include "BZView.h"
+//#include "BZBmpVw2.h"
+//#include "BZDoc2.h"
+//#include "Splitter.h"
+//#include "MainFrm.h"
 
 
 

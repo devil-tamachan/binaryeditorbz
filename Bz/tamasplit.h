@@ -115,9 +115,9 @@ public:
 		return TRUE;
 	}
 
-	void OnPaint(CDCHandle /*dc*/)
+  void OnPaint(WTL::CDCHandle /*dc*/)
 	{
-		CPaintDC dc(m_hWnd);
+    WTL::CPaintDC dc(m_hWnd);
 		CRect rect;
 		dc.GetClipBox(&rect);
 		ATLTRACE("WM_PAINT: m_bPressLButton=%s, m_selectBorderX=%d, m_selectBorderY=%d\n",m_bPressLButton?"TRUE":"FALSE", m_selectBorderX, m_selectBorderY);
@@ -125,13 +125,13 @@ public:
 		dc.FillRect(rect, COLOR_BTNFACE);
 		if(m_bPressLButton && m_selectBorderX!=-1)
 		{
-			CBrush halfBrush = dc.GetHalftoneBrush();
+      WTL::CBrush halfBrush = dc.GetHalftoneBrush();
 			CRect barX(m_borderRealX[m_selectBorderX]-BORDERWIDTH, 0, m_borderRealX[m_selectBorderX], rect.bottom);
 			dc.FillRect(barX, halfBrush);
 		}
 		if(m_bPressLButton && m_selectBorderY!=-1)
 		{
-			CBrush halfBrush = dc.GetHalftoneBrush();
+      WTL::CBrush halfBrush = dc.GetHalftoneBrush();
 			CRect barY(0, m_borderRealY[m_selectBorderY]-BORDERWIDTH, rect.right, m_borderRealY[m_selectBorderY]);
 			dc.FillRect(barY, halfBrush);
 		}

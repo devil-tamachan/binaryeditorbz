@@ -86,14 +86,15 @@ void Make8bitBITMAPINFOHEADER(LPBITMAPINFOHEADER lpbi, LONG w, LONG h)
   lpbi->biClrImportant = 0;
 }
 
+#include "tamascrlu64v.h"
 
 
-class CBZBmpView2 : public CTamaScrollWindowU64VImpl<CBZBmpView>
+class CBZBmpView2 : public CTamaScrollWindowU64VImpl<CBZBmpView2>
 {
 public:
   DECLARE_WND_CLASS(NULL)
 
-  BEGIN_MSG_MAP(CTamaScrl64TestView)
+  BEGIN_MSG_MAP(CBZBmpView2)
     MSG_WM_CREATE(OnCreate)
     MSG_WM_SIZE(OnSize)
     MSG_WM_ERASEBKGND(OnEraseBkgnd)
@@ -104,9 +105,9 @@ public:
     MSG_WM_VSCROLL(OnVScroll)
     MSG_WM_KEYDOWN(OnKeyDown)
     COMMAND_RANGE_HANDLER_EX(ID_BMPVIEW_WIDTH128, ID_BMPVIEW_ZOOM, OnBmpViewMode)
-    COMMAND_RANGE_HANDLER_EX(ID_BMPVIEW_8BITCOLOR, ID_BMPVIEW_32BITCOLOR, OnBmpViewColorWidth
+    COMMAND_RANGE_HANDLER_EX(ID_BMPVIEW_8BITCOLOR, ID_BMPVIEW_32BITCOLOR, OnBmpViewColorWidth)
     COMMAND_ID_HANDLER_EX(ID_BMPVIEW_ADDRESSTOOLTIP, OnBmpViewAddressTooltip)
-    CHAIN_MSG_MAP(CTamaScrollWindowU64VImpl<CTamaScrl64TestView>)
+    CHAIN_MSG_MAP(CTamaScrollWindowU64VImpl<CBZBmpView2>)
   END_MSG_MAP()
 
 
@@ -115,9 +116,9 @@ public:
   {
     SetMsgHandled(false);
     m_cellV = 1;
-    SetScrollSizeU64V(5000, _UI64_MAX/16);
-    SetScrollPage(1,8);
-    SetScrollLine(1,1);
+    //SetScrollSizeU64V(1, 1);
+    //SetScrollPage(1,8);
+    //SetScrollLine(1,1);
     return 0;
   }
 
@@ -145,16 +146,21 @@ public:
   {
     m_isLButtonDown = true;
 
-    point += GetScrollPosition();
+    point.x += m_ptOffset.x;
     point.x -= BMPSPACE;
     point.y -= BMPSPACE;
-    point.x /= options.nBmpZoom;
-    point.y /= options.nBmpZoom;
+    if(point.x<=0)point.x = 0;
+    else point.x /= options.nBmpZoom;
+    if(point.y<=0)point.y = 0;
+    else point.y /= options.nBmpZoom;
+    UINT64 dwBase = GetScrollPosU64V();
+    if(dwBase > BMPSPACE)dwBase = (dwBase - BMPSPACE)/options.nBmpZoom;
+    else dwBase = 0;
     if(point.x >= 0 && point.x < options.nBmpWidth && point.y >= 0) {
-      DWORD dwPtr = point.y*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (point.x * (options.nBmpColorWidth/8));
-      CBZView* pView = (CBZView*)GetNextWindow();
-      if(dwPtr < pView->GetFileSize()) {
-        pView->m_dwCaret = dwPtr;
+      UINT64 dwNewCaret = (dwBase + (UINT64)point.y)*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (((UINT64)point.x) * (options.nBmpColorWidth/8));
+      CBZView* pView = GetBZView();
+      if(dwNewCaret < pView->GetFileSize()) {
+        pView->m_dwCaret = dwNewCaret;
         pView->GotoCaret();
         //pView->Activate();
       }
@@ -163,54 +169,59 @@ public:
 
   void OnRButtonDown(UINT nFlags, CPoint point)
   {
-    CMenu menu;
+    WTL::CMenu menu;
     menu.LoadMenu(IDR_BMPVIEW);
-    CMenu* pMenu = menu.GetSubMenu(0);
+    WTL::CMenuHandle pMenu = menu.GetSubMenu(0);
     switch(options.nBmpWidth)
     {
     case 128:
-      pMenu->CheckMenuItem(ID_BMPVIEW_WIDTH128, MF_BYCOMMAND | MF_CHECKED);
+      pMenu.CheckMenuItem(ID_BMPVIEW_WIDTH128, MF_BYCOMMAND | MF_CHECKED);
       break;
     case 256:
-      pMenu->CheckMenuItem(ID_BMPVIEW_WIDTH256, MF_BYCOMMAND | MF_CHECKED);
+      pMenu.CheckMenuItem(ID_BMPVIEW_WIDTH256, MF_BYCOMMAND | MF_CHECKED);
       break;
     }
     if(options.nBmpZoom > 1)
-      pMenu->CheckMenuItem(ID_BMPVIEW_ZOOM, MF_BYCOMMAND | MF_CHECKED);
+      pMenu.CheckMenuItem(ID_BMPVIEW_ZOOM, MF_BYCOMMAND | MF_CHECKED);
     switch(options.nBmpColorWidth)
     {
     case 8:
-      pMenu->CheckMenuItem(ID_BMPVIEW_8BITCOLOR, MF_BYCOMMAND | MF_CHECKED);
+      pMenu.CheckMenuItem(ID_BMPVIEW_8BITCOLOR, MF_BYCOMMAND | MF_CHECKED);
       break;
     case 24:
-      pMenu->CheckMenuItem(ID_BMPVIEW_24BITCOLOR, MF_BYCOMMAND | MF_CHECKED);
+      pMenu.CheckMenuItem(ID_BMPVIEW_24BITCOLOR, MF_BYCOMMAND | MF_CHECKED);
       break;
     case 32:
-      pMenu->CheckMenuItem(ID_BMPVIEW_32BITCOLOR, MF_BYCOMMAND | MF_CHECKED);
+      pMenu.CheckMenuItem(ID_BMPVIEW_32BITCOLOR, MF_BYCOMMAND | MF_CHECKED);
       break;
     }
     if(options.bAddressTooltip)
-      pMenu->CheckMenuItem(ID_BMPVIEW_ADDRESSTOOLTIP, MF_BYCOMMAND | MF_CHECKED);
+      pMenu.CheckMenuItem(ID_BMPVIEW_ADDRESSTOOLTIP, MF_BYCOMMAND | MF_CHECKED);
 
     CPoint pt;
     GetCursorPos(&pt);
-    pMenu->TrackPopupMenu(0, pt.x, pt.y, this);
+    pMenu.TrackPopupMenu(0, pt.x, pt.y, m_hWnd);
 
-    bHandled = FALSE;//CScrollView::OnRButtonDown(nFlags, point);
+    SetMsgHandled(FALSE);//CScrollView::OnRButtonDown(nFlags, point);
   }
 
   void OnMouseMove(UINT nFlags, CPoint point)
   {
-    point += GetScrollPosition();
+    point.x += m_ptOffset.x;
     point.x -= BMPSPACE;
     point.y -= BMPSPACE;
-    point.x /= options.nBmpZoom;
-    point.y /= options.nBmpZoom;
+    if(point.x<=0)point.x = 0;
+    else point.x /= options.nBmpZoom;
+    if(point.y<=0)point.y = 0;
+    else point.y /= options.nBmpZoom;
+    UINT64 dwBase = GetScrollPosU64V();
+    if(dwBase > BMPSPACE)dwBase = (dwBase - BMPSPACE)/options.nBmpZoom;
+    else dwBase = 0;
     if(point.x >= 0 && point.x < options.nBmpWidth && point.y >= 0) {
-      DWORD currentAddress = point.y*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (point.x * (options.nBmpColorWidth/8));
+      UINT64 currentAddress = (dwBase + (UINT64)point.y)*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (((UINT64)point.x) * (options.nBmpColorWidth/8));
       if(currentAddress != m_tooltipLastAddress)
       {
-        CBZView* pView = (CBZView*)GetNextWindow();
+        CBZView* pView = GetBZView();
         if(currentAddress < pView->GetFileSize()) {
           if(m_isLButtonDown)
           {
@@ -219,10 +230,10 @@ public:
             //pView->Activate();
           } else if(options.bAddressTooltip) {
             TCHAR tmp[22];
-            wsprintf(tmp, _T("0x%08X"), currentAddress);
+            wsprintf(tmp, _T("0x%016I64X"), currentAddress);
             WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, tmp);
             m_tooltip.UpdateTipText(toolinfo);
-            ATLTRACE(_T("UpdateTooltip: %08X, %08X\n"), currentAddress, m_tooltipLastAddress);
+            ATLTRACE(_T("UpdateTooltip: %016I64X, %016I64X\n"), currentAddress, m_tooltipLastAddress);
             m_tooltipLastAddress = currentAddress;
             m_tooltip.Activate(true);
             m_tooltip.Popup();
@@ -231,12 +242,12 @@ public:
           }
         }
       } else {
-        ATLTRACE(_T("!!!UpdateTooltip: %08X, %08X\n"), currentAddress, m_tooltipLastAddress);
+        ATLTRACE(_T("!!!UpdateTooltip: %016I64X, %016I64X\n"), currentAddress, m_tooltipLastAddress);
         return;
       }
     }
 
-    m_tooltipLastAddress = 0xffffffff;
+    m_tooltipLastAddress = _UI64_MAX;
     m_tooltip.Activate(false);
     m_tooltip.Pop();
     //CScrollView::OnMouseMove(nFlags, point);
@@ -250,24 +261,31 @@ public:
   void OnVScroll(int nSBCode, short nPos, HWND hWnd)
   {
     ATLTRACE("OnVScroll\n");
-    // TODO: Add your message handler code here and/or call default
+
     if(nSBCode == SB_THUMBTRACK) {		// ### 1.54
+			/*	SCROLLINFO si = { sizeof(SCROLLINFO), SIF_TRACKPOS };
+				if(pT->GetScrollInfo(nType, &si))
+				{
+					cxyScroll = cxyOffset - si.nTrackPos;
+					cxyOffset = si.nTrackPos;
+				}
       SCROLLINFO si = { sizeof(SCROLLINFO) };
       GetScrollInfo(SB_VERT, &si, SIF_TRACKPOS);
       TRACE("nPos, nTrackPos=%u, %d\n", nPos, si.nTrackPos);
       nPos = si.nTrackPos;
-      TRACE("nPos, nTrackPos=%u, %d\n", nPos, si.nTrackPos);
+      TRACE("nPos, nTrackPos=%u, %d\n", nPos, si.nTrackPos);*/
 
       if(options.bAddressTooltip)
       {
-        CPoint point = GetScrollPosition();
-        point.x = max(point.x-BMPSPACE, 0);
-        point.y = max(point.y-BMPSPACE, 0);
-        point.x /= options.nBmpZoom;
-        point.y /= options.nBmpZoom;
-        DWORD currentAddress = point.y*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (point.x * (options.nBmpColorWidth/8));
+        int pointX = m_ptOffset.x;
+        if(pointX<=0)pointX = 0;
+        else pointX /= options.nBmpZoom;
+        UINT64 dwBase = GetScrollPosU64V();
+        if(dwBase > BMPSPACE)dwBase = (dwBase - BMPSPACE)/options.nBmpZoom;
+        else dwBase = 0;
+        UINT64 currentAddress = dwBase*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (((UINT64)pointX) * (options.nBmpColorWidth/8));
         TCHAR tmp[22];
-        wsprintf(tmp, _T("0x%08X"), currentAddress);
+        wsprintf(tmp, _T("0x%016I64X"), currentAddress);
         WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, tmp);
         m_tooltip.UpdateTipText(toolinfo);
         m_tooltip.Activate(true);
@@ -278,7 +296,7 @@ public:
       m_tooltip.Pop();
     }
 
-    bHandled = FALSE;//CScrollView::OnVScroll(nSBCode, nPos, pScrollBar);
+    SetMsgHandled(FALSE);//CScrollView::OnVScroll(nSBCode, nPos, pScrollBar);
   }
 
   void OnKeyDown(TCHAR vkey, UINT repeats, UINT code)
@@ -311,16 +329,17 @@ public:
 
   void OnBmpViewMode(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
-    switch(nID) {
-case ID_BMPVIEW_WIDTH128:
-  options.nBmpWidth = 128;
-  break;
-case ID_BMPVIEW_WIDTH256:
-  options.nBmpWidth = 256;
-  break;
-case ID_BMPVIEW_ZOOM:
-  options.nBmpZoom = (options.nBmpZoom == 1) ? 2 : 1;
-
+    switch(nID)
+    {
+    case ID_BMPVIEW_WIDTH128:
+      options.nBmpWidth = 128;
+      break;
+    case ID_BMPVIEW_WIDTH256:
+      options.nBmpWidth = 256;
+      break;
+    case ID_BMPVIEW_ZOOM:
+      options.nBmpZoom = (options.nBmpZoom == 1) ? 2 : 1;
+      break;
     }
     GetMainFrame()->CreateClient();
   }
@@ -354,6 +373,8 @@ case ID_BMPVIEW_ZOOM:
     m_tooltipLastAddress = 0xffffffff;
     m_isLButtonDown = false;
     bFirst = TRUE;
+    m_cBmpX = 0;
+    m_cBmpY = 0;
   }
 
   ~CBZBmpView2()
@@ -364,20 +385,39 @@ case ID_BMPVIEW_ZOOM:
 
 private:
   long	m_cBmpX;
+  long	m_cBmpY;
   LPBITMAPINFOHEADER m_lpbi;
   WTL::CToolTipCtrl m_tooltip;
-  DWORD m_tooltipLastAddress;
+  UINT64 m_tooltipLastAddress;
   BOOL m_isLButtonDown;
 
   BOOL bFirst;//for OnInitialUpdate
 
 public:
 
+  CBZView* GetBZView()
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    return pCoreData->GetBZViewFromSubView(this);
+  }
+
+  CBZDoc2* GetBZDoc2()
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    return pCoreData->GetBZDoc2FromSubView(this);
+  }
+
+  CTamaSplitterWindow* GetSplitter()
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    return pCoreData->GetSplitterWnd();
+  }
+
   void OnInitialUpdate()
   {
     //CScrollView::OnInitialUpdate();
 
-    CBZDoc2* pDoc = (CBZDoc2*)GetDocument();
+    CBZDoc2* pDoc = GetBZDoc2();
     UINT64 dwTotal = pDoc->GetDocSize();
     if(dwTotal < (DWORD)options.nBmpWidth) return;
 
@@ -387,39 +427,28 @@ public:
     m_lpbi->biSize = sizeof(BITMAPINFOHEADER);
     m_cBmpX = options.nBmpWidth;
     UINT64 cBmpY64 = dwTotal / (UINT64)(options.nBmpWidth * (options.nBmpColorWidth/8));
-    long cBmpYN;
-    if(cBmpY64 > -LONG_MIN)cBmpYN = LONG_MIN;
-    else cBmpYN = -((long)cBmpY64);
-    Make8bitBITMAPINFOHEADER(m_lpbi, m_cBmpX, cBmpYN/*top-down DIB*/);
+    if(cBmpY64 > INT_MAX)m_cBmpY = -INT_MAX;
+    else m_cBmpY = -((long)cBmpY64);
+    Make8bitBITMAPINFOHEADER(m_lpbi, m_cBmpX, m_cBmpY/*top-down DIB*/);
 
 
     DWORD* pRGB = (DWORD*)(m_lpbi+1);
     MakeSafetyPallet256(pRGB); //MakeBzPallet256(pRGB);
     //	MakeRedPallet256(pRGB);
 
-    CDC* pDC = GetDC();
-    HDC hDC = pDC->m_hDC;
-
     // TODO: calculate the total size of this view
-    CSize cView;// = m_cBmp;
-    cView.cx = m_cBmpX * options.nBmpZoom + BMPSPACE*2;
-    cView.cy = cBmpY64 * options.nBmpZoom + BMPSPACE*2;
-    SetScrollSizes(MM_TEXT, cView);
+    int cViewX = m_cBmpX * options.nBmpZoom + BMPSPACE*2;
+    UINT64 cViewY = cBmpY64 * options.nBmpZoom + BMPSPACE*2;
+		SetScrollSizeU64V(cViewX, cViewY);
+    SetScrollPage(1,150);
+    SetScrollLine(1,20);
 
-    TRACE("cView.cy=%X\n", GetTotalSize().cy);
+    //TRACE("cView.cy=%X\n", GetTotalSize().cy);
 
-    CSplitterWnd* pSplit = (CSplitter*)GetParent();
-    ASSERT(pSplit->IsKindOf(RUNTIME_CLASS(CSplitterWnd)));
-    cView.cx = options.nBmpWidth * options.nBmpZoom + BMPSPACE*2 + GetSystemMetrics(SM_CXVSCROLL)+1;
-    pSplit->SetColumnInfo(0, cView.cx, 0);
+    //CTamaSplitterWindow* pSplit = GetSplitter();
+    //int cSplitViewX = options.nBmpWidth * options.nBmpZoom + BMPSPACE*2 + GetSystemMetrics(SM_CXVSCROLL)+1;
+    //pSplit->SetColumnInfo(0, cSplitViewX, 0);
     // MemFree(lpbi);
-
-    int nMapMode;
-    SIZE sizeTotal, sizePage, sizeLine;
-    GetDeviceScrollSizes(nMapMode, sizeTotal, sizePage, sizeLine);
-    sizePage.cy = 150;
-    sizeLine.cy = 20;
-    SetScrollSizes(nMapMode, sizeTotal, sizePage, sizeLine);
 
     if(m_tooltip.m_hWnd!=NULL)m_tooltip.DestroyWindow();
     m_tooltip.Create(m_hWnd, NULL, NULL, TTS_BALLOON|TTS_NOFADE|TTS_NOANIMATE|TTS_ALWAYSTIP);
@@ -434,20 +463,24 @@ public:
   void DoPaint(WTL::CDCHandle dc)
   {
     dc.SetBkColor(RGB(255,255,255));
-    CMemDC pMemDC(pDC);
 
-    CBZDoc2* pDoc = (CBZDoc2*)GetDocument();
-    ASSERT(pDoc);
-    if(!pDoc->IsOpen())return; //if(pDoc->GetDocPtr()==NULL)return;
+    //CMemDC pMemDC(dc);
+    //CRect rClip;
+    //pMemDC->GetClipBox(rClip);
 
     CRect rClip;
-    pMemDC->GetClipBox(rClip);
+    dc.GetClipBox(rClip);
+    WTL::CMemoryDC pMemDC(dc.m_hDC, rClip);
+
+    CBZDoc2* pDoc = GetBZDoc2();
+    ASSERT(pDoc);
+    if(!pDoc->IsOpen())return; //if(pDoc->GetDocPtr()==NULL)return;
 
     rClip.top -= rClip.top % options.nBmpZoom;
     rClip.bottom += rClip.bottom % options.nBmpZoom;
 
     int nSpaceTop = (rClip.top < BMPSPACE) ? BMPSPACE - rClip.top : 0;
-    long nBottom = m_cBmp.cy * options.nBmpZoom + BMPSPACE;
+    long nBottom = m_cBmpY * options.nBmpZoom + BMPSPACE;
     if(rClip.bottom >= nBottom)
       rClip.bottom = nBottom;
 
@@ -465,7 +498,7 @@ public:
     {
       LPBYTE p = pDoc->CacheForce(dwOffset, dwReadSize);
       if(p)
-        ::StretchDIBits(pMemDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
+        ::StretchDIBits(pMemDC.m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
         , m_cBmpX * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
         , 0/*srcX*/, 0/*srcY*/, m_cBmpX/*srcW*/, nBmpHeight/*srcH*/
         , p/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
@@ -474,7 +507,7 @@ public:
       if(!lpBits)return;
       if(pDoc->Read(lpBits, dwOffset, dwReadSize))
       {
-        ::StretchDIBits(pMemDC->m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
+        ::StretchDIBits(pMemDC.m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
           , m_cBmpX * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
           , 0/*srcX*/, 0/*srcY*/, m_cBmpX/*srcW*/, nBmpHeight/*srcH*/
           , lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);

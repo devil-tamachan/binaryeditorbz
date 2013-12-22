@@ -327,7 +327,9 @@ LPVOID ReadFile(LPCTSTR pPath)
 		AfxMessageBox(sMsg);
 		return NULL;
 	}
-	DWORD len = file.GetLength();
+  UINT64 len64 = file.GetLength();
+  if(len64 > _UI32_MAX)return NULL;
+	DWORD len = (DWORD)len64;
 	LPVOID p = new char[len + 1];
 	file.Read(p, len);
 	*((LPBYTE)p+len) = '\0';

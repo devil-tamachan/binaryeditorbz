@@ -42,6 +42,7 @@
 #include <atlsplit.h>
 #include <atlfile.h>
 #include <atlutil.h>
+#include <atlscrl.h>
 
 #include <shlobj.h>
 
@@ -58,6 +59,9 @@
 
 #define SFC_EASYDEBUG
 #include "SuperFileCon.h"
+
+#include "tamasplit.h"
+#include "BZCoreData.h"
 
 /*
 #ifdef _UNICODE
