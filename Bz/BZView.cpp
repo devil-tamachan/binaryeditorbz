@@ -905,7 +905,7 @@ void CBZView::OnDoubleClick()	// ### 1.62
 {
 	if(m_dwStruct) {
 		CBZFormView* pView = (CBZFormView*)GetNextWindow(GW_HWNDPREV);
-		pView->OnSelchangeListTag();
+		pView->SelchangeListTag();
 	} else {
 		OnStatusInfo();
 	}

@@ -27,12 +27,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-#ifndef __AFXEXT_H__
-#include <afxext.h>
-#endif
-
-#include <afxtempl.h>
+#pragma once
 
 extern DWORD g_datasizes[];
 
@@ -53,6 +48,23 @@ public:
 	}
 	~CStructMember()
 	{
+	}
+	CStructMember(const CStructMember& r)
+	{
+		m_name = r.m_name;
+    m_type = r.m_type;
+		m_len  = r.m_len;
+    m_bytes = r.m_bytes;
+    m_ofs = r.m_ofs;
+	}
+	CStructMember& operator=(const CStructMember& r)
+	{
+		m_name = r.m_name;
+    m_type = r.m_type;
+		m_len  = r.m_len;
+    m_bytes = r.m_bytes;
+    m_ofs = r.m_ofs;
+		return *this;
 	}
 	CString m_name;
 	int		m_type;
@@ -83,6 +95,13 @@ public:
 		//m_name.SetString(name, max);
 		m_len = 0;
 	}
+	CStructTag(const CStructTag& r)
+	{
+		m_name = r.m_name;
+		m_len  = r.m_len;
+    m_member.Copy(r.m_member);
+    m_sarrFileExt.Copy(r.m_sarrFileExt);
+  }
 	~CStructTag()
 	{
 	}
@@ -90,35 +109,66 @@ public:
 	{
 		m_name = r.m_name;
 		m_len  = r.m_len;
+    m_member.Copy(r.m_member);
+    m_sarrFileExt.Copy(r.m_sarrFileExt);
 		return *this;
 	}
 	CString m_name;
 	DWORD	m_len;
-	CArray<CStructMember, CStructMember&> m_member;
-	CStringArray m_sarrFileExt;		// ###1.61
+	CAtlArray<CStructMember> m_member;
+	CAtlArray<CString> m_sarrFileExt;		// ###1.61
 };
 
-class CBZFormView : public CFormView
-{
-protected:
-	CBZFormView();           // protected constructor used by dynamic creation
-	DECLARE_DYNCREATE(CBZFormView)
 
-// Form Data
+extern TCHAR *s_MemberColLabel[MBRCOL_MAX];
+
+class CBZFormView : public CDialogImpl<CBZFormView>, public WTL::CWinDataExchange<CBZFormView>
+{
 public:
-	//{{AFX_DATA(CBZFormView)
-	enum { IDD = IDD_DIALOG1 };
-	CListBox	m_listTag;
-	CListCtrl	m_listMember;
-	CStatic		m_statMember;
+  CBZFormView()
+  {
+    m_pDefFile = NULL;
+    m_bNoDefFile = FALSE;
+  }
+
+  ~CBZFormView()
+  {
+    if(m_pDefFile)
+      delete m_pDefFile;	// ##1.5
+  }
+
+public:
+  enum { IDD = IDD_DIALOG1 };
+
+  BEGIN_MSG_MAP(CBZFormView)
+    MSG_WM_CREATE(OnCreate)
+    MSG_WM_INITDIALOG(OnInitDialog)
+    MSG_WM_DESTROY(OnDestroy)
+    COMMAND_HANDLER_EX(IDC_LIST_TAG, LBN_SELCHANGE, OnSelchangeListTag)
+    MSG_WM_SIZE(OnSize)
+    MSG_WM_KEYDOWN(OnKeyDown)
+    NOTIFY_HANDLER_EX(IDC_LIST_MEMBER, NM_DBLCLK, OnDblclkListMember)
+    NOTIFY_HANDLER_EX(IDC_LIST_MEMBER, LVN_ITEMCHANGED, OnItemchangedListMember)
+    COMMAND_ID_HANDLER_EX(IDB_TAGALL, OnClickTagAll)
+  END_MSG_MAP()
+
+  BEGIN_DDX_MAP(CBZFormView)
+    DDX_CONTROL_HANDLE(IDC_LIST_TAG, m_listTag);
+    DDX_CONTROL_HANDLE(IDC_LIST_MEMBER, m_listMember);
+    DDX_CONTROL_HANDLE(IDC_STATIC_MEMBER, m_statMember);
+    DDX_CHECK(IDB_TAGALL, m_bTagAll);
+  END_DDX_MAP()
+
+	WTL::CListBox	m_listTag;
+	WTL::CListViewCtrl	m_listMember;
+	WTL::CStatic		m_statMember;
 	BOOL		m_bTagAll;
-	//}}AFX_DATA
 
 // Attributes
 private:
 	LPSTR	m_pDefFile;
 	BOOL m_bNoDefFile;
-	CArray<CStructTag, CStructTag&> m_tag;
+	CAtlArray<CStructTag> m_tag;
 	CBZView* m_pView;
 	int m_nTagSelect;
 
@@ -128,20 +178,32 @@ public:
 	void SelectTag();
 
 public:
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CBZFormView)
-	public:
-	virtual void OnInitialUpdate();
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
-	//}}AFX_VIRTUAL
+  void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+  {
+		if(nChar == VK_RETURN) {
+      HWND hWndFocus = GetFocus();
+			if(hWndFocus == m_listTag.m_hWnd)
+				m_listMember.SetFocus();
+			else if(hWndFocus == m_listMember.m_hWnd) {
+				m_pView->Activate();
+				AfxGetMainWnd()->PostMessage(WM_COMMAND, ID_EDIT_VALUE);
+			}
+			return;
+		}
+		if(nChar == VK_TAB && (::GetKeyState(VK_SHIFT) < 0)) {
+			m_pView->Activate();
+			return;
+		}
+    SetMsgHandled(FALSE);
+  }
 
-// Implementation
 protected:
-	virtual ~CBZFormView();
+  //virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+  //{
+  //  InitListTag();
+  //}
+
+protected:
 
 	HRESULT ParseMember(CStringA& member, int iTag, int iType, CString& errMsg);
 	HRESULT ParseMemberLine(CStringA& memberline, int iTag, CString& errMsg);
@@ -150,22 +212,187 @@ protected:
 	void InitListMember(int iTag);
 	int AddTag(int iTag);
 
-#ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
-#endif
 public:
-	// Generated message map functions
-	//{{AFX_MSG(CBZFormView)
-	afx_msg void OnSelchangeListTag();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnDblclkListMember(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnItemchangedListMember(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnDestroy();
-	afx_msg void OnClickTagAll();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+  CBZView* GetBZView()
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    return pCoreData->GetBZViewFromSubView(this);
+  }
+  CBZDoc2* GetBZDoc2()
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    return pCoreData->GetBZDoc2FromSubView(this);
+  }
+  CTamaSplitterWindow* GetSplitter()
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    return pCoreData->GetSplitterWnd();
+  }
+
+	BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
+	{
+    m_bTagAll = options.bTagAll;
+    DoDataExchange(DDX_LOAD);
+
+    if(!m_pDefFile && !m_bNoDefFile) {
+      CString sPath;
+      sPath = GetStructFilePath(IDS_STRUCT_FILE);
+      if(!(m_pDefFile = (LPSTR)ReadFile(sPath))) {
+        m_bNoDefFile = TRUE;
+        return TRUE;
+      }
+      if(!InitStructList()) {
+        m_bNoDefFile = TRUE;
+        return TRUE;
+      }
+      InitListTag();
+
+      ListView_SetExtendedListViewStyle(m_listMember.m_hWnd, LVS_EX_FULLROWSELECT);
+
+      for_to(i, MBRCOL_MAX) {
+        LV_COLUMN lvcol;
+        lvcol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
+        lvcol.fmt = LVCFMT_LEFT;
+        lvcol.pszText = s_MemberColLabel[i];
+        lvcol.cx = options.colWidth[i];
+        m_listMember.InsertColumn(i, &lvcol);
+      }
+    }
+    m_pView = GetBZView();
+
+    return TRUE;
+  }
+
+  int OnCreate(LPCREATESTRUCT lpCreateStruct)
+  {
+    if(options.xSplitStruct == 0)
+      options.xSplitStruct = lpCreateStruct->cx;
+
+    return 0;
+  }
+	void OnDestroy()
+  {
+    if(!m_bNoDefFile) {
+      for_to(i, MBRCOL_MAX)
+        options.colWidth[i] = m_listMember.GetColumnWidth(i);
+    }
+  }
+  void OnClickTagAll(UINT uNotifyCode, int nID, CWindow wndCtl)
+  {
+    DoDataExchange(DDX_SAVE);
+    options.bTagAll = m_bTagAll;
+    InitListTag();
+  }
+
+  void OnSelchangeListTag(UINT uNotifyCode, int nID, CWindow wndCtl)
+  {
+    if(m_listTag.GetCount()==0)return;
+    SelchangeListTag();
+  }
+
+  void SelchangeListTag()
+  {
+    if(m_listTag.GetCount()==0)return;
+
+    int iItem = m_listTag.GetCurSel();
+    if(iItem != LB_ERR) {
+      int iTag = m_listTag.GetItemData(iItem);
+      m_pView->m_dwStructTag = m_pView->m_dwCaret;
+      m_pView->m_dwStruct = m_pView->m_dwCaret + m_tag[iTag].m_len;
+      m_pView->m_nMember = INVALID;
+      InitListMember(iTag);
+      m_pView->Invalidate(FALSE);
+    }
+  }
+
+
+  void OnSize(UINT nType, CSize size)
+  {
+    //SetScrollSizes(MM_TEXT, size);
+    int cx = size.cx;
+    int cy = size.cy;
+
+    if(m_listTag.m_hWnd && m_listTag.m_hWnd) {
+      CRect rForm, rTag, rMember, rStatic;
+      GetWindowRect(rForm);
+      m_listTag.GetWindowRect(rTag);
+      m_listMember.GetWindowRect(rMember);
+      m_statMember.GetWindowRect(rStatic);
+      ScreenToClient(rTag);
+      ScreenToClient(rMember);
+      ScreenToClient(rStatic);
+
+      int nMgn = rTag.x1;
+      rTag.x2 = cx - rTag.x1;
+      rMember.x2 = cx - nMgn;
+
+      int ySplit = cy / 3;
+      int dy = ySplit - rStatic.y1;
+      rTag.y2 = ySplit - nMgn;
+      rStatic.y1 += dy;
+      rStatic.y2 += dy;
+      rMember.y1 += dy;
+      rMember.y2 = cy - nMgn;
+
+      m_listTag.MoveWindow(rTag);
+      m_listMember.MoveWindow(rMember);
+      m_statMember.MoveWindow(rStatic);
+      m_statMember.Invalidate();
+
+      m_listMember.GetClientRect(rMember);
+      int cxLabel = rMember.Width() - m_listMember.GetColumnWidth(MBRCOL_OFFSET) - m_listMember.GetColumnWidth(MBRCOL_VALUE);
+      if(cxLabel > 0)
+        m_listMember.SetColumnWidth(MBRCOL_LABEL, cxLabel);
+
+      CRect rTagAll;
+      CWindow pWndTagAll = GetDlgItem(IDB_TAGALL);
+      pWndTagAll.GetWindowRect(rTagAll);
+      ScreenToClient(rTagAll);
+      int cxTagAll = rTagAll.Width();
+      rTagAll.right = rTag.right;
+      rTagAll.left = rTag.right - cxTagAll;
+      pWndTagAll.MoveWindow(rTagAll);
+    }
+  }
+  LRESULT OnDblclkListMember(LPNMHDR pnmh)
+  {
+    LPNMITEMACTIVATE pnmia = (LPNMITEMACTIVATE)pnmh;
+
+    if(pnmia->iItem == m_listMember.GetItemCount() - 1) {
+      int iItem = m_listTag.GetCurSel();
+      int iTag = m_listTag.GetItemData(iItem);
+      m_pView->m_dwCaret = m_pView->m_dwStructTag + m_tag[iTag].m_len;
+      if(m_listTag.GetCount() > 1 && m_nTagSelect != -1) {
+        m_listTag.SetCurSel(iItem + 1);
+      }
+      SelchangeListTag();
+    } else {
+      m_pView->Activate();
+      AfxGetMainWnd()->PostMessage(WM_COMMAND, ID_EDIT_VALUE);
+    }
+    return 0;
+  }
+
+	LRESULT OnItemchangedListMember(LPNMHDR pnmh)
+  {
+    LPNMLISTVIEW pnmv = (LPNMLISTVIEW)pnmh;
+
+    if(pnmv->uNewState == (LVIS_FOCUSED | LVIS_SELECTED)) {
+      int iTag = m_listTag.GetItemData(m_listTag.GetCurSel());
+      if(iTag >= 0) {	// ### 1.62
+        CStructMember& m = m_tag[iTag].m_member[pnmv->iItem];
+        m_pView->m_nMember = m.m_ofs;
+        m_pView->m_dwCaret = m_pView->m_dwStructTag + m.m_ofs;
+        m_pView->m_nBytes = m.m_bytes ? m.m_bytes : 1;
+        m_pView->m_nBytesLength = (m.m_bytes && (m.m_bytes != m.m_len)) ? m.m_len / m.m_bytes : 1;
+        m_pView->GotoCaret();
+        m_pView->Invalidate(FALSE);
+        m_pView->UpdateStatusInfo();
+      }
+      //	m_pView->Activate();
+    }	
+    return 0;
+  }
 };
 
 /////////////////////////////////////////////////////////////////////////////

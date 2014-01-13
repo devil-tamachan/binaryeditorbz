@@ -29,86 +29,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "stdafx.h"
 #include "BZ.h"
+#include "BZDoc2.h"
+#include "zlib.h"
 #include "BZAnalyzerView.h"
 #include "ProgressDialog.h"
-#include "zlib.h"
-#include "BZDoc2.h"
 #include "Splitter.h"
 //#include "..\..\CFolderDialog\folderdlg.h"//atldlgs.hからCFolderDialogだけ切り取ったもの。shlobj.hのinclude, CFolderDialogImpl, CFolderDialog, ATL_NO_VTABLEを__declspec(novtable)に変更, ATLTRACEをコメントアウトしたもの。代わりにWTLのatldlgs.hをインクルードしても良い。CPL感染するので同梱しない。
 
 
 // CBZAnalyzerView
 
-IMPLEMENT_DYNCREATE(CBZAnalyzerView, CFormView)
 
-CBZAnalyzerView::CBZAnalyzerView()
-	: CFormView(CBZAnalyzerView::IDD)
-{
-
-}
-
-CBZAnalyzerView::~CBZAnalyzerView()
-{
-}
-
-void CBZAnalyzerView::DoDataExchange(CDataExchange* pDX)
-{
-	CFormView::DoDataExchange(pDX);
-	DDX_Control(pDX, IDP_ANALYZE_PERCENT, m_progress);
-	DDX_Control(pDX, IDL_ANALYZE_RESULT, m_resultList);
-	DDX_Control(pDX, IDC_ANALYZE_TYPE, m_combo_analyzetype);
-}
-
-BEGIN_MESSAGE_MAP(CBZAnalyzerView, CFormView)
-	ON_BN_CLICKED(IDB_ANALYZE_START, &CBZAnalyzerView::OnBnClickedAnalyzeStart)
-	ON_BN_CLICKED(IDB_ANALYZER_SAVE, &CBZAnalyzerView::OnBnClickedAnalyzerSave)
-	ON_BN_CLICKED(IDB_ANALYZER_SAVEALL, &CBZAnalyzerView::OnBnClickedAnalyzerSaveall)
-END_MESSAGE_MAP()
-
-
-// CBZAnalyzerView 診断
-
-#ifdef _DEBUG
-void CBZAnalyzerView::AssertValid() const
-{
-	CFormView::AssertValid();
-}
-
-#ifndef _WIN32_WCE
-void CBZAnalyzerView::Dump(CDumpContext& dc) const
-{
-	CFormView::Dump(dc);
-}
-#endif
-#endif //_DEBUG
-
-
-// CBZAnalyzerView メッセージ ハンドラ
-
-void CBZAnalyzerView::OnInitialUpdate()
-{
-	CFormView::OnInitialUpdate();
-
-	// TODO: ここに特定なコードを追加するか、もしくは基本クラスを呼び出してください。
-	if(m_combo_analyzetype.GetCount()==0)
-	{
-		m_combo_analyzetype.InsertString(0, _T("zlib (deflate)"));
-		m_combo_analyzetype.SetCurSel(0);
-
-		m_resultList.DeleteAllItems();
-		m_resultList.InsertColumn(0, _T("Address"), LVCFMT_LEFT, 120);
-	//	m_resultList.InsertColumn(1, "Size", LVCFMT_LEFT, 80);
-	}
-	CSplitterWnd* pSplit = (CSplitter*)GetParent();
-	pSplit->SetColumnInfo(0, 180, 0);
-}
-
-void CBZAnalyzerView::Clear()
-{
-	TRACE("AnalyzerClear!\n");
-	if(IsWindow(m_resultList.m_hWnd))
-		m_resultList.DeleteAllItems();
-}
 
 unsigned char secondTables[8+1][8] = {	{0x1d, 0x5b, 0x99, 0xd7, 0x3c, 0x7a, 0xb8, 0xf6},//0x08(first)
 										{0x19, 0x57, 0x95, 0xd3, 0x38, 0x76, 0xb4, 0xf2},//0x18
@@ -139,77 +70,6 @@ __inline BOOL IsZlibDeflate(unsigned char firstChar, unsigned char secondChar)
 	return false;
 }
 
-void CBZAnalyzerView::OnBnClickedAnalyzeStart()
-{
-	// TODO: ここにコントロール通知ハンドラ コードを追加します。
-	m_resultList.DeleteAllItems();
-
-//	CProgressDialog dlgProgress;
-//	dlgProgress.DoModal();
-
-//	m_resultList.InsertItem(0, "0x00000000");
-//	m_resultList.SetItemText(0, 1, "5000");
-
-	int iListIndex = -1;
-
-	CBZDoc2* pDoc = (CBZDoc2*)GetDocument();
-	ASSERT(pDoc);
-//	LPBYTE p  = pDoc->GetDocPtr();
-	UINT64 dwFileSize = pDoc->GetDocSize();
-
-	unsigned int outbufsize = 1;
-	LPBYTE pOutBuf = (LPBYTE)malloc(outbufsize);
-	int inflateStatus = Z_OK;
-
-  const DWORD dwInputBuf = 1000;
-  const DWORD dwDecodeMax = 100;
-  const DWORD dwLoopInc = dwInputBuf - dwDecodeMax;
-  LPBYTE pInputBuf = (LPBYTE)malloc(dwInputBuf);
-
-  if(pInputBuf && pOutBuf && pDoc->IsOpen())
-  {
-    for(DWORD ofs_inflateStart = 0; ofs_inflateStart < dwFileSize-1/*-2以上でもいいかも*/; ofs_inflateStart+=dwLoopInc)
-    {
-      UINT64 dwRemain64 = dwFileSize - ofs_inflateStart;
-      DWORD dwReadSize;
-      if(dwRemain64 > dwInputBuf)dwReadSize = dwInputBuf;
-      else dwReadSize = (DWORD)dwRemain64;
-      if(!pDoc->Read(pInputBuf, ofs_inflateStart, dwReadSize)) break;
-
-      for(DWORD i=0; i<dwLoopInc; i++)
-      {
-        if(dwReadSize < 2 || !IsZlibDeflate(*pInputBuf, *(pInputBuf+1)))continue;
-
-        z_stream z = {0};
-        z.next_out = pOutBuf;
-        z.avail_out = outbufsize;
-
-        if(inflateInit(&z)!=Z_OK)continue;
-
-        DWORD dwDecodeSize = min(dwReadSize-i, dwDecodeMax);
-        z.next_in = pInputBuf+i;
-        z.avail_in = dwDecodeSize;
-        inflateStatus = inflate(&z, Z_NO_FLUSH);
-
-        if(inflateStatus==Z_OK||inflateStatus==Z_STREAM_END)
-        {
-          CString str;
-          str.Format(_T("0x%08X"), ofs_inflateStart);
-          m_resultList.InsertItem(++iListIndex, str);
-          //	m_resultList.SetItemText(0, 1, "5000");
-        }
-        TRACE(_T("BZAnalyzerView(0x%08X) inflateStatus==%d\n"),ofs_inflateStart , inflateStatus);
-        inflateEnd(&z);
-      }
-    }
-  }
-
-  if(pInputBuf)free(pInputBuf);
-	if(pOutBuf)free(pOutBuf);
-	
-//	m_resultList.InsertItem(++iListIndex, "End");
-}
-
 unsigned long CBZAnalyzerView::GetAddress(int nItem)
 {
 	TCHAR tmpbuf[20];
@@ -221,7 +81,7 @@ unsigned long CBZAnalyzerView::GetAddress(int nItem)
 BOOL CBZAnalyzerView::MakeExportDir(LPTSTR pathOutputDir, LPCTSTR pathDstFolder)
 {
 	TCHAR lastDir[_MAX_PATH];
-	_stprintf_s(lastDir, _MAX_PATH, _T("%s\\"), ::PathFindFileName(GetDocument()->GetPathName()));
+	_stprintf_s(lastDir, _MAX_PATH, _T("%s\\"), ::PathFindFileName(GetBZDoc2()->GetPathName()));
 	_tcscpy_s(pathOutputDir, _MAX_PATH, pathDstFolder);
 	return ::PathAppend(pathOutputDir, lastDir);
 }
@@ -231,79 +91,12 @@ int CBZAnalyzerView::MakeExportPath(LPTSTR pathOutput, LPCTSTR pathDir, unsigned
 	return _stprintf_s(pathOutput, _MAX_PATH, _T("%s%08X.bin"), pathDir, ulStartAddr);
 }
 
-void CBZAnalyzerView::OnBnClickedAnalyzerSave()
-{
-	// TODO: ここにコントロール通知ハンドラ コードを追加します。
-	WTL::CFolderDialog dlg(NULL, NULL, BIF_RETURNONLYFSDIRS | BIF_USENEWUI);
-	if(dlg.DoModal()==IDOK)
-	{
-		POSITION pos = m_resultList.GetFirstSelectedItemPosition();
-		if(pos==NULL)
-		{
-			MessageBox(_T("no selected"), _T("Error"), MB_OK);
-			return;
-		}
-
-		unsigned int outbufsize = 1024000;
-		LPBYTE outbuf = (LPBYTE)malloc(outbufsize);
-
-		TCHAR pathOutputDir[_MAX_PATH];
-		MakeExportDir(pathOutputDir, dlg.GetFolderPath());
-		CAtlList<int> delList;
-
-		while(pos)
-		{
-			int nItem = m_resultList.GetNextSelectedItem(pos);
-			unsigned long ulStartAddr = GetAddress(nItem);
-			if(FAILED(SaveFile(pathOutputDir, ulStartAddr, outbuf, outbufsize))) delList.AddHead(nItem);
-		}
-		free(outbuf);
-
-		POSITION listpos = delList.GetHeadPosition();
-		while(listpos!=NULL)
-		{
-			int nDelItem = delList.GetNext(listpos);
-			m_resultList.DeleteItem(nDelItem);
-		}
-	}
-}
-
-void CBZAnalyzerView::OnBnClickedAnalyzerSaveall()
-{
-	// TODO: ここにコントロール通知ハンドラ コードを追加します。
-	WTL::CFolderDialog dlg(NULL, NULL, BIF_RETURNONLYFSDIRS | BIF_USENEWUI);
-	if(dlg.DoModal()==IDOK)
-	{
-		unsigned int outbufsize = 1024000;
-		LPBYTE outbuf = (LPBYTE)malloc(outbufsize);
-
-		TCHAR pathOutputDir[_MAX_PATH];
-		MakeExportDir(pathOutputDir, dlg.GetFolderPath());
-		CAtlList<int> delList;
-		
-		int itemcount = m_resultList.GetItemCount();
-
-		for(int i=0; i<itemcount; i++)
-		{
-			unsigned long ulStartAddr = GetAddress(i);
-			if(FAILED(SaveFile(pathOutputDir, ulStartAddr, outbuf, outbufsize))) delList.AddHead(i);
-		}
-		free(outbuf);
-
-		POSITION listpos = delList.GetHeadPosition();
-		while(listpos!=NULL)
-		{
-			int nDelItem = delList.GetNext(listpos);
-			m_resultList.DeleteItem(nDelItem);
-		}
-	}
-}
 
 HRESULT CBZAnalyzerView::SaveFile(LPCTSTR pathOutputDir, unsigned long ulStartAddr, LPBYTE outbuf, unsigned int outbufsize)
 {
 	TCHAR pathOutput[_MAX_PATH];
 
-	CBZDoc2* pDoc = (CBZDoc2*)GetDocument();
+	CBZDoc2* pDoc = GetBZDoc2();
 	ASSERT(pDoc);
 //	LPBYTE p  = pDoc->GetDocPtr();
   if(!pDoc->IsOpen())return E_FAIL;
