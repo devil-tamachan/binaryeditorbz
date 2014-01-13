@@ -51,39 +51,6 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
 
-IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
-
-BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
-	//{{AFX_MSG_MAP(CMainFrame)
-	ON_WM_CREATE()
-	ON_COMMAND(ID_JUMP_FIND, OnJumpFind)
-	ON_COMMAND(ID_VIEW_BITMAP, OnViewBitmap)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_BITMAP, OnUpdateViewBitmap)
-	ON_COMMAND(ID_VIEW_STRUCT, OnViewStruct)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_STRUCT, OnUpdateViewStruct)
-	ON_COMMAND(ID_VIEW_INSPECT, &CMainFrame::OnViewInspect)
-	ON_COMMAND(ID_JUMP_TO, OnJumpTo)
-	ON_COMMAND(ID_EDIT_VALUE, OnEditValue)
-	ON_COMMAND(ID_VIEW_FULLPATH, OnViewFullpath)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_FULLPATH, OnUpdateViewFullpath)
-	ON_WM_CLOSE()
-	ON_WM_SHOWWINDOW()
-	ON_COMMAND(ID_TOOLS_SETTING, OnToolsSetting)
-	ON_COMMAND(ID_VIEW_SUBCURSOR, OnViewSubCursor)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_SUBCURSOR, OnUpdateViewSubCursor)
-	//}}AFX_MSG_MAP
-	ON_COMMAND_RANGE(ID_VIEW_SPLIT_H, ID_VIEW_SPLIT_V, OnViewSplit)
-	ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_SPLIT_H, ID_VIEW_SPLIT_V, OnUpdateViewSplit)
-	ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
-
-	ON_COMMAND(ID_VIEW_SYNCSCROLL, OnViewSyncScroll)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_SYNCSCROLL, OnUpdateViewSyncScroll)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_INSPECT, &CMainFrame::OnUpdateViewInspect)
-	ON_COMMAND(ID_VIEW_ANALYZER, &CMainFrame::OnViewAnalyzer)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_ANALYZER, &CMainFrame::OnUpdateViewAnalyzer)
-	ON_COMMAND(ID_HELP_INDEX, &CMainFrame::OnHelpIndex)
-END_MESSAGE_MAP()
-
 static UINT indicators[] =
 {
 	ID_SEPARATOR,           // status line indicator
@@ -96,25 +63,7 @@ static UINT indicators[] =
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame construction/destruction
 
-CMainFrame::CMainFrame()
-{
-	// TODO: add member initialization code here
-	m_pSplitter = NULL;
-	m_bBmpView = FALSE;
-	m_bStructView = FALSE;
-	m_bInspectView = FALSE;
-	m_bAnalyzerView= FALSE;
-	m_nSplitView = m_nSplitView0 = 0;
-	m_bDisableStatusInfo = FALSE;
 
-//	EnableActiveAccessibility();
-}
-
-CMainFrame::~CMainFrame()
-{
-	if(m_pSplitter)
-		delete m_pSplitter;
-}
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs) 
 {
@@ -130,70 +79,6 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 		return TRUE;
 	}
 	return FALSE;
-}
-
-int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (CFrameWnd::OnCreate(lpCreateStruct) == -1)
-		return -1;
-
-	if(options.ptFrame.x && options.ptFrame.y)
-	{
-		WINDOWPLACEMENT wndpl;
-		GetWindowPlacement(&wndpl);
-		if(((CBZApp*)AfxGetApp())->m_bFirstInstance)
-		{
-			wndpl.rcNormalPosition.left = options.ptFrame.x;
-			int newy = options.ptFrame.y;
-			wndpl.rcNormalPosition.top = (newy<0)?0:newy;
-		}
-		wndpl.rcNormalPosition.bottom = wndpl.rcNormalPosition.top + options.cyFrame;
-		SetWindowPlacement(&wndpl);
-	}
-
-	if (!(options.barState & BARSTATE_NOFLAT ? m_wndToolBar.Create(this)
-		: m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP)) ||
-		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME)) {
-		TRACE0("Failed to create toolbar\n");
-		return -1;      // fail to create
-	}
-	m_wndToolBar.m_cyTopBorder = 2;
-	m_wndToolBar.m_cyBottomBorder = 2;
-	m_wndToolBar.m_cxLeftBorder = 6;
-	m_wndToolBar.m_cxRightBorder = 8;
-
-	if (!m_wndToolBar.CreateComboBox(ID_JUMP_FIND, ID_JUMP_FINDNEXT, COMBO_WIDTH, COMBO_HEIGHT)) {
-		TRACE0("Failed to create combobox in toolbar\n");
-		return -1;      // fail to create
-	}
-	if (!m_wndStatusBar.Create(this) ||
-		!m_wndStatusBar.SetIndicators(indicators,
-		  sizeof(indicators)/sizeof(UINT))) {
-		TRACE0("Failed to create status bar\n");
-		return -1;      // fail to create
-	}
-
-	// TODO: Remove this if you don't want tool tips or a resizeable toolbar
-	m_wndToolBar.SetBarStyle(m_wndToolBar.GetBarStyle() |
-		CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
-
-	// TODO: Delete these three lines if you don't want the toolbar to
-	//  be dockable
-	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
-	EnableDocking(CBRS_ALIGN_ANY);
-	DockControlBar(&m_wndToolBar);
-
-	m_wndStatusBar.SetPaneInfo(0, ID_SEPARATOR,	SBPS_STRETCH | SBPS_NOBORDERS, 160);
-
-	ShowControlBar(&m_wndToolBar, (options.barState & BARSTATE_TOOL) != 0, FALSE);
-	ShowControlBar(&m_wndStatusBar, (options.barState & BARSTATE_STATUS) != 0, FALSE);
-
-	UINT nID;
-	UINT nStyle;
-	m_wndStatusBar.GetPaneInfo(1, nID, nStyle, m_nPaneWidth);
-	m_wndStatusBar.SetPaneText(1, _T(""));
-
-	return 0;
 }
 
 BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) 
@@ -404,156 +289,7 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 	return TRUE;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CMainFrame diagnostics
 
-#ifdef _DEBUG
-void CMainFrame::AssertValid() const
-{
-	CFrameWnd::AssertValid();
-}
-
-void CMainFrame::Dump(CDumpContext& dc) const
-{
-	CFrameWnd::Dump(dc);
-}
-
-#endif //_DEBUG
-
-/////////////////////////////////////////////////////////////////////////////
-// CMainFrame message handlers
-
-void CMainFrame::OnJumpFind() 
-{
-	// TODO: Add your command handler code here
-	ShowControlBar(&m_wndToolBar, TRUE, FALSE);
-	m_wndToolBar.m_combo.SetFocus();
-}
-
-void CMainFrame::OnJumpTo() 
-{
-	// TODO: Add your command handler code here
-	ShowControlBar(&m_wndToolBar, TRUE, FALSE);
-	m_wndToolBar.m_combo.SetFocus();
-	m_wndToolBar.m_combo.SetText(_T("> "));
-}
-
-void CMainFrame::OnEditValue() 
-{
-	// TODO: Add your command handler code here
-	ShowControlBar(&m_wndToolBar, TRUE, FALSE);
-	m_wndToolBar.m_combo.SetFocus();
-	m_wndToolBar.m_combo.SetText(_T("< %"));
-}
-
-void CMainFrame::OnViewBitmap() 
-{
-	// TODO: Add your command handler code here
-	GetSplitInfo();
-	m_bBmpView = !m_bBmpView;
-	m_bStructView = FALSE;
-	m_bInspectView = FALSE;
-	m_bAnalyzerView = FALSE;
-	CreateClient();
-}
-
-void CMainFrame::OnViewStruct() 
-{
-	// TODO: Add your command handler code here
-	GetSplitInfo();
-	m_bBmpView = FALSE;
-	m_bStructView = !m_bStructView;
-	m_bInspectView = FALSE;
-	m_bAnalyzerView = FALSE;
-	CreateClient();
-}
-
-
-void CMainFrame::OnViewInspect()
-{
-	GetSplitInfo();
-	m_bBmpView = FALSE;
-	m_bStructView = FALSE;
-	m_bInspectView = !m_bInspectView;
-	m_bAnalyzerView = FALSE;
-	CreateClient();
-}
-
-void CMainFrame::OnViewAnalyzer()
-{
-	GetSplitInfo();
-	m_bBmpView = FALSE;
-	m_bStructView = FALSE;
-	m_bInspectView = FALSE;
-	m_bAnalyzerView = !m_bAnalyzerView;
-	CreateClient();
-}
-
-
-void CMainFrame::OnViewSplit(UINT nID) 
-{
-	/* 最大化していると最大化状態のままウィンドウサイズが調整されて変なウィンドウ（最大化できない＆サイズ変更不可）になってしまうバグの対策 */
-	options.nCmdShow=SW_SHOWNORMAL;
-	ShowWindow(options.nCmdShow);
-
-	GetSplitInfo();
-	m_nSplitView0 = m_nSplitView;
-	m_nSplitView = (m_nSplitView == nID) ? 0 : nID;
-	CreateClient();
-	m_nSplitView0 = m_nSplitView;
-}
-
-/*
-void CMainFrame::OnViewSplit(UINT nID) 
-{
-	// TODO: Add your command handler code here
-	CSplitter *pnewSplit = new CSplitter;
-	CBZDoc* pDoc = (CBZDoc*)GetActiveDocument();
-	CBZDocTemplate* pTemp = (CBZDocTemplate*)pDoc->GetDocTemplate();
-
-	if(m_nSplitView == nID) {
-		pnewSplit->ReplaceClient(this, 1, 1);
-		pnewSplit->ReplaceView(0, 0, RUNTIME_CLASS(CBZView));
-		nID = 0;
-	} else {
-		int nRow = (nID == ID_VIEW_SPLIT_H);
-		int nCol = (nID == ID_VIEW_SPLIT_V);
-		CDocument* pDoc0 = NULL;
-		CDocument* pDoc1 = NULL;
-		if(m_nSplitView) {
-			pDoc0 = m_pSplitter->GetView(0)->GetDocument();
-			pDoc1 = m_pSplitter->GetView(1)->GetDocument();
-		}
-		RECT rClient;
-		GetActiveView()->GetClientRect(&rClient);
-		pnewSplit->ReplaceClient(this, nRow+1, nCol+1);
-		if(pDoc0)
-			pnewSplit->m_pDoc = pDoc0;
-		pnewSplit->ReplaceView(0, 0, RUNTIME_CLASS(CBZView));
-		if(pDoc1)
-				pnewSplit->m_pDoc = pDoc1;
-		else {		
-			pnewSplit->m_pDoc = new CBZDoc;
-			pTemp->CDocTemplate::AddDocument(pnewSplit->m_pDoc);
-			pDoc->DuplicateDoc((CBZDoc*)pnewSplit->m_pDoc);
-		}
-		pnewSplit->ReplaceView(nRow, nCol, RUNTIME_CLASS(CBZView));
-		if(nID == ID_VIEW_SPLIT_H)
-			pnewSplit->SetRowInfo(0, rClient.y2/2, 0);
-		else
-			pnewSplit->SetColumnInfo(0, rClient.x2/2, 0);
-	}
-	if(m_pSplitter)
-		m_pSplitter->DestroyWindow();
-	delete m_pSplitter;
-	if(m_nSplitView)
-		pTemp->SetDocument(pnewSplit->m_pDoc);
-	m_pSplitter = pnewSplit;
-	m_nSplitView = nID;
-	OnUpdateFrameTitle();
-	RecalcLayout();
-}
-*/
 
 void CMainFrame::ChangeView(CView* pView) 
 {
@@ -575,49 +311,6 @@ CView *CMainFrame::GetBrotherView(CView* pView)
 	return pView;
 }
 
-void CMainFrame::OnUpdateViewBitmap(CCmdUI* pCmdUI) 
-{
-	// TODO: Add your command update UI handler code here
-	pCmdUI->SetCheck(m_bBmpView);
-	CBZDoc2* pDoc = (CBZDoc2*)(GetActiveView()->GetDocument());
-	pCmdUI->Enable(pDoc->GetDocSize() >= (DWORD)(options.nBmpWidth * (options.nBmpColorWidth/8)) /* && !m_nSplitView*/);
-}
-
-void CMainFrame::OnUpdateViewStruct(CCmdUI* pCmdUI) 
-{
-	// TODO: Add your command update UI handler code here
-	pCmdUI->SetCheck(m_bStructView);
-//	pCmdUI->Enable(!m_nSplitView);
-}
-
-void CMainFrame::OnUpdateViewInspect(CCmdUI *pCmdUI)
-{
-	pCmdUI->SetCheck(m_bInspectView);
-}
-
-
-void CMainFrame::OnUpdateViewAnalyzer(CCmdUI *pCmdUI)
-{
-	pCmdUI->SetCheck(m_bAnalyzerView);
-}
-
-
-void CMainFrame::OnUpdateViewSplit(CCmdUI* pCmdUI) 
-{
-	// TODO: Add your command update UI handler code here
-	pCmdUI->SetCheck(m_nSplitView == pCmdUI->m_nID);
-//	pCmdUI->Enable(!m_bBmpView && !m_bStructView);
-}
-
-void CMainFrame::OnShowWindow(BOOL bShow, UINT nStatus) 
-{
-	if(bShow && m_nSplitView != ID_VIEW_SPLIT_V) {
-		CView *pView = GetActiveView();
-		if(pView->GetRuntimeClass() == RUNTIME_CLASS(CBZView))
-			((CBZView*)GetActiveView())->ResizeFrame();
-	}
-	CFrameWnd::OnShowWindow(bShow, nStatus);
-}
 
 void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
@@ -638,65 +331,19 @@ void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 	}
 }
 
-LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
-{
-//	TRACE("Msg:%X\n", wParam);
-	if(wParam == AFX_IDS_IDLEMESSAGE) {
-		m_bDisableStatusInfo = FALSE;
-		m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_INFO, SBPS_NORMAL, m_nPaneWidth);
-	} else if(wParam) {
-		m_bDisableStatusInfo = TRUE;
-		m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_INFO, SBPS_DISABLED | SBT_NOBORDERS, 0);
-	}
-	return CFrameWnd::OnSetMessageString(wParam, lParam);
-}
+//LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
+//{
+//	if(wParam == AFX_IDS_IDLEMESSAGE) {
+//		m_bDisableStatusInfo = FALSE;
+//		m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_INFO, SBPS_NORMAL, m_nPaneWidth);
+//	} else if(wParam) {
+//		m_bDisableStatusInfo = TRUE;
+//		m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_INFO, SBPS_DISABLED | SBT_NOBORDERS, 0);
+//	}
+//	return CFrameWnd::OnSetMessageString(wParam, lParam);
+//}
 
-void CMainFrame::OnViewFullpath() 
-{
-	// TODO: Add your command handler code here
-	options.barState ^= BARSTATE_FULLPATH;
-	OnUpdateFrameTitle();
-}
 
-void CMainFrame::OnUpdateViewFullpath(CCmdUI* pCmdUI) 
-{
-	// TODO: Add your command update UI handler code here
-	pCmdUI->SetCheck(options.barState & BARSTATE_FULLPATH);
-}
-
-void CMainFrame::OnViewSubCursor()	// ### 1.62
-{
-	// TODO: Add your command handler code here
-	options.bSubCursor = !options.bSubCursor;
-	GetActiveView()->Invalidate();
-}
-
-void CMainFrame::OnUpdateViewSubCursor(CCmdUI* pCmdUI) 
-{
-	// TODO: Add your command update UI handler code here
-	pCmdUI->SetCheck(options.bSubCursor);
-}
-
-void CMainFrame::OnViewSyncScroll()
-{
-	// TODO: Add your command handler code here
-	options.bSyncScroll = !options.bSyncScroll;
-	GetActiveView()->Invalidate();
-}
-
-void CMainFrame::OnUpdateViewSyncScroll(CCmdUI* pCmdUI) 
-{
-	// TODO: Add your command update UI handler code here
-	pCmdUI->SetCheck(options.bSyncScroll);
-}
-
-void CMainFrame::OnClose() 
-{
-	// TODO: Add your message handler code here and/or call default
-	GetFrameState();
-	GetSplitInfo();
-	CFrameWnd::OnClose();
-}
 
 void CMainFrame::GetFrameState()
 {
@@ -744,15 +391,6 @@ void CMainFrame::GetSplitInfo()
 	}
 }
 
-void CMainFrame::OnToolsSetting() 
-{
-	// TODO: Add your command handler code here
-	BOOL bDWordAddr = options.bDWordAddr;
-	CSettingDlg().DoModal();
-	if(bDWordAddr != options.bDWordAddr) {
-	}
-}
-
 
 void CMainFrame::UpdateInspectViewChecks()
 {
@@ -765,8 +403,4 @@ void CMainFrame::UpdateInspectViewChecks()
 		((CBZInspectView*)m_pSplitter->GetPane(r, c))->_UpdateChecks();
 		((CBZInspectView*)m_pSplitter->GetPane(r, c))->Update();
 	}
-}
-void CMainFrame::OnHelpIndex()
-{
-	ShellExecute(NULL, _T("open"), _T("http://devil-tamachan.github.io/BZDoc/"), NULL, NULL, SW_SHOWNORMAL);
 }
