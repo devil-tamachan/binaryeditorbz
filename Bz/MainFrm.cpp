@@ -65,56 +65,21 @@ static UINT indicators[] =
 
 
 
-BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs) 
-{
-	if(CFrameWnd::PreCreateWindow(cs)) {
-		WNDCLASSEX wc;
-		wc.cbSize = sizeof(WNDCLASSEX);
-		VERIFY(::GetClassInfoEx(AfxGetInstanceHandle(), cs.lpszClass, &wc));
-		wc.lpszClassName = _T(BZ_CLASSNAME);
-		wc.hIcon  = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-		wc.hIconSm = (HICON)::LoadImage(AfxGetResourceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 16, 16, 0);
-		::RegisterClassEx(&wc);
-		cs.lpszClass = _T(BZ_CLASSNAME);
-		return TRUE;
-	}
-	return FALSE;
-}
-
-BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) 
-{
-	// TODO: Add your specialized code here and/or call the base class
-
-	m_bStructView = options.bStructView;
-	m_bInspectView = options.bInspectView;
-	m_bAnalyzerView = options.bAnalyzerView;
-	CreateClient(pContext);
-	return TRUE; //CFrameWnd::OnCreateClient(lpcs, pContext);
-}
-
-void CMainFrame::DeleteSplitterWnd(CCreateContext* pContext)
-{
-	m_pSplitter->DeleteView(0,0);
-	m_pSplitter->CreateView(0,0,RUNTIME_CLASS(CWnd), CSize(0,0), pContext);
-	m_pSplitter->SetActivePane(0,0);
-
-	int maxRow = m_pSplitter->GetRowCount();
-	int maxCol = m_pSplitter->GetColumnCount();
-	for(int r=0; r<maxRow; r++)
-	{
-		for(int c=0; c<maxCol; c++)
-		{
-			if(r!=0 && c!=0)
-			{
-				m_pSplitter->DeleteView(r,c);
-			}
-		}
-	}
-
-	m_pSplitter->DestroyWindow();
-	delete m_pSplitter;
-	m_pSplitter = NULL;
-}
+//BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)   ‚½‚Ô‚ñíœ‚µ‚Ä‚à–â‘è‚È‚¢Bˆê‰žŽc‚µ‚Ä‚¨‚­
+//{
+//	if(CFrameWnd::PreCreateWindow(cs)) {
+//		WNDCLASSEX wc;
+//		wc.cbSize = sizeof(WNDCLASSEX);
+//		VERIFY(::GetClassInfoEx(AfxGetInstanceHandle(), cs.lpszClass, &wc));
+//		wc.lpszClassName = _T(BZ_CLASSNAME);
+//		wc.hIcon  = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+//		wc.hIconSm = (HICON)::LoadImage(AfxGetResourceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 16, 16, 0);
+//		::RegisterClassEx(&wc);
+//		cs.lpszClass = _T(BZ_CLASSNAME);
+//		return TRUE;
+//	}
+//	return FALSE;
+//}
 
 BOOL CMainFrame::CreateClient(CCreateContext* pContext) 
 {
@@ -312,24 +277,6 @@ CView *CMainFrame::GetBrotherView(CView* pView)
 }
 
 
-void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
-{
-//	CFrameWnd::OnUpdateFrameTitle(bAddToTitle);
-
-	CBZDoc2* pDoc = (CBZDoc2*)GetActiveDocument();
-	if(pDoc) {
-		CString s(AfxGetAppName());
-		s += " - ";
-		CString sPath = pDoc->GetPathName();
-		if(!(options.barState & BARSTATE_FULLPATH) || sPath.IsEmpty())
-			sPath = pDoc->GetTitle();
-		s += sPath;
-//		s += pDoc->IsFileMapping()?_T(" (FileMap)"):_T(" (Mem)");
-		if(pDoc->IsModified())
-			s += " *";
-		SetWindowText(s);
-	}
-}
 
 //LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 //{
@@ -345,62 +292,5 @@ void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 
 
 
-void CMainFrame::GetFrameState()
-{
-	WINDOWPLACEMENT wndpl;
-	GetWindowPlacement(&wndpl);
-	options.ptFrame.x = wndpl.rcNormalPosition.left;
-	options.ptFrame.y = wndpl.rcNormalPosition.top;
-	options.nCmdShow = wndpl.showCmd;
-	options.barState = m_wndToolBar.IsWindowVisible() * BARSTATE_TOOL | m_wndStatusBar.IsWindowVisible() * BARSTATE_STATUS
-						| options.barState & (BARSTATE_FULLPATH | BARSTATE_NOFLAT);
-}
-
-void CMainFrame::GetSplitInfo()
-{
-	if(IsIconic() || IsZoomed()) return;
-	CRect rFrame;
-	GetWindowRect(rFrame);
-
-	int nCur, nMin;
-	switch(options.nSplitView = m_nSplitView) {
-	case 0:
-		options.cyFrame = rFrame.Height();
-		break;
-	case ID_VIEW_SPLIT_H:
-		options.cyFrame2 = rFrame.Height();
-		m_pSplitter->GetRowInfo(0, nCur, nMin);
-		options.ySplit = nCur;
-		break;
-	case ID_VIEW_SPLIT_V:
-		options.cxFrame2 = rFrame.Width();
-		m_pSplitter->GetColumnInfo(0, nCur, nMin);
-		options.xSplit = nCur;
-		if(m_bBmpView || m_bStructView || m_bInspectView || m_bAnalyzerView) {
-			m_pSplitter->GetColumnInfo(1, nCur, nMin);
-			options.xSplit += nCur;
-		}
-		break;
-	}
-	options.bStructView = m_bStructView;
-	options.bInspectView = m_bInspectView;
-	options.bAnalyzerView = m_bAnalyzerView;
-	if(m_bStructView || m_bInspectView || m_bAnalyzerView) {
-		m_pSplitter->GetColumnInfo(0, nCur, nMin);
-		options.xSplitStruct = nCur;
-	}
-}
 
 
-void CMainFrame::UpdateInspectViewChecks()
-{
-	if(m_bInspectView && m_nSplitView && m_nSplitView0) {
-		((CBZInspectView*)m_pSplitter->GetPane(0, 0))->_UpdateChecks();
-		((CBZInspectView*)m_pSplitter->GetPane(0, 0))->Update();
-		int r=0,c=0;
-		if(options.nSplitView==ID_VIEW_SPLIT_H)c=2;
-		else r=1;
-		((CBZInspectView*)m_pSplitter->GetPane(r, c))->_UpdateChecks();
-		((CBZInspectView*)m_pSplitter->GetPane(r, c))->Update();
-	}
-}

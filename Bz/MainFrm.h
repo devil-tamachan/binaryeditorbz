@@ -33,17 +33,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include "Splitter.h"
 #include "StatBar.h"
 
-class CMainFrame : public CFrameWindowImpl<CMainFrame>, public CUpdateUI<CMainFrame>
+#define BZ_CLASSNAME "BzEditorClass"
+
+class CMainFrame : public WTL::CFrameWindowImpl<CMainFrame>, public WTL::CUpdateUI<CMainFrame>
 {
 public:
-  DECLARE_FRAME_WND_CLASS_EX(_T("BZMainFrame"), IDR_MAINFRAME, CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS, COLOR_WINDOW)
+  DECLARE_FRAME_WND_CLASS_EX(_T(BZ_CLASSNAME), IDR_MAINFRAME, CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS, COLOR_WINDOW)
 
   BEGIN_MSG_MAP(CMainFrame)
     MSG_WM_CREATE(OnCreate)
     MSG_WM_CLOSE(OnClose)
     MSG_WM_SHOWWINDOW(OnShowWindow)
     MSG_WM_INITMENUPOPUP(OnInitMenuPopup)
-//MSG_WM_SETMESSAGESTRING(WM_SETMESSAGESTRING, OnSetMessageString)MFCの独自メッセージ
+    //MSG_WM_SETMESSAGESTRING(WM_SETMESSAGESTRING, OnSetMessageString)MFCの独自メッセージ
 
     COMMAND_ID_HANDLER_EX(ID_JUMP_FIND, OnJumpFind)
     COMMAND_ID_HANDLER_EX(ID_VIEW_BITMAP, OnViewBitmap)
@@ -105,6 +107,12 @@ public:
 
   int OnCreate(LPCREATESTRUCT lpCreateStruct)
   {
+    {//OnCreateClient
+      m_bStructView = options.bStructView;
+      m_bInspectView = options.bInspectView;
+      m_bAnalyzerView = options.bAnalyzerView;
+      CreateClient(pContext);
+    }
     if(options.ptFrame.x && options.ptFrame.y)
     {
       WINDOWPLACEMENT wndpl;
@@ -225,7 +233,7 @@ public:
   void OnViewFullpath(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
     options.barState ^= BARSTATE_FULLPATH;
-    OnUpdateFrameTitle();
+    UpdateFrameTitle();
   }
   void OnToolsSetting(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
@@ -304,43 +312,122 @@ public:
 	UINT m_nSplitView0;
 	BOOL m_bCompare;
 
-// Operations
-public:
-	void ChangeView(CView* pView);
-	CView *GetBrotherView(CView* pView);
-
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CMainFrame)
-	protected:
-	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	//}}AFX_VIRTUAL
-
-// Implementation
-public:
-	virtual void OnUpdateFrameTitle(BOOL bAddToTitle = TRUE);
-	BOOL CreateClient(CCreateContext* pContext = NULL);
-	void GetSplitInfo();
-	void GetFrameState();
-
 
 public:  // control bar embedded members
 	CStatusBarEx m_wndStatusBar;
 	CComboToolBar m_wndToolBar;
 
-protected:
-	//afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
+// Operations
 public:
-	void UpdateInspectViewChecks();
-	void DeleteSplitterWnd(CCreateContext* pContext);
+	void ChangeView(CView* pView);
+	CView *GetBrotherView(CView* pView);
 
+protected:
+	//virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
+	//virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+
+// Implementation
 public:
+  BOOL CreateClient(CCreateContext* pContext = NULL);
+  void UpdateFrameTitle(BOOL bAddToTitle = TRUE)
+  {
+    CBZDoc2* pDoc = (CBZDoc2*)GetActiveDocument();
+    if(pDoc) {
+      CString s(AfxGetAppName());
+      s += " - ";
+      CString sPath = pDoc->GetPathName();
+      if(!(options.barState & BARSTATE_FULLPATH) || sPath.IsEmpty())
+        sPath = pDoc->GetTitle();
+      s += sPath;
+      //		s += pDoc->IsFileMapping()?_T(" (FileMap)"):_T(" (Mem)");
+      if(pDoc->IsModified())
+        s += " *";
+      SetWindowText(s);
+    }
+  }
+  void GetSplitInfo()
+  {
+    if(IsIconic() || IsZoomed()) return;
+    CRect rFrame;
+    GetWindowRect(rFrame);
+
+    int nCur, nMin;
+    switch(options.nSplitView = m_nSplitView)
+    {
+    case 0:
+      options.cyFrame = rFrame.Height();
+      break;
+    case ID_VIEW_SPLIT_H:
+      options.cyFrame2 = rFrame.Height();
+      m_pSplitter->GetRowInfo(0, nCur, nMin);
+      options.ySplit = nCur;
+      break;
+    case ID_VIEW_SPLIT_V:
+      options.cxFrame2 = rFrame.Width();
+      m_pSplitter->GetColumnInfo(0, nCur, nMin);
+      options.xSplit = nCur;
+      if(m_bBmpView || m_bStructView || m_bInspectView || m_bAnalyzerView) {
+        m_pSplitter->GetColumnInfo(1, nCur, nMin);
+        options.xSplit += nCur;
+      }
+      break;
+    }
+    options.bStructView = m_bStructView;
+    options.bInspectView = m_bInspectView;
+    options.bAnalyzerView = m_bAnalyzerView;
+    if(m_bStructView || m_bInspectView || m_bAnalyzerView) {
+      m_pSplitter->GetColumnInfo(0, nCur, nMin);
+      options.xSplitStruct = nCur;
+    }
+  }
+  void GetFrameState()
+  {
+    WINDOWPLACEMENT wndpl;
+    GetWindowPlacement(&wndpl);
+    options.ptFrame.x = wndpl.rcNormalPosition.left;
+    options.ptFrame.y = wndpl.rcNormalPosition.top;
+    options.nCmdShow = wndpl.showCmd;
+    options.barState = m_wndToolBar.IsWindowVisible() * BARSTATE_TOOL | m_wndStatusBar.IsWindowVisible() * BARSTATE_STATUS
+      | options.barState & (BARSTATE_FULLPATH | BARSTATE_NOFLAT);
+  }
+  void UpdateInspectViewChecks()
+  {
+    if(m_bInspectView && m_nSplitView && m_nSplitView0) {
+      ((CBZInspectView*)m_pSplitter->GetPane(0, 0))->_UpdateChecks();
+      ((CBZInspectView*)m_pSplitter->GetPane(0, 0))->Update();
+      int r=0,c=0;
+      if(options.nSplitView==ID_VIEW_SPLIT_H)c=2;
+      else r=1;
+      ((CBZInspectView*)m_pSplitter->GetPane(r, c))->_UpdateChecks();
+      ((CBZInspectView*)m_pSplitter->GetPane(r, c))->Update();
+    }
+  }
+  void DeleteSplitterWnd(CCreateContext* pContext)
+  {
+    m_pSplitter->DeleteView(0,0);
+    m_pSplitter->CreateView(0,0,RUNTIME_CLASS(CWnd), CSize(0,0), pContext);
+    m_pSplitter->SetActivePane(0,0);
+
+    int maxRow = m_pSplitter->GetRowCount();
+    int maxCol = m_pSplitter->GetColumnCount();
+    for(int r=0; r<maxRow; r++)
+    {
+      for(int c=0; c<maxCol; c++)
+      {
+        if(r!=0 && c!=0)
+        {
+          m_pSplitter->DeleteView(r,c);
+        }
+      }
+    }
+
+    m_pSplitter->DestroyWindow();
+    delete m_pSplitter;
+    m_pSplitter = NULL;
+  }
 };
 
-#define BZ_CLASSNAME "BzEditorClass"
-
-inline CMainFrame* GetMainFrame() { return (CMainFrame*)AfxGetMainWnd(); };
+//inline CMainFrame* GetMainFrame() { return (CMainFrame*)AfxGetMainWnd(); };
 
 /////////////////////////////////////////////////////////////////////////////
 
