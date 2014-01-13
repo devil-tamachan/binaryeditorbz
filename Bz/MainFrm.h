@@ -59,8 +59,7 @@ public:
     COMMAND_ID_HANDLER_EX(ID_VIEW_SYNCSCROLL, OnViewSyncScroll)
     COMMAND_ID_HANDLER_EX(ID_VIEW_ANALYZER, OnViewAnalyzer)
     COMMAND_ID_HANDLER_EX(ID_HELP_INDEX, OnHelpIndex)
-    COMMAND_ID_HANDLER_EX(ID_VIEW_SPLIT_H, OnViewSplit)
-    COMMAND_ID_HANDLER_EX(ID_VIEW_SPLIT_V, OnViewSplit)
+    COMMAND_RANGE_HANDLER_EX(ID_VIEW_SPLIT_H, ID_VIEW_SPLIT_V, OnViewSplit)
     CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
     CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
   END_MSG_MAP()
@@ -91,7 +90,6 @@ public:
   void OnUpdateViewAnalyzer()  { UISetCheck(ID_VIEW_ANALYZER, m_bAnalyzerView); }
   void OnUpdateViewSplitH()     { UISetCheck(ID_VIEW_SPLIT_H, m_nSplitView == ID_VIEW_SPLIT_H);/*pCmdUI->Enable(!m_bBmpView && !m_bStructView);*/ }
   void OnUpdateViewSplitV()     { UISetCheck(ID_VIEW_SPLIT_V, m_nSplitView == ID_VIEW_SPLIT_V);/*pCmdUI->Enable(!m_bBmpView && !m_bStructView);*/ }
-  OnUpdateViewSplit
   void OnInitMenuPopup(CMenuHandle menuPopup, UINT nIndex, BOOL bSysMenu)
   {
     OnUpdateViewBitmap();
@@ -103,6 +101,7 @@ public:
     OnUpdateViewAnalyzer();
     OnUpdateViewSplitH();
     OnUpdateViewSplitV();
+    SetMsgHandled(FALSE);
   }
 
   int OnCreate(LPCREATESTRUCT lpCreateStruct)

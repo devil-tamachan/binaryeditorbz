@@ -34,11 +34,77 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define ID_SCROLL_V		200
 
-class CTextView : public CView
+class CTextView : public WTL::CWindowImpl<CTextView>
 {
-protected:
-	CTextView();           // protected constructor used by dynamic creation
-	DECLARE_DYNCREATE(CTextView)
+public:
+  BEGIN_MSG_MAP(CTextView)
+    MSG_WM_CREATE(OnCreate)
+    MSG_WM_PAINT(OnPaint)
+    MSG_WM_SIZE(OnSize)
+    MSG_WM_VSCROLL(OnVScroll)
+    MSG_WM_HSCROLL(OnHScroll)
+    MSG_WM_SETFOCUS(OnSetFocus)
+    MSG_WM_KILLFOCUS(OnKillFocus)
+    MSG_WM_MOUSEWHEEL(OnMouseWheel)
+    //COMMAND_ID_HANDLER_EX(ID_FILE_PRINT, OnFilePrint)
+    //COMMAND_ID_HANDLER_EX(ID_FILE_PRINT_DIRECT, OnFilePrint)
+    //COMMAND_ID_HANDLER_EX(ID_FILE_PRINT_PREVIEW, OnFilePrintPreview)
+  END_MSG_MAP()
+
+  CTextView()
+  {
+    m_pFont = NULL;
+    m_pVText = NULL;
+    m_bResize = FALSE;
+    m_bPrinting = FALSE;
+    m_ptCaret2.x = m_ptCaret2.y = -1;
+    m_bShowCaret2 = FALSE;
+    m_bOnSize = FALSE;
+    m_pFile = NULL;
+  }
+
+  ~CTextView()
+  {
+    delete m_pFont;
+    delete m_pVText;
+  }
+
+public:
+  int OnCreate(LPCREATESTRUCT lpCreateStruct)
+  {
+    if(m_pFont == NULL) SetDefaultFont();
+    return 0;
+  }
+  void OnSize(UINT nType, CSize size)
+  {
+    if(cx && cy) InitScrollBar();	// ### 1.62
+  }
+  void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar) { OnScrollBar(SB_VERT, nSBCode); }
+  void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar) { OnScrollBar(SB_HORZ, nSBCode); }
+  void OnSetFocus(CWindow wndOld)
+  {
+    InitCaret();
+    Invalidate(true);//非アクティブウィンドウの擬似カレット消去
+  }
+  void OnKillFocus(CWindow wndFocus)
+  {
+    HideCaret();
+    HideCaret2();
+    Invalidate(true);//非アクティブウィンドウの擬似カレット描画
+  }
+  BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+  {
+    OnScrollBar(SB_VERT, zDelta > 0 ? SB_WHEELUP : SB_WHEELDOWN);
+    return TRUE;
+  }
+  void OnPaint(CDCHandle dc)
+  {
+    if(dc.IsPrinting()) return;
+
+    if(!m_bResize) {
+      ResizeFrame();
+    }
+  }
 
 // Attributes
 public:
@@ -119,7 +185,6 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CTextView)
 	protected:
-	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
@@ -127,26 +192,6 @@ public:
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 	//}}AFX_VIRTUAL
 
-// Implementation
-protected:
-	virtual ~CTextView();
-#ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
-#endif
-
-	// Generated message map functions
-protected:
-	//{{AFX_MSG(CTextView)
-	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	afx_msg void OnKillFocus(CWnd* pNewWnd);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -33,86 +33,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <imm.h>
 #pragma comment( lib, "imm32" )
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// CTextView diagnostics
-
-#ifdef _DEBUG
-void CTextView::AssertValid() const
-{
-	CView::AssertValid();
-}
-
-void CTextView::Dump(CDumpContext& dc) const
-{
-	CView::Dump(dc);
-}
-#endif //_DEBUG
-
-/////////////////////////////////////////////////////////////////////////////
-// CTextView
-
-IMPLEMENT_DYNCREATE(CTextView, CView)
-
-BEGIN_MESSAGE_MAP(CTextView, CView)
-	//{{AFX_MSG_MAP(CTextView)
-	ON_WM_VSCROLL()
-	ON_WM_HSCROLL()
-	ON_WM_CREATE()
-	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
-	ON_WM_SIZE()
-	ON_WM_MOUSEWHEEL()
-	//}}AFX_MSG_MAP
- 	// Standard printing commands
-	ON_COMMAND(ID_FILE_PRINT, CView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_DIRECT, CView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CView::OnFilePrintPreview)
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CTextView construction/destruction
 
 
-CTextView::CTextView()
-{
-	m_pFont = NULL;
-	m_pVText = NULL;
-	m_bResize = FALSE;
-	m_bPrinting = FALSE;
-	m_ptCaret2.x = m_ptCaret2.y = -1;
-	m_bShowCaret2 = FALSE;
-	m_bOnSize = FALSE;
-	m_pFile = NULL;
-}
-
-CTextView::~CTextView()
-{
-	delete m_pFont;
-	delete m_pVText;
-}
 
 BOOL CTextView::PreCreateWindow(CREATESTRUCT& cs) 
 {
 	// TODO: Add your specialized code here and/or call the base class
 	cs.style |= WS_VSCROLL|WS_HSCROLL;
 	return CView::PreCreateWindow(cs);
-}
-
-int CTextView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
-{
-	if (CView::OnCreate(lpCreateStruct) == -1)
-		return -1;
-	// TODO: Add your specialized creation code here
-
-	if(m_pFont == NULL)
-		SetDefaultFont();
-	return 0;
 }
 
 void CTextView::SetDefaultFont(CDC* pDC)
@@ -164,22 +92,6 @@ void CTextView::OnChangeFont(CDC* pPrintDC)
 	}
 }
 
-void CTextView::OnSize(UINT nType, int cx, int cy) 
-{
-	CView::OnSize(nType, cx, cy);
-	
-	// TODO: Add your message handler code here
-	if(cx && cy)
-		InitScrollBar();	// ### 1.62
-/*	SCROLLINFO sbi;
-
-	sbi.fMask = SIF_PAGE;
-	sbi.nPage = cy/m_cell.cy;
-	SetScrollInfo(SB_VERT, &sbi, TRUE);
-	sbi.nPage = cx/m_cell.cx;
-	SetScrollInfo(SB_HORZ, &sbi, TRUE);
-*/
-}
 
 void CTextView::InitCaret(BOOL bShow)
 {
@@ -217,16 +129,6 @@ void CTextView::InitCaret(BOOL bShow)
 
 /////////////////////////////////////////////////////////////////////////////
 // CTextView drawing
-
-void CTextView::OnDraw(CDC* pDC)
-{
-	// TODO: add draw code here
-	if(pDC->IsPrinting()) return;
-
-	if(!m_bResize) {
-		ResizeFrame();
-	}
-}
 
 void CTextView::ResizeFrame()
 {
@@ -369,15 +271,7 @@ void CTextView::GridToPixel(RECT& rect)
 	rect.y2 *= m_cell.cy;
 }
 */
-void CTextView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
-{
-	OnScrollBar(SB_HORZ, nSBCode);	
-}
 
-void CTextView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
-{
-	OnScrollBar(SB_VERT, nSBCode);
-}
 
 #define SB_WHEELUP   10
 #define SB_WHEELDOWN 11
@@ -417,12 +311,6 @@ void CTextView::OnScrollBar(int nBar, UINT nSBCode)
 	}
 }
 
-BOOL CTextView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) 
-{
-	// TODO: Add your message handler code here and/or call default
-	OnScrollBar(SB_VERT, zDelta > 0 ? SB_WHEELUP : SB_WHEELDOWN);
-	return CView::OnMouseWheel(nFlags, zDelta, pt);
-}
 
 void CTextView::ScrlBarRange(int nBar, LONG& val)
 {
@@ -475,29 +363,6 @@ void CTextView::MoveCaret(POINT pt)
 			}
 		}
 	}
-}
-
-void CTextView::OnSetFocus(CWnd* pOldWnd) 
-{
-	//TRACE("CTextView::OnSetFocus\n");
-	CView::OnSetFocus(pOldWnd);
-	
-	// TODO: Add your message handler code here
-	InitCaret();
-
-	Invalidate(true);//非アクティブウィンドウの擬似カレット消去
-}
-
-void CTextView::OnKillFocus(CWnd* pNewWnd) 
-{
-	//TRACE("CTextView::OnKillFocus\n");
-	CView::OnKillFocus(pNewWnd);
-	
-	// TODO: Add your message handler code here
-	HideCaret();
-	HideCaret2();
-
-	Invalidate(true);//非アクティブウィンドウの擬似カレット描画
 }
 
 // Sub caret drawing ### 1.62
