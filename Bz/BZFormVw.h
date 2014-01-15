@@ -122,6 +122,8 @@ public:
 
 extern TCHAR *s_MemberColLabel[MBRCOL_MAX];
 
+class CBZView;
+
 class CBZFormView : public CDialogImpl<CBZFormView>, public WTL::CWinDataExchange<CBZFormView>
 {
 public:
@@ -178,24 +180,7 @@ public:
 	void SelectTag();
 
 public:
-  void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-  {
-		if(nChar == VK_RETURN) {
-      HWND hWndFocus = GetFocus();
-			if(hWndFocus == m_listTag.m_hWnd)
-				m_listMember.SetFocus();
-			else if(hWndFocus == m_listMember.m_hWnd) {
-				m_pView->Activate();
-				AfxGetMainWnd()->PostMessage(WM_COMMAND, ID_EDIT_VALUE);
-			}
-			return;
-		}
-		if(nChar == VK_TAB && (::GetKeyState(VK_SHIFT) < 0)) {
-			m_pView->Activate();
-			return;
-		}
-    SetMsgHandled(FALSE);
-  }
+  void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 
 protected:
   //virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -290,20 +275,7 @@ public:
     SelchangeListTag();
   }
 
-  void SelchangeListTag()
-  {
-    if(m_listTag.GetCount()==0)return;
-
-    int iItem = m_listTag.GetCurSel();
-    if(iItem != LB_ERR) {
-      int iTag = m_listTag.GetItemData(iItem);
-      m_pView->m_dwStructTag = m_pView->m_dwCaret;
-      m_pView->m_dwStruct = m_pView->m_dwCaret + m_tag[iTag].m_len;
-      m_pView->m_nMember = INVALID;
-      InitListMember(iTag);
-      m_pView->Invalidate(FALSE);
-    }
-  }
+  void SelchangeListTag();
 
 
   void OnSize(UINT nType, CSize size)
@@ -354,45 +326,8 @@ public:
       pWndTagAll.MoveWindow(rTagAll);
     }
   }
-  LRESULT OnDblclkListMember(LPNMHDR pnmh)
-  {
-    LPNMITEMACTIVATE pnmia = (LPNMITEMACTIVATE)pnmh;
-
-    if(pnmia->iItem == m_listMember.GetItemCount() - 1) {
-      int iItem = m_listTag.GetCurSel();
-      int iTag = m_listTag.GetItemData(iItem);
-      m_pView->m_dwCaret = m_pView->m_dwStructTag + m_tag[iTag].m_len;
-      if(m_listTag.GetCount() > 1 && m_nTagSelect != -1) {
-        m_listTag.SetCurSel(iItem + 1);
-      }
-      SelchangeListTag();
-    } else {
-      m_pView->Activate();
-      AfxGetMainWnd()->PostMessage(WM_COMMAND, ID_EDIT_VALUE);
-    }
-    return 0;
-  }
-
-	LRESULT OnItemchangedListMember(LPNMHDR pnmh)
-  {
-    LPNMLISTVIEW pnmv = (LPNMLISTVIEW)pnmh;
-
-    if(pnmv->uNewState == (LVIS_FOCUSED | LVIS_SELECTED)) {
-      int iTag = m_listTag.GetItemData(m_listTag.GetCurSel());
-      if(iTag >= 0) {	// ### 1.62
-        CStructMember& m = m_tag[iTag].m_member[pnmv->iItem];
-        m_pView->m_nMember = m.m_ofs;
-        m_pView->m_dwCaret = m_pView->m_dwStructTag + m.m_ofs;
-        m_pView->m_nBytes = m.m_bytes ? m.m_bytes : 1;
-        m_pView->m_nBytesLength = (m.m_bytes && (m.m_bytes != m.m_len)) ? m.m_len / m.m_bytes : 1;
-        m_pView->GotoCaret();
-        m_pView->Invalidate(FALSE);
-        m_pView->UpdateStatusInfo();
-      }
-      //	m_pView->Activate();
-    }	
-    return 0;
-  }
+  LRESULT OnDblclkListMember(LPNMHDR pnmh);
+	LRESULT OnItemchangedListMember(LPNMHDR pnmh);
 };
 
 /////////////////////////////////////////////////////////////////////////////

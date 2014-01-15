@@ -53,6 +53,7 @@
 #define IDP_ANALYZE_PERCENT             1039
 #define IDB_ANALYZER_SAVE               1041
 #define IDB_ANALYZER_SAVEALL            1042
+#define IDC_COMBO_TOOLBAR               1043
 #define IDS_COLOR_ADDRESS               3000
 #define IDS_COLOR_ADDRESS2              3001
 #define IDS_COLOR_TEXT                  3002

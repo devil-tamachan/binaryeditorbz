@@ -460,6 +460,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\BZOption.cpp"
+				>
+			</File>
+			<File
 				RelativePath="BZView.cpp"
 				>
 				<FileConfiguration
@@ -572,35 +576,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="MainFrm.cpp"
+				RelativePath=".\ComboBox4ToolBar.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseUPX|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="options.cpp"
+				RelativePath="MainFrm.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -760,6 +740,10 @@
 			Filter="h;hpp;hxx;hm;inl;fi;fd"
 			>
 			<File
+				RelativePath=".\AboutDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="BZ.h"
 				>
 			</File>
@@ -788,6 +772,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\BZOption.h"
+				>
+			</File>
+			<File
 				RelativePath="BZView.h"
 				>
 			</File>
@@ -804,6 +792,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ComboBox4ToolBar.h"
+				>
+			</File>
+			<File
 				RelativePath=".\kb976038.h"
 				>
 			</File>
@@ -813,10 +805,6 @@
 			</File>
 			<File
 				RelativePath=".\MemDC.h"
-				>
-			</File>
-			<File
-				RelativePath="options.h"
 				>
 			</File>
 			<File

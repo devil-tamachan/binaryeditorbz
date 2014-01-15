@@ -33,11 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BZView.h"
 #include "BZFormVw.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define g_nTypes 15
 
@@ -49,6 +44,81 @@ DWORD g_datasizes[g_nTypes] = {1,1,1,2,2,2,4,4,4,8,8,8 ,4,8,4
 };
 
 TCHAR *s_MemberColLabel[MBRCOL_MAX] = { _T("+"), _T("Label"), _T("Value") };
+
+
+
+void CBZFormView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+  {
+		if(nChar == VK_RETURN) {
+      HWND hWndFocus = GetFocus();
+			if(hWndFocus == m_listTag.m_hWnd)
+				m_listMember.SetFocus();
+			else if(hWndFocus == m_listMember.m_hWnd) {
+				m_pView->Activate();
+				AfxGetMainWnd()->PostMessage(WM_COMMAND, ID_EDIT_VALUE);
+			}
+			return;
+		}
+		if(nChar == VK_TAB && (::GetKeyState(VK_SHIFT) < 0)) {
+			m_pView->Activate();
+			return;
+		}
+    SetMsgHandled(FALSE);
+  }
+void CBZFormView::SelchangeListTag()
+  {
+    if(m_listTag.GetCount()==0)return;
+
+    int iItem = m_listTag.GetCurSel();
+    if(iItem != LB_ERR) {
+      int iTag = m_listTag.GetItemData(iItem);
+      m_pView->m_dwStructTag = m_pView->m_dwCaret;
+      m_pView->m_dwStruct = m_pView->m_dwCaret + m_tag[iTag].m_len;
+      m_pView->m_nMember = INVALID;
+      InitListMember(iTag);
+      m_pView->Invalidate(FALSE);
+    }
+  }
+
+LRESULT CBZFormView::OnDblclkListMember(LPNMHDR pnmh)
+  {
+    LPNMITEMACTIVATE pnmia = (LPNMITEMACTIVATE)pnmh;
+
+    if(pnmia->iItem == m_listMember.GetItemCount() - 1) {
+      int iItem = m_listTag.GetCurSel();
+      int iTag = m_listTag.GetItemData(iItem);
+      m_pView->m_dwCaret = m_pView->m_dwStructTag + m_tag[iTag].m_len;
+      if(m_listTag.GetCount() > 1 && m_nTagSelect != -1) {
+        m_listTag.SetCurSel(iItem + 1);
+      }
+      SelchangeListTag();
+    } else {
+      m_pView->Activate();
+      AfxGetMainWnd()->PostMessage(WM_COMMAND, ID_EDIT_VALUE);
+    }
+    return 0;
+  }
+
+LRESULT CBZFormView::OnItemchangedListMember(LPNMHDR pnmh)
+  {
+    LPNMLISTVIEW pnmv = (LPNMLISTVIEW)pnmh;
+
+    if(pnmv->uNewState == (LVIS_FOCUSED | LVIS_SELECTED)) {
+      int iTag = m_listTag.GetItemData(m_listTag.GetCurSel());
+      if(iTag >= 0) {	// ### 1.62
+        CStructMember& m = m_tag[iTag].m_member[pnmv->iItem];
+        m_pView->m_nMember = m.m_ofs;
+        m_pView->m_dwCaret = m_pView->m_dwStructTag + m.m_ofs;
+        m_pView->m_nBytes = m.m_bytes ? m.m_bytes : 1;
+        m_pView->m_nBytesLength = (m.m_bytes && (m.m_bytes != m.m_len)) ? m.m_len / m.m_bytes : 1;
+        m_pView->GotoCaret();
+        m_pView->Invalidate(FALSE);
+        m_pView->UpdateStatusInfo();
+      }
+      //	m_pView->Activate();
+    }	
+    return 0;
+  }
 
 
 void RemoveCommentAll(char *src)

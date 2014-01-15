@@ -34,7 +34,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define ID_SCROLL_V		200
 
-class CTextView : public WTL::CWindowImpl<CTextView>
+#define SB_WHEELUP   10
+#define SB_WHEELDOWN 11
+
+class CTextView : public CWindowImpl<CTextView>
 {
 public:
   BEGIN_MSG_MAP(CTextView)
@@ -77,10 +80,10 @@ public:
   }
   void OnSize(UINT nType, CSize size)
   {
-    if(cx && cy) InitScrollBar();	// ### 1.62
+    if(size.cx && size.cy) InitScrollBar();	// ### 1.62
   }
-  void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar) { OnScrollBar(SB_VERT, nSBCode); }
-  void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar) { OnScrollBar(SB_HORZ, nSBCode); }
+  void OnVScroll(UINT nSBCode, UINT nPos, WTL::CScrollBar pScrollBar) { OnScrollBar(SB_VERT, nSBCode); }
+  void OnHScroll(UINT nSBCode, UINT nPos, WTL::CScrollBar pScrollBar) { OnScrollBar(SB_HORZ, nSBCode); }
   void OnSetFocus(CWindow wndOld)
   {
     InitCaret();
@@ -97,7 +100,7 @@ public:
     OnScrollBar(SB_VERT, zDelta > 0 ? SB_WHEELUP : SB_WHEELDOWN);
     return TRUE;
   }
-  void OnPaint(CDCHandle dc)
+  void OnPaint(WTL::CDCHandle dc)
   {
     if(dc.IsPrinting()) return;
 

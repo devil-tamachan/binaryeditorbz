@@ -28,61 +28,48 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "stdafx.h"
-#include "options.h"
+#include "ComboBox4ToolBar.h"
 
-static const TCHAR sRegDefault[] = _T("Settings");
-static const TCHAR sRegHistory[] = _T("History");
+class CBZView;
 
-COptions::COptions()
+void CComboBox4ToolBar::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	m_bModified = FALSE;
-}
-
-UINT COptions::GetProfileInt(LPCTSTR lpszEntry, int nDefault)
-{
-	return AfxGetApp()->GetProfileInt(sRegDefault, lpszEntry, nDefault);
-}
-
-BOOL COptions::WriteProfileInt(LPCTSTR lpszEntry, int nValue)
-{
-	return AfxGetApp()->WriteProfileInt(sRegDefault, lpszEntry, nValue);
-}
-
-CString COptions::GetProfileString(LPCTSTR lpszEntry, LPCTSTR lpszDefault)
-{
-	return AfxGetApp()->GetProfileString(sRegDefault, lpszEntry, lpszDefault);
-}
-
-BOOL COptions::WriteProfileString(LPCTSTR lpszEntry, LPCTSTR lpszValue)
-{
-	return AfxGetApp()->WriteProfileString(sRegDefault, lpszEntry, lpszValue);
-}
-
-BOOL COptions::GetProfileBinary(LPCTSTR lpszEntry, LPVOID pData)
-{
-	LPBYTE pBuffer;
-	UINT nBytes;
-	if(AfxGetApp()->GetProfileBinary(sRegDefault, lpszEntry, &pBuffer, &nBytes)) {
-		memcpy(pData, pBuffer, nBytes);
-		delete pBuffer;
-		return TRUE;
-	}
-	return FALSE;
-}
-
-BOOL COptions::GetProfileBinary2(LPCTSTR lpszEntry, LPVOID pData, unsigned int dstSize)
-{
-	LPBYTE pBuffer;
-	UINT nBytes;
-	if(AfxGetApp()->GetProfileBinary(sRegDefault, lpszEntry, &pBuffer, &nBytes)) {
-		memcpy(pData, pBuffer, min(nBytes, dstSize));
-		delete pBuffer;
-		return TRUE;
-	}
-	return FALSE;
-}
-
-BOOL COptions::WriteProfileBinary(LPCTSTR lpszEntry, LPBYTE pData, UINT nBytes)
-{
-	return AfxGetApp()->WriteProfileBinary(sRegDefault, lpszEntry, pData, nBytes);
+  CBZView* pBZView = GetActiveBZView();
+  BOOL bCtrl  = (GetKeyState(VK_CONTROL) < 0);
+  switch (nChar)
+  {
+  case VK_ESCAPE:
+    pBZView->SetFocus();
+    return;
+  case VK_RETURN:
+    if(!GetDroppedState()) {
+      pBZView->PostMessage(WM_COMMAND, ID_JUMP_FINDNEXT);
+      return;
+    }
+    break;
+  case VK_DOWN:
+    if(!GetDroppedState()) {
+      ShowDropDown();
+      return;
+    }
+    break;
+  case 'X':
+    if(bCtrl) {
+      Cut();
+      return;
+    }
+    break;
+  case 'C':
+    if(bCtrl) {
+      Copy();
+      return;
+    }
+    break;
+  case 'V':
+    if(bCtrl) {
+      Paste();
+      return;
+    }
+    break;
+  }
 }

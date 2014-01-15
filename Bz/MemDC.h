@@ -26,18 +26,18 @@
 // This class implements a memory Device Context which allows
 // flicker free drawing.
  
-class CMemDC : public CDC {
+class CMemDC : public WTL::CDC {
 private:       
-    CBitmap    m_bitmap;        // Offscreen bitmap
-    CBitmap*       m_oldBitmap; // bitmap originally found in CMemDC
-    CDC*       m_pDC;           // Saves CDC passed in constructor
-    CRect      m_rect;          // Rectangle of drawing area.
+  WTL::CBitmap    m_bitmap;        // Offscreen bitmap
+  WTL::CBitmap*       m_oldBitmap; // bitmap originally found in CMemDC
+    WTL::CDC*       m_pDC;           // Saves CDC passed in constructor
+    WTL::CRect      m_rect;          // Rectangle of drawing area.
     BOOL       m_bMemDC;        // TRUE if CDC really is a Memory DC.
 public:
     
-    CMemDC(CDC* pDC, const CRect* pRect = NULL) : CDC()
+  CMemDC(WTL::CDC* pDC, const WTL::CRect* pRect = NULL) : WTL::CDC()
     {
-        ASSERT(pDC != NULL); 
+        ATLASSERT(pDC != NULL); 
  
         // Some initialization
         m_pDC = pDC;

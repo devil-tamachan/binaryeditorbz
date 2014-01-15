@@ -273,9 +273,6 @@ void CTextView::GridToPixel(RECT& rect)
 */
 
 
-#define SB_WHEELUP   10
-#define SB_WHEELDOWN 11
-
 void CTextView::OnScrollBar(int nBar, UINT nSBCode)
 {
 	SCROLLINFO sbi = { sizeof(SCROLLINFO) };

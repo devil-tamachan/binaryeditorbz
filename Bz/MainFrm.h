@@ -29,11 +29,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include "Combobar.h"
+//#include "Combobar.h"
 //#include "Splitter.h"
-#include "StatBar.h"
+//#include "StatBar.h"
+//#include "BZDoc2.h"
+#include "SettingDlg.h"
+#include "AboutDlg.h"
+#include "ComboBox4ToolBar.h"
 
 #define BZ_CLASSNAME "BzEditorClass"
+
+class CBZDoc2;
+class CBZView;
+class CBZInspectView;
 
 class CMainFrame : public WTL::CFrameWindowImpl<CMainFrame>, public WTL::CUpdateUI<CMainFrame>
 {
@@ -59,7 +67,13 @@ public:
     COMMAND_ID_HANDLER_EX(ID_VIEW_SYNCSCROLL, OnViewSyncScroll)
     COMMAND_ID_HANDLER_EX(ID_VIEW_ANALYZER, OnViewAnalyzer)
     COMMAND_ID_HANDLER_EX(ID_HELP_INDEX, OnHelpIndex)
+    COMMAND_ID_HANDLER_EX(ID_APP_ABOUT, OnAppAbout)
     COMMAND_RANGE_HANDLER_EX(ID_VIEW_SPLIT_H, ID_VIEW_SPLIT_V, OnViewSplit)
+    COMMAND_ID_HANDLER_EX(ID_FILE_PAGE_SETUP, OnFilePageSetup)
+    COMMAND_ID_HANDLER_EX(ID_TOOLS_EDITDEF, OnToolsEditBZDef)
+    COMMAND_ID_HANDLER_EX(ID_FILE_SAVE_DUMPLIST, OnFileSaveDumpList)
+    //ON_COMMAND( ID_HELP_INDEX, OnHelpIndex )
+    COMMAND_RANGE_HANDLER_EX(ID_LANG_JPN, ID_LANG_ENU, OnLanguage)
     CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
     CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
   END_MSG_MAP()
@@ -74,23 +88,21 @@ public:
     UPDATE_ELEMENT(ID_VIEW_ANALYZER, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_SPLIT_H, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_SPLIT_V, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_LANG_JPN, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_LANG_ENU, UPDUI_MENUPOPUP)
   END_UPDATE_UI_MAP()
 
-  void OnUpdateViewBitmap() 
-  {
-    UISetCheck(ID_VIEW_BITMAP, m_bBmpView);
-    CBZDoc2* pDoc = (CBZDoc2*)(GetActiveView()->GetDocument());
-    UIEnable(ID_VIEW_BITMAP, pDoc->GetDocSize() >= (DWORD)(options.nBmpWidth * (options.nBmpColorWidth/8)) /* && !m_nSplitView*/);
-  }
+  void OnUpdateViewBitmap();
   void OnUpdateViewStruct()    { UISetCheck(ID_VIEW_STRUCT, m_bStructView); /*pCmdUI->Enable(!m_nSplitView);*/ }
-  void OnUpdateViewFullpath()  { UISetCheck(ID_VIEW_FULLPATH, options.barState & BARSTATE_FULLPATH); }
+  void OnUpdateViewFullpath()  { UISetCheck(ID_VIEW_FULLPATH, (options.barState & BARSTATE_FULLPATH)!=0); }
   void OnUpdateViewSubCursor() { UISetCheck(ID_VIEW_SUBCURSOR, options.bSubCursor); }
   void OnUpdateViewSyncScroll(){ UISetCheck(ID_VIEW_SYNCSCROLL, options.bSyncScroll); }
   void OnUpdateViewInspect()   { UISetCheck(ID_VIEW_INSPECT, m_bInspectView); }
   void OnUpdateViewAnalyzer()  { UISetCheck(ID_VIEW_ANALYZER, m_bAnalyzerView); }
   void OnUpdateViewSplitH()     { UISetCheck(ID_VIEW_SPLIT_H, m_nSplitView == ID_VIEW_SPLIT_H);/*pCmdUI->Enable(!m_bBmpView && !m_bStructView);*/ }
   void OnUpdateViewSplitV()     { UISetCheck(ID_VIEW_SPLIT_V, m_nSplitView == ID_VIEW_SPLIT_V);/*pCmdUI->Enable(!m_bBmpView && !m_bStructView);*/ }
-  void OnInitMenuPopup(CMenuHandle menuPopup, UINT nIndex, BOOL bSysMenu)
+  void OnUpdateLanguage() { UISetRadioMenuItem(ID_LANG_JPN + options.bLanguage, ID_LANG_JPN, ID_LANG_ENU); }
+  void OnInitMenuPopup(WTL::CMenuHandle menuPopup, UINT nIndex, BOOL bSysMenu)
   {
     OnUpdateViewBitmap();
     OnUpdateViewStruct();
@@ -101,6 +113,7 @@ public:
     OnUpdateViewAnalyzer();
     OnUpdateViewSplitH();
     OnUpdateViewSplitV();
+    OnUpdateLanguage();
     SetMsgHandled(FALSE);
   }
 
@@ -110,13 +123,13 @@ public:
       m_bStructView = options.bStructView;
       m_bInspectView = options.bInspectView;
       m_bAnalyzerView = options.bAnalyzerView;
-      CreateClient(pContext);
+      //CreateClient(pContext);
     }
     if(options.ptFrame.x && options.ptFrame.y)
     {
       WINDOWPLACEMENT wndpl;
       GetWindowPlacement(&wndpl);
-      if(((CBZApp*)AfxGetApp())->m_bFirstInstance)
+      if(g_bFirstInstance)
       {
         wndpl.rcNormalPosition.left = options.ptFrame.x;
         int newy = options.ptFrame.y;
@@ -126,6 +139,19 @@ public:
       SetWindowPlacement(&wndpl);
     }
 
+    CreateSimpleReBar();
+    HWND hToolBar = CreateSimpleToolBarCtrl(m_hWnd, IDR_MAINFRAME, FALSE, ATL_SIMPLE_TOOLBAR_PANE_STYLE);
+    AddSimpleReBarBand(hToolBar);
+
+    UIAddToolBar(hToolBar);
+
+    m_combo_toolbar.Create(m_hWnd, WTL::CRect(0, 0, 100, 100), NULL
+      , WS_CHILD | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST, 0, IDC_COMBO_TOOLBAR);
+    //m_combo_toolbar.SetFont(AtlGetDefaultGuiFont());
+    AddSimpleReBarBand(m_combo_toolbar);
+
+    SizeSimpleReBarBands();
+    /*
     if (!(options.barState & BARSTATE_NOFLAT ? m_wndToolBar.Create(this)
       : m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP)) ||
       !m_wndToolBar.LoadToolBar(IDR_MAINFRAME)) {
@@ -141,32 +167,33 @@ public:
       TRACE0("Failed to create combobox in toolbar\n");
       return -1;      // fail to create
     }
-    if (!m_wndStatusBar.Create(this) ||
+    */
+    /*if (!m_wndStatusBar.Create(this) ||
       !m_wndStatusBar.SetIndicators(indicators,
       sizeof(indicators)/sizeof(UINT))) {
         TRACE0("Failed to create status bar\n");
         return -1;      // fail to create
-    }
+    }*/
 
     // TODO: Remove this if you don't want tool tips or a resizeable toolbar
-    m_wndToolBar.SetBarStyle(m_wndToolBar.GetBarStyle() |
-      CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
+    //m_wndToolBar.SetBarStyle(m_wndToolBar.GetBarStyle() |
+   //   CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 
     // TODO: Delete these three lines if you don't want the toolbar to
     //  be dockable
-    m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
-    EnableDocking(CBRS_ALIGN_ANY);
-    DockControlBar(&m_wndToolBar);
+    //m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
+    //EnableDocking(CBRS_ALIGN_ANY);
+    //DockControlBar(&m_wndToolBar);
 
-    m_wndStatusBar.SetPaneInfo(0, ID_SEPARATOR,	SBPS_STRETCH | SBPS_NOBORDERS, 160);
+    //m_wndStatusBar.SetPaneInfo(0, ID_SEPARATOR,	SBPS_STRETCH | SBPS_NOBORDERS, 160);
 
-    ShowControlBar(&m_wndToolBar, (options.barState & BARSTATE_TOOL) != 0, FALSE);
-    ShowControlBar(&m_wndStatusBar, (options.barState & BARSTATE_STATUS) != 0, FALSE);
+    //ShowControlBar(&m_wndToolBar, (options.barState & BARSTATE_TOOL) != 0, FALSE);
+    //ShowControlBar(&m_wndStatusBar, (options.barState & BARSTATE_STATUS) != 0, FALSE);
 
-    UINT nID;
-    UINT nStyle;
-    m_wndStatusBar.GetPaneInfo(1, nID, nStyle, m_nPaneWidth);
-    m_wndStatusBar.SetPaneText(1, _T(""));
+    //UINT nID;
+    //UINT nStyle;
+    //m_wndStatusBar.GetPaneInfo(1, nID, nStyle, m_nPaneWidth);
+    //m_wndStatusBar.SetPaneText(1, _T(""));
 
     return 0;
   }
@@ -175,20 +202,14 @@ public:
     GetFrameState();
     GetSplitInfo();
   }
-  void OnShowWindow(BOOL bShow, UINT nStatus)
-  {
-    if(bShow && m_nSplitView != ID_VIEW_SPLIT_V) {
-      CView *pView = GetActiveView();
-      if(pView->GetRuntimeClass() == RUNTIME_CLASS(CBZView))
-        ((CBZView*)GetActiveView())->ResizeFrame();
-    }
-  }
+  void OnShowWindow(BOOL bShow, UINT nStatus);
 
 
   void OnJumpFind(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
-    ShowControlBar(&m_wndToolBar, TRUE, FALSE);
-    m_wndToolBar.m_combo.SetFocus();
+    //ShowControlBar(&m_wndToolBar, TRUE, FALSE);
+    //m_wndToolBar.m_combo.SetFocus();
+    m_combo_toolbar.SetFocus();
   }
   void OnViewBitmap(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
@@ -219,15 +240,19 @@ public:
   }
   void OnJumpTo(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
-    ShowControlBar(&m_wndToolBar, TRUE, FALSE);
-    m_wndToolBar.m_combo.SetFocus();
-    m_wndToolBar.m_combo.SetText(_T("> "));
+    //ShowControlBar(&m_wndToolBar, TRUE, FALSE);
+    //m_wndToolBar.m_combo.SetFocus();
+    //m_wndToolBar.m_combo.SetText(_T("> "));
+    m_combo_toolbar.SetFocus();
+    m_combo_toolbar.SetWindowText(_T("> "));
   }
   void OnEditValue(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
-    ShowControlBar(&m_wndToolBar, TRUE, FALSE);
-    m_wndToolBar.m_combo.SetFocus();
-    m_wndToolBar.m_combo.SetText(_T("< %"));
+    //ShowControlBar(&m_wndToolBar, TRUE, FALSE);
+    //m_wndToolBar.m_combo.SetFocus();
+    //m_wndToolBar.m_combo.SetText(_T("< %"));
+    m_combo_toolbar.SetFocus();
+    m_combo_toolbar.SetWindowText(_T("< %"));
   }
   void OnViewFullpath(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
@@ -237,20 +262,13 @@ public:
   void OnToolsSetting(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
     BOOL bDWordAddr = options.bDWordAddr;
-    CSettingDlg().DoModal();
+    CSettingDlg dlgSetting;
+    dlgSetting.DoModal();
     if(bDWordAddr != options.bDWordAddr) {
     }
   }
-  void OnViewSubCursor(UINT uNotifyCode, int nID, CWindow wndCtl)
-  {
-    options.bSubCursor = !options.bSubCursor;
-    GetActiveView()->Invalidate();
-  }
-  void OnViewSyncScroll(UINT uNotifyCode, int nID, CWindow wndCtl)
-  {
-    options.bSyncScroll = !options.bSyncScroll;
-    GetActiveView()->Invalidate();
-  }
+  void OnViewSubCursor(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnViewSyncScroll(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnViewAnalyzer(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
     GetSplitInfo();
@@ -264,6 +282,11 @@ public:
   {
     ShellExecute(NULL, _T("open"), _T("http://devil-tamachan.github.io/BZDoc/"), NULL, NULL, SW_SHOWNORMAL);
   }
+  void OnAppAbout(UINT uNotifyCode, int nID, CWindow wndCtl)
+  {
+    CAboutDlg aboutDlg;
+    aboutDlg.DoModal();
+  }
   void OnViewSplit(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
     /* 最大化していると最大化状態のままウィンドウサイズが調整されて変なウィンドウ（最大化できない＆サイズ変更不可）になってしまうバグの対策 */
@@ -276,6 +299,45 @@ public:
     CreateClient();
     m_nSplitView0 = m_nSplitView;
   }
+  void OnFilePageSetup(UINT uNotifyCode, int nID, CWindow wndCtl) 
+  {
+/*    CPageSetupDialog dlg;
+    PAGESETUPDLG& psd = dlg.m_psd;
+    PRINTDLG pd;
+    pd.hDevNames = NULL;
+    pd.hDevMode = NULL;
+    GetPrinterDeviceDefaults(&pd);
+    psd.hDevNames = pd.hDevNames;
+    psd.hDevMode = pd.hDevMode;
+    psd.rtMargin = options.rMargin;
+    if (dlg.DoModal() == IDOK) {
+      dlg.GetMargins(options.rMargin, NULL);
+      SelectPrinter(psd.hDevNames, psd.hDevMode);
+    }*/
+  }
+  void OnToolsEditBZDef(UINT uNotifyCode, int nID, CWindow wndCtl) 
+  {
+    CString sPath;
+    sPath = GetStructFilePath(IDS_STRUCT_FILE);
+
+    CString sEditorPath;
+    ::FindExecutable(_T("bz.txt"), NULL, sEditorPath.GetBuffer(_MAX_PATH));	// ###1.60
+    sEditorPath.ReleaseBuffer();
+    if(sEditorPath.IsEmpty()) ::ShellExecute(m_hWnd, _T("edit") , sPath, NULL, NULL, SW_SHOWNORMAL);
+    else                      ::ShellExecute(m_hWnd, _T("open") , sEditorPath, sPath, NULL, SW_SHOWNORMAL);
+  }
+  void OnFileSaveDumpList(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnLanguage(UINT uNotifyCode, int nID, CWindow wndCtl)
+  {
+    BOOL bLang = nID - ID_LANG_JPN;
+    if(bLang != options.bLanguage) {
+      options.bLanguage = bLang;
+      CString strMsg;
+      strMsg.LoadString(IDS_CHANGE_LANGUAGE);
+      MessageBox(strMsg);
+    }
+  }
+
 
 public:
   CMainFrame()
@@ -296,10 +358,26 @@ public:
       delete m_pSplitter;
   }
 
+  CBZView* GetActiveBZView()
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    return pCoreData->GetActiveBZView();
+  }
+  CBZDoc2* GetActiveBZDoc2()
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    return pCoreData->GetActiveBZDoc2();
+  }
+  CTamaSplitterWindow* GetSplitter()
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    return pCoreData->GetSplitterWnd();
+  }
+
 public:
 	BOOL m_bDisableStatusInfo;
 protected:
-	CSplitterWnd* m_pSplitter;
+	CTamaSplitterWindow m_wndSplitter;
 	int m_nPaneWidth;
 
 public:
@@ -311,15 +389,17 @@ public:
 	UINT m_nSplitView0;
 	BOOL m_bCompare;
 
+  CComboBox4ToolBar m_combo_toolbar;
+
 
 public:  // control bar embedded members
-	CStatusBarEx m_wndStatusBar;
-	CComboToolBar m_wndToolBar;
+	//CStatusBarEx m_wndStatusBar;
+	//CComboToolBar m_wndToolBar;
 
 // Operations
 public:
-	void ChangeView(CView* pView);
-	CView *GetBrotherView(CView* pView);
+	void ChangeView(CBZView* pView);
+	CBZView *GetBrotherView(CBZView* pView);
 
 protected:
 	//virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
@@ -327,27 +407,12 @@ protected:
 
 // Implementation
 public:
-  BOOL CreateClient(CCreateContext* pContext = NULL);
-  void UpdateFrameTitle(BOOL bAddToTitle = TRUE)
-  {
-    CBZDoc2* pDoc = (CBZDoc2*)GetActiveDocument();
-    if(pDoc) {
-      CString s(AfxGetAppName());
-      s += " - ";
-      CString sPath = pDoc->GetPathName();
-      if(!(options.barState & BARSTATE_FULLPATH) || sPath.IsEmpty())
-        sPath = pDoc->GetTitle();
-      s += sPath;
-      //		s += pDoc->IsFileMapping()?_T(" (FileMap)"):_T(" (Mem)");
-      if(pDoc->IsModified())
-        s += " *";
-      SetWindowText(s);
-    }
-  }
+  BOOL CreateClient();
+  void UpdateFrameTitle(BOOL bAddToTitle = TRUE);
   void GetSplitInfo()
   {
     if(IsIconic() || IsZoomed()) return;
-    CRect rFrame;
+    WTL::CRect rFrame;
     GetWindowRect(rFrame);
 
     int nCur, nMin;
@@ -386,22 +451,11 @@ public:
     options.ptFrame.x = wndpl.rcNormalPosition.left;
     options.ptFrame.y = wndpl.rcNormalPosition.top;
     options.nCmdShow = wndpl.showCmd;
-    options.barState = m_wndToolBar.IsWindowVisible() * BARSTATE_TOOL | m_wndStatusBar.IsWindowVisible() * BARSTATE_STATUS
+    options.barState = /*m_wndToolBar.IsWindowVisible()*/1 * BARSTATE_TOOL | /*m_wndStatusBar.IsWindowVisible()*/1 * BARSTATE_STATUS
       | options.barState & (BARSTATE_FULLPATH | BARSTATE_NOFLAT);
   }
-  void UpdateInspectViewChecks()
-  {
-    if(m_bInspectView && m_nSplitView && m_nSplitView0) {
-      ((CBZInspectView*)m_pSplitter->GetPane(0, 0))->_UpdateChecks();
-      ((CBZInspectView*)m_pSplitter->GetPane(0, 0))->Update();
-      int r=0,c=0;
-      if(options.nSplitView==ID_VIEW_SPLIT_H)c=2;
-      else r=1;
-      ((CBZInspectView*)m_pSplitter->GetPane(r, c))->_UpdateChecks();
-      ((CBZInspectView*)m_pSplitter->GetPane(r, c))->Update();
-    }
-  }
-  void DeleteSplitterWnd(CCreateContext* pContext)
+  void UpdateInspectViewChecks();
+  void DeleteSplitterWnd()
   {
     m_pSplitter->DeleteView(0,0);
     m_pSplitter->CreateView(0,0,RUNTIME_CLASS(CWnd), CSize(0,0), pContext);

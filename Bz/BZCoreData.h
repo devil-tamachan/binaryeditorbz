@@ -74,6 +74,22 @@ public:
     if(i>=0)return m_arrDoc[i];
     return NULL;
   }
+  ATL::CWindow* GetSubViewFromBZView(CBZView *pBZView)
+  {
+    int i = m_arrView.Find(pBZView);
+    if(i>=0)return m_arrSubView[i];
+    return NULL;
+  }
+  CBZView* GetActiveBZView()
+  {
+    if(m_arrView.GetSize()>0)return m_arrView[m_dwActive];
+    return NULL;
+  }
+  CBZDoc2* GetActiveBZDoc2()
+  {
+    if(m_arrDoc.GetSize()>0)return m_arrDoc[m_dwActive];
+    return NULL;
+  }
 
   CTamaSplitterWindow* GetSplitterWnd() { return m_pSplitter; }
   CMainFrame* GetMainFrame() { return m_pMainFrame; }

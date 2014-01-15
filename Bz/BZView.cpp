@@ -42,33 +42,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include  <winnls.h>
 #include  <mbstring.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-#define ADDRCOLUMNS 6
-#define ADDRCOLUMNS_MAP 9
-#define DUMP_X		(m_nColAddr + 2)  // 8
-#define DUMP_Y		1
-#define CHAR_X		(m_nColAddr + 51) // 57
-#define VIEWCOLUMNS	(m_nColAddr + 68) // 74
-#define PAGESKIP	16
-
-#define TIMER_DOWN	1
-#define TIMER_UP	2
-
-#define CHAR_NG		'.'
-#define CHAR_EBCDIC_NG 0xFF
-#define EBCDIC_BASE 0x40
-#define EBCDIC_COUNT (256 - EBCDIC_BASE)
-
-#define MEMFILE_GROWBY 16384
 
 //static const UINT nMsgFindReplace = ::RegisterWindowMessage(FINDMSGSTRING);
 
-static DWORD  MemCompByte2(LPCVOID p1, LPCVOID p2, DWORD len);
 
 BOOL CBZView::m_bHexSize = FALSE;
 LPSTR CBZView::m_pEbcDic = NULL;
@@ -117,6 +94,482 @@ inline ULONGLONG SwapQword(ULONGLONG val)
 }
 
 
+void CBZView::OnUpdateEditCut()  { UIEnable(ID_EDIT_CUT, m_bBlock && !m_pDoc->IsReadOnly()); }
+void CBZView::OnUpdateEditPaste()
+{
+  OpenClipboard();
+  UINT cf = EnumClipboardFormats(0);
+  CloseClipboard();
+  UIEnable(ID_EDIT_PASTE, !m_pDoc->IsReadOnly() && cf);
+}
+void CBZView::OnUpdateEditValue()      { UIEnable(ID_EDIT_VALUE, !m_pDoc->IsReadOnly()); }
+void CBZView::OnUpdateEditSelectAll()  { UIEnable(ID_EDIT_SELECT_ALL, m_pDoc->GetDocSize()!=0); }
+void CBZView::OnUpdateStatusInfo()
+{
+  if(GetMainFrame()->m_bDisableStatusInfo) return;
+  if(GetFileSize()) {
+    UISetText(ID_INDICATOR_INFO, GetStatusInfoText());
+    UIEnable(ID_INDICATOR_INFO, TRUE);
+  } else
+    UIEnable(ID_INDICATOR_INFO, FALSE);
+}
+void CBZView::OnUpdateStatusIns()
+  {
+    CString sText;
+    sText.LoadString(m_pDoc->IsReadOnly() ? IDS_EDIT_RO : IDS_EDIT_OVR + m_bIns);
+    UISetText(ID_INDICATOR_INS, sText);
+  }
+void CBZView::OnUpdateJump()
+{
+  UIEnable(ID_JUMP_COMPARE, GetMainFrame()->m_nSplitView && m_pDoc->GetDocSize()!=0);
+  UIEnable(ID_JUMP_TO, m_pDoc->GetDocSize()!=0);
+  UIEnable(ID_JUMP_OFFSET, m_pDoc->GetDocSize()!=0);
+  UIEnable(ID_JUMP_RETURN, m_pDoc->GetDocSize()!=0);
+  UIEnable(ID_JUMP_MARK, m_pDoc->GetDocSize()!=0);
+  UIEnable(ID_JUMP_MARKNEXT, m_pDoc->GetDocSize()!=0);
+  UIEnable(ID_JUMP_START, m_pDoc->GetDocSize()!=0);
+  UIEnable(ID_JUMP_END, m_pDoc->GetDocSize()!=0);
+}
+
+void CBZView::OnJumpFindnext(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CComboBox4ToolBar* pCombo = &(GetMainFrame()->m_combo_toolbar);
+  UINT64 dwTotal = GetFileSize();
+
+  CStringA sFind;
+  {
+    LPSTR tmp = sFind.GetBufferSetLength(510);
+    ::GetWindowTextA(pCombo->m_hWnd, tmp, 509);
+    sFind.ReleaseBuffer();
+  }
+  if(sFind.IsEmpty()) {
+    if(GetBrotherView())
+      OnJumpCompare();
+    return;
+  }
+
+  int c1 = sFind[0];
+  if(c1 == '=') {
+    pCombo->SetWindowText(_T("? "));
+    return;
+  }
+  pCombo->AddString(CA2T(sFind));
+  if(c1 == '?' || c1 == '+' || c1 == '>'|| c1 == '<') {
+    DWORD dwNew = 0;
+    long nResult;
+    if(CalcHexa((LPCSTR)sFind + 1, nResult)) {
+      switch(c1) {
+      case '?': {
+        CString sResult;
+        sResult.Format(_T("= 0x%X (%d)"), nResult, nResult);
+        pCombo->SetWindowText(sResult);
+        break;
+                }
+      case '+':
+        dwNew = m_dwCaret + m_pDoc->m_dwBase;
+      case '>':
+        dwNew += nResult - m_pDoc->m_dwBase;	// ###1.63
+        if(dwNew <= dwTotal) {
+          m_dwOldCaret = m_dwCaret;
+          m_dwCaret = dwNew;
+          m_bCaretOnChar = FALSE;
+          GotoCaret();
+          SetFocus();
+        } else
+          AfxMessageBox(IDS_ERR_RANGE);
+        break;
+      case '<':
+        if(m_pDoc->IsReadOnly())
+          AfxMessageBox(IDS_ERR_READONLY);
+        else {
+          FillValue(nResult);
+        }
+        SetFocus();
+        break;
+      }
+    }
+    return;
+  }
+
+  //検索モード [# 00 AA BB FF] または [abcdef]
+  CWaitCursor wait;	// ###1.61
+
+  UINT64 dwStart = m_dwCaret + 1;
+  if(dwStart >= dwTotal-1)return;
+
+  UINT64 dwRetAddress = _UI64_MAX;//err
+
+  int nFind = 0;
+  LPBYTE pFind = NULL;
+  CharSet charset = m_charset;
+  if(c1 == '#') {//検索モード [# 00 AA BB FF]
+    nFind = ReadHexa(sFind, pFind);
+    if(!nFind) return;
+    dwRetAddress = strstrBinary(pFind, nFind, dwStart);//charset = CTYPE_BINARY;
+  } else {		//検索モード [abcdef]
+    if(charset >= CTYPE_UNICODE) { //CTYPE_UNICODE, CTYPE_JIS, CTYPE_EUC, CTYPE_UTF8, CTYPE_EBCDIC, CTYPE_EPWING, CTYPE_COUNT, CTYPE_BINARY
+      nFind = ConvertCharSet(charset, sFind, pFind);
+      if(!pFind || !nFind) return;
+      if(charset == CTYPE_UNICODE) {
+        if(dwStart&1) {
+          dwStart++;
+        }
+        dwRetAddress = stristrBinaryW((LPCWSTR)pFind, nFind, dwStart);
+      } else {
+        dwRetAddress = strstrBinary(pFind, nFind, dwStart);//charset = CTYPE_BINARY;
+      }
+    } else { //CTYPE_ASCII, CTYPE_SJIS
+      nFind = sFind.GetLength();
+      if(m_charset == CTYPE_ASCII)
+        dwRetAddress = stristrBinaryA(sFind, dwStart);
+      else
+        dwRetAddress = strstrBinary((LPBYTE)((LPCSTR)sFind), nFind, dwStart);
+    }
+  }
+  if(dwRetAddress==_UI64_MAX)
+  {
+    AfxMessageBox(IDS_ERR_FINDSTRING);
+    pCombo->SetFocus();
+    if(pFind) MemFree(pFind);
+    return;
+  }
+
+  m_dwOldCaret = m_dwCaret;
+  m_dwCaret = dwRetAddress;
+  m_bCaretOnChar = !pFind;
+  GotoCaret();
+  SetFocus();
+
+  if(pFind) MemFree(pFind);
+}
+void CBZView::OnJumpCompare(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CBZView* pView1 = GetBrotherView();
+  if(!pView1) return;
+  CBZDoc2 *pDoc1 = pView1->m_pDoc;
+  if(!pDoc1) return;
+  CComboBox4ToolBar* pCombo = &(GetMainFrame()->m_combo_toolbar);
+  pCombo->SetWindowText(_T(""));
+
+  UINT64 len;//これから比較するバイト量
+  {
+    UINT64 dwCanRead0 = GetRemainFromCurret();
+    UINT64 dwCanRead1 = pView1->GetRemainFromCurret();
+    len = min(dwCanRead0, dwCanRead1);
+    if(len <= 1) return;
+  }
+  len--;
+  UINT64 dwCurrent0 =         m_dwCaret+1;
+  UINT64 dwCurrent1 = pView1->m_dwCaret+1;
+  LPBYTE pData0, pData1;
+  do
+  {
+    //DWORD maxMapSize = min(len, options.dwMaxMapSize);
+    pData0 = m_pDoc->Cache(dwCurrent0);
+    pData1 = pDoc1->Cache(dwCurrent1);
+    if(!pData0 || !pData1)
+    {//ERR: Mapping failed
+      MessageBox(_T("File Mapping Error!"), _T("Error"), MB_OK);
+      return;
+    }
+    size_t dwRemain0 = m_pDoc->GetRemainCache(dwCurrent0);
+    size_t dwRemain1 = pDoc1->GetRemainCache(dwCurrent1);
+    size_t len32;
+    if(len > SIZE_MAX)len32 = SIZE_MAX;
+    else len32 = (size_t)len;
+    size_t minMapSize = min(min(dwRemain0, dwRemain1), len32); //minmax内で直接callすると何度も実行される
+    if(minMapSize==0) return;
+    DWORD ofs = MemCompByte2(pData0, pData1, minMapSize);
+    if(ofs!=0xFFFFffff)
+    {	//Data0 != Data1
+      ofs--;
+      dwCurrent0 += ofs;
+      dwCurrent1 += ofs;
+      goto founddiff;
+    }
+    len -= minMapSize;
+    dwCurrent0 += minMapSize;
+    dwCurrent1 += minMapSize;
+  } while(len > 0);
+
+  if(dwCurrent0==GetFileSize() && dwCurrent1==pView1->GetFileSize())
+  {
+    AfxMessageBox(IDS_COMPARE_OK, MB_ICONINFORMATION);
+    return;
+  }
+founddiff:
+  m_dwOldCaret = m_dwCaret;
+  m_dwCaret = dwCurrent0;
+  pView1->m_dwOldCaret = pView1->m_dwCaret;
+  pView1->m_dwCaret = dwCurrent1;
+  GotoCaret();
+  pView1->GotoCaret();
+  Invalidate(FALSE);
+  pView1->Invalidate(FALSE);
+  return;
+}
+
+void CBZView::OnEditUndo(UINT uNotifyCode, int nID, CWindow wndCtl)
+  {
+    UINT64 dwRetStart = 0;
+    if(m_pDoc->DoUndo(&dwRetStart))
+    {
+      m_dwCaret = dwRetStart;
+      GotoCaret();
+      UpdateDocSize();
+    } else {
+      ATLASSERT(FALSE);
+    }
+  }
+void CBZView::OnEditRedo(UINT uNotifyCode, int nID, CWindow wndCtl)
+  {
+    UINT64 dwRetStart = 0;
+    if(m_pDoc->DoRedo(&dwRetStart))
+    {
+      m_dwCaret = dwRetStart;
+      GotoCaret();
+      UpdateDocSize();
+    } else {
+      ATLASSERT(FALSE);
+    }
+  }
+void CBZView::OnEditPaste(UINT uNotifyCode, int nID, CWindow wndCtl)
+  {
+    DWORD dwPaste;
+    if(dwPaste = m_pDoc->PasteFromClipboard(m_dwCaret, m_bIns)) {
+      m_dwOldCaret = m_dwCaret;
+      m_dwCaret = dwPaste;
+      UpdateDocSize();
+    }
+  }
+void CBZView::OnViewColor(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CSetupColorDialog dlg;
+  dlg.m_pSampleFont = m_pFont;
+  if(dlg.DoModal() == IDOK)
+    GetMainFrame()->Invalidate(TRUE);
+}
+void CBZView::OnJumpBase(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CInputDlg dlg;
+  dlg.m_sValue.Format(_T("%X"), m_pDoc->m_dwBase);
+  if(dlg.DoModal() == IDOK) {
+    m_pDoc->m_dwBase = _tcstol(dlg.m_sValue, NULL, 16);
+    Invalidate(FALSE);
+  }
+}
+  void CBZView::SetMark(UINT uNotifyCode, int nID, CWindow wndCtl)
+  {
+    m_pDoc->SetMark(m_dwCaret);
+    Invalidate(FALSE);
+  }
+  void CBZView::JumpToMark(UINT uNotifyCode, int nID, CWindow wndCtl)
+  {
+    UINT64 dwMark = m_pDoc->JumpToMark(m_dwCaret);
+    if(dwMark != INVALID)
+      JumpTo(dwMark);
+  }
+void CBZView::OnByteOrder(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  if(nID != (UINT)options.bByteOrder + ID_BYTEORDER_INTEL)
+    options.bByteOrder = !options.bByteOrder;
+  GetMainFrame()->UpdateInspectViewChecks();
+}
+void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+  UINT64 dwNewCaret = m_dwCaret;
+  UINT64 dwTotal = GetFileSize();
+  BOOL bCtrl  = (GetKeyState(VK_CONTROL) < 0);
+  BOOL bShift = (GetKeyState(VK_SHIFT) < 0 || GetKeyState(VK_LBUTTON) < 0);
+  TRACE("KeyDown: %X %d %X\n", nChar, nRepCnt, nFlags);
+  switch(nChar)
+  {
+  case VK_RETURN:
+    if(bCtrl) OnDoubleClick();	// ### 1.62
+    else
+      PostMessage(WM_COMMAND, ID_JUMP_FINDNEXT);
+    return;
+  case VK_INSERT:
+    if(!m_pDoc->IsReadOnly()
+#ifdef FILE_MAPPING
+      //		 && !m_pDoc->IsFileMapping()
+#endif //FILE_MAPPING
+      ) {
+        m_bIns = !m_bIns;
+        InitCaret();
+        m_bEnterVal = FALSE;
+        return;
+    }
+    goto Error;
+  case VK_TAB:
+    if(bCtrl) {
+      GetMainFrame()->ChangeView(this);
+      return ;
+    }
+    if(bShift && GetMainFrame()->m_bStructView) {
+      CBZFormView* pView = (CBZFormView*)(GetSubView());
+      if(pView)pView->Activate();
+      return;
+    }
+    m_bCaretOnChar = !m_bCaretOnChar;
+    break;
+  case VK_RIGHT:
+    if(dwNewCaret<dwTotal)dwNewCaret++;
+    break;
+  case VK_LEFT:
+    if(dwNewCaret>0)dwNewCaret--;
+    break;
+  case VK_DOWN:
+    dwNewCaret += 16;
+    if(dwNewCaret < m_dwCaret) dwNewCaret = m_dwCaret;
+    break;
+  case VK_UP:
+    if(dwNewCaret>=16)dwNewCaret -= 16;
+    break;
+  case VK_NEXT://PageDown
+    dwNewCaret += 16 * PAGESKIP;
+    if(dwNewCaret > dwTotal || dwNewCaret < m_dwCaret)
+      dwNewCaret = dwTotal;
+    break;
+  case VK_PRIOR://PageUp
+    if(dwNewCaret>=16 * PAGESKIP)
+    {
+      dwNewCaret -= 16 * PAGESKIP;
+      if(dwNewCaret > dwTotal || dwNewCaret > m_dwCaret)
+        dwNewCaret = 0;
+    } else dwNewCaret = 0;
+    break;
+  case VK_HOME:
+    if(bCtrl)	dwNewCaret = 0;
+    else		dwNewCaret&=~(16-1);
+    break;
+  case VK_END:
+    if(bCtrl)	dwNewCaret = dwTotal;
+    else		dwNewCaret|=(16-1);
+    break;
+  case VK_BACK:
+    if(!dwNewCaret) goto Error;
+    if(!m_bBlock) dwNewCaret--;
+  case VK_DELETE:
+    if(m_pDoc->IsReadOnly())
+      goto Error;
+#ifdef FILE_MAPPING
+    //		if(m_pDoc->IsFileMapping()) goto Error;
+#endif //FILE_MAPPING
+    if(m_bBlock) {
+      CutOrCopy(EDIT_DELETE);
+      return;
+    } else {
+      if(dwNewCaret == dwTotal
+        || !m_pDoc->Delete(dwNewCaret, 1)) goto Error;
+      UpdateDocSize();
+    }
+    break;
+  default:
+    //CTextView::OnKeyDown(nChar, nRepCnt, nFlags);
+    SetMsgHandled(FALSE);
+    return;
+  }
+  m_bEnterVal = FALSE;
+  if(!m_bBlock && bShift) {
+    m_dwBlock = m_dwCaret;
+    m_bBlock = TRUE;
+  } else if(m_bBlock && !bShift) {
+    m_bBlock = FALSE;
+    Invalidate(FALSE);
+  }
+  if(m_ptCaret.x == -1) {
+    if(dwNewCaret <= dwTotal) {	// ### 1.62
+      m_dwCaret = dwNewCaret;
+      GotoCaret();
+    }
+  } else
+    MoveCaretTo(dwNewCaret);
+  return;
+Error:
+  MessageBeep(MB_NOFOCUS);
+  return;
+}
+
+void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+  {
+    static UINT preChar = 0;
+    UINT64 dwTotal = GetFileSize();
+
+    if(nChar < ' ' || nChar >= 256)
+      return;
+    if(m_pDoc->IsReadOnly())
+      goto Error;
+    if(!m_bEnterVal && !preChar) {
+      DWORD dwSize = 1;
+      if(m_bCaretOnChar && (m_charset == CTYPE_UNICODE || (m_charset > CTYPE_UNICODE && _ismbblead((BYTE)nChar)))) {
+        if(m_charset == CTYPE_UTF8)		// ### 1.54b
+          dwSize = 3;
+        else
+          dwSize = 2;
+      }
+    }
+    m_bBlock = FALSE;
+    //p = m_pDoc->QueryMapViewTama2(m_dwCaret, 4); //p  = m_pDoc->GetDocPtr() + m_dwCaret;
+    if(!m_bCaretOnChar) {
+      if(nChar >= '0' && nChar <= '9')
+        nChar -= '0';
+      else if(nChar >= 'A' && nChar <= 'F')
+        nChar -= 'A' - 10;
+      else if(nChar >= 'a' && nChar <= 'f')
+        nChar -= 'a' - 10;
+      else
+        goto Error;
+      if(m_bEnterVal) {
+        BYTE nVal = 0;
+        m_pDoc->Read(&nVal, m_dwCaret, 1);
+        nChar |= nVal<<4;
+        m_pDoc->DoUndo();
+        dwTotal = GetFileSize();
+        m_bEnterVal = FALSE;
+      } else
+        m_bEnterVal = TRUE;
+    } else if(m_charset >= CTYPE_UNICODE) {
+      char  mbs[4];
+      char* pb = mbs;
+      if(preChar) {
+        *pb++ = preChar;
+        preChar = 0;
+      } else if(_ismbblead((BYTE)nChar)) {
+        preChar = nChar;
+        return;
+      }
+      *pb++ = (char)nChar;
+      *pb++ = 0;
+      LPBYTE buffer = NULL;
+      int len = ConvertCharSet(m_charset, mbs, buffer);
+      if(len) {
+        if(m_charset == CTYPE_UNICODE) len *= 2;
+        pb = (char*)buffer;
+        BOOL bInsert = m_bIns || (m_dwCaret == dwTotal);
+        if(bInsert)m_pDoc->Insert(buffer, m_dwCaret, len);
+        else m_pDoc->Write(buffer, m_dwCaret, len);
+        UpdateDocSize();
+        MemFree(buffer);
+        Invalidate(FALSE);
+        if(!m_bEnterVal)
+          MoveCaretTo(m_dwCaret + len);
+      }
+      return;
+    }
+    BOOL bInsert = m_bIns || (m_dwCaret == dwTotal);
+    if(bInsert)m_pDoc->Insert(&nChar, m_dwCaret, 1);
+    else m_pDoc->Write(&nChar, m_dwCaret, 1);
+    UpdateDocSize();
+    Invalidate(FALSE);
+    if(!m_bEnterVal) {
+      MoveCaretTo(m_dwCaret+1);
+    }
+    return;
+Error:
+    MessageBeep(MB_NOFOCUS);
+    return;
+  }
 
 
 void CBZView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
@@ -154,12 +607,12 @@ void CBZView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	if(pMainFrame)
 	{
 		if(pMainFrame->m_bStructView) {
-			CBZFormView* pView = (CBZFormView*)GetNextWindow(GW_HWNDPREV);
+			CBZFormView* pView = (CBZFormView*)GetSubView();
 			if(pView!=NULL)
 				pView->SelectTag();
 		}
 		if(pMainFrame->m_bAnalyzerView) {
-			CBZAnalyzerView* pView = (CBZAnalyzerView*)GetNextWindow(GW_HWNDPREV);
+			CBZAnalyzerView* pView = (CBZAnalyzerView*)GetSubView();
 			if(pView!=NULL)
 				pView->Clear();
 		}
@@ -169,12 +622,6 @@ void CBZView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	DrawCaret();
 }
 
-
-CBZDoc2* CBZView::GetDocument() // non-debug version is inline
-{
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CBZDoc2)));
-	return (CBZDoc2*)m_pDocument;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // CBZView drawing
@@ -211,10 +658,9 @@ void CBZView::SetMaxPrintingPage(CPrintInfo* pInfo)
 
 void CBZView::OnPrint(CDC* pDC, CPrintInfo* pInfo) 
 {
-	// TODO: Add your specialized code here and/or call the base class
-	m_dwPrint = (m_bBlock) ? (BlockBegin()&~(16-1)) : 0;
-	m_dwPrint += (pInfo->m_nCurPage - 1) * m_nPageLen * 16;
-	CView::OnPrint(pDC, pInfo);
+	//m_dwPrint = (m_bBlock) ? (BlockBegin()&~(16-1)) : 0;
+	//m_dwPrint += (pInfo->m_nCurPage - 1) * m_nPageLen * 16;
+	//CView::OnPrint(pDC, pInfo);
 }
 
 void CBZView::SetColor(TextColor n)
@@ -224,7 +670,7 @@ void CBZView::SetColor(TextColor n)
 
 void CBZView::SetHeaderColor()
 {
-	BOOL bNoFocus = GetMainFrame()->m_nSplitView && GetMainFrame()->GetActiveDocument() != m_pDoc;
+	BOOL bNoFocus = GetMainFrame()->m_nSplitView && GetActiveBZDoc2() != m_pDoc;
 	SetColor(bNoFocus ? TCOLOR_ADDRESS2 : TCOLOR_ADDRESS);
 }
 
@@ -640,7 +1086,7 @@ void CBZView::DrawHeader()
 
 void CBZView::DrawDummyCaret(CDC* pDC)
 {
-	if(GetFocus() != this) {
+	if(GetFocus() != this->m_hWnd) {
 		POINT ptOrg = GetScrollPos();
 		DWORD dwOrg = ptOrg.y * 16;
 
@@ -710,7 +1156,7 @@ BOOL CBZView::DrawCaret()
 
 	
 	if(GetMainFrame() && GetMainFrame()->m_bInspectView) {
-		CBZInspectView* pView = (CBZInspectView*)GetNextWindow(GW_HWNDPREV);
+		CBZInspectView* pView = (CBZInspectView*)GetSubView();
 		pView->Update();
 	}
 
@@ -771,7 +1217,7 @@ void CBZView::Activate()
 void CBZView::OnDoubleClick()	// ### 1.62
 {
 	if(m_dwStruct) {
-		CBZFormView* pView = (CBZFormView*)GetNextWindow(GW_HWNDPREV);
+		CBZFormView* pView = (CBZFormView*)GetSubView();
 		pView->SelchangeListTag();
 	} else {
 		OnStatusInfo();

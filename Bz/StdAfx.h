@@ -12,25 +12,18 @@
 
 #define ISOLATION_AWARE_ENABLED 1
 
-#include <afxwin.h>         // MFC のコアおよび標準コンポーネント
-#include <afxext.h>         // MFC の拡張部分
+#include <windows.h>
 
+#define _WTL_NO_AUTOMATIC_NAMESPACE
 
-//#include <afxdisp.h>        // MFC オートメーション クラス
+#include <atlbase.h>
+#include <atlapp.h>
 
-
-#ifndef _AFX_NO_OLE_SUPPORT
-//#include <afxdtctl.h>		// MFC の Internet Explorer 4 コモン コントロール サポート
-#endif
-#ifndef _AFX_NO_AFXCMN_SUPPORT
-#include <afxcmn.h>			// MFC の Windows コモン コントロール サポート
-#endif // _AFX_NO_AFXCMN_SUPPORT
-
-#include <afxpriv.h>
+extern WTL::CAppModule _Module;
 
 #include <atlcoll.h>
 
-#define _WTL_NO_AUTOMATIC_NAMESPACE
+//#define _WTL_NO_AUTOMATIC_NAMESPACE
 #include <atlapp.h>
 #include <atldlgs.h>
 #include <atlgdi.h>//CDCHandle
@@ -46,11 +39,12 @@
 
 #include <shlobj.h>
 
+#include "resource.h"
 #include "..\cmos.h"
 
 #include <imagehlp.h>
 
-#include "MemDC.h"
+//#include "MemDC.h"
 
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
@@ -62,6 +56,9 @@
 
 #include "tamasplit.h"
 #include "BZCoreData.h"
+
+#include "BZOption.h"
+extern CBZOptions options;
 
 /*
 #ifdef _UNICODE

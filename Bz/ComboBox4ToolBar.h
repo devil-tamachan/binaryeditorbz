@@ -27,25 +27,26 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _OPTIONS_H_
-#define _OPTIONS_H_
+#pragma once
 
-class COptions
+#include "BZCoreData.h"
+
+class CBZView;
+
+class CComboBox4ToolBar : public CWindowImpl<CComboBox4ToolBar, WTL::CComboBox>
 {
 public:
-	COptions();
-	void Touch() { m_bModified = TRUE; }
-	UINT GetProfileInt(LPCTSTR lpszEntry, int nDefault);
-	BOOL WriteProfileInt(LPCTSTR lpszEntry, int nValue);
-	CString GetProfileString(LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);
-	BOOL WriteProfileString(LPCTSTR lpszEntry, LPCTSTR lpszValue);
-	BOOL GetProfileBinary(LPCTSTR lpszEntry, LPVOID pData);
-	BOOL GetProfileBinary2(LPCTSTR lpszEntry, LPVOID pData, unsigned int dstSize);
-	BOOL WriteProfileBinary(LPCTSTR lpszEntry, LPBYTE pData, UINT nBytes);
-	void LoadHistory(CString sHistName, CStringArray& sarrHist);
-	void SaveHistory(CString sHistName, CStringArray& sarrHist);
-private:
-	BOOL m_bModified;
+  BEGIN_MSG_MAP(CComboBox4ToolBar)
+    MSG_WM_KEYDOWN(OnKeyDown)
+  END_MSG_MAP()
+
+  CBZView* GetActiveBZView()
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    return pCoreData->GetActiveBZView();
+  }
+
+  void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+
 };
 
-#endif //_OPTIONS_H_

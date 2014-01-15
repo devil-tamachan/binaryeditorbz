@@ -60,9 +60,75 @@ static UINT indicators[] =
 	ID_INDICATOR_INS,
 };
 
-/////////////////////////////////////////////////////////////////////////////
-// CMainFrame construction/destruction
 
+void CMainFrame::OnUpdateViewBitmap() 
+{
+  UISetCheck(ID_VIEW_BITMAP, m_bBmpView);
+  CBZDoc2* pDoc = GetActiveBZDoc2();
+  UIEnable(ID_VIEW_BITMAP, pDoc->GetDocSize() >= (DWORD)(options.nBmpWidth * (options.nBmpColorWidth/8)) /* && !m_nSplitView*/);
+}
+
+void CMainFrame::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+  if(bShow && m_nSplitView != ID_VIEW_SPLIT_V) {
+    CBZView *pBZView = GetActiveBZView();
+    if(pBZView)
+      pBZView->ResizeFrame();
+  }
+}
+void CMainFrame::OnViewSubCursor(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  options.bSubCursor = !options.bSubCursor;
+  GetActiveBZView()->Invalidate();
+}
+void CMainFrame::OnViewSyncScroll(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  options.bSyncScroll = !options.bSyncScroll;
+  GetActiveBZView()->Invalidate();
+}
+void CMainFrame::OnFileSaveDumpList(UINT uNotifyCode, int nID, CWindow wndCtl) 
+{
+  CString sFileName = GetActiveBZDoc2()->GetPathName();
+  sFileName += _T(".lst");
+
+  if(m_pDocManager->DoPromptFileName(sFileName, IDS_SAVEDUMP_CAPTION, OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY, FALSE, NULL)) {
+    CFile file;
+    if(file.Open(sFileName, CFile::modeCreate | CFile::modeWrite)) {
+      GetActiveBZView()->DrawToFile(&file);
+      file.Close();
+    }
+  }
+}
+
+
+void CMainFrame::UpdateInspectViewChecks()
+{
+  if(m_bInspectView && m_nSplitView && m_nSplitView0) {
+    ((CBZInspectView*)m_pSplitter->GetPane(0, 0))->_UpdateChecks();
+    ((CBZInspectView*)m_pSplitter->GetPane(0, 0))->Update();
+    int r=0,c=0;
+    if(options.nSplitView==ID_VIEW_SPLIT_H)c=2;
+    else r=1;
+    ((CBZInspectView*)m_pSplitter->GetPane(r, c))->_UpdateChecks();
+    ((CBZInspectView*)m_pSplitter->GetPane(r, c))->Update();
+  }
+}
+void CMainFrame::UpdateFrameTitle(BOOL bAddToTitle = TRUE)
+{
+  CBZDoc2* pDoc = GetActiveBZDoc2();
+  if(pDoc) {
+    CString s(AfxGetAppName());
+    s += " - ";
+    CString sPath = pDoc->GetPathName();
+    if(!(options.barState & BARSTATE_FULLPATH) || sPath.IsEmpty())
+      sPath = pDoc->GetTitle();
+    s += sPath;
+    //		s += pDoc->IsFileMapping()?_T(" (FileMap)"):_T(" (Mem)");
+    if(pDoc->IsModified())
+      s += " *";
+    SetWindowText(s);
+  }
+}
 
 
 //BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)   ‚½‚Ô‚ñíœ‚µ‚Ä‚à–â‘è‚È‚¢Bˆê‰žŽc‚µ‚Ä‚¨‚­
@@ -256,13 +322,13 @@ BOOL CMainFrame::CreateClient(CCreateContext* pContext)
 
 
 
-void CMainFrame::ChangeView(CView* pView) 
+void CMainFrame::ChangeView(CBZView* pView) 
 {
 	if(m_nSplitView) 
 		SetActiveView(GetBrotherView(pView));
 }
 
-CView *CMainFrame::GetBrotherView(CView* pView)
+CBZView *CMainFrame::GetBrotherView(CBZView* pView)
 {
 	if(!m_nSplitView) return NULL;
 	int nRow = m_pSplitter->GetRowCount();
