@@ -156,7 +156,7 @@ CString GetModulePath(LPCTSTR pFileName)
 	::GetModuleFileName(NULL, pBuffer, _MAX_PATH - 1);
 	TCHAR* p;
 	p =  _tcsrchr(pBuffer, '\\');
-	ASSERT(p);
+	ATLASSERT(p);
 	*(p+1) = '\0';
 	sPath.ReleaseBuffer();
 	sPath += pFileName;
@@ -184,14 +184,15 @@ CString GetStructFilePath(UINT uID)
 
 LPVOID ReadFile(LPCTSTR pPath)
 {
-	CFile file;
-	if(!file.Open(pPath, CFile::modeRead | CFile::shareDenyNone)) {
+	CAtlFile file;
+	if(!file.Create(pPath, GENERIC_READ, 0, OPEN_EXISTING)) {
 		CString sMsg;
 		sMsg.Format(IDS_ERR_FILENOTFOUND, pPath);
-		AfxMessageBox(sMsg);
+		MessageBox(NULL, sMsg, _T("ERROR"), MB_OK);
 		return NULL;
 	}
-  UINT64 len64 = file.GetLength();
+  UINT64 len64 = 0;
+  file.GetSize(len64);
   if(len64 > _UI32_MAX)return NULL;
 	DWORD len = (DWORD)len64;
 	LPVOID p = new char[len + 1];
@@ -208,7 +209,7 @@ CString GetErrorMessage() // ###1.60
 	DWORD dwErr = GetLastError();
 	int nErr = LOWORD(dwErr);
 	sErr.Format(_T("(%d)"), nErr);
-	TRACE(_T("Error=%d\n"), nErr);
+	ATLTRACE(_T("Error=%d\n"), nErr);
 	::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 
 		NULL, dwErr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL );
 	if(lpMsgBuf) {
@@ -224,7 +225,7 @@ CString GetErrorMessage() // ###1.60
 
 void ErrorMessageBox() // ###1.61
 {
-	AfxMessageBox(GetErrorMessage(), MB_ICONHAND);
+	MessageBox(NULL, GetErrorMessage(), _T("ERROR"), MB_ICONHAND);
 }
 
 

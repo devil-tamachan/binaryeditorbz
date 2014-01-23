@@ -74,6 +74,10 @@ public:
     COMMAND_ID_HANDLER_EX(ID_FILE_SAVE_DUMPLIST, OnFileSaveDumpList)
     //ON_COMMAND( ID_HELP_INDEX, OnHelpIndex )
     COMMAND_RANGE_HANDLER_EX(ID_LANG_JPN, ID_LANG_ENU, OnLanguage)
+    COMMAND_ID_HANDLER_EX(ID_FILE_SAVE, OnFileSave)
+    COMMAND_ID_HANDLER_EX(ID_FILE_SAVE_AS, OnFileSaveAs)
+    COMMAND_ID_HANDLER_EX(ID_EDIT_READONLY, OnEditReadOnly)
+    COMMAND_ID_HANDLER_EX(ID_EDIT_READONLYOPEN, OnEditReadOnlyOpen)
     CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
     CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
   END_MSG_MAP()
@@ -90,6 +94,12 @@ public:
     UPDATE_ELEMENT(ID_VIEW_SPLIT_V, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_LANG_JPN, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_LANG_ENU, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_EDIT_READONLY, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_EDIT_READONLYOPEN, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_EDIT_UNDO, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_EDIT_REDO, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_FILE_SAVE, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_FILE_SAVE_AS, UPDUI_MENUPOPUP)
   END_UPDATE_UI_MAP()
 
   void OnUpdateViewBitmap();
@@ -102,20 +112,8 @@ public:
   void OnUpdateViewSplitH()     { UISetCheck(ID_VIEW_SPLIT_H, m_nSplitView == ID_VIEW_SPLIT_H);/*pCmdUI->Enable(!m_bBmpView && !m_bStructView);*/ }
   void OnUpdateViewSplitV()     { UISetCheck(ID_VIEW_SPLIT_V, m_nSplitView == ID_VIEW_SPLIT_V);/*pCmdUI->Enable(!m_bBmpView && !m_bStructView);*/ }
   void OnUpdateLanguage() { UISetRadioMenuItem(ID_LANG_JPN + options.bLanguage, ID_LANG_JPN, ID_LANG_ENU); }
-  void OnInitMenuPopup(WTL::CMenuHandle menuPopup, UINT nIndex, BOOL bSysMenu)
-  {
-    OnUpdateViewBitmap();
-    OnUpdateViewStruct();
-    OnUpdateViewFullpath();
-    OnUpdateViewSubCursor();
-    OnUpdateViewSyncScroll();
-    OnUpdateViewInspect();
-    OnUpdateViewAnalyzer();
-    OnUpdateViewSplitH();
-    OnUpdateViewSplitV();
-    OnUpdateLanguage();
-    SetMsgHandled(FALSE);
-  }
+  void OnUpdateEditReadOnlyOpen() { UISetCheck(ID_EDIT_READONLYOPEN, options.bReadOnlyOpen); }
+  void OnInitMenuPopup(WTL::CMenuHandle menuPopup, UINT nIndex, BOOL bSysMenu);
 
   int OnCreate(LPCREATESTRUCT lpCreateStruct)
   {
@@ -123,7 +121,7 @@ public:
       m_bStructView = options.bStructView;
       m_bInspectView = options.bInspectView;
       m_bAnalyzerView = options.bAnalyzerView;
-      //CreateClient(pContext);
+      CreateClient();
     }
     if(options.ptFrame.x && options.ptFrame.y)
     {
@@ -337,12 +335,16 @@ public:
       MessageBox(strMsg);
     }
   }
+  void OnFileSave(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnFileSaveAs(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnEditReadOnly(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnEditReadOnlyOpen(UINT uNotifyCode, int nID, CWindow wndCtl);
 
 
 public:
   CMainFrame()
   {
-    m_pSplitter = NULL;
+    m_pWndSplitter = NULL;
     m_bBmpView = FALSE;
     m_bStructView = FALSE;
     m_bInspectView = FALSE;
@@ -354,8 +356,8 @@ public:
   }
   ~CMainFrame()
   {
-    if(m_pSplitter)
-      delete m_pSplitter;
+    if(m_pWndSplitter)
+      delete m_pWndSplitter;
   }
 
   CBZView* GetActiveBZView()
@@ -377,7 +379,7 @@ public:
 public:
 	BOOL m_bDisableStatusInfo;
 protected:
-	CTamaSplitterWindow m_wndSplitter;
+  CTamaSplitterWindow *m_pWndSplitter;
 	int m_nPaneWidth;
 
 public:
@@ -412,7 +414,7 @@ public:
   void GetSplitInfo()
   {
     if(IsIconic() || IsZoomed()) return;
-    WTL::CRect rFrame;
+/*    WTL::CRect rFrame;
     GetWindowRect(rFrame);
 
     int nCur, nMin;
@@ -435,13 +437,13 @@ public:
         options.xSplit += nCur;
       }
       break;
-    }
+    }*/
     options.bStructView = m_bStructView;
     options.bInspectView = m_bInspectView;
     options.bAnalyzerView = m_bAnalyzerView;
     if(m_bStructView || m_bInspectView || m_bAnalyzerView) {
-      m_pSplitter->GetColumnInfo(0, nCur, nMin);
-      options.xSplitStruct = nCur;
+ //     m_pSplitter->GetColumnInfo(0, nCur, nMin);
+ //     options.xSplitStruct = nCur;
     }
   }
   void GetFrameState()
@@ -455,28 +457,18 @@ public:
       | options.barState & (BARSTATE_FULLPATH | BARSTATE_NOFLAT);
   }
   void UpdateInspectViewChecks();
-  void DeleteSplitterWnd()
+  void DestroyAllChildWnd(BOOL bDelDoc)
   {
-    m_pSplitter->DeleteView(0,0);
-    m_pSplitter->CreateView(0,0,RUNTIME_CLASS(CWnd), CSize(0,0), pContext);
-    m_pSplitter->SetActivePane(0,0);
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    pCoreData->DeleteAllViews(FALSE/*bDelDoc*/);
 
-    int maxRow = m_pSplitter->GetRowCount();
-    int maxCol = m_pSplitter->GetColumnCount();
-    for(int r=0; r<maxRow; r++)
+    if(m_pWndSplitter)
     {
-      for(int c=0; c<maxCol; c++)
-      {
-        if(r!=0 && c!=0)
-        {
-          m_pSplitter->DeleteView(r,c);
-        }
-      }
+      m_pWndSplitter->DestroyWindow();
+      delete m_pWndSplitter;
+      m_pWndSplitter = NULL;
+      pCoreData->SetSplitterWnd(NULL);
     }
-
-    m_pSplitter->DestroyWindow();
-    delete m_pSplitter;
-    m_pSplitter = NULL;
   }
 };
 

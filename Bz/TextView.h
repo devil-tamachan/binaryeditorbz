@@ -78,7 +78,7 @@ public:
     if(m_pFont == NULL) SetDefaultFont();
     return 0;
   }
-  void OnSize(UINT nType, CSize size)
+  void OnSize(UINT nType, WTL::CSize size)
   {
     if(size.cx && size.cy) InitScrollBar();	// ### 1.62
   }
@@ -95,7 +95,7 @@ public:
     HideCaret2();
     Invalidate(true);//非アクティブウィンドウの擬似カレット描画
   }
-  BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+  BOOL OnMouseWheel(UINT nFlags, short zDelta, WTL::CPoint pt)
   {
     OnScrollBar(SB_VERT, zDelta > 0 ? SB_WHEELUP : SB_WHEELDOWN);
     return TRUE;
@@ -124,9 +124,9 @@ protected:
 	BOOL	m_bIns;
 //	SCROLLINFO m_SBinfoV;
 	void	AlignVScrlBar();
-	CFont*	m_pFont;
-	CFont*	m_pOldFont;
-	CFont*	m_pScrnFont;
+  WTL::CFont*	m_pFont;
+	WTL::CFont*	m_pOldFont;
+	WTL::CFont*	m_pScrnFont;
 	BOOL	m_bOnSize;		// ### 1.62
 
 	int		m_xLoc, m_yLoc;
@@ -134,11 +134,11 @@ protected:
 	DWORD	m_colBk;
 	char*	m_pVText;
 	int		m_nText;
-	CDC*	m_pDC;
+	WTL::CDCHandle	m_dc;
 	BOOL	m_bPrinting;	// ### 1.54
 	BOOL IsPrinting() { return m_bPrinting != NULL; }
 
-	CFile*	m_pFile;		// ### 1.63
+	CAtlFile*	m_pFile;		// ### 1.63
 	BOOL	IsToFile() { return m_pFile != NULL; }
 
 // Operations
@@ -159,7 +159,7 @@ protected:
 	void SetTextSize(SIZE cTotal); // ### 1.63
 
 public:
-	void OnChangeFont(CDC* pDC = NULL);
+	void OnChangeFont(WTL::CDC* pDC = NULL);
 	void ResizeFrame();
 	void AlignTextPos(POINT& pt);
 	void AlignTextPos(RECT& rect);
@@ -167,9 +167,9 @@ public:
 	void PixelToGrid(RECT& rect);
 	void GridToPixel(POINT& pt);
 	void MoveCaret(POINT pt);
-	void GetMargin(LPRECT prMargin, CDC* pDC);
-	void SetMargin(CDC* pDC);				// ### 1.54
-	void SetDefaultFont(CDC* pDC = NULL);	// ### 1.54
+	void GetMargin(LPRECT prMargin, WTL::CDC* pDC);
+	void SetMargin(WTL::CDC* pDC);				// ### 1.54
+	void SetDefaultFont(WTL::CDC* pDC = NULL);	// ### 1.54
 	void MoveCaret2(POINT pt);				// ### 1.62
 	void ShowCaret2();
 	void HideCaret2();
@@ -180,7 +180,7 @@ public:
 	void PutChar(char c=' ', int n=1);
 	void PutStr(LPCSTR str);
 	void PutFormatStr(LPCSTR fmt, ...);
-	void PutBegin(CDC* pDC);
+	void PutBegin(WTL::CDCHandle dc);
 	void PutEnd();
 	void PutFlush();
 
@@ -190,9 +190,9 @@ public:
 	protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
-	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
-	virtual void OnPrepareDC(CDC* pDC, CPrintInfo* pInfo);
-	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
+	virtual void OnBeginPrinting(WTL::CDC* pDC, CPrintInfo* pInfo);
+	virtual void OnPrepareDC(WTL::CDC* pDC, CPrintInfo* pInfo);
+	virtual void OnEndPrinting(WTL::CDC* pDC, CPrintInfo* pInfo);
 	//}}AFX_VIRTUAL
 
 };

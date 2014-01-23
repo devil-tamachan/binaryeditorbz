@@ -278,14 +278,14 @@ public:
   void SelchangeListTag();
 
 
-  void OnSize(UINT nType, CSize size)
+  void OnSize(UINT nType, WTL::CSize size)
   {
     //SetScrollSizes(MM_TEXT, size);
     int cx = size.cx;
     int cy = size.cy;
 
     if(m_listTag.m_hWnd && m_listTag.m_hWnd) {
-      CRect rForm, rTag, rMember, rStatic;
+      WTL::CRect rForm, rTag, rMember, rStatic;
       GetWindowRect(rForm);
       m_listTag.GetWindowRect(rTag);
       m_listMember.GetWindowRect(rMember);
@@ -316,7 +316,7 @@ public:
       if(cxLabel > 0)
         m_listMember.SetColumnWidth(MBRCOL_LABEL, cxLabel);
 
-      CRect rTagAll;
+      WTL::CRect rTagAll;
       CWindow pWndTagAll = GetDlgItem(IDB_TAGALL);
       pWndTagAll.GetWindowRect(rTagAll);
       ScreenToClient(rTagAll);

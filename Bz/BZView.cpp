@@ -381,7 +381,7 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
   UINT64 dwTotal = GetFileSize();
   BOOL bCtrl  = (GetKeyState(VK_CONTROL) < 0);
   BOOL bShift = (GetKeyState(VK_SHIFT) < 0 || GetKeyState(VK_LBUTTON) < 0);
-  TRACE("KeyDown: %X %d %X\n", nChar, nRepCnt, nFlags);
+  ATLTRACE("KeyDown: %X %d %X\n", nChar, nRepCnt, nFlags);
   switch(nChar)
   {
   case VK_RETURN:
@@ -678,19 +678,15 @@ void CBZView::SetHeaderColor()
 /////////////////////////////////////////////////////////////////////////////
 // CBZView OnDraw
 
-void CBZView::DrawToFile(CFile* pFile) 	// ###1.63
+void CBZView::DrawToFile(CAtlFile* pFile) 	// ###1.63
 {
 	m_pFile = pFile;
 	OnDraw(NULL);
 	m_pFile = NULL;
 }
 
-void CBZView::OnDraw(CDC* pDC)
+void CBZView::OnPaint(CDCHandle dc)
 {
-	if(pDC)
-		CTextView::OnDraw(pDC);
-
-	// TODO: add draw code for native data here
 	//LPBYTE p  = m_pDoc->GetDocPtr();
 //	if(!p) return;
 

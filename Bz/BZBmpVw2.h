@@ -475,7 +475,7 @@ public:
     WTL::CMemoryDC pMemDC(dc.m_hDC, rClip);
 
     CBZDoc2* pDoc = GetBZDoc2();
-    ASSERT(pDoc);
+    ATLASSERT(pDoc);
     if(!pDoc->IsOpen())return; //if(pDoc->GetDocPtr()==NULL)return;
 
     rClip.top -= rClip.top % options.nBmpZoom;

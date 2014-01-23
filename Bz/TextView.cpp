@@ -96,10 +96,10 @@ void CTextView::OnChangeFont(CDC* pPrintDC)
 void CTextView::InitCaret(BOOL bShow)
 {
 #ifdef _DEBUG
-	TRACE("CTextView::InitCaret()\n");
+	ATLTRACE("CTextView::InitCaret()\n");
 	CWnd *tw = GetFocus();
-	if(tw!=NULL)TRACE("GetFocus() = 0x%x, this->m_hWnd == 0x%x\n", (tw->m_hWnd), m_hWnd);
-	else TRACE("GetFocus() == NULL\n");
+	if(tw!=NULL)ATLTRACE("GetFocus() = 0x%x, this->m_hWnd == 0x%x\n", (tw->m_hWnd), m_hWnd);
+	else ATLTRACE("GetFocus() == NULL\n");
 #endif
 
 	if(GetFocus()!=NULL && GetFocus()->m_hWnd == this->m_hWnd) {
@@ -114,16 +114,16 @@ void CTextView::InitCaret(BOOL bShow)
 			GetParent()->ShowWindow(SW_SHOWNORMAL);
 			ShowCaret();
 #ifdef _DEBUG
-			TRACE("CTextView::InitCaret(): ShowCaret(0x%x)\n", m_hWnd);
-			TRACE("CTextView::InitCaret(): GetCaretBlinkTime()==%u\n", GetCaretBlinkTime());
-			TRACE("CTextView::InitCaret(): IsWindowVisible()==%s\n", this->IsWindowVisible()?"Visible":"Not visible");
-			TRACE("CTextView::InitCaret(): GetParent()->IsWindowVisible()==%s\n", this->GetParent()->IsWindowVisible()?"Visible":"Not visible");
+			ATLTRACE("CTextView::InitCaret(): ShowCaret(0x%x)\n", m_hWnd);
+			ATLTRACE("CTextView::InitCaret(): GetCaretBlinkTime()==%u\n", GetCaretBlinkTime());
+			ATLTRACE("CTextView::InitCaret(): IsWindowVisible()==%s\n", this->IsWindowVisible()?"Visible":"Not visible");
+			ATLTRACE("CTextView::InitCaret(): GetParent()->IsWindowVisible()==%s\n", this->GetParent()->IsWindowVisible()?"Visible":"Not visible");
 #endif
 			ShowCaret2();
 		}
 	}
 #ifdef _DEBUG
-	else TRACE("CTextView::InitCaret(): not focus\n");
+	else ATLTRACE("CTextView::InitCaret(): not focus\n");
 #endif
 }
 
@@ -446,22 +446,22 @@ void CTextView::PutFormatStr(LPCSTR fmt, ...)
 	m_nText += wvsprintfA(m_pVText + m_nText, fmt, (va_list)(&fmt + 1));
 }
 
-void CTextView::PutBegin(CDC* pDC)
+void CTextView::PutBegin(WTL::CDCHandle dc)
 {
-	m_pDC = pDC;
-//	ASSERT(m_pDC->m_hDC!=NULL);
+	m_dc = dc;
+//	ATLASSERT(m_pDC->m_hDC!=NULL);
 	m_nText = 0;
 	Locate(0, 0);
 	SetColor();
-	if(pDC)
+  if(dc.m_hDC)
 		m_pOldFont = pDC->SelectObject(m_pFont);
 }
 
 void CTextView::PutEnd()
 {
 	PutFlush();
-	if(m_pDC)
-		m_pDC->SelectObject(m_pOldFont);
+	if(m_dc.m_hDC)
+		m_dc.SelectObject(m_pOldFont);
 }
 
 void CTextView::PutFlush()
@@ -476,12 +476,12 @@ void CTextView::PutFlush()
 		if(!(m_pDC->IsPrinting())) {
 			COLORREF colText = GetSystemColor(m_colText);
 			COLORREF colBk   = GetSystemColor(m_colBk);
-			m_pDC->SetTextColor(colText);
-			m_pDC->SetBkColor(colBk);
+			m_dc.SetTextColor(colText);
+			m_dc.SetBkColor(colBk);
 		}
 		int xFrom = m_xLoc;
 		int xTo = xFrom + m_nText;
-		::TextOutA(m_pDC->m_hDC, (m_xLoc-pt.x)*m_cell.cx, m_yLoc*m_cell.cy, m_pVText, m_nText);
+		::TextOutA(m_dc.m_hDC, (m_xLoc-pt.x)*m_cell.cx, m_yLoc*m_cell.cy, m_pVText, m_nText);
 		m_xLoc += m_nText;
 		m_nText = 0;
 		if(m_bShowCaret2 && m_yLoc == m_ptCaret2.y && m_ptCaret2.x >= xFrom && m_ptCaret2.x < xTo) {	// ### 1.62
@@ -533,7 +533,7 @@ void CTextView::SetMargin(CDC* pDC)
 	pDC->SetViewportOrg(0, 0);
 	GetMargin(rMargin, pDC);
 	pDC->SetViewportOrg(rMargin.x1, rMargin.y1);
-	TRACE("MarginLeft:%d\n", rMargin.x1);
+	ATLTRACE("MarginLeft:%d\n", rMargin.x1);
 //	pDC->SetViewportExt(rMargin.Width(), rMargin.Height());
 }
 

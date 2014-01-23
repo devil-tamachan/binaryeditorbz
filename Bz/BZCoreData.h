@@ -44,7 +44,7 @@ public:
   }
 
 private:
-  CBZCoreData(void) : m_pMainFrame(NULL), m_pSplitter(NULL), m_dwActive(0), m_bSubView(FALSE)
+  CBZCoreData(void) : m_pMainFrame(NULL), m_pSplitter(NULL), m_dwActive(0)
   {
   }
 
@@ -59,7 +59,6 @@ public:
   CTamaSplitterWindow* m_pSplitter;
   CMainFrame *m_pMainFrame;
   DWORD m_dwActive;
-  BOOL m_bSubView;
 
 public:
   CBZView* GetBZViewFromSubView(ATL::CWindow *pSubWin)
@@ -91,20 +90,57 @@ public:
     return NULL;
   }
 
+  DWORD GetCountBZDoc2()
+  {
+    return m_arrDoc.GetSize();
+  }
+  DWORD GetCountBZView()
+  {
+    return m_arrView.GetSize();
+  }
+  BOOL IsFirst()
+  {
+    return m_arrDoc.GetSize()==0;
+  }
+  CBZDoc2* GetBZDoc2(DWORD dwIndex)
+  {
+    return m_arrDoc[dwIndex];
+  }
+  CBZView* GetBZView(DWORD dwIndex)
+  {
+    return m_arrView[dwIndex];
+  }
+  ATL::CWindow* GetSubView(DWORD dwIndex)
+  {
+    return m_arrSubView[dwIndex];
+  }
+
   CTamaSplitterWindow* GetSplitterWnd() { return m_pSplitter; }
+  void SetSplitterWnd(CTamaSplitterWindow *pSplitter) { m_pSplitter = pSplitter; }
   CMainFrame* GetMainFrame() { return m_pMainFrame; }
 
-  void DeleteView(DWORD dwIndex)
+  void DeleteView(DWORD dwIndex, BOOL bDelDoc = TRUE);
+  void DeleteAllViews(BOOL bDelDoc = TRUE)
   {
-    m_arrDoc.RemoveAt(dwIndex);
-    m_arrView.RemoveAt(dwIndex);
-    if(m_bSubView)m_arrSubView.RemoveAt(dwIndex);
-    if(m_dwActive==dwIndex)m_dwActive = 0;
-    else if(m_dwActive>dwIndex)m_dwActive--;
+    if(GetCountBZView()>0)DeleteView(0, bDelDoc);
+  }
+
+  void AddBZDoc2(CBZDoc2 *doc)
+  {
+    m_arrDoc.Add(doc);
+  }
+  void AddBZView(CBZView *pView)
+  {
+    m_arrView.Add(pView);
+  }
+  void AddSubView(ATL::CWindow *pSubView)
+  {
+    m_arrSubView.Add(pSubView);
   }
 
   void SetActive(DWORD dwIndex)
   {
     m_dwActive = dwIndex;
   }
+  void Invalidate(BOOL bErase = TRUE);
 };

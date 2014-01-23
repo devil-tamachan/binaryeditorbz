@@ -424,6 +424,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\BZCoreData.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\BZDoc2.cpp"
 				>
 			</File>
@@ -548,34 +552,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="ComboBar.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseUPX|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\ComboBox4ToolBar.cpp"
 				>
 			</File>
@@ -608,10 +584,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\ProgressDialog.cpp"
-				>
-			</File>
-			<File
 				RelativePath="ReadMe.txt"
 				>
 			</File>
@@ -642,10 +614,6 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\Splitter.cpp"
-				>
 			</File>
 			<File
 				RelativePath="StatBar.cpp"
@@ -788,10 +756,6 @@
 				>
 			</File>
 			<File
-				RelativePath="ComboBar.h"
-				>
-			</File>
-			<File
 				RelativePath=".\ComboBox4ToolBar.h"
 				>
 			</File>
@@ -808,19 +772,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ProgressDialog.h"
-				>
-			</File>
-			<File
 				RelativePath=".\resource.h"
 				>
 			</File>
 			<File
 				RelativePath="SettingDlg.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Splitter.h"
 				>
 			</File>
 			<File

@@ -6,9 +6,6 @@
 #include "BZDoc2.h"
 
 
-// CBZDoc2
-
-IMPLEMENT_DYNCREATE(CBZDoc2, CDocument)
 
 CBZDoc2::CBZDoc2() : m_pSFC(NULL)
 {
@@ -31,16 +28,15 @@ void CBZDoc2::DeleteContents()
   ReleaseSFC();
   m_pSFC = new CSuperFileCon();
   m_arrMarks.RemoveAll();
-  SetModifiedFlag(FALSE);
-
-  CDocument::DeleteContents();
 }
 
 CBZDoc2::~CBZDoc2()
 {
   ReleaseSFC();
 }
-void CBZDoc2::PreCloseFrame(CFrameWnd* /*pFrameArg*/)
+
+/*
+void CBZDoc2::PreCloseFrame(CFrameWnd* pFrameArg)
 {
   if(m_pSFC && m_pSFC->IsModified())
   {
@@ -54,94 +50,39 @@ void CBZDoc2::PreCloseFrame(CFrameWnd* /*pFrameArg*/)
       OnFileSave();
     }
   }
-}
+}*/
 
-
-BEGIN_MESSAGE_MAP(CBZDoc2, CDocument)
-  ON_COMMAND(ID_EDIT_READONLY, &CBZDoc2::OnEditReadOnly)
-  ON_UPDATE_COMMAND_UI(ID_EDIT_READONLY, &CBZDoc2::OnUpdateEditReadOnly)
-  ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, &CBZDoc2::OnUpdateEditUndo)
-  ON_UPDATE_COMMAND_UI(ID_EDIT_REDO, &CBZDoc2::OnUpdateEditRedo)
-  ON_COMMAND(ID_EDIT_READONLYOPEN, &CBZDoc2::OnEditReadOnlyOpen)
-  ON_UPDATE_COMMAND_UI(ID_EDIT_READONLYOPEN, &CBZDoc2::OnUpdateEditReadOnlyOpen)
-  ON_COMMAND(ID_INDICATOR_INS, OnEditReadOnly)
-  ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, &CBZDoc2::OnUpdateFileSave)
-  ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, &CBZDoc2::OnUpdateFileSaveAs)
-  ON_COMMAND(ID_FILE_SAVE, &CBZDoc2::OnFileSave)
-  ON_COMMAND(ID_FILE_SAVE_AS, &CBZDoc2::OnFileSaveAs)
-END_MESSAGE_MAP()
-
-
-// CBZDoc2 診断
-
-#ifdef _DEBUG
-void CBZDoc2::AssertValid() const
-{
-  CDocument::AssertValid();
-}
-
-#ifndef _WIN32_WCE
-void CBZDoc2::Dump(CDumpContext& dc) const
-{
-  CDocument::Dump(dc);
-}
-#endif
-#endif //_DEBUG
-
-#ifndef _WIN32_WCE
-// CBZDoc2 シリアル化
-
-void CBZDoc2::Serialize(CArchive& ar)
-{
-  /*
-  if (ar.IsStoring())
-  {
-  }
-  else
-  {
-  }
-  */
-}
-#endif
-
-
-// CBZDoc2 コマンド
 
 void CBZDoc2::OnEditReadOnly()
 {
   if(m_pSFC && !m_pSFC->IsReadOnly()) m_bReadOnly = !m_bReadOnly;	
 }
-void CBZDoc2::OnUpdateEditReadOnly(CCmdUI *pCmdUI)
+
+
+
+void CBZDoc2::OnUpdateEditReadOnly(BOOL *bEnable, BOOL *bChecked)
 {
-  pCmdUI->SetCheck(m_bReadOnly);
-  pCmdUI->Enable(m_pSFC && !m_pSFC->IsReadOnly());
+  *bChecked = m_bReadOnly;
+  *bEnable = m_pSFC && !m_pSFC->IsReadOnly();
 }
 
-void CBZDoc2::OnEditReadOnlyOpen()
+
+BOOL CBZDoc2::OnUpdateEditUndo()
 {
-  options.bReadOnlyOpen = !options.bReadOnlyOpen;
+  return m_pSFC && m_pSFC->GetUndoCount()!=0;
 }
-void CBZDoc2::OnUpdateEditReadOnlyOpen(CCmdUI *pCmdUI)
+BOOL CBZDoc2::OnUpdateEditRedo()
 {
-  pCmdUI->SetCheck(options.bReadOnlyOpen);
+  return m_pSFC && m_pSFC->GetRedoCount()!=0;
 }
 
-void CBZDoc2::OnUpdateEditUndo(CCmdUI *pCmdUI)
+BOOL CBZDoc2::OnUpdateFileSave() 
 {
-  pCmdUI->Enable(m_pSFC && m_pSFC->GetUndoCount()!=0);
+  return !m_bReadOnly && m_pSFC && m_pSFC->IsModified();
 }
-void CBZDoc2::OnUpdateEditRedo(CCmdUI *pCmdUI)
+BOOL CBZDoc2::OnUpdateFileSaveAs()
 {
-  pCmdUI->Enable(m_pSFC && m_pSFC->GetRedoCount()!=0);
-}
-
-void CBZDoc2::OnUpdateFileSave(CCmdUI* pCmdUI) 
-{
-  pCmdUI->Enable(!m_bReadOnly && m_pSFC && m_pSFC->IsModified());
-}
-void CBZDoc2::OnUpdateFileSaveAs(CCmdUI *pCmdUI)
-{
-  pCmdUI->Enable(!m_bReadOnly && m_pSFC);
+  return !m_bReadOnly && m_pSFC;
 }
 
 

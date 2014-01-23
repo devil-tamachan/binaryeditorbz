@@ -37,7 +37,7 @@ static void disableUserModeCallbackExceptionFilter()
     typedef BOOL (NTAPI *setProcessUserModeExceptionPolicyPtr)(DWORD dwFlags);
 
     HMODULE lib = LoadLibrary(TEXT("kernel32.dll"));
-    ASSERT(lib);
+    ATLASSERT(lib);
 
     getProcessUserModeExceptionPolicyPtr getPolicyPtr = (getProcessUserModeExceptionPolicyPtr)GetProcAddress(lib, "GetProcessUserModeExceptionPolicy");
     setProcessUserModeExceptionPolicyPtr setPolicyPtr = (setProcessUserModeExceptionPolicyPtr)GetProcAddress(lib, "SetProcessUserModeExceptionPolicy");

@@ -61,7 +61,7 @@ public:
 		COMBOBOXINFO cmbInfo = {0};
 		cmbInfo.cbSize = sizeof(COMBOBOXINFO);
 		GetComboBoxInfo(&cmbInfo);
-		CRect rect(cmbInfo.rcItem);
+		WTL::CRect rect(cmbInfo.rcItem);
 		InvalidateRect(rect, 0);
 		WTL::CPaintDC dc(m_hWnd);
 		_DrawItem(GetCurSel(), dc, rect, FALSE);
@@ -92,11 +92,11 @@ public:
 
 	void DrawItem(LPDRAWITEMSTRUCT lpdis)
 	{
-		CRect rcItem(&(lpdis->rcItem));
+		WTL::CRect rcItem(&(lpdis->rcItem));
 		_DrawItem(lpdis->itemID, lpdis->hDC, rcItem, lpdis->itemState & ODS_SELECTED);
 	}
 
-	void _DrawItem(int iItem, HDC hdc, CRect &rcItem, BOOL bSelected)
+	void _DrawItem(int iItem, HDC hdc, WTL::CRect &rcItem, BOOL bSelected)
 	{
 		WTL::CDCHandle dc(hdc);
 		dc.FillSolidRect(rcItem, RGB(255, 255, 255));
@@ -170,7 +170,7 @@ public:
 	{
 		int iSel = GetCurSel();
 		if(m_bOther && iSel == MAX_COLORS) {
-			CColorDialog dlgColor(m_rgbOther);
+      WTL::CColorDialog dlgColor(m_rgbOther);
 			if(dlgColor.DoModal() == IDOK) {
 				m_rgbOther = dlgColor.GetColor();
 				Invalidate();

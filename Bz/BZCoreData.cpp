@@ -27,33 +27,39 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+
 #include "stdafx.h"
-#include "BZ.h"
-#include "ProgressDialog.h"
 
+class CBZDoc2;
+class CBZView;
+class CMainFrame;
 
-// CProgressDialog ダイアログ
-
-IMPLEMENT_DYNAMIC(CProgressDialog, CDialog)
-
-CProgressDialog::CProgressDialog(CWnd* pParent /*=NULL*/)
-	: CDialog(CProgressDialog::IDD, pParent)
+void CBZCoreData::DeleteView(DWORD dwIndex, BOOL bDelDoc)
 {
-
+  if(m_arrSubView.GetSize()>dwIndex)
+  {
+    ATL::CWindow *pSubView = m_arrSubView[dwIndex];
+    pSubView->DestroyWindow();
+    delete pSubView;
+    m_arrSubView.RemoveAt(dwIndex);
+  }
+  if(m_arrView.GetSize()>dwIndex)
+  {
+    CBZView *pBZView = m_arrView[dwIndex];
+    pBZView->DestroyWindow();
+    delete pBZView;
+    m_arrView.RemoveAt(dwIndex);
+  }
+  if(bDelDoc)
+  {
+    delete m_arrDoc[dwIndex];
+    m_arrDoc.RemoveAt(dwIndex);
+  }
+  if(m_dwActive==dwIndex)m_dwActive = 0;
+  else if(m_dwActive>dwIndex)m_dwActive--;
 }
 
-CProgressDialog::~CProgressDialog()
+void CBZCoreData::Invalidate(BOOL bErase)
 {
+  if(m_pMainFrame)m_pMainFrame->Invalidate(bErase);
 }
-
-void CProgressDialog::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-}
-
-
-BEGIN_MESSAGE_MAP(CProgressDialog, CDialog)
-END_MESSAGE_MAP()
-
-
-// CProgressDialog メッセージ ハンドラ

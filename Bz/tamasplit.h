@@ -146,6 +146,9 @@ public:
 		return TRUE;
 	}
 
+  unsigned int GetColumnCount() { return m_paneW; }
+  unsigned int GetRowCount()    { return m_paneH; }
+
 	unsigned int GetPaneWidth(int x)
 	{
 		ATLASSERT(x < PANEMAXW);

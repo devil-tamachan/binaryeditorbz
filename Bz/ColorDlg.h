@@ -52,11 +52,11 @@ public:
 	CColorCombo	m_cbTextColor;
 	CColorCombo	m_cbBackColor;
 private:
-	CBrush m_brush;
+  WTL::CBrush m_brush;
 
 public:
 	COLORREF m_colors[TCOLOR_COUNT][2];
-	CFont* m_pSampleFont;
+	WTL::CFont* m_pSampleFont;
 
 	BEGIN_MSG_MAP(CSetupColorDialog)
 		MSG_WM_INITDIALOG(OnInitDialog)
@@ -101,7 +101,8 @@ public:
 	void OnApply(UINT uNotifyCode, int nID, CWindow wndCtl)
 	{
 		memcpy(options.colors, m_colors, sizeof(m_colors));
-		AfxGetMainWnd()->Invalidate(TRUE);
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    pCoreData->Invalidate(TRUE);
 	}
 
 	void OnCancel(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -137,7 +138,7 @@ public:
 				COLORREF rgbText = GetSystemColor(m_colors[iSel][0]);
 				COLORREF rgbBack = GetSystemColor(m_colors[iSel][1]);
 				COLORREF rgbBG = GetSystemColor(m_colors[TCOLOR_TEXT][1]);
-				if(m_brush.m_hObject)
+				if(m_brush.m_hBrush)
 					m_brush.DeleteObject();
 				m_brush.CreateSolidBrush(rgbBG);
 				hbr = (HBRUSH)m_brush;

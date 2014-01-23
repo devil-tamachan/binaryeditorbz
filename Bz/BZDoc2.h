@@ -32,22 +32,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // CBZDoc2 ドキュメント
 
-class CBZDoc2 : public CDocument
+class CBZDoc2
 {
-  DECLARE_DYNCREATE(CBZDoc2)
-
 public:
   CBZDoc2();
   virtual ~CBZDoc2();
-#ifndef _WIN32_WCE
-  virtual void Serialize(CArchive& ar);   // ドキュメント I/O に対してオーバーライドされました。
-#endif
-#ifdef _DEBUG
-  virtual void AssertValid() const;
-#ifndef _WIN32_WCE
-  virtual void Dump(CDumpContext& dc) const;
-#endif
-#endif
 
   _inline UINT64	GetDocSize() { return m_pSFC ? m_pSFC->GetSize() : 0; }
   _inline BOOL IsOpen() { return m_pSFC ? m_pSFC->IsOpen() : FALSE; }
@@ -83,10 +72,10 @@ public:
     if(m_pSFC->AddRef())pDstDoc->m_pSFC = m_pSFC;
     pDstDoc->m_bReadOnly = m_bReadOnly;
     pDstDoc->m_dwBase = m_dwBase;
-    pDstDoc->SetTitle(GetTitle());
-    CString s = GetPathName();
-    if(!s.IsEmpty())
-      pDstDoc->SetPathName(s);
+    //pDstDoc->SetTitle(GetTitle());
+    //CString s = GetPathName();
+    //if(!s.IsEmpty())
+    //  pDstDoc->SetPathName(s);
     //	pDstDoc->UpdateAllViews(NULL);
 
     //Restore infomation
@@ -120,24 +109,23 @@ public:
 private:
   CSuperFileCon *m_pSFC;
 public:
-  void PreCloseFrame(CFrameWnd* /*pFrameArg*/);
+  //void PreCloseFrame(CFrameWnd* /*pFrameArg*/);
 
 protected:
   virtual BOOL OnNewDocument();
 
-  DECLARE_MESSAGE_MAP()
 public:
-  afx_msg void OnEditReadOnly();
-  afx_msg void OnUpdateEditReadOnly(CCmdUI *pCmdUI);
-  afx_msg void OnUpdateEditUndo(CCmdUI *pCmdUI);
-  afx_msg void OnUpdateEditRedo(CCmdUI *pCmdUI);
-  afx_msg void OnEditReadOnlyOpen();
-  afx_msg void OnUpdateEditReadOnlyOpen(CCmdUI *pCmdUI);
-  afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);
-  afx_msg void OnUpdateFileSaveAs(CCmdUI *pCmdUI);
-  virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-  virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
-  virtual void DeleteContents();
-  afx_msg void OnFileSave();
-  afx_msg void OnFileSaveAs();
+  void OnUpdateEditReadOnly(BOOL *bEnable, BOOL *bChecked);
+  BOOL OnUpdateEditUndo();
+  BOOL OnUpdateEditRedo();
+  BOOL OnUpdateFileSave();
+  BOOL OnUpdateFileSaveAs();
+
+  BOOL OnOpenDocument(LPCTSTR lpszPathName);
+  BOOL OnSaveDocument(LPCTSTR lpszPathName);
+  void DeleteContents();
+
+  void OnFileSave();
+  void OnFileSaveAs();
+  void OnEditReadOnly();
 };

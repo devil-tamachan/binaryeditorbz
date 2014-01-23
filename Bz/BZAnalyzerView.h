@@ -105,7 +105,7 @@ public:
 
   void Clear()
   {
-    TRACE("AnalyzerClear!\n");
+    ATLTRACE("AnalyzerClear!\n");
     if(::IsWindow(m_resultList.m_hWnd))
       m_resultList.DeleteAllItems();
   }
@@ -123,7 +123,7 @@ public:
     int iListIndex = -1;
 
     CBZDoc2* pDoc = GetBZDoc2();
-    ASSERT(pDoc);
+    ATLASSERT(pDoc);
     //	LPBYTE p  = pDoc->GetDocPtr();
     UINT64 dwFileSize = pDoc->GetDocSize();
 
@@ -168,7 +168,7 @@ public:
             m_resultList.InsertItem(++iListIndex, str);
             //	m_resultList.SetItemText(0, 1, "5000");
           }
-          TRACE(_T("BZAnalyzerView(0x%08X) inflateStatus==%d\n"),ofs_inflateStart , inflateStatus);
+          ATLTRACE(_T("BZAnalyzerView(0x%08X) inflateStatus==%d\n"),ofs_inflateStart , inflateStatus);
           inflateEnd(&z);
         }
       }

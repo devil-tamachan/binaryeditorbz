@@ -75,6 +75,8 @@ public:
     MSG_WM_VSCROLL(OnVScroll)
     MSG_WM_INITMENUPOPUP(OnInitMenuPopup)
 
+    MSG_WM_PAINT(OnPaint)
+
     COMMAND_ID_HANDLER_EX(ID_VIEW_FONT, OnViewFont)
     COMMAND_ID_HANDLER_EX(ID_JUMP_START, OnJumpStart)
     COMMAND_ID_HANDLER_EX(ID_JUMP_END, OnJumpEnd)
@@ -252,6 +254,7 @@ public:
   }
   void OnEditCopyDump(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
+    /*
     CMemFile memFile(MEMFILE_GROWBY);
     DrawToFile(&memFile);
 
@@ -267,7 +270,7 @@ public:
     ::EmptyClipboard();
     ::SetClipboardData(CF_TEXT, hMemTxt);
     ::CloseClipboard();
-    return;
+    return;*/
   }
   void OnJumpBase(UINT uNotifyCode, int nID, CWindow wndCtl);
   void SetMark(UINT uNotifyCode, int nID, CWindow wndCtl);
@@ -306,7 +309,7 @@ public:
   int OnCreate(LPCREATESTRUCT lpCreateStruct)
   {
     m_nColAddr = ADDRCOLUMNS;
-    SetViewSize(CSize(VIEWCOLUMNS, 0));
+    SetViewSize(WTL::CSize(VIEWCOLUMNS, 0));
     SetMsgHandled(FALSE);
     return 0;
   }
@@ -316,7 +319,7 @@ public:
     if(!IsSystemColor(rgbBG)) {
       WTL::CBrush brushBG;
       brushBG.CreateSolidBrush(rgbBG);
-      CRect rcErase;
+      WTL::CRect rcErase;
       dc.GetClipBox(rcErase);
       dc.FillRect(rcErase, brushBG);
       return TRUE;
@@ -331,13 +334,13 @@ public:
   }
   void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
   void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
-  void OnMButtonDown(UINT nFlags, CPoint point)
+  void OnMButtonDown(UINT nFlags, WTL::CPoint point)
   {
     m_bCaretOnChar = !m_bCaretOnChar;
     GotoCaret();
     SetMsgHandled(FALSE);
   }
-  void OnLButtonDown(UINT nFlags, CPoint point)
+  void OnLButtonDown(UINT nFlags, WTL::CPoint point)
   {
     if(m_bBlock) {
       m_bBlock = FALSE;
@@ -361,7 +364,7 @@ public:
     m_bEnterVal = FALSE;
     SetMsgHandled(FALSE);
   }
-  void OnLButtonUp(UINT nFlags, CPoint point)
+  void OnLButtonUp(UINT nFlags, WTL::CPoint point)
   {
     ReleaseCapture();
     if(m_timer) {
@@ -370,12 +373,12 @@ public:
     }
     SetMsgHandled(FALSE);
   }
-  void OnLButtonDblClk(UINT nFlags, CPoint point)
+  void OnLButtonDblClk(UINT nFlags, WTL::CPoint point)
   {
     OnDoubleClick();
     SetMsgHandled(FALSE);
   }
-  void OnMouseMove(UINT nFlags, CPoint point)
+  void OnMouseMove(UINT nFlags, WTL::CPoint point)
   {
     if(nFlags & MK_LBUTTON) {
       UINT64 ofs = PointToOffset(point);
@@ -405,7 +408,7 @@ public:
     }
     SetMsgHandled(FALSE);
   }
-  BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+  BOOL OnMouseWheel(UINT nFlags, short zDelta, WTL::CPoint pt)
   {
     BOOL ret = CTextView::OnMouseWheel(nFlags, zDelta, pt);
 
@@ -530,15 +533,15 @@ public:
 	void	FillValue(int val);
 	void	Activate();
 	void	UpdateStatusInfo();
-	void	DrawToFile(CFile* pFile);	// ###1.63
+	void	DrawToFile(CAtlFile* pFile);	// ###1.63
 
 // Implementation
 private:
 	void	DrawHeader();
-	void	DrawGrid(CDC* pDC, RECT& rClip);
-	void	DrawDummyCaret(CDC* pDC);
+	void	DrawGrid(WTL::CDC* pDC, RECT& rClip);
+	void	DrawDummyCaret(WTL::CDC* pDC);
 	BOOL	DrawCaret();
-	UINT64	PointToOffset(CPoint pt);
+	UINT64	PointToOffset(WTL::CPoint pt);
 	void	CutOrCopy(CutMode mode);
 public:
 	void	MoveCaretTo(UINT64 dwNewCaret/*, bool bFirst=true*/);
@@ -591,13 +594,13 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CBZView)
 	public:
-	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
+	//virtual void OnDraw(WTL::CDC* pDC);  // overridden to draw this view
 	protected:
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
-	virtual void OnPrint(CDC* pDC, CPrintInfo* pInfo);
+	virtual void OnPrint(WTL::CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView);
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
-	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
+	virtual void OnBeginPrinting(WTL::CDC* pDC, CPrintInfo* pInfo);
 	//}}AFX_VIRTUAL
 };
 

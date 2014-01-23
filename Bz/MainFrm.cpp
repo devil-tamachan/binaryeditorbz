@@ -39,11 +39,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BZAnalyzerView.h"
 #include "SettingDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define COMBO_WIDTH  180	// drop down width
 #define COMBO_HEIGHT 200	// width of edit control for combobox
@@ -99,6 +94,60 @@ void CMainFrame::OnFileSaveDumpList(UINT uNotifyCode, int nID, CWindow wndCtl)
     }
   }
 }
+void CMainFrame::OnFileSave(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  CBZDoc2 *pDoc = pCoreData->GetActiveBZDoc2();
+  if(pDoc)pDoc->OnFileSave();
+}
+void CMainFrame::OnFileSaveAs(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  CBZDoc2 *pDoc = pCoreData->GetActiveBZDoc2();
+  if(pDoc)pDoc->OnFileSaveAs();
+}
+void CMainFrame::OnEditReadOnly(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  CBZDoc2 *pDoc = pCoreData->GetActiveBZDoc2();
+  if(pDoc)pDoc->OnEditReadOnly();
+}
+void CMainFrame::OnEditReadOnlyOpen(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  options.bReadOnlyOpen = !options.bReadOnlyOpen;
+}
+
+
+void CMainFrame::OnInitMenuPopup(WTL::CMenuHandle menuPopup, UINT nIndex, BOOL bSysMenu)
+{
+  OnUpdateViewBitmap();
+  OnUpdateViewStruct();
+  OnUpdateViewFullpath();
+  OnUpdateViewSubCursor();
+  OnUpdateViewSyncScroll();
+  OnUpdateViewInspect();
+  OnUpdateViewAnalyzer();
+  OnUpdateViewSplitH();
+  OnUpdateViewSplitV();
+  OnUpdateLanguage();
+  OnUpdateEditReadOnlyOpen();
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    CBZDoc2 *pDoc = pCoreData->GetActiveBZDoc2();
+    if(pDoc)
+    {
+      BOOL bEnable = FALSE, bChecked = FALSE;
+      pDoc->OnUpdateEditReadOnly(&bEnable, &bChecked);
+      UIEnable(ID_EDIT_READONLY, bEnable);
+      UISetCheck(ID_EDIT_READONLY, bChecked);
+      UIEnable(ID_EDIT_UNDO, pDoc->OnUpdateEditUndo());
+      UIEnable(ID_EDIT_REDO, pDoc->OnUpdateEditRedo());
+      UIEnable(ID_FILE_SAVE, pDoc->OnUpdateFileSave());
+      UIEnable(ID_FILE_SAVE_AS, pDoc->OnUpdateFileSaveAs());
+    }
+  }
+  SetMsgHandled(FALSE);
+}
 
 
 void CMainFrame::UpdateInspectViewChecks()
@@ -147,176 +196,116 @@ void CMainFrame::UpdateFrameTitle(BOOL bAddToTitle = TRUE)
 //	return FALSE;
 //}
 
-BOOL CMainFrame::CreateClient(CCreateContext* pContext) 
+BOOL CMainFrame::CreateClient()
 {
-	BOOL bReCreate = (pContext == NULL);
-	CCreateContext context;
-	ZeroMem(context);
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
 
-	CDocument *pDoc;
-	CDocument *pDoc2 = NULL;
+	BOOL bReCreate = pCoreData->IsFirst();
+  CBZDoc2 *pDoc1 = NULL, *pDoc2 = NULL;
+
+  if(pCoreData->IsFirst())
+  {
+    pCoreData->AddBZDoc2(new CBZDoc2);
+  } else if(!m_nSplitView0 &&  m_nSplitView)
+  {
+    //dup doc
+    CBZDoc2 doc2 = new CBZDoc2;
+    pDocTemp->CDocTemplate::AddDocument(pDoc2);
+    pCoreData->GetBZDoc2(0)->DuplicateDoc(pDoc2);
+  } else if( m_nSplitView0 && !m_nSplitView)
+  {
+    //close doc2
+  }
 
 	BOOL bSubView = (m_bBmpView || m_bStructView || m_bInspectView || m_bAnalyzerView);
 
-	if(m_nSplitView && m_nSplitView0) {
-		pDoc  = ((CView*)m_pSplitter->GetPane(0, 0))->GetDocument();
-		pDoc2 = ((CView*)m_pSplitter->GetPane(m_pSplitter->GetRowCount() - 1, m_pSplitter->GetColumnCount() - 1))->GetDocument();
-	} else
-		pDoc = bReCreate ? GetActiveDocument() : pContext->m_pCurrentDoc;
-	CBZDocTemplate* pDocTemp = (CBZDocTemplate*)pDoc->GetDocTemplate();
 
 	if(bReCreate) {
 		// Backup (Caret, Scroll...)
-		CBZView *bzView;
-		if(m_pSplitter) {
-			int maxRow = m_pSplitter->GetRowCount();
-			int maxCol = m_pSplitter->GetColumnCount();
-			for(int r=0; r<maxRow; r++)
-			{
-				for(int c=0; c<maxCol; c++)
-				{
-					bzView = dynamic_cast<CBZView *>(m_pSplitter->GetPane(r,c));
-					if(bzView) bzView->ReCreateBackup();
-				}
-			}
-		} else {
-			bzView = dynamic_cast<CBZView *>(GetActiveView());
-			if(bzView) bzView->ReCreateBackup();
-		}
+    unsigned int iBZView = pCoreData->GetCountBZView();
+    for(unsined int i=0; i<iBZView; i++)
+      pCoreData->GetBZView(i)->ReCreateBackup();
 
-		if(pDoc) pDoc->m_bAutoDelete = FALSE;
-		if(pDoc2) pDoc2->m_bAutoDelete = FALSE;
-		pContext = &context;
-		if(m_pSplitter) {
-			DeleteSplitterWnd(pContext);
-		} else {
-			CView *pView = GetActiveView();
-			pView->DestroyWindow();
-		}
-		if(pDoc) pDoc->m_bAutoDelete = TRUE;
-		if(pDoc2) pDoc2->m_bAutoDelete = TRUE;
-		pContext->m_pCurrentDoc = pDoc;
+		DestroyAllChildWnd(FALSE/*bDelDoc*/);
 	}
 
-	CView* pActiveView = NULL;
-	CBZView *bzViewNew[2] = {0};
+  int x = m_nSplitView==ID_VIEW_SPLIT_H || bSubView ? 2 : 1;
+  int y = m_nSplitView==ID_VIEW_SPLIT_V || bSubView ? 2 : 1;
+  if(x!=1 || y!=1)
+  {
+    m_pWndSplitter->CreateStatic(m_hWnd, x, y);
+    pCoreData->SetSplitterWnd(m_pWndSplitter);
+  }
 
-	if(m_nSplitView) {
-		m_pSplitter = new CSplitterWnd;
-		int nRow = (m_nSplitView == ID_VIEW_SPLIT_H);
-		int nCol = (m_nSplitView == ID_VIEW_SPLIT_V);
-		m_pSplitter->CreateStatic(this, nRow + 1, (nCol + 1) * (bSubView + 1));
+  int rep = !m_nSplitView ? 1 : 2;
+  for(int i=0; i<rep; i++)
+  {
+    CBZView *pBZView = new CBZView;
+    pBZView->Create(m_pWndSplitter==NULL ? m_hWnd : m_pWndSplitter->m_hWnd);
+    pCoreData->AddBZView(pBZView);
+    if(bSubView)
+    {
+      if(m_bBmpView)
+      {
+        CBZBmpView2 *pBmpView = new CBZBmpView2;
+        pBmpView->Create(m_pWndSplitter->m_hWnd);
+        pCoreData->AddSubView(pBmpView);
+        pBmpView->OnInitialUpdate();
+      } else if(m_bInspectView) {
+        CBZInspectView *pInsView = new CBZInspectView;
+        pInsView->Create(m_pWndSplitter->m_hWnd);
+        pCoreData->AddSubView(pInsView);
+        pInsView->OnInitialUpdate();
+      } else if(m_bAnalyzerView) {
+        CBZAnalyzerView *pAnaView = new CBZAnalyzerView;
+        pAnaView->Create(m_pWndSplitter->m_hWnd);
+        pCoreData->AddSubView(pAnaView);
+        pAnaView->OnInitialUpdate();
+      } else {
+        CBZFormView *pFormView = new CBZFormView;
+        pFormView->Create(m_pWndSplitter->m_hWnd);
+        pCoreData->AddSubView(pFormView);
+        pFormView->OnInitialUpdate();
+      }
+    }
+    pBZView->OnInitialUpdate();
+  }
 
-		if(!pDoc2) {
-			pDoc2 = new CBZDoc2;
-			pDocTemp->CDocTemplate::AddDocument(pDoc2);
-			((CBZDoc2*)pDoc)->DuplicateDoc((CBZDoc2*)pDoc2);
-			pDocTemp->SetDocument(pDoc2);
-		}
-		int r = 0;
-		int c = 0;
-		for_to(i, 2) {
-			if(i) pContext->m_pCurrentDoc = pDoc2;
-			if(bSubView) {
-				if(m_bBmpView)
-					m_pSplitter->CreateView(r, c, RUNTIME_CLASS(CBZBmpView), CSize(0,0), pContext);
-				else if(m_bInspectView)
-					m_pSplitter->CreateView(r, c, RUNTIME_CLASS(CBZInspectView), CSize(0,0), pContext);
-				else if(m_bAnalyzerView)
-					m_pSplitter->CreateView(r, c, RUNTIME_CLASS(CBZAnalyzerView), CSize(0,0), pContext);
-				else
-					m_pSplitter->CreateView(r, c, RUNTIME_CLASS(CBZFormView), CSize(0,0), pContext);
-				m_pSplitter->CreateView(r, c + 1, RUNTIME_CLASS(CBZView), CSize(0,0), pContext);
-				bzViewNew[i] = dynamic_cast<CBZView *>(m_pSplitter->GetPane(r, c + 1));
-				((CView*)m_pSplitter->GetPane(r, c))->OnInitialUpdate();
-			} else {
-				m_pSplitter->CreateView(r, c, RUNTIME_CLASS(CBZView), CSize(0,0), pContext);
-				bzViewNew[i] = dynamic_cast<CBZView *>(m_pSplitter->GetPane(r, c));
-			}
-			pActiveView = (CView*)m_pSplitter->GetPane(r, c + bSubView);
-			pActiveView->OnInitialUpdate();
-			if(nCol) 
-				((CBZView*)pActiveView)->m_bResize = TRUE;
-			r += nRow;
-			c += nCol * (bSubView + 1);
-		}
-		CRect rClient;
-		GetClientRect(rClient);
-		if(m_nSplitView == ID_VIEW_SPLIT_H)
-			m_pSplitter->SetRowInfo(0, options.ySplit ? options.ySplit : rClient.y2/2, 0);
-		else {
-			int xSplit = options.xSplit;
-			if(xSplit == 0) xSplit = rClient.x2/2;
-			if(!bSubView)
-				m_pSplitter->SetColumnInfo(0, xSplit, 0);
-			else {
-				m_pSplitter->SetColumnInfo(0, options.xSplitStruct, 0);
-				m_pSplitter->SetColumnInfo(1, xSplit - options.xSplitStruct, 0);
-				m_pSplitter->SetColumnInfo(2, options.xSplitStruct, 0);
-				m_pSplitter->SetColumnInfo(3, xSplit - options.xSplitStruct, 0);
-			}
-		}
-	} else {
-		if(bSubView) {
-			m_pSplitter = new CSplitterWnd;
-			m_pSplitter->CreateStatic(this, 1, 2);
-			if(m_bBmpView)
-				m_pSplitter->CreateView(0, 0, RUNTIME_CLASS(CBZBmpView), CSize(0,0), pContext);
-			else if(m_bInspectView)
-				m_pSplitter->CreateView(0, 0, RUNTIME_CLASS(CBZInspectView), CSize(0,0), pContext);
-			else if(m_bAnalyzerView)
-				m_pSplitter->CreateView(0, 0, RUNTIME_CLASS(CBZAnalyzerView), CSize(0,0), pContext);
-			else
-				m_pSplitter->CreateView(0, 0, RUNTIME_CLASS(CBZFormView), CSize(0,0), pContext);
-			m_pSplitter->CreateView(0, 1, RUNTIME_CLASS(CBZView), CSize(0,0), pContext);
-			((CView*)m_pSplitter->GetPane(0, 0))->OnInitialUpdate();
-			pActiveView = (CView*)m_pSplitter->GetPane(0, 1);
-			bzViewNew[0] = dynamic_cast<CBZView *>(pActiveView);
-		} else {
-			pContext->m_pNewViewClass = RUNTIME_CLASS(CBZView);
-			pActiveView = (CView*)CreateView(pContext);
-			bzViewNew[0] = dynamic_cast<CBZView *>(pActiveView);
-		}
-		pActiveView->OnInitialUpdate();
-	}
-	if((m_bStructView||m_bInspectView||m_bAnalyzerView) && m_nSplitView != ID_VIEW_SPLIT_V) {
-		m_pSplitter->SetColumnInfo(0, options.xSplitStruct, 0);
-	}
+  if(m_pWndSplitter!=NULL)
+  {
+    int stepSubX = 0, stepSubY = 0, stepSetX = 0, stepSetY = 0;
+    switch(m_nSplitView)
+    {
+    case ID_VIEW_SPLIT_H:
+      stepSubY++;
+      stepSetX++;
+      break;
+    case ID_VIEW_SPLIT_V:
+      stepSubX++;
+      stepSetY++;
+      break;
+    }
+    for(int i=0; i<rep; i++)
+    {
+      CBZView *pBZView = pCoreData->GetBZView(i);
+      m_pWndSplitter->SetSplitterPane(pBZView->m_hWnd, stepSetX, stepSetY);
+      if(bSubView)
+      {
+        ATL::CWindow *pSubView = pCoreData->GetSubView(i);
+        m_pWndSplitter->SetSplitterPane(pSubView->m_hWnd, stepSetX+stepSubX, stepSetY+stepSubY);
+      }
+    }
+    m_pWndSplitter->InitSplitLayout();
+  }
 
-	if(m_nSplitView != m_nSplitView0) {
-		CRect rFrame;
-		GetWindowRect(rFrame);
-		switch(m_nSplitView) {
-		case 0:
-			if(options.cyFrame)
-				rFrame.y2 = rFrame.y1 + options.cyFrame;
-			break;
-		case ID_VIEW_SPLIT_H:
-			if(options.cyFrame2)
-				rFrame.y2 = rFrame.y1 + options.cyFrame2;
-			break;
-		case ID_VIEW_SPLIT_V:
-			if(options.cxFrame2) {
-				rFrame.x2 = rFrame.x1 + options.cxFrame2;
-				rFrame.y2 = rFrame.y1 + options.cyFrame;
-			}
-			break;
-		}
-//		if(!IsZoomed())
-//		{
-			MoveWindow(rFrame);
-//		}
-	}
+  ::SetActiveWindow(pCoreData->GetBZView(0)->m_hWnd);
+  pCoreData->SetActive(0);
 
-	if(pActiveView)  {
-		SetActiveView(pActiveView);
-	}
-	if(bReCreate) {
-//		if(!IsZoomed())
+	/*if(bReCreate) {
 			RecalcLayout();
 		if(bzViewNew[0])bzViewNew[0]->ReCreateRestore();
 		if(bzViewNew[1])bzViewNew[1]->ReCreateRestore();
-	} //else ((CBZView*)pActiveView)->ResizeFrame();
+	}*/
 	return TRUE;
 }
 
