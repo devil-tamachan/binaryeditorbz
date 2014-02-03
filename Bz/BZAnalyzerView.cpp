@@ -79,7 +79,7 @@ unsigned long CBZAnalyzerView::GetAddress(int nItem)
 BOOL CBZAnalyzerView::MakeExportDir(LPTSTR pathOutputDir, LPCTSTR pathDstFolder)
 {
 	TCHAR lastDir[_MAX_PATH];
-	_stprintf_s(lastDir, _MAX_PATH, _T("%s\\"), ::PathFindFileName(GetBZDoc2()->GetPathName()));
+	_stprintf_s(lastDir, _MAX_PATH, _T("%s\\"), ::PathFindFileName(GetBZDoc2()->GetFilePath()));
 	_tcscpy_s(pathOutputDir, _MAX_PATH, pathDstFolder);
 	return ::PathAppend(pathOutputDir, lastDir);
 }

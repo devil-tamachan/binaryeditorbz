@@ -37,10 +37,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // CBZOptions
 
 
-#define SYSCOLOR 0x80000000
-inline BOOL IsSystemColor(COLORREF rgb) { return (rgb & SYSCOLOR) != 0; }
-inline COLORREF GetSystemColor(COLORREF rgb) { return (IsSystemColor(rgb)) ? (COLORREF)::GetSysColor(rgb & ~SYSCOLOR) : rgb; }
-
 
 
 CString SeparateByComma(int num, BOOL bSigned = FALSE);
@@ -49,6 +45,7 @@ CString GetModulePath(LPCSTR pFileName);
 CString GetStructFilePath(UINT uID);
 LPVOID ReadFile(LPCTSTR pPath);
 void ErrorMessageBox();	// ###1.61
+void ErrorResMessageBox(UINT nID);
 
 
 

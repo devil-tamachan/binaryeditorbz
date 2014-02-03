@@ -228,5 +228,10 @@ void ErrorMessageBox() // ###1.61
 	MessageBox(NULL, GetErrorMessage(), _T("ERROR"), MB_ICONHAND);
 }
 
-
+void ErrorResMessageBox(UINT nID)
+{
+  CString msg;
+  msg.LoadString(nID);
+  MessageBox(NULL, msg, _T("ERROR"), MB_ICONHAND);
+}
 

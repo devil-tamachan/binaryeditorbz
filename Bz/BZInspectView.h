@@ -63,11 +63,6 @@ public:
     DDX_CONTROL_HANDLE(IDC_INS_STATIC8, m_staticBinary8);
   END_DDX_MAP()
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
-
-	DECLARE_MESSAGE_MAP()
-
 private:
 	bool m_bSigned;
 	CBZView* m_pView;

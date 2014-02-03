@@ -90,8 +90,7 @@ BOOL CBZDoc2::OnUpdateFileSaveAs()
 
 DWORD CBZDoc2::PasteFromClipboard(DWORD dwStart, BOOL bIns)
 {
-  if(!m_pSFC)goto ERR_PASTECLIP1;
-  AfxGetMainWnd()->OpenClipboard();
+  if(!m_pSFC || !OpenClipboard(NULL))goto ERR_PASTECLIP1;//AfxGetMainWnd()->OpenClipboard();
   HGLOBAL hMem;
   DWORD dwSize;
   LPBYTE pMem;
@@ -150,20 +149,20 @@ BOOL CBZDoc2::CopyToClipboard(DWORD dwStart, DWORD dwSize)
   HGLOBAL hMemBin = ::GlobalAlloc(GMEM_MOVEABLE, dwSize + sizeof(dwSize));
   if(!hMemTxt || !hMemBin)
   {
-    AfxMessageBox(IDS_ERR_COPY);
+    ErrorResMessageBox(IDS_ERR_COPY);
     goto CClip_ERR2;
   }
   LPBYTE pMemTxt  = (LPBYTE)::GlobalLock(hMemTxt);
   LPBYTE pMemBin  = (LPBYTE)::GlobalLock(hMemBin);
   if(!pMemTxt || !pMemBin)
   {
-    AfxMessageBox(IDS_ERR_COPY);
+    ErrorResMessageBox(IDS_ERR_COPY);
     goto CClip_ERR1;
   }
 
   if(!m_pSFC->ReadTwin(pMemTxt, pMemBin + sizeof(dwSize), dwStart, dwSize))
   {
-    AfxMessageBox(IDS_ERR_COPY);
+    ErrorResMessageBox(IDS_ERR_COPY);
     goto CClip_ERR1;
   }
   *(pMemTxt + dwSize) = '\0';
@@ -171,7 +170,7 @@ BOOL CBZDoc2::CopyToClipboard(DWORD dwStart, DWORD dwSize)
 
   ::GlobalUnlock(hMemTxt);
   ::GlobalUnlock(hMemBin);
-  AfxGetMainWnd()->OpenClipboard();
+  ::OpenClipboard(NULL);
   ::EmptyClipboard();
   ::SetClipboardData(CF_TEXT, hMemTxt);
   ::SetClipboardData(RegisterClipboardFormat(_T("BinaryData2")), hMemBin);
@@ -219,7 +218,7 @@ BOOL CBZDoc2::OnSaveDocument(LPCTSTR lpszPathName)
 
 void CBZDoc2::OnFileSave()
 {
-  CWaitCursor wait;
+  //CWaitCursor wait;
   if(!m_pSFC)
   {
     MessageBox(NULL, _T("Save Error"), _T("Error"), MB_OK);
@@ -239,12 +238,12 @@ void CBZDoc2::OnFileSave()
     MessageBox(NULL, _T("Save Error"), _T("Error"), MB_OK);
     return;
   }
-  SetModifiedFlag(FALSE);
+ // SetModifiedFlag(FALSE);
 }
 
 void CBZDoc2::OnFileSaveAs() //MFCからウィンドウを閉じる時にOnFileSaveAs()が呼び出される場合がある。仮実装
 {
-  CWaitCursor wait;
+  //CWaitCursor wait;
   if(!m_pSFC)
   {
     MessageBox(NULL, _T("SaveAs Error"), _T("Error"), MB_OK);
@@ -258,7 +257,7 @@ void CBZDoc2::OnFileSaveAs() //MFCからウィンドウを閉じる時にOnFileSaveAs()が呼び
       MessageBox(NULL, _T("SaveAs Error"), _T("Error"), MB_OK);
       return;
     }
-    SetModifiedFlag(FALSE);
+    //SetModifiedFlag(FALSE);
   }
 }
 
