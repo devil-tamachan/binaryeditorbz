@@ -55,7 +55,7 @@ void CBZFormView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				m_listMember.SetFocus();
 			else if(hWndFocus == m_listMember.m_hWnd) {
 				m_pView->Activate();
-				AfxGetMainWnd()->PostMessage(WM_COMMAND, ID_EDIT_VALUE);
+        PostMessage2MainFrame(WM_COMMAND, ID_EDIT_VALUE);
 			}
 			return;
 		}
@@ -94,7 +94,7 @@ LRESULT CBZFormView::OnDblclkListMember(LPNMHDR pnmh)
       SelchangeListTag();
     } else {
       m_pView->Activate();
-      AfxGetMainWnd()->PostMessage(WM_COMMAND, ID_EDIT_VALUE);
+      PostMessage2MainFrame(WM_COMMAND, ID_EDIT_VALUE);
     }
     return 0;
   }
@@ -289,9 +289,11 @@ BOOL CBZFormView::InitStructList()
 ErrorP:
 	errMsg = p;
 Error:
-	CString sMsg;
-	sMsg.Format(IDS_ERR_SYNTAX, errMsg/*p*/);
-	AfxMessageBox(sMsg);
+  CString mes;
+  mes.LoadString(IDS_ERR_SYNTAX);
+  CString msgFormat;
+  msgFormat.Format(mes, errMsg);
+  MessageBox(msgFormat, _T("Error"), MB_OK);
 	return FALSE;	
 }
 
@@ -314,7 +316,7 @@ void CBZFormView::InitListTag()
 		CString sExt;
 		CBZDoc2* pDoc = GetBZDoc2();
 		if(pDoc) {
-			CString sPath = pDoc->GetPathName();
+			CString sPath = pDoc->GetFilePath();
 			int nExt = sPath.ReverseFind(TCHAR('.'));
 			if(nExt >= 0) {
 				sExt = sPath.Mid(nExt + 1);

@@ -29,10 +29,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "stdafx.h"
+#include "BZCoreData.h"
+#include "BZView.h"
+#include "MainFrm.h"
 
-class CBZDoc2;
+//class CBZDoc2;
 class CBZView;
-class CMainFrame;
+//class CMainFrame;
 
 void CBZCoreData::DeleteView(DWORD dwIndex, BOOL bDelDoc)
 {

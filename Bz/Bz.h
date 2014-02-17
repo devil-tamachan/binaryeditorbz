@@ -27,6 +27,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#pragma once
+
 
 #include "resource.h"       // main symbols
 
@@ -44,9 +46,14 @@ CString SeparateByComma64(ULONGLONG num, BOOL bSigned = FALSE);
 CString GetModulePath(LPCSTR pFileName);
 CString GetStructFilePath(UINT uID);
 LPVOID ReadFile(LPCTSTR pPath);
-void ErrorMessageBox();	// ###1.61
-void ErrorResMessageBox(UINT nID);
+void ErrorMessageBox(HWND hWnd = NULL);	// ###1.61
+void ErrorResMessageBox(UINT nID, HWND hWnd = NULL);
+void InfoResMessageBox(UINT nID, HWND hWnd = NULL);
 
+class CMainFrame;
+CMainFrame* GetMainFrame();
+BOOL PostMessage2MainFrame(UINT msg, WPARAM wp = 0, LPARAM lp = 0);
 
+DWORD MemCompByte2(const BYTE *p1, const BYTE *p2, DWORD len);
 
 /////////////////////////////////////////////////////////////////////////////

@@ -30,23 +30,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "stdafx.h"
 #include "BZ.h"
 #include "TextView.h"
+#include "MainFrm.h"
 #include <imm.h>
 #pragma comment( lib, "imm32" )
 
 
 
 
-BOOL CTextView::PreCreateWindow(CREATESTRUCT& cs) 
+/*BOOL CTextView::PreCreateWindow(CREATESTRUCT& cs) 
 {
 	// TODO: Add your specialized code here and/or call the base class
 	cs.style |= WS_VSCROLL|WS_HSCROLL;
 	return CView::PreCreateWindow(cs);
-}
+}*/
 
-void CTextView::SetDefaultFont(CDC* pDC)
+void CTextView::SetDefaultFont(HDC hDC)
 {
 	if(m_pFont) delete m_pFont;
-	m_pFont = new CFont;
+  m_pFont = new WTL::CFont;
 	LOGFONT lf;
 	memset(&lf, 0, sizeof(LOGFONT));
 //	CString sFontName = AfxGetApp()->GetProfileString("Option", "FontName");
@@ -63,24 +64,25 @@ void CTextView::SetDefaultFont(CDC* pDC)
 		lf.lfQuality = DEFAULT_QUALITY;
 		lf.lfPitchAndFamily = FIXED_PITCH;
 		lstrcpyn(lf.lfFaceName, options.sFontName, LF_FACESIZE);
-		m_pFont->CreatePointFontIndirect(&lf, pDC);
+		m_pFont->CreatePointFontIndirect(&lf, hDC);
 //	}
-	OnChangeFont(pDC);
+	OnChangeFont(hDC);
 }
 
-void CTextView::OnChangeFont(CDC* pPrintDC)
+void CTextView::OnChangeFont(HDC hPrintDC)
 {
 	TEXTMETRIC tm;
-	CDC* pDC = pPrintDC;
-	if(!pDC) pDC = GetDC();
-	CFont* pOldFont = pDC->SelectObject(m_pFont);
-	pDC->GetTextMetrics(&tm);
+	HDC hDC = hPrintDC;
+	if(!hDC) hDC = GetDC();
+  WTL::CDCHandle cdc(hDC);
+  WTL::CFontHandle pOldFont = cdc.SelectFont(*m_pFont);
+	cdc.GetTextMetrics(&tm);
 	m_cell.cx = tm.tmAveCharWidth;
 	m_cell.cy = tm.tmHeight;
 //	pDC->LPtoDP(&m_cell);
-	pDC->SelectObject(pOldFont);
-	if(!pPrintDC) {			// ###1.5
-		ReleaseDC(pDC);
+	cdc.SelectFont(pOldFont);
+	if(!hPrintDC) {			// ###1.5
+		ReleaseDC(hDC);
 
 		HIMC hIMC;
 		if(hIMC = ImmGetContext(GetSafeHwnd())) {
@@ -96,10 +98,10 @@ void CTextView::OnChangeFont(CDC* pPrintDC)
 void CTextView::InitCaret(BOOL bShow)
 {
 #ifdef _DEBUG
-	ATLTRACE("CTextView::InitCaret()\n");
-	CWnd *tw = GetFocus();
-	if(tw!=NULL)ATLTRACE("GetFocus() = 0x%x, this->m_hWnd == 0x%x\n", (tw->m_hWnd), m_hWnd);
-	else ATLTRACE("GetFocus() == NULL\n");
+	//ATLTRACE("CTextView::InitCaret()\n");
+	//CWnd *tw = GetFocus();
+	//if(tw!=NULL)ATLTRACE("GetFocus() = 0x%x, this->m_hWnd == 0x%x\n", (tw->m_hWnd), m_hWnd);
+	//else ATLTRACE("GetFocus() == NULL\n");
 #endif
 
 	if(GetFocus()!=NULL && GetFocus()->m_hWnd == this->m_hWnd) {
@@ -114,10 +116,10 @@ void CTextView::InitCaret(BOOL bShow)
 			GetParent()->ShowWindow(SW_SHOWNORMAL);
 			ShowCaret();
 #ifdef _DEBUG
-			ATLTRACE("CTextView::InitCaret(): ShowCaret(0x%x)\n", m_hWnd);
-			ATLTRACE("CTextView::InitCaret(): GetCaretBlinkTime()==%u\n", GetCaretBlinkTime());
-			ATLTRACE("CTextView::InitCaret(): IsWindowVisible()==%s\n", this->IsWindowVisible()?"Visible":"Not visible");
-			ATLTRACE("CTextView::InitCaret(): GetParent()->IsWindowVisible()==%s\n", this->GetParent()->IsWindowVisible()?"Visible":"Not visible");
+			//ATLTRACE("CTextView::InitCaret(): ShowCaret(0x%x)\n", m_hWnd);
+			//ATLTRACE("CTextView::InitCaret(): GetCaretBlinkTime()==%u\n", GetCaretBlinkTime());
+			//ATLTRACE("CTextView::InitCaret(): IsWindowVisible()==%s\n", this->IsWindowVisible()?"Visible":"Not visible");
+			//ATLTRACE("CTextView::InitCaret(): GetParent()->IsWindowVisible()==%s\n", this->GetParent()->IsWindowVisible()?"Visible":"Not visible");
 #endif
 			ShowCaret2();
 		}
@@ -133,13 +135,14 @@ void CTextView::InitCaret(BOOL bShow)
 void CTextView::ResizeFrame()
 {
 	m_bResize = TRUE;
-	CRect rFrame, rClient;
-	CFrameWnd* pFrame = GetParentFrame();
+  WTL::CRect rFrame, rClient;
+	CMainFrame* pMainFrame = GetMainFrame();
+  if(!pMainFrame)return;
 	GetWindowRect(rClient);
-	pFrame->GetWindowRect(rFrame);
+	pMainFrame->GetWindowRect(rFrame);
 //	TRACE("Client %d,%d  Frame %d,%d\n", rClient.Width(), rClient.Height(), rFrame.Width(), rFrame.Height());
 	rFrame.x2 = rClient.x1 + (m_cView.cx + 2) * m_cell.cx + GetSystemMetrics(SM_CXVSCROLL);
-	pFrame->MoveWindow(rFrame);
+	pMainFrame->MoveWindow(rFrame);
 	//InitCaret(FALSE);
 }
 
@@ -171,10 +174,10 @@ void CTextView::SetTextSize(SIZE cTotal)
 POINT CTextView::GetScrollPos()
 {
 	POINT pt;
-	SCROLLINFO sbi = { sizeof(SCROLLINFO) };
-	GetScrollInfo(SB_VERT, &sbi, SIF_POS);
+	SCROLLINFO sbi = { sizeof(SCROLLINFO), SIF_POS };
+	GetScrollInfo(SB_VERT, &sbi);
 	pt.y = sbi.nPos;
-	GetScrollInfo(SB_HORZ, &sbi, SIF_POS);
+	GetScrollInfo(SB_HORZ, &sbi);
 	pt.x = sbi.nPos;
 	return pt;
 }
@@ -199,9 +202,9 @@ void CTextView::InitScrollBar()	// ### 1.62
 
 	m_bOnSize = TRUE;
 
-	CRect r;
+  WTL::CRect r;
 	GetClientRect(r);
-	CSize cView(r.Width() / m_cell.cx, r.Height() / m_cell.cy);
+  WTL::CSize cView(r.Width() / m_cell.cx, r.Height() / m_cell.cy);
 
 	SCROLLINFO sbi = { sizeof(SCROLLINFO) };
 	sbi.fMask = SIF_RANGE | SIF_PAGE;
@@ -275,9 +278,9 @@ void CTextView::GridToPixel(RECT& rect)
 
 void CTextView::OnScrollBar(int nBar, UINT nSBCode)
 {
-	SCROLLINFO sbi = { sizeof(SCROLLINFO) };
+	SCROLLINFO sbi = { sizeof(SCROLLINFO), SIF_ALL };
 
-	GetScrollInfo(nBar, &sbi, SIF_ALL);
+	GetScrollInfo(nBar, &sbi);
 //	TRACE("SBCode:%d, Pos:%d, Track:%d\n",nSBCode, sbi.nPos, sbi.nTrackPos);
 	LONG pos = sbi.nPos;
 	switch (nSBCode) {
@@ -311,8 +314,8 @@ void CTextView::OnScrollBar(int nBar, UINT nSBCode)
 
 void CTextView::ScrlBarRange(int nBar, LONG& val)
 {
-	SCROLLINFO sbi = { sizeof(SCROLLINFO) };
-	GetScrollInfo(nBar, &sbi, SIF_ALL);
+	SCROLLINFO sbi = { sizeof(SCROLLINFO), SIF_ALL };
+	GetScrollInfo(nBar, &sbi);
 	LONG nMax = sbi.nMax - sbi.nPage +1;
 	val = min(max(val, sbi.nMin), nMax);
 }
@@ -345,9 +348,9 @@ void CTextView::MoveCaret(POINT pt)
 //		TRACE("!");
 	//TRACE("CTextView::MoveCaret(): x=%d, y=%d\n", pt.x, pt.y);
 	m_ptCaret = pt;
-	if(GetFocus() == this) {
+	if(GetFocus() == m_hWnd) {
 		GridToPixel(pt);
-		SetCaretPos(pt);
+    SetCaretPos(pt.x, pt.y);
 		//TRACE("CTextView::MoveCaret(): SetCaretPos x=%d, y=%d\n", pt.x, pt.y);
 		if(pt.x >= 0) {
 			HIMC hIMC;
@@ -393,10 +396,9 @@ void CTextView::InvertCaret(POINT pt)
 {
 	if(!options.bSubCursor) return;
 	if(pt.x >= m_ptHome.x && pt.y >= m_ptHome.y) {
-		CClientDC* pDC = (CClientDC*)GetDC();
+    WTL::CDC cdc = GetDC();
 		GridToPixel(pt);
-		pDC->PatBlt(pt.x, pt.y, m_cell.cx, m_cell.cy, DSTINVERT);
-		ReleaseDC(pDC);
+		cdc.PatBlt(pt.x, pt.y, m_cell.cx, m_cell.cy, DSTINVERT);
 	}
 }
 
@@ -454,14 +456,14 @@ void CTextView::PutBegin(WTL::CDCHandle dc)
 	Locate(0, 0);
 	SetColor();
   if(dc.m_hDC)
-		m_pOldFont = pDC->SelectObject(m_pFont);
+		m_pOldFont = dc.SelectFont(*m_pFont);
 }
 
 void CTextView::PutEnd()
 {
 	PutFlush();
 	if(m_dc.m_hDC)
-		m_dc.SelectObject(m_pOldFont);
+    m_dc.SelectFont(m_pOldFont);
 }
 
 void CTextView::PutFlush()
@@ -492,7 +494,7 @@ void CTextView::PutFlush()
 
 /////////////////////////////////////////////////////////////////////////////
 // CTtextView printing
-
+/*
 BOOL CTextView::OnPreparePrinting(CPrintInfo* pInfo)
 {
 	// default preparation
@@ -526,56 +528,26 @@ void CTextView::OnEndPrinting(CDC* pDC, CPrintInfo* pInfo)
 	
 //	CView::OnEndPrinting(pDC, pInfo);
 }
-
-void CTextView::SetMargin(CDC* pDC)
+*/
+void CTextView::SetMargin(HDC hDC)
 {
-	CRect rMargin;
-	pDC->SetViewportOrg(0, 0);
+  WTL::CDCHandle cdc(hDC);
+  WTL::CRect rMargin;
+	cdc.SetViewportOrg(0, 0);
 	GetMargin(rMargin, pDC);
-	pDC->SetViewportOrg(rMargin.x1, rMargin.y1);
+	cdc.SetViewportOrg(rMargin.x1, rMargin.y1);
 	ATLTRACE("MarginLeft:%d\n", rMargin.x1);
 //	pDC->SetViewportExt(rMargin.Width(), rMargin.Height());
 }
 
-void CTextView::GetMargin(LPRECT prMargin, CDC* pDC)
+void CTextView::GetMargin(LPRECT prMargin, HDC hDC)
 {
-	int nMapMode = pDC->GetMapMode();
-	pDC->SetMapMode(MM_HIMETRIC);
+  WTL::CDCHandle cdc(hDC);
+	int nMapMode = cdc.GetMapMode();
+	cdc.SetMapMode(MM_HIMETRIC);
 	*prMargin = options.rMargin;
-	pDC->LPtoDP(prMargin);
+	cdc.LPtoDP(prMargin);
 	prMargin->y1 = -prMargin->y1;
 	prMargin->y2 = -prMargin->y2;
-	pDC->SetMapMode(nMapMode);
+	cdc.SetMapMode(nMapMode);
 }
-
-/* `1.53
-void CTextView::OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo)
-{
-	CDC* pScrDC = GetDC();
-	int nDPIScr = pScrDC->GetDeviceCaps(LOGPIXELSX);
-	ReleaseDC(pScrDC);
-	int nDPIPrt = pDC->GetDeviceCaps(LOGPIXELSX);
-	LOGFONT logFont;
-	m_pFont->GetObject(sizeof(LOGFONT), &logFont);
-	if(logFont.lfHeight > 0)
-		logFont.lfQuality = 1;
-	logFont.lfHeight = logFont.lfHeight * nDPIPrt / nDPIScr;
-	logFont.lfWidth  = logFont.lfWidth  * nDPIPrt / nDPIScr;
-	m_pScrnFont = m_pFont;
-	m_pFont = new CFont;
-	m_pFont->CreateFontIndirect(&logFont);
-	OnChangeFont(pDC);
-//	CView::OnBeginPrinting(pDC, pInfo);
-}
-
-void CTextView::OnEndPrinting(CDC* pDC, CPrintInfo* pInfo)
-{
-	// TODO: add cleanup after printing
-	delete m_pFont;
-	m_pFont = m_pScrnFont;
-	OnChangeFont(pDC);
-//	CView::OnEndPrinting(pDC, pInfo);
-}
-
-
-*/

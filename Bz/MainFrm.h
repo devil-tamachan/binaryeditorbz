@@ -78,6 +78,8 @@ public:
     COMMAND_ID_HANDLER_EX(ID_FILE_SAVE_AS, OnFileSaveAs)
     COMMAND_ID_HANDLER_EX(ID_EDIT_READONLY, OnEditReadOnly)
     COMMAND_ID_HANDLER_EX(ID_EDIT_READONLYOPEN, OnEditReadOnlyOpen)
+    COMMAND_ID_HANDLER_EX(ID_FILE_PRINT, OnFilePrint)
+    COMMAND_ID_HANDLER_EX(ID_FILE_PRINT_SETUP, OnFilePrintSetup)
     CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
     CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
   END_MSG_MAP()
@@ -201,6 +203,8 @@ public:
     GetSplitInfo();
   }
   void OnShowWindow(BOOL bShow, UINT nStatus);
+  void OnFilePrint(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnFilePrintSetup(UINT uNotifyCode, int nID, CWindow wndCtl);
 
 
   void OnJumpFind(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -393,6 +397,10 @@ public:
 
   CComboBox4ToolBar m_combo_toolbar;
 
+  WTL::CPrinter m_printerCur;
+  WTL::CDevMode m_devmodeCur;
+  WTL::CPrintJob m_job;
+
 
 public:  // control bar embedded members
 	//CStatusBarEx m_wndStatusBar;
@@ -469,6 +477,11 @@ public:
       m_pWndSplitter = NULL;
       pCoreData->SetSplitterWnd(NULL);
     }
+  }
+
+  void SetActiveView(CBZView *)
+  {
+
   }
 };
 

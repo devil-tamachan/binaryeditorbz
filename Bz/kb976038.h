@@ -29,6 +29,8 @@
 
 //KB976038用 - Vistaのバグ。http://code.google.com/p/binaryeditorbz/source/detail?r=358fe4a4e81d3b1632f1f750a452e0b06cd892d2
 
+#pragma once
+
 
 static void disableUserModeCallbackExceptionFilter()
 {

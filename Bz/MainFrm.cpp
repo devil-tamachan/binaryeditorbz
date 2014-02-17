@@ -83,7 +83,7 @@ void CMainFrame::OnViewSyncScroll(UINT uNotifyCode, int nID, CWindow wndCtl)
 }
 void CMainFrame::OnFileSaveDumpList(UINT uNotifyCode, int nID, CWindow wndCtl) 
 {
-  CString sFileName = GetActiveBZDoc2()->GetPathName();
+  CString sFileName = GetActiveBZDoc2()->GetFilePath();
   sFileName += _T(".lst");
 
   if(m_pDocManager->DoPromptFileName(sFileName, IDS_SAVEDUMP_CAPTION, OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY, FALSE, NULL)) {
@@ -115,6 +115,57 @@ void CMainFrame::OnEditReadOnly(UINT uNotifyCode, int nID, CWindow wndCtl)
 void CMainFrame::OnEditReadOnlyOpen(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
   options.bReadOnlyOpen = !options.bReadOnlyOpen;
+}
+
+void CMainFrame::OnFilePrint(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  WTL::CPrintDialogEx dlg;
+
+  CBZView *bzView = GetActiveBZView();
+  if(bzView==NULL || bzView->m_bPrinting)return;
+
+  dlg.m_pdex.hDevMode = m_devmodeCur.CopyToHDEVMODE();
+  dlg.m_pdex.hDevNames = m_printerCur.CopyToHDEVNAMES();
+	dlg.m_pdex.nMinPage = 1;
+	if(bzView->m_nPageLen)dlg.m_pdex.nMaxPage = bzView->GetMaxPrintingPage();
+
+  if(SUCCEEDED(dlg.DoModal()))
+  {
+    if(dlg.m_pdex.dwResultAction == PD_RESULT_PRINT ||
+      dlg.m_pdex.dwResultAction == PD_RESULT_APPLY)
+    {
+      m_devmodeCur.CopyFromHDEVMODE(dlg.m_pdex.hDevMode);
+
+      m_printerCur.ClosePrinter();
+      m_printerCur.OpenPrinter(dlg.m_pdex.hDevNames, m_devmodeCur);
+    }
+
+    if(dlg.m_pdex.dwResultAction == PD_RESULT_PRINT)
+    {
+      m_job.StartPrintJob(false, m_printerCur, m_devmodeCur, bzView,
+        _T("BZ"), 0, 0, (dlg.PrintToFile() != FALSE));
+    }
+  }
+  ::GlobalFree(dlg.m_pdex.hDevMode);
+  ::GlobalFree(dlg.m_pdex.hDevNames);
+}
+
+void CMainFrame::OnFilePrintSetup(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  WTL::CPageSetupDialog dlg;
+
+  dlg.m_psd.hDevMode = m_devmodeCur.CopyToHDEVMODE();
+  dlg.m_psd.hDevNames = m_printerCur.CopyToHDEVNAMES();
+
+  if(dlg.DoModal() == IDOK)
+  {
+    m_devmodeCur.CopyFromHDEVMODE(dlg.m_psd.hDevMode);
+
+    m_printerCur.ClosePrinter();
+    m_printerCur.OpenPrinter(dlg.m_psd.hDevNames, m_devmodeCur);
+  }
+  ::GlobalFree(dlg.m_psd.hDevMode);
+  ::GlobalFree(dlg.m_psd.hDevNames);
 }
 
 
@@ -223,7 +274,7 @@ BOOL CMainFrame::CreateClient()
 	if(bReCreate) {
 		// Backup (Caret, Scroll...)
     unsigned int iBZView = pCoreData->GetCountBZView();
-    for(unsined int i=0; i<iBZView; i++)
+    for(unsigned int i=0; i<iBZView; i++)
       pCoreData->GetBZView(i)->ReCreateBackup();
 
 		DestroyAllChildWnd(FALSE/*bDelDoc*/);
@@ -319,16 +370,11 @@ void CMainFrame::ChangeView(CBZView* pView)
 
 CBZView *CMainFrame::GetBrotherView(CBZView* pView)
 {
-	if(!m_nSplitView) return NULL;
-	int nRow = m_pSplitter->GetRowCount();
-	int nCol = m_pSplitter->GetColumnCount();
-	CView* pView0 = (CView*)m_pSplitter->GetPane(0, nRow * nCol == 4);
-	CView* pView1 = (CView*)m_pSplitter->GetPane(nRow > 1, nCol - 1);
-	if(pView == pView0)
-		pView = pView1;
-	else
-		pView = pView0;
-	return pView;
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+	if(pCoreData->GetCountBZView() < 2) return NULL;
+  CBZView *pView0 = pCoreData->GetBZView(0);
+  if(pView0 != pView)return pView0;
+  else return pCoreData->GetBZView(1);
 }
 
 

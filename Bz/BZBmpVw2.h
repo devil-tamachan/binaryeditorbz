@@ -130,7 +130,7 @@ public:
     return FALSE;
   }
 
-  void OnSize(UINT nType, CSize size)
+  void OnSize(UINT nType, WTL::CSize size)
   {
     if(bFirst)
     {
@@ -144,7 +144,7 @@ public:
     return false;
   }
 
-  void OnLButtonDown(UINT nFlags, CPoint point)
+  void OnLButtonDown(UINT nFlags, WTL::CPoint point)
   {
     m_isLButtonDown = true;
 
@@ -169,7 +169,7 @@ public:
     }
   }
 
-  void OnRButtonDown(UINT nFlags, CPoint point)
+  void OnRButtonDown(UINT nFlags, WTL::CPoint point)
   {
     WTL::CMenu menu;
     menu.LoadMenu(IDR_BMPVIEW);
@@ -200,14 +200,14 @@ public:
     if(options.bAddressTooltip)
       pMenu.CheckMenuItem(ID_BMPVIEW_ADDRESSTOOLTIP, MF_BYCOMMAND | MF_CHECKED);
 
-    CPoint pt;
+    WTL::CPoint pt;
     GetCursorPos(&pt);
     pMenu.TrackPopupMenu(0, pt.x, pt.y, m_hWnd);
 
     SetMsgHandled(FALSE);//CScrollView::OnRButtonDown(nFlags, point);
   }
 
-  void OnMouseMove(UINT nFlags, CPoint point)
+  void OnMouseMove(UINT nFlags, WTL::CPoint point)
   {
     point.x += m_ptOffset.x;
     point.x -= BMPSPACE;
@@ -255,7 +255,7 @@ public:
     //CScrollView::OnMouseMove(nFlags, point);
   }
 
-  void OnLButtonUp(UINT nFlags, CPoint point)
+  void OnLButtonUp(UINT nFlags, WTL::CPoint point)
   {
     m_isLButtonDown = false;
   }
@@ -470,7 +470,7 @@ public:
     //CRect rClip;
     //pMemDC->GetClipBox(rClip);
 
-    CRect rClip;
+    WTL::CRect rClip;
     dc.GetClipBox(rClip);
     WTL::CMemoryDC pMemDC(dc.m_hDC, rClip);
 

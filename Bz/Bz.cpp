@@ -223,15 +223,48 @@ CString GetErrorMessage() // ###1.60
 	return sMsg;
 }
 
-void ErrorMessageBox() // ###1.61
+void ErrorMessageBox(HWND hWnd) // ###1.61
 {
-	MessageBox(NULL, GetErrorMessage(), _T("ERROR"), MB_ICONHAND);
+	MessageBox(hWnd, GetErrorMessage(), _T("ERROR"), MB_ICONHAND);
 }
 
-void ErrorResMessageBox(UINT nID)
+void ErrorResMessageBox(UINT nID, HWND hWnd)
 {
   CString msg;
   msg.LoadString(nID);
-  MessageBox(NULL, msg, _T("ERROR"), MB_ICONHAND);
+  MessageBox(hWnd, msg, _T("ERROR"), MB_ICONHAND);
+}
+
+void InfoResMessageBox(UINT nID, HWND hWnd)
+{
+  CString msg;
+  msg.LoadString(nID);
+  MessageBox(hWnd, msg, _T(""), MB_ICONINFORMATION);
+}
+
+CMainFrame* GetMainFrame()
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  return pCoreData->GetMainFrame();
+}
+
+BOOL PostMessage2MainFrame(UINT msg, WPARAM wp, LPARAM lp)
+{
+  CMainFrame *mainFrame = GetMainFrame();
+  if(!mainFrame)return FALSE;
+  return ::PostMessage(mainFrame->m_hWnd, msg, wp, lp);
+}
+
+//戻り値
+//全部一緒だと0xFFFFffff
+//違うところがあるとオフセットを返す
+DWORD MemCompByte2(const BYTE *p1, const BYTE *p2, DWORD len)
+{
+	const BYTE *p3 = p1;
+	while(*p3++ == *p2++)
+	{
+		if(--len == 0)return 0xFFFFffff;
+	}
+	return p3-p1;
 }
 

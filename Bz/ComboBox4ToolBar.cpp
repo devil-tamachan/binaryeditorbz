@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "stdafx.h"
 #include "ComboBox4ToolBar.h"
+#include "BZView.h"
 
 class CBZView;
 
@@ -43,7 +44,7 @@ void CComboBox4ToolBar::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     return;
   case VK_RETURN:
     if(!GetDroppedState()) {
-      pBZView->PostMessage(WM_COMMAND, ID_JUMP_FINDNEXT);
+      ::PostMessage(pBZView->m_hWnd, WM_COMMAND, ID_JUMP_FINDNEXT, 0);
       return;
     }
     break;

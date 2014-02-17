@@ -29,6 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
+#include "BZ.h"
+
 extern DWORD g_datasizes[];
 
 class CStructMember

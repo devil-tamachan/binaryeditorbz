@@ -68,7 +68,7 @@ void CStatusBarEx::OnLButtonDown(UINT nFlags, CPoint point)
 		if(r.IsRectEmpty()) break;
 		if(r.PtInRect(point)) {
 			UINT nID = GetItemID(i);
-			AfxGetMainWnd()->PostMessage(WM_COMMAND, nID);
+			PostMessage2MainFrame(WM_COMMAND, nID);
 			break;
 		}
 	}

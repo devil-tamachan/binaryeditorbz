@@ -97,11 +97,6 @@ public:
     CBZCoreData *pCoreData = CBZCoreData::GetInstance();
     return pCoreData->GetSplitterWnd();
   }
-  CMainFrame* GetMainFrame()
-  {
-    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-    return pCoreData->GetMainFrame();
-  }
 
 
   int OnCreate(LPCREATESTRUCT lpCreateStruct)

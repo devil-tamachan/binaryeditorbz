@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SB_WHEELUP   10
 #define SB_WHEELDOWN 11
 
-class CTextView : public CWindowImpl<CTextView>
+class CTextView : public CWindowImpl<CTextView>, public WTL::CPrintJobInfo
 {
 public:
   BEGIN_MSG_MAP(CTextView)
@@ -102,12 +102,13 @@ public:
   }
   void OnPaint(WTL::CDCHandle dc)
   {
-    if(dc.IsPrinting()) return;
+    //if(dc.IsPrinting()) return;
 
     if(!m_bResize) {
       ResizeFrame();
     }
   }
+
 
 // Attributes
 public:
@@ -125,7 +126,7 @@ protected:
 //	SCROLLINFO m_SBinfoV;
 	void	AlignVScrlBar();
   WTL::CFont*	m_pFont;
-	WTL::CFont*	m_pOldFont;
+  WTL::CFontHandle m_pOldFont;
 	WTL::CFont*	m_pScrnFont;
 	BOOL	m_bOnSize;		// ### 1.62
 
@@ -159,7 +160,7 @@ protected:
 	void SetTextSize(SIZE cTotal); // ### 1.63
 
 public:
-	void OnChangeFont(WTL::CDC* pDC = NULL);
+	void OnChangeFont(HDC hDC = NULL);
 	void ResizeFrame();
 	void AlignTextPos(POINT& pt);
 	void AlignTextPos(RECT& rect);
@@ -167,9 +168,6 @@ public:
 	void PixelToGrid(RECT& rect);
 	void GridToPixel(POINT& pt);
 	void MoveCaret(POINT pt);
-	void GetMargin(LPRECT prMargin, WTL::CDC* pDC);
-	void SetMargin(WTL::CDC* pDC);				// ### 1.54
-	void SetDefaultFont(WTL::CDC* pDC = NULL);	// ### 1.54
 	void MoveCaret2(POINT pt);				// ### 1.62
 	void ShowCaret2();
 	void HideCaret2();
@@ -184,15 +182,34 @@ public:
 	void PutEnd();
 	void PutFlush();
 
+  //irtual bool PrintPage(UINT /*nPage*/, HDC /*hDC*/) = 0;
+
+  virtual void BeginPrintJob(HDC hDC)
+  {
+    m_bPrinting = TRUE;
+    SetDefaultFont(hDC);
+    SetMargin(hDC);
+  }
+
+  virtual void EndPrintJob(HDC /*hDC*/, bool /*bAborted*/)
+  {
+    m_bPrinting = FALSE;
+    SetDefaultFont();
+    Invalidate();
+  }
+	void GetMargin(LPRECT prMargin, HDC hDC);
+	void SetMargin(HDC hDC);				// ### 1.54
+	void SetDefaultFont(HDC hDC = NULL);	// ### 1.54
+
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CTextView)
 	protected:
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
-	virtual void OnBeginPrinting(WTL::CDC* pDC, CPrintInfo* pInfo);
-	virtual void OnPrepareDC(WTL::CDC* pDC, CPrintInfo* pInfo);
-	virtual void OnEndPrinting(WTL::CDC* pDC, CPrintInfo* pInfo);
+	//virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+//	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
+//	virtual void OnBeginPrinting(WTL::CDC* pDC, CPrintInfo* pInfo);
+//	virtual void OnPrepareDC(WTL::CDC* pDC, CPrintInfo* pInfo);
+//	virtual void OnEndPrinting(WTL::CDC* pDC, CPrintInfo* pInfo);
 	//}}AFX_VIRTUAL
 
 };

@@ -27,6 +27,9 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#pragma once
+
+#include "stdafx.h"
 #include "TextView.h"
 #include "ColorDlg.h"
 #include "BZFormVw.h"
@@ -35,7 +38,7 @@ class CBZDoc2;
 class CMainFrame;
 class CInputDlg;
 
-static DWORD  MemCompByte2(LPCVOID p1, LPCVOID p2, DWORD len);
+//static DWORD  MemCompByte2(LPCVOID p1, LPCVOID p2, DWORD len);
 
 #define ADDRCOLUMNS 6
 #define ADDRCOLUMNS_MAP 9
@@ -288,7 +291,7 @@ public:
       pView->Invalidate(TRUE);
     }
   }
-  void OnStatusInfo(UINT uNotifyCode, int nID, CWindow wndCtl) { if((m_nBytes*=2) == 8) m_nBytes = 1; }
+  void OnStatusInfo(UINT uNotifyCode=0, int nID=0, CWindow wndCtl=NULL) { if((m_nBytes*=2) == 8) m_nBytes = 1; }
   void OnStatusSize(UINT uNotifyCode, int nID, CWindow wndCtl) { m_bHexSize = !m_bHexSize; }
   void OnStatusChar(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
@@ -445,6 +448,7 @@ public:
       }
     }
   }
+  void OnPaint(WTL::CDCHandle dc, BOOL bPrint = FALSE);
 
 
 public:
@@ -473,11 +477,6 @@ public:
   {
     CBZCoreData *pCoreData = CBZCoreData::GetInstance();
     return pCoreData->GetSplitterWnd();
-  }
-  CMainFrame* GetMainFrame()
-  {
-    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-    return pCoreData->GetMainFrame();
   }
   ATL::CWindow* GetSubView()
   {
@@ -538,8 +537,8 @@ public:
 // Implementation
 private:
 	void	DrawHeader();
-	void	DrawGrid(WTL::CDC* pDC, RECT& rClip);
-	void	DrawDummyCaret(WTL::CDC* pDC);
+	void	DrawGrid(HDC hDC, RECT& rClip);
+	void	DrawDummyCaret(HDC hDC);
 	BOOL	DrawCaret();
 	UINT64	PointToOffset(WTL::CPoint pt);
 	void	CutOrCopy(CutMode mode);
@@ -568,7 +567,6 @@ private:
 	void SetHeaderColor();
 	CString GetStatusInfoText();
 	void JumpTo(UINT64 dwNewCaret);
-	void SetMaxPrintingPage(CPrintInfo* pInfo);		// ### 1.54
 	void PutUnicodeChar(WORD w);					// ### 1.54b
 	void OnDoubleClick();							// ### 1.62
 	static BOOL LoadEbcDicTable();					// ### 1.63
@@ -589,6 +587,42 @@ public:
 	void ReCreateBackup();
 	void ReCreateRestore();
 
+  virtual bool IsValidPage(UINT nPage)
+  {
+    return (nPage==0);
+  }
+
+  virtual bool PrintPage(UINT nPage, HDC hDC)
+  {
+    // Å‰‚Ìƒy[ƒW‚¾‚¯ˆóü
+    if(nPage >= 1)
+      return false;
+
+    OnPaint(hDC);
+
+    return true;
+  }
+  unsigned int GetMaxPrintingPage()
+  {
+    UINT64 dwTotal = GetFileSize();
+    UINT64 dwSize64 = (m_bBlock) ? BlockEnd()-(BlockBegin()&~(16-1)) : dwTotal;
+    UINT64 maxPage64 = dwSize64/16/ m_nPageLen + 1;
+    return maxPage64<=0xFFffFFff ? (DWORD)maxPage64 : 0xFFffFFff;
+  }
+  virtual void BeginPrintJob(HDC hDC)
+  {
+    CTextView::BeginPrintJob(hDC);
+
+    WTL::CDCHandle cdc(hDC);
+    WTL::CRect rMargin;
+    GetMargin(rMargin, hDC);
+    POINT pt;
+    pt.x = cdc.GetDeviceCaps(HORZRES) - rMargin.left - rMargin.right;
+    pt.y = cdc.GetDeviceCaps(VERTRES) - rMargin.top - rMargin.bottom;
+    PixelToGrid(pt);
+    m_nPageLen = pt.y-1;
+  //  SetMaxPrintingPage(pInfo);
+  }
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -596,18 +630,17 @@ public:
 	public:
 	//virtual void OnDraw(WTL::CDC* pDC);  // overridden to draw this view
 	protected:
-	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
-	virtual void OnPrint(WTL::CDC* pDC, CPrintInfo* pInfo);
-	virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView);
-	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
-	virtual void OnBeginPrinting(WTL::CDC* pDC, CPrintInfo* pInfo);
+
+	virtual void OnUpdate();
+	//virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+	//virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView);
+
+//	virtual void OnPrint(WTL::CDC* pDC, CPrintInfo* pInfo);
+//	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
+//	virtual void OnBeginPrinting(WTL::CDC* pDC, CPrintInfo* pInfo);
 	//}}AFX_VIRTUAL
 };
 
-#ifndef _DEBUG  // debug version in BZView.cpp
-inline CBZDoc2* CBZView::GetDocument()
-   { return (CBZDoc2*)m_pDocument; }
-#endif
 
 
 

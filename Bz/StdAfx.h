@@ -36,9 +36,11 @@ extern WTL::CAppModule _Module;
 #include <atlfile.h>
 #include <atlutil.h>
 #include <atlscrl.h>
+#include <atlprint.h>
 
 #include <shlobj.h>
 
+#include "afxres.h"
 #include "resource.h"
 #include "..\cmos.h"
 
