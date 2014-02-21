@@ -79,6 +79,12 @@ public:
     if(i>=0)return m_arrSubView[i];
     return NULL;
   }
+  CBZDoc2* GetBZDoc2FromBZView(CBZView *pBZView)
+  {
+    int i = m_arrView.Find(pBZView);
+    if(i>=0)return m_arrDoc[i];
+    return NULL;
+  }
   CBZView* GetActiveBZView()
   {
     if(m_arrView.GetSize()>0)return m_arrView[m_dwActive];
@@ -122,7 +128,7 @@ public:
   void DeleteView(DWORD dwIndex, BOOL bDelDoc = TRUE);
   void DeleteAllViews(BOOL bDelDoc = TRUE)
   {
-    if(GetCountBZView()>0)DeleteView(0, bDelDoc);
+    while(GetCountBZView()>0)DeleteView(0, bDelDoc);
   }
 
   void AddBZDoc2(CBZDoc2 *doc)

@@ -81,6 +81,7 @@ public:
   void OnSize(UINT nType, WTL::CSize size)
   {
     if(size.cx && size.cy) InitScrollBar();	// ### 1.62
+   // SetMsgHandled(FALSE);
   }
   void OnVScroll(UINT nSBCode, UINT nPos, WTL::CScrollBar pScrollBar) { OnScrollBar(SB_VERT, nSBCode); }
   void OnHScroll(UINT nSBCode, UINT nPos, WTL::CScrollBar pScrollBar) { OnScrollBar(SB_HORZ, nSBCode); }
@@ -136,8 +137,10 @@ protected:
 	char*	m_pVText;
 	int		m_nText;
 	WTL::CDCHandle	m_dc;
+public:
 	BOOL	m_bPrinting;	// ### 1.54
-	BOOL IsPrinting() { return m_bPrinting != NULL; }
+	//BOOL IsPrinting() { return m_bPrinting != NULL; }‚È‚ñ‚©‹t‚È‹C‚ª‚·‚é
+protected:
 
 	CAtlFile*	m_pFile;		// ### 1.63
 	BOOL	IsToFile() { return m_pFile != NULL; }

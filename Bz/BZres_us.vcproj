@@ -175,6 +175,7 @@
 				ResourceOnlyDLL="true"
 				ImportLibrary=".\Debug/BZres_us.lib"
 				TargetMachine="1"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"

@@ -56,7 +56,7 @@ void CTextView::SetDefaultFont(HDC hDC)
 		::GetObject(hFont, sizeof(LOGFONT), &lf);
 		m_pFont->CreateFontIndirect(&lf);
 	} else {
-*/		int nFontSize = AfxGetApp()->GetProfileInt(_T("Option"), _T("FontSize"), 140);
+*/		//int nFontSize = AfxGetApp()->GetProfileInt(_T("Option"), _T("FontSize"), 140);
 		lf.lfCharSet = DEFAULT_CHARSET;
 		lf.lfHeight = options.nFontSize;
 		if(options.fFontStyle & 1) lf.lfWeight = FW_BOLD;
@@ -85,7 +85,7 @@ void CTextView::OnChangeFont(HDC hPrintDC)
 		ReleaseDC(hDC);
 
 		HIMC hIMC;
-		if(hIMC = ImmGetContext(GetSafeHwnd())) {
+		if(hIMC = ImmGetContext(m_hWnd)) {
 			LOGFONT lf;
 			m_pFont->GetLogFont(&lf);
 			ImmSetCompositionFont(hIMC, &lf);
@@ -104,7 +104,7 @@ void CTextView::InitCaret(BOOL bShow)
 	//else ATLTRACE("GetFocus() == NULL\n");
 #endif
 
-	if(GetFocus()!=NULL && GetFocus()->m_hWnd == this->m_hWnd) {
+	if(GetFocus() == m_hWnd) {
 		if(m_bIns)
 		{
 			CreateSolidCaret(2, m_cell.cy);
@@ -113,7 +113,7 @@ void CTextView::InitCaret(BOOL bShow)
 		}
 		MoveCaret(m_ptCaret);
 		if(bShow) {
-			GetParent()->ShowWindow(SW_SHOWNORMAL);
+			GetParent().ShowWindow(SW_SHOWNORMAL);
 			ShowCaret();
 #ifdef _DEBUG
 			//ATLTRACE("CTextView::InitCaret(): ShowCaret(0x%x)\n", m_hWnd);
@@ -475,7 +475,7 @@ void CTextView::PutFlush()
 			return;
 		}
 		POINT pt = GetScrollPos();
-		if(!(m_pDC->IsPrinting())) {
+    if(!m_bPrinting) {
 			COLORREF colText = GetSystemColor(m_colText);
 			COLORREF colBk   = GetSystemColor(m_colBk);
 			m_dc.SetTextColor(colText);
@@ -534,7 +534,7 @@ void CTextView::SetMargin(HDC hDC)
   WTL::CDCHandle cdc(hDC);
   WTL::CRect rMargin;
 	cdc.SetViewportOrg(0, 0);
-	GetMargin(rMargin, pDC);
+	GetMargin(rMargin, hDC);
 	cdc.SetViewportOrg(rMargin.x1, rMargin.y1);
 	ATLTRACE("MarginLeft:%d\n", rMargin.x1);
 //	pDC->SetViewportExt(rMargin.Width(), rMargin.Height());

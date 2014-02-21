@@ -229,7 +229,7 @@ void CBZDoc2::OnFileSave()
   {
     bRet = m_pSFC->Save();
   } else {
-    WTL::CFileDialog dlg(TRUE, _T("*"), NULL, OFN_NOVALIDATE | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT/*OFN_PATHMUSTEXIST*/
+    WTL::CFileDialog dlg(FALSE, _T("*"), NULL, OFN_NOVALIDATE | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT/*OFN_PATHMUSTEXIST*/
       , _T("すべてのファイル (*)\0*\0\0"), NULL/*AfxGetMainWnd()->GetSafeHwnd()*/);
     if(dlg.DoModal() == IDOK && m_pSFC)bRet = m_pSFC->SaveAs(dlg.m_szFileName);
     else return;
@@ -250,7 +250,7 @@ void CBZDoc2::OnFileSaveAs() //MFCからウィンドウを閉じる時にOnFileSaveAs()が呼び
     MessageBox(NULL, _T("SaveAs Error"), _T("Error"), MB_OK);
     return;
   }
-  WTL::CFileDialog dlg(TRUE, _T("*"), NULL, OFN_NOVALIDATE | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT/*OFN_PATHMUSTEXIST*/
+  WTL::CFileDialog dlg(FALSE, _T("*"), NULL, OFN_NOVALIDATE | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT/*OFN_PATHMUSTEXIST*/
     , _T("すべてのファイル (*)\0*\0\0"), NULL/*AfxGetMainWnd()->GetSafeHwnd()*/);
 
   if(dlg.DoModal() == IDOK){

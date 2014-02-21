@@ -38,7 +38,7 @@ extern __inline BOOL IsZlibDeflate(unsigned char firstChar, unsigned char second
 class CBZAnalyzerView : public CDialogImpl<CBZAnalyzerView>, public WTL::CWinDataExchange<CBZAnalyzerView>
 {
 
-protected:
+public:
   CBZAnalyzerView()
   {
   }
@@ -99,6 +99,8 @@ public:
     }
     CTamaSplitterWindow* pSplit = GetSplitter();
 //    pSplit->SetColumnInfo(0, 180, 0);
+
+    ShowWindow(SW_SHOW);
 
 		return TRUE;
   }

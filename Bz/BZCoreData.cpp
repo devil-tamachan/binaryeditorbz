@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BZCoreData.h"
 #include "BZView.h"
 #include "MainFrm.h"
+#include "BZDoc2.h"
 
 //class CBZDoc2;
 class CBZView;

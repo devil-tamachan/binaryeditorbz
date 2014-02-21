@@ -572,11 +572,11 @@ Error:
   }
 
 
-void CBZView::OnUpdate() 
+void CBZView::Update() 
 {
 	ATLTRACE("CBZView::OnUpdate()\n");
 	
-	m_pDoc = GetDocument();
+	m_pDoc = GetBZDoc2();
 	//ASSERT_VALID(m_pDoc);
 //#ifdef FILE_MAPPING
 //	if(m_pDoc)
@@ -672,12 +672,12 @@ void CBZView::DrawToFile(CAtlFile* pFile) 	// ###1.63
 	m_pFile = NULL;
 }
 
-void CBZView::OnPaint(WTL::CDCHandle dc, BOOL bPrint)
+void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 {
 	//LPBYTE p  = m_pDoc->GetDocPtr();
 //	if(!p) return;
 
-	RECT rClip;
+  WTL::CRect rClip;
 	UINT64 ofs;
 	UINT64 dwBegin = BlockBegin();
 	UINT64 dwEnd   = BlockEnd();
@@ -702,8 +702,14 @@ void CBZView::OnPaint(WTL::CDCHandle dc, BOOL bPrint)
 		rClip.y1 = DUMP_Y;
 		rClip.y2 = m_nPageLen;
 		ofs = m_dwPrint;
-	} else {
-		dc.GetClipBox(&rClip);
+  } else {
+    if(dc==NULL)return;
+    if(lpUpdateRect)
+    {
+      rClip = lpUpdateRect;
+    } else {
+      dc.GetClipBox(&rClip);
+    }
 		PixelToGrid(rClip);
 		if(rClip.y1 < DUMP_Y) {
 			DrawHeader();

@@ -79,7 +79,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ComCtl32.lib zlib128.lib"
+				AdditionalDependencies="ComCtl32.lib ..\zlib-1.2.8-dp\zlib.lib Winspool.lib"
 				OutputFile=".\Debug/Bz.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -88,6 +88,7 @@
 				SubSystem="2"
 				LargeAddressAware="2"
 				TargetMachine="1"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -182,7 +183,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlib128.lib imagehlp.lib"
+				AdditionalDependencies="zlib128.lib imagehlp.lib Winspool.lib"
 				OutputFile=".\Release/Bz.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -616,34 +617,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="StatBar.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseUPX|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="StdAfx.cpp"
 				>
 				<FileConfiguration
@@ -780,15 +753,15 @@
 				>
 			</File>
 			<File
-				RelativePath="StatBar.h"
-				>
-			</File>
-			<File
 				RelativePath="StdAfx.h"
 				>
 			</File>
 			<File
 				RelativePath=".\SuperFileCon.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tamasplit.h"
 				>
 			</File>
 			<File

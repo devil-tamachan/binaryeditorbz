@@ -151,6 +151,12 @@ public:
     AddSimpleReBarBand(m_combo_toolbar);
 
     SizeSimpleReBarBands();
+
+    
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    pCoreData->m_pMainFrame = this;
+
+    Invalidate();
     /*
     if (!(options.barState & BARSTATE_NOFLAT ? m_wndToolBar.Create(this)
       : m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP)) ||
@@ -201,6 +207,11 @@ public:
   {
     GetFrameState();
     GetSplitInfo();
+    
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    pCoreData->m_pMainFrame = NULL;
+
+    SetMsgHandled(FALSE);
   }
   void OnShowWindow(BOOL bShow, UINT nStatus);
   void OnFilePrint(UINT uNotifyCode, int nID, CWindow wndCtl);

@@ -448,7 +448,17 @@ public:
       }
     }
   }
-  void OnPaint(WTL::CDCHandle dc, BOOL bPrint = FALSE);
+  void _OnPaint(WTL::CDCHandle dc, LPRECT lpRect, BOOL bPrint);
+  void OnPaint(WTL::CDCHandle dc, BOOL bPrint = FALSE)
+  {
+    if(dc)
+    {
+      _OnPaint(dc, NULL, bPrint);
+    } else {
+      WTL::CPaintDC pdc(m_hWnd);
+      _OnPaint(pdc.m_hDC, &(pdc.m_ps.rcPaint), bPrint);
+    }
+  }
 
 
 public:
@@ -471,7 +481,7 @@ public:
   CBZDoc2* GetBZDoc2()
   {
     CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-    return pCoreData->GetBZDoc2FromSubView(this);
+    return pCoreData->GetBZDoc2FromBZView(this);
   }
   CTamaSplitterWindow* GetSplitter()
   {
@@ -510,16 +520,15 @@ private:
 	int		m_timer;
 	CBZDoc2*	m_pDoc;
 	UINT64	m_dwPrint;
+public:
 	int		m_nPageLen;
+private:
 	CharSet m_charset;
 	static BOOL m_bHexSize;
 	int		m_nColAddr;		// ###1.60
 	static LPSTR m_pEbcDic;	// ###1.63
 	static BOOL  m_bLoadEbcDic;
 
-public:
-	CBZDoc2*	GetDocument();
-// Operations
 public:
   UINT64 GetFileSize();
 	BOOL	GotoCaret();
@@ -629,9 +638,9 @@ public:
 	//{{AFX_VIRTUAL(CBZView)
 	public:
 	//virtual void OnDraw(WTL::CDC* pDC);  // overridden to draw this view
-	protected:
-
-	virtual void OnUpdate();
+public:
+	virtual void Update();
+protected:
 	//virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	//virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView);
 

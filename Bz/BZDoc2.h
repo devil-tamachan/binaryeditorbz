@@ -55,6 +55,8 @@ public:
   _inline size_t GetMaxCacheSize()             { return m_pSFC ? m_pSFC->GetMaxCacheSize() : 0; }
   _inline size_t GetRemainCache(UINT64 dwStart) { return m_pSFC ? m_pSFC->GetRemainCache(dwStart) : 0; }
 
+  _inline BOOL IsModified() { return m_pSFC ? m_pSFC->IsModified() : FALSE; };
+
   CString GetFilePath() { return m_pSFC ? m_pSFC->GetFilePath() : _T(""); }
 
   DWORD PasteFromClipboard(DWORD dwStart, BOOL bIns);
