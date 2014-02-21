@@ -68,6 +68,7 @@
 #define IDS_ERR_SYNTAX                  4001
 #define IDS_ERR_MALLOC                  4002
 #define IDS_ERR_READFILE                4003
+#define IDT_FINDBOX                     5000
 #define ID_CHAR_ASCII                   32770
 #define ID_CHAR_SJIS                    32771
 #define ID_CHAR_UNICODE                 32772

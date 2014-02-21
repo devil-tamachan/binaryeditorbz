@@ -33,10 +33,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class CBZView;
 
-class CComboBox4ToolBar : public CWindowImpl<CComboBox4ToolBar, WTL::CComboBox>
+class CComboBox4ToolBar : public /*CWindowImpl<CComboBox4ToolBar, */WTL::CComboBoxEx//>
 {
 public:
-  BEGIN_MSG_MAP(CComboBox4ToolBar)
+  BEGIN_MSG_MAP_EX(CComboBox4ToolBar)
     MSG_WM_KEYDOWN(OnKeyDown)
   END_MSG_MAP()
 

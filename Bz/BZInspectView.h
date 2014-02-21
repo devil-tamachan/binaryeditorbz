@@ -104,6 +104,10 @@ public:
     if(options.xSplitStruct == 0)
       options.xSplitStruct = lpCreateStruct->cx;
 
+    LONG lExStyle = GetWindowLong(GWL_EXSTYLE);
+    lExStyle |= WS_EX_STATICEDGE;
+    SetWindowLong(GWL_EXSTYLE, lExStyle);
+
     return 0;
   }
 

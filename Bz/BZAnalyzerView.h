@@ -100,6 +100,10 @@ public:
     CTamaSplitterWindow* pSplit = GetSplitter();
 //    pSplit->SetColumnInfo(0, 180, 0);
 
+    LONG lExStyle = GetWindowLong(GWL_EXSTYLE);
+    lExStyle |= WS_EX_STATICEDGE;
+    SetWindowLong(GWL_EXSTYLE, lExStyle);
+
     ShowWindow(SW_SHOW);
 
 		return TRUE;

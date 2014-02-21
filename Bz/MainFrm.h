@@ -139,18 +139,32 @@ public:
       SetWindowPlacement(&wndpl);
     }
 
-    CreateSimpleReBar();
-    HWND hToolBar = CreateSimpleToolBarCtrl(m_hWnd, IDR_MAINFRAME, FALSE, ATL_SIMPLE_TOOLBAR_PANE_STYLE);
-    AddSimpleReBarBand(hToolBar);
+    {//Toolbar
+      CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
+      m_mainToolbar = CreateSimpleToolBarCtrl(m_hWnd, IDR_MAINFRAME, FALSE, ATL_SIMPLE_TOOLBAR_PANE_STYLE);
+      AddSimpleReBarBand(m_mainToolbar);
 
-    UIAddToolBar(hToolBar);
+      UIAddToolBar(m_mainToolbar);
 
-    m_combo_toolbar.Create(m_hWnd, WTL::CRect(0, 0, 100, 100), NULL
-      , WS_CHILD | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST, 0, IDC_COMBO_TOOLBAR);
-    //m_combo_toolbar.SetFont(AtlGetDefaultGuiFont());
-    AddSimpleReBarBand(m_combo_toolbar);
+      UINT idxFindBox = m_mainToolbar.CommandToIndex(ID_JUMP_FINDNEXT);
+      idxFindBox--;
+      TBBUTTONINFO tbinfo = {sizeof(TBBUTTONINFO), TBIF_SIZE|TBIF_BYINDEX|TBIF_COMMAND};
+      m_mainToolbar.GetButtonInfo(idxFindBox, &tbinfo);
+      tbinfo.cx = 180;
+      tbinfo.idCommand = IDT_FINDBOX;
+      m_mainToolbar.SetButtonInfo(idxFindBox, &tbinfo);
+      WTL::CRect rectFindBox;
+      m_mainToolbar.GetItemRect(idxFindBox, rectFindBox);
+      m_combo_toolbar.Create(m_mainToolbar, rectFindBox, NULL
+        , WS_CHILD | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWN, 0, IDT_FINDBOX);
+      //m_combo_toolbar.SetFont(AtlGetDefaultGuiFont());
+      //WTL::CEdit editBox = m_combo_toolbar.GetEditCtrl();
+      //editBox.ModifyStyle(0, ES_RIGHT);
 
-    SizeSimpleReBarBands();
+      SizeSimpleReBarBands();
+    }
+
+    CreateSimpleStatusBar();
 
     
     CBZCoreData *pCoreData = CBZCoreData::GetInstance();
@@ -411,6 +425,8 @@ public:
   WTL::CPrinter m_printerCur;
   WTL::CDevMode m_devmodeCur;
   WTL::CPrintJob m_job;
+
+  WTL::CToolBarCtrl m_mainToolbar;
 
 
 public:  // control bar embedded members

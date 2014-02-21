@@ -121,6 +121,11 @@ public:
     //SetScrollSizeU64V(1, 1);
     //SetScrollPage(1,8);
     //SetScrollLine(1,1);
+
+    LONG lExStyle = GetWindowLong(GWL_EXSTYLE);
+    lExStyle |= WS_EX_STATICEDGE;
+    SetWindowLong(GWL_EXSTYLE, lExStyle);
+
     return 0;
   }
 

@@ -531,7 +531,7 @@ MANIFEST_RESOURCE_ID    RT_MANIFEST             "Bz.manifest"
 
 STRINGTABLE 
 BEGIN
-    IDR_MAINFRAME           "BZ\n\nBZ\n\n\nBZ.Document\nBZ Document"
+    IDR_MAINFRAME           "BZ"
     IDP_OLE_INIT_FAILED     "OLE initialization failed.  Make sure that the OLE libraries are the correct version."
 END
 

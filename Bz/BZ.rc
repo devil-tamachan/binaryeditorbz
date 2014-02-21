@@ -532,7 +532,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_MAINFRAME           "BZ\n\nBZ\n\n\nBZ.Document\nBZ Document"
+    IDR_MAINFRAME           "BZ"
     IDP_OLE_INIT_FAILED     "OLE の初期化に失敗しました。OLE ライブラリのバージョンが正しいことを確認してください。"
 END
 

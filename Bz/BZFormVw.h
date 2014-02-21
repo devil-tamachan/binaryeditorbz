@@ -247,6 +247,10 @@ public:
     }
     m_pView = GetBZView();
 
+    LONG lExStyle = GetWindowLong(GWL_EXSTYLE);
+    lExStyle |= WS_EX_STATICEDGE;
+    SetWindowLong(GWL_EXSTYLE, lExStyle);
+
     return TRUE;
   }
 

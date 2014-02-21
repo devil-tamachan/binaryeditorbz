@@ -313,6 +313,11 @@ public:
   {
     m_nColAddr = ADDRCOLUMNS;
     SetViewSize(WTL::CSize(VIEWCOLUMNS, 0));
+
+    LONG lExStyle = GetWindowLong(GWL_EXSTYLE);
+    lExStyle |= WS_EX_STATICEDGE;
+    SetWindowLong(GWL_EXSTYLE, lExStyle);
+
     SetMsgHandled(FALSE);
     return 0;
   }
