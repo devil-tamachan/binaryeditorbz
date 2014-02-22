@@ -240,15 +240,17 @@ BEGIN
     BEGIN
         MENUITEM "新規作成(&N)\tCtrl+N",            ID_FILE_NEW
         MENUITEM "開く(&O)...\tCtrl+O",           ID_FILE_OPEN
+        POPUP "最近使ったファイル"
+        BEGIN
+            MENUITEM "---",                        ID_FILE_MRU_FIRST, GRAYED
+        END
         MENUITEM "上書き保存(&S)\tCtrl+S",           ID_FILE_SAVE
         MENUITEM "名前を付けて保存(&A)...",             ID_FILE_SAVE_AS
         MENUITEM "ダンプリストを保存(&L)...",            ID_FILE_SAVE_DUMPLIST
         MENUITEM SEPARATOR
         MENUITEM "印刷(&P)...\tCtrl+P",           ID_FILE_PRINT
         MENUITEM "印刷プレビュー(&V)",                 ID_FILE_PRINT_PREVIEW
-        MENUITEM "ページの設定(&U)...",               ID_FILE_PAGE_SETUP
-        MENUITEM SEPARATOR
-        MENUITEM "最近使ったファイル",                   ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "ページの設定(&U)...",               ID_FILE_PRINT_SETUP
         MENUITEM SEPARATOR
         MENUITEM "Bzの終了(&X)\tCtrl+Q",           ID_APP_EXIT
     END
@@ -575,7 +577,7 @@ BEGIN
     ID_FILE_OPEN            "既存のドキュメントを開きます。\n開く"
     ID_FILE_SAVE            "現在のドキュメントを上書きして保存します。\n上書き保存"
     ID_FILE_SAVE_AS         "現在のドキュメントを新しい名前で保存します。\n名前を付けて保存"
-    ID_FILE_PAGE_SETUP      "印刷ｵﾌﾟｼｮﾝを変更します。\nﾍﾟｰｼﾞの設定"
+    ID_FILE_PRINT_SETUP      "印刷ｵﾌﾟｼｮﾝを変更します。\nﾍﾟｰｼﾞの設定"
     ID_FILE_PRINT           "現在のドキュメントを印刷します。\n印刷"
     ID_FILE_PRINT_PREVIEW   "印刷プレビューを表示します。\n印刷プレビュー"
 END

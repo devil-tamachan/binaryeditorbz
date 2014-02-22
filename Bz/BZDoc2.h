@@ -30,7 +30,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-// CBZDoc2 ƒhƒLƒ…ƒƒ“ƒg
+#include "MainFrm.h"
+
+class CMainFrame;
 
 class CBZDoc2
 {
@@ -58,6 +60,14 @@ public:
   _inline BOOL IsModified() { return m_pSFC ? m_pSFC->IsModified() : FALSE; };
 
   CString GetFilePath() { return m_pSFC ? m_pSFC->GetFilePath() : _T(""); }
+  CString GetDocName()
+  {
+    CString retStr;
+    CString path = GetFilePath();
+    if(path==_T(""))retStr = _T("Untitled");
+    else            retStr = PathFindFileName(path);
+    return retStr;
+  }
 
   DWORD PasteFromClipboard(DWORD dwStart, BOOL bIns);
   BOOL CopyToClipboard(DWORD dwStart, DWORD dwSize);
@@ -125,11 +135,14 @@ public:
   BOOL OnUpdateFileSave();
   BOOL OnUpdateFileSaveAs();
 
-  BOOL OnOpenDocument(LPCTSTR lpszPathName);
+  BOOL OnOpenDocument(LPCTSTR lpszPathName, HWND hWnd = NULL);
   BOOL OnSaveDocument(LPCTSTR lpszPathName);
   void DeleteContents();
 
-  void OnFileSave();
-  void OnFileSaveAs();
+  BOOL CloseDocument(HWND hWnd = NULL);
+
+  BOOL OnFileOpen(HWND hWnd = NULL);
+  BOOL OnFileSave(HWND hWnd = NULL);
+  void OnFileSaveAs(HWND hWnd = NULL);
   void OnEditReadOnly();
 };

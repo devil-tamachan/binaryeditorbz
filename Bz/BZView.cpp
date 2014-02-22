@@ -1271,7 +1271,7 @@ void CBZView::ChangeFont(LOGFONT& logFont)
 
 void CBZView::UpdateStatusInfo()
 {
-//	GetMainFrame()->m_wndStatusBar.SetPaneText(1, GetStatusInfoText());
+	GetMainFrame()->m_statusbar.SetText(1, GetStatusInfoText());
 }
 
 

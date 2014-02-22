@@ -46,7 +46,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
 
-static UINT indicators[] =
+int indicators[5] =
 {
 	ID_SEPARATOR,           // status line indicator
 	ID_INDICATOR_INFO,
@@ -55,6 +55,13 @@ static UINT indicators[] =
 	ID_INDICATOR_INS,
 };
 
+BOOL CMainFrame::ChainMsg2ActiveBZView(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult)
+{
+  CBZView *pActiveBZView = GetActiveBZView();
+  if(pActiveBZView && pActiveBZView->ProcessWindowMessage(hWnd, uMsg, wParam, lParam, lResult))
+    return TRUE;
+  return FALSE;
+}
 
 void CMainFrame::OnUpdateViewBitmap() 
 {
@@ -99,6 +106,12 @@ void CMainFrame::OnFileSaveDumpList(UINT uNotifyCode, int nID, CWindow wndCtl)
       file.Close();
     }
   }
+}
+void CMainFrame::OnFileOpen(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  CBZDoc2 *pDoc = pCoreData->GetActiveBZDoc2();
+  if(pDoc)pDoc->OnFileOpen();
 }
 void CMainFrame::OnFileSave(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
@@ -172,6 +185,27 @@ void CMainFrame::OnFilePrintSetup(UINT uNotifyCode, int nID, CWindow wndCtl)
   }
   ::GlobalFree(dlg.m_psd.hDevMode);
   ::GlobalFree(dlg.m_psd.hDevNames);
+}
+void CMainFrame::OnFileRecent(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CString path;
+  if(m_recent.GetFromList(nID, path))
+  {
+    WTL::CFindFile find;
+    if(find.FindFile(path))
+    {
+      m_recent.MoveToTop(nID);
+      CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+      CBZDoc2 *pDoc = pCoreData->GetActiveBZDoc2();
+      if(pDoc)
+      {
+        if(!pDoc->CloseDocument(m_hWnd))return;
+        pDoc->OnOpenDocument(path, m_hWnd);
+      }
+    } else m_recent.RemoveFromList(nID);
+
+    m_recent.WriteToRegistry(_T("Software\\c.mos\\BZ\\Settings"));
+  }
 }
 
 

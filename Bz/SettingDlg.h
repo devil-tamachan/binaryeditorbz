@@ -112,7 +112,7 @@ public:
 		m_sValue = _T("");
 	}
 
-	WTL::CString	m_sValue;
+	CString	m_sValue;
 
 	BEGIN_MSG_MAP(CInputDlg)
 		MSG_WM_INITDIALOG(OnInitDialog)

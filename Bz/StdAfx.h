@@ -17,6 +17,7 @@
 #define _WTL_NO_AUTOMATIC_NAMESPACE
 
 #include <atlbase.h>
+#include <atlstr.h>
 #include <atlapp.h>
 
 extern WTL::CAppModule _Module;
@@ -28,6 +29,7 @@ extern WTL::CAppModule _Module;
 #include <atldlgs.h>
 #include <atlgdi.h>//CDCHandle
 #include <atlctrls.h>//CComboBox
+#include <atlctrlx.h>
 #include <atlframe.h>//COwnerDraw
 #include <atlcrack.h>
 #include <atlmisc.h>

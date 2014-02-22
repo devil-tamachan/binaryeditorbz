@@ -39,9 +39,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define BZ_CLASSNAME "BzEditorClass"
 
+extern int indicators[5];
+
 class CBZDoc2;
 class CBZView;
 class CBZInspectView;
+
+#define CHAIN_MSG_MAP_ACTIVEBZVIEW() \
+	{ \
+		if(ChainMsg2ActiveBZView(hWnd, uMsg, wParam, lParam, lResult)) \
+			return TRUE; \
+	}
+#define CHAIN_COMMANDS_ACTIVEBZVIEW() \
+	if(uMsg == WM_COMMAND) \
+		CHAIN_MSG_MAP_ACTIVEBZVIEW()
 
 class CMainFrame : public WTL::CFrameWindowImpl<CMainFrame>, public WTL::CUpdateUI<CMainFrame>
 {
@@ -69,20 +80,26 @@ public:
     COMMAND_ID_HANDLER_EX(ID_HELP_INDEX, OnHelpIndex)
     COMMAND_ID_HANDLER_EX(ID_APP_ABOUT, OnAppAbout)
     COMMAND_RANGE_HANDLER_EX(ID_VIEW_SPLIT_H, ID_VIEW_SPLIT_V, OnViewSplit)
-    COMMAND_ID_HANDLER_EX(ID_FILE_PAGE_SETUP, OnFilePageSetup)
     COMMAND_ID_HANDLER_EX(ID_TOOLS_EDITDEF, OnToolsEditBZDef)
     COMMAND_ID_HANDLER_EX(ID_FILE_SAVE_DUMPLIST, OnFileSaveDumpList)
     //ON_COMMAND( ID_HELP_INDEX, OnHelpIndex )
     COMMAND_RANGE_HANDLER_EX(ID_LANG_JPN, ID_LANG_ENU, OnLanguage)
+    COMMAND_ID_HANDLER_EX(ID_FILE_OPEN, OnFileOpen)
     COMMAND_ID_HANDLER_EX(ID_FILE_SAVE, OnFileSave)
     COMMAND_ID_HANDLER_EX(ID_FILE_SAVE_AS, OnFileSaveAs)
     COMMAND_ID_HANDLER_EX(ID_EDIT_READONLY, OnEditReadOnly)
     COMMAND_ID_HANDLER_EX(ID_EDIT_READONLYOPEN, OnEditReadOnlyOpen)
     COMMAND_ID_HANDLER_EX(ID_FILE_PRINT, OnFilePrint)
     COMMAND_ID_HANDLER_EX(ID_FILE_PRINT_SETUP, OnFilePrintSetup)
+
+    COMMAND_RANGE_HANDLER_EX(ID_FILE_MRU_FIRST, ID_FILE_MRU_LAST, OnFileRecent)
+
+    CHAIN_COMMANDS_ACTIVEBZVIEW()
     CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
     CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
   END_MSG_MAP()
+
+  BOOL ChainMsg2ActiveBZView(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult);
 
   BEGIN_UPDATE_UI_MAP(CMainFrame)
     UPDATE_ELEMENT(ID_VIEW_BITMAP, UPDUI_MENUPOPUP)
@@ -164,8 +181,19 @@ public:
       SizeSimpleReBarBands();
     }
 
-    CreateSimpleStatusBar();
-
+    {
+      m_hWndStatusBar = m_statusbar.Create(m_hWnd);
+      m_statusbar.SetPanes(indicators, sizeof(indicators)/sizeof(int));
+      m_statusbar.SetText(1, _T(""));
+      UIAddStatusBar(m_statusbar);
+    }
+    
+    WTL::CMenuHandle menu = GetMenu();
+    WTL::CMenuHandle menuFile = menu.GetSubMenu(0);
+    WTL::CMenuHandle menuRecent = menuFile.GetSubMenu(2);
+    m_recent.SetMenuHandle(menuRecent);
+    m_recent.SetMaxEntries(15);
+    m_recent.ReadFromRegistry(_T("Software\\c.mos\\BZ\\Settings"));
     
     CBZCoreData *pCoreData = CBZCoreData::GetInstance();
     pCoreData->m_pMainFrame = this;
@@ -228,8 +256,6 @@ public:
     SetMsgHandled(FALSE);
   }
   void OnShowWindow(BOOL bShow, UINT nStatus);
-  void OnFilePrint(UINT uNotifyCode, int nID, CWindow wndCtl);
-  void OnFilePrintSetup(UINT uNotifyCode, int nID, CWindow wndCtl);
 
 
   void OnJumpFind(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -364,10 +390,14 @@ public:
       MessageBox(strMsg);
     }
   }
+  void OnFileOpen(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnFileSave(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnFileSaveAs(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnEditReadOnly(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnEditReadOnlyOpen(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnFilePrint(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnFilePrintSetup(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnFileRecent(UINT uNotifyCode, int nID, CWindow wndCtl);
 
 
 public:
@@ -427,6 +457,9 @@ public:
   WTL::CPrintJob m_job;
 
   WTL::CToolBarCtrl m_mainToolbar;
+  WTL::CMultiPaneStatusBarCtrl m_statusbar;
+
+  WTL::CRecentDocumentList m_recent;
 
 
 public:  // control bar embedded members
@@ -444,6 +477,11 @@ protected:
 
 // Implementation
 public:
+  void AddRecentList(LPCTSTR path)
+  {
+    m_recent.AddToList(path);
+    m_recent.WriteToRegistry(_T("Software\\c.mos\\BZ\\Settings"));
+  }
   BOOL CreateClient();
   void UpdateFrameTitle(BOOL bAddToTitle = TRUE);
   void GetSplitInfo()

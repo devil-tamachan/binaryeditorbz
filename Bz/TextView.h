@@ -40,7 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class CTextView : public CWindowImpl<CTextView>, public WTL::CPrintJobInfo
 {
 public:
-  BEGIN_MSG_MAP(CTextView)
+  BEGIN_MSG_MAP_EX(CTextView)
     MSG_WM_CREATE(OnCreate)
     MSG_WM_PAINT(OnPaint)
     MSG_WM_SIZE(OnSize)

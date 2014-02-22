@@ -193,7 +193,7 @@ BOOL CBZDoc2::OnNewDocument()
 //  return TRUE;
 }
 
-BOOL CBZDoc2::OnOpenDocument(LPCTSTR lpszPathName)
+BOOL CBZDoc2::OnOpenDocument(LPCTSTR lpszPathName, HWND hWnd)
 {
   CSuperFileCon *pSFC = new CSuperFileCon();
   if(!pSFC || !pSFC->Open(lpszPathName))
@@ -201,12 +201,15 @@ BOOL CBZDoc2::OnOpenDocument(LPCTSTR lpszPathName)
 //    ATLASSERT(FALSE);
     CString mes;
     mes.LoadString(AFX_IDP_INVALID_FILENAME);
-    MessageBox(NULL, mes, lpszPathName, MB_OK);
+    MessageBox(hWnd, mes, lpszPathName, MB_OK);
     return FALSE;
   }
   DeleteContents();
   m_bReadOnly = pSFC->IsReadOnly();
   m_pSFC = pSFC;
+
+  CMainFrame *pMainFrame = GetMainFrame();
+  if(pMainFrame)pMainFrame->AddRecentList(lpszPathName);
   return TRUE;
 }
 
@@ -216,13 +219,54 @@ BOOL CBZDoc2::OnSaveDocument(LPCTSTR lpszPathName)
   //return CDocument::OnSaveDocument(lpszPathName);
 }
 
-void CBZDoc2::OnFileSave()
+BOOL CBZDoc2::CloseDocument(HWND hWnd)
+{
+  if(m_pSFC && m_pSFC->IsModified())
+  {
+    CString msgAskSave;
+    CString docName = GetDocName();
+    msgAskSave.FormatMessage(AFX_IDP_ASK_TO_SAVE, docName);
+    UINT nResult = ::MessageBox(hWnd, msgAskSave, docName, MB_YESNOCANCEL);
+    switch(nResult)
+    {
+    case IDYES:
+      if(!OnFileSave())return FALSE;
+      break;
+    case IDNO:
+      break;
+    case IDCANCEL:
+      return FALSE;
+    }
+  }
+  DeleteContents();
+  return TRUE;
+}
+
+BOOL CBZDoc2::OnFileOpen(HWND hWnd)
+{
+  //CWaitCursor wait;
+  BOOL bRet = FALSE;
+  if(!CloseDocument(hWnd))return FALSE;
+
+  WTL::CFileDialog dlg(TRUE, _T("*"), NULL, OFN_NOVALIDATE
+      , _T("すべてのファイル (*)\0*\0\0"), hWnd);
+  if(dlg.DoModal() == IDOK)bRet = OnOpenDocument(dlg.m_szFileName, hWnd);
+
+  if(!bRet)
+  {
+    MessageBox(hWnd, _T("Open Error"), _T("Error"), MB_OK);
+    return FALSE;
+  }
+  return TRUE;
+}
+
+BOOL CBZDoc2::OnFileSave(HWND hWnd)
 {
   //CWaitCursor wait;
   if(!m_pSFC)
   {
-    MessageBox(NULL, _T("Save Error"), _T("Error"), MB_OK);
-    return;
+    MessageBox(hWnd, _T("Save Error"), _T("Error"), MB_OK);
+    return FALSE;
   }
   BOOL bRet = FALSE;
   if(m_pSFC->IsOpen())
@@ -230,36 +274,34 @@ void CBZDoc2::OnFileSave()
     bRet = m_pSFC->Save();
   } else {
     WTL::CFileDialog dlg(FALSE, _T("*"), NULL, OFN_NOVALIDATE | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT/*OFN_PATHMUSTEXIST*/
-      , _T("すべてのファイル (*)\0*\0\0"), NULL/*AfxGetMainWnd()->GetSafeHwnd()*/);
+      , _T("すべてのファイル (*)\0*\0\0"), hWnd);
     if(dlg.DoModal() == IDOK && m_pSFC)bRet = m_pSFC->SaveAs(dlg.m_szFileName);
-    else return;
   }
   if(!bRet)
   {
-    MessageBox(NULL, _T("Save Error"), _T("Error"), MB_OK);
-    return;
+    MessageBox(hWnd, _T("Save Error"), _T("Error"), MB_OK);
+    return FALSE;
   }
- // SetModifiedFlag(FALSE);
+  return TRUE;
 }
 
-void CBZDoc2::OnFileSaveAs() //MFCからウィンドウを閉じる時にOnFileSaveAs()が呼び出される場合がある。仮実装
+void CBZDoc2::OnFileSaveAs(HWND hWnd) //MFCからウィンドウを閉じる時にOnFileSaveAs()が呼び出される場合がある。仮実装
 {
   //CWaitCursor wait;
   if(!m_pSFC)
   {
-    MessageBox(NULL, _T("SaveAs Error"), _T("Error"), MB_OK);
+    MessageBox(hWnd, _T("SaveAs Error"), _T("Error"), MB_OK);
     return;
   }
   WTL::CFileDialog dlg(FALSE, _T("*"), NULL, OFN_NOVALIDATE | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT/*OFN_PATHMUSTEXIST*/
-    , _T("すべてのファイル (*)\0*\0\0"), NULL/*AfxGetMainWnd()->GetSafeHwnd()*/);
+    , _T("すべてのファイル (*)\0*\0\0"), hWnd);
 
   if(dlg.DoModal() == IDOK){
     if(!m_pSFC || !m_pSFC->SaveAs(dlg.m_szFileName))
     {
-      MessageBox(NULL, _T("SaveAs Error"), _T("Error"), MB_OK);
+      MessageBox(hWnd, _T("SaveAs Error"), _T("Error"), MB_OK);
       return;
     }
-    //SetModifiedFlag(FALSE);
   }
 }
 

@@ -63,7 +63,7 @@ enum CutMode { EDIT_COPY, EDIT_CUT, EDIT_DELETE };
 class CBZView : public CTextView, public WTL::CUpdateUI<CBZView>
 {
 public:
-  BEGIN_MSG_MAP(CBZView)
+  BEGIN_MSG_MAP_EX(CBZView)
     MSG_WM_CREATE(OnCreate)
     MSG_WM_ERASEBKGND(OnEraseBkgnd)
     MSG_WM_TIMER(OnTimer)
