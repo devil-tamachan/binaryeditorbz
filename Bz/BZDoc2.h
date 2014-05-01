@@ -138,7 +138,9 @@ public:
 private:
   BOOL OpenDocument(LPCTSTR lpszPathName, HWND hWnd = NULL);
   //BOOL OnSaveDocument(LPCTSTR lpszPathName);
+public:
   BOOL CloseDocument(HWND hWnd = NULL);
+private:
   void DeleteContents();
 
 public:

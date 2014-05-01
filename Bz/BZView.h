@@ -77,6 +77,8 @@ public:
     MSG_WM_CREATE(OnCreate)
     MSG_WM_DESTROY(OnDestroy)
     MSG_WM_ERASEBKGND(OnEraseBkgnd)
+    //MSG_WM_ACTIVATE(OnActivate)‚±‚È‚¢
+    MSG_WM_KILLFOCUS(OnKillFocus)
     MSG_WM_TIMER(OnTimer)
     MSG_WM_KEYDOWN(OnKeyDown)
     MSG_WM_CHAR(OnChar)
@@ -339,6 +341,7 @@ public:
     SetMsgHandled(FALSE);
     return 0;
   }
+  BOOL AskSave();
   void OnDestroy()
   {
     WTL::CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -359,6 +362,15 @@ public:
     SetMsgHandled(FALSE);
     return TRUE;
   }
+  /*void OnActivate(UINT nState, BOOL bMinimized, CWindow wndOther)
+  {
+    if(nState!=WA_INACTIVE)Activate();
+  }*/
+  void OnKillFocus(CWindow wndFocus)
+  {
+    ATLTRACE("------------------kill focus\n");
+		Invalidate(FALSE);
+  }
   void OnTimer(UINT_PTR nIDEvent)
   {
     if(m_timer == TIMER_UP) OnKeyDown(VK_UP, 0, 0);
@@ -368,12 +380,14 @@ public:
   void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
   void OnMButtonDown(UINT nFlags, WTL::CPoint point)
   {
+    Activate();
     m_bCaretOnChar = !m_bCaretOnChar;
     GotoCaret();
     SetMsgHandled(FALSE);
   }
   void OnLButtonDown(UINT nFlags, WTL::CPoint point)
   {
+    Activate();
     if(m_bBlock) {
       m_bBlock = FALSE;
       Invalidate(FALSE);

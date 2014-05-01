@@ -576,9 +576,7 @@ void CBZView::Update()
 {
 	ATLTRACE("CBZView::OnUpdate()\n");
 	
-  ATLTRACE(" old: %08X\n", m_pDoc);
 	m_pDoc = GetBZDoc2();
-  ATLTRACE(" new: %08X\n", m_pDoc);
 	//ASSERT_VALID(m_pDoc);
 //#ifdef FILE_MAPPING
 //	if(m_pDoc)
@@ -1201,11 +1199,6 @@ BOOL CBZView::GotoCaret()
 /////////////////////////////////////////////////////////////////////////////
 // CBZView message handlers
 
-void CBZView::Activate()
-{
-	GetMainFrame()->SetActiveView(this);
-	if(GetFocus() != m_hWnd) SetFocus();	// ###1.62
-}
 
 
 void CBZView::OnDoubleClick()	// ### 1.62
@@ -1566,6 +1559,13 @@ void CBZView::FillValue(int val)
 
 /////////////////////////////////////////////////////////////////////////////
 // CBZView Double View
+
+void CBZView::Activate()
+{
+	GetMainFrame()->SetActiveView(this);
+	if(GetFocus() != m_hWnd) SetFocus();	// ###1.62
+}
+
 /*
 void CBZView::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView) 
 {
@@ -1598,6 +1598,7 @@ CBZDoc2* CBZView::GetBrotherDoc()
   if(!pBrotherView)return NULL;
   return pBrotherView->m_pDoc;
 }
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CBZView Character code
@@ -1955,6 +1956,16 @@ UCHAR CBZView::ConvertEbcDic(UCHAR c)
 
 
 
+BOOL CBZView::AskSave()
+{
+  if(m_pDoc)
+    return m_pDoc->CloseDocument(this->m_hWnd);
+  else
+  {
+    ATLASSERT(FALSE);
+    return TRUE;
+  }
+}
 
 
 

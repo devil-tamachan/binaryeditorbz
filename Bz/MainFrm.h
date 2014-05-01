@@ -263,16 +263,7 @@ public:
 
     return 0;
   }
-  void OnClose()
-  {
-    GetFrameState();
-    GetSplitInfo();
-    
-    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-    pCoreData->m_pMainFrame = NULL;
-
-    SetMsgHandled(FALSE);
-  }
+  void OnClose();
   void OnDestroy()
   {
     WTL::CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -428,11 +419,7 @@ public:
   }
 
 
-  void SetActiveView(CBZView *pBZView)
-  {
-    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-    pCoreData->SetActiveByBZView(pBZView);
-  }
+  void SetActiveView(CBZView *pBZView);
 
 
 public:
@@ -489,7 +476,7 @@ public:
   BOOL PreparaSplitter();
   BOOL ResetSplitter();
   BOOL CreateClient();
-  void UpdateFrameTitle(BOOL bAddToTitle = TRUE);
+  void UpdateFrameTitle();
   void GetSplitInfo()
   {
     if(IsIconic() || IsZoomed()) return;

@@ -63,6 +63,15 @@ BOOL CMainFrame::ChainMsg2ActiveBZView(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
   return FALSE;
 }
 
+void CMainFrame::SetActiveView(CBZView *pBZView)
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  pCoreData->SetActiveByBZView(pBZView);
+  pBZView->SetFocus();
+  UpdateFrameTitle();
+}
+
+
 void CMainFrame::OnUpdateViewBitmap() 
 {
   UISetCheck(ID_VIEW_BITMAP, m_bBmpView);
@@ -117,6 +126,7 @@ void CMainFrame::OnFileOpen(UINT uNotifyCode, int nID, CWindow wndCtl)
     if(pDoc)pDoc->OnFileOpen(NULL, m_hWnd);
     pBZView->Update();
   }
+  UpdateFrameTitle();
 }
 void CMainFrame::OnFileSave(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
@@ -208,6 +218,7 @@ void CMainFrame::OnFileRecent(UINT uNotifyCode, int nID, CWindow wndCtl)
         if(pDoc)pDoc->OnFileOpen(path, m_hWnd);
         pBZView->Update();
       }
+      UpdateFrameTitle();
     } else m_recent.RemoveFromList(nID);
 
     m_recent.WriteToRegistry(_T("Software\\c.mos\\BZ\\Settings"));
@@ -305,6 +316,26 @@ void CMainFrame::OnViewAnalyzer(UINT uNotifyCode, int nID, CWindow wndCtl)
 
 
 
+void CMainFrame::OnClose()
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  DWORD cntBzView = pCoreData->GetCountBZView();
+  for(DWORD i=0;i<cntBzView;i++)
+  {
+    CBZView *bzView = pCoreData->GetBZView(i);
+    if(!(bzView->AskSave()))return; //Cancel Close
+  }
+
+  GetFrameState();
+  GetSplitInfo();
+
+  pCoreData->m_pMainFrame = NULL;
+
+  SetMsgHandled(FALSE);
+}
+
+
+
 void CMainFrame::UpdateInspectViewChecks()
 {
   CBZCoreData *pCoreData = CBZCoreData::GetInstance();
@@ -325,7 +356,7 @@ void CMainFrame::UpdateInspectViewChecks()
     }
   }
 }
-void CMainFrame::UpdateFrameTitle(BOOL bAddToTitle)
+void CMainFrame::UpdateFrameTitle()
 {
   CBZDoc2* pDoc = GetActiveBZDoc2();
   if(pDoc) {
@@ -588,6 +619,8 @@ BOOL CMainFrame::CreateClient()
 		if(bzViewNew[0])bzViewNew[0]->ReCreateRestore();
 		if(bzViewNew[1])bzViewNew[1]->ReCreateRestore();
 	}*/
+
+  UpdateFrameTitle();
 	return TRUE;
 }
 
