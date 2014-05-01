@@ -2,15 +2,15 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{d2449261-2603-4efa-9218-c0ed1c3c4b1a}</UniqueIdentifier>
+      <UniqueIdentifier>{25b333c8-10a5-4b5e-b704-244d00327b60}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
     </Filter>
     <Filter Include="Resource Files">
-      <UniqueIdentifier>{e59266ab-9bbc-4b76-b535-86dab0f11fe6}</UniqueIdentifier>
+      <UniqueIdentifier>{5c3233ec-72b4-46cc-a4b5-75bfcb2f92ba}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{433aa75c-0d4c-4757-9133-d66f2522d50c}</UniqueIdentifier>
+      <UniqueIdentifier>{eecc2b63-c92f-4c9a-b25b-dc50b246fd78}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
   </ItemGroup>
@@ -20,11 +20,23 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="res\BZ.ico">
+    <None Include="res\bmppoint.cur">
       <Filter>Resource Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="res\Toolbar.bmp">
+    </None>
+    <None Include="res\BZ.ico">
       <Filter>Resource Files</Filter>
-    </CustomBuild>
+    </None>
+    <None Include="res\Toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="Bz.manifest" />
   </ItemGroup>
 </Project>
