@@ -126,6 +126,11 @@ public:
   CMainFrame* GetMainFrame() { return m_pMainFrame; }
 
   void DeleteView(DWORD dwIndex, BOOL bDelDoc = TRUE);
+  void DeleteSubView(DWORD dwIndex);
+  void DeleteAllSubViews()
+  {
+    while(m_arrSubView.GetSize()>0)DeleteSubView(0);
+  }
   void DeleteAllViews(BOOL bDelDoc = TRUE)
   {
     while(GetCountBZView()>0)DeleteView(0, bDelDoc);
@@ -147,6 +152,11 @@ public:
   void SetActive(DWORD dwIndex)
   {
     m_dwActive = dwIndex;
+  }
+  void SetActiveByBZView(CBZView *pBZView)
+  {
+    int i = m_arrView.Find(pBZView);
+    if(i>=0)m_dwActive = i;
   }
   void Invalidate(BOOL bErase = TRUE);
 };

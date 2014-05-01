@@ -185,7 +185,7 @@ CString GetStructFilePath(UINT uID)
 LPVOID ReadFile(LPCTSTR pPath)
 {
 	CAtlFile file;
-	if(!file.Create(pPath, GENERIC_READ, 0, OPEN_EXISTING)) {
+	if(FAILED(file.Create(pPath, GENERIC_READ, 0, OPEN_EXISTING))) {
 		CString sMsg;
 		sMsg.Format(IDS_ERR_FILENOTFOUND, pPath);
 		MessageBox(NULL, sMsg, _T("ERROR"), MB_OK);

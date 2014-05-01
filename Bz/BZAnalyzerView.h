@@ -97,7 +97,7 @@ public:
       m_resultList.InsertColumn(0, _T("Address"), LVCFMT_LEFT, 120);
       //	m_resultList.InsertColumn(1, "Size", LVCFMT_LEFT, 80);
     }
-    CTamaSplitterWindow* pSplit = GetSplitter();
+    //CTamaSplitterWindow* pSplit = GetSplitter();
 //    pSplit->SetColumnInfo(0, 180, 0);
 
     LONG lExStyle = GetWindowLong(GWL_EXSTYLE);

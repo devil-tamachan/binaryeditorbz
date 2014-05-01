@@ -60,11 +60,22 @@ class CInputDlg;
 
 enum CutMode { EDIT_COPY, EDIT_CUT, EDIT_DELETE };
 
-class CBZView : public CTextView, public WTL::CUpdateUI<CBZView>
+class CBZView : public CTextView, public WTL::CUpdateUI<CBZView>, public WTL::CIdleHandler
 {
 public:
+  virtual BOOL OnIdle()
+  {
+    if(GetActiveBZView()==this)
+    {
+      _OnInitMenuPopup();
+      UIUpdateToolBar();
+    }
+    return FALSE;
+  }
+
   BEGIN_MSG_MAP_EX(CBZView)
     MSG_WM_CREATE(OnCreate)
+    MSG_WM_DESTROY(OnDestroy)
     MSG_WM_ERASEBKGND(OnEraseBkgnd)
     MSG_WM_TIMER(OnTimer)
     MSG_WM_KEYDOWN(OnKeyDown)
@@ -110,9 +121,9 @@ public:
   END_MSG_MAP()
 
   BEGIN_UPDATE_UI_MAP(CBZView)
-    UPDATE_ELEMENT(ID_EDIT_CUT, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_EDIT_COPY, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_EDIT_PASTE, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_EDIT_CUT, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+    UPDATE_ELEMENT(ID_EDIT_COPY, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+    UPDATE_ELEMENT(ID_EDIT_PASTE, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
     //UPDATE_ELEMENT(ID_JUMP_COMPARE, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_EDIT_VALUE, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_CHAR_AUTODETECT, UPDUI_MENUPOPUP)
@@ -134,12 +145,12 @@ public:
     UPDATE_ELEMENT(ID_BYTEORDER_68K, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_JUMP_COMPARE, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_JUMP_TO, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_JUMP_OFFSET, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_JUMP_RETURN, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_JUMP_OFFSET, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+    UPDATE_ELEMENT(ID_JUMP_RETURN, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
     UPDATE_ELEMENT(ID_JUMP_MARK, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_JUMP_MARKNEXT, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_JUMP_START, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_JUMP_END, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_JUMP_START, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+    UPDATE_ELEMENT(ID_JUMP_END, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
     UPDATE_ELEMENT(ID_VIEW_GRID1, UPDUI_MENUPOPUP)
   END_UPDATE_UI_MAP()
 
@@ -177,7 +188,7 @@ public:
   void OnUpdateByteOrder() { UISetRadioMenuItem((UINT)options.bByteOrder + ID_BYTEORDER_INTEL, ID_BYTEORDER_INTEL, ID_BYTEORDER_68K); }
   void OnUpdateJump();
   void OnUpdateViewGrid1() { UISetCheck(ID_VIEW_GRID1, options.iGrid==1); }
-  void OnInitMenuPopup(WTL::CMenuHandle menuPopup, UINT nIndex, BOOL bSysMenu)
+  void _OnInitMenuPopup()
   {
     OnUpdateEditCut();
     OnUpdateEditCopy();
@@ -195,6 +206,10 @@ public:
     OnUpdateByteOrder();
     OnUpdateJump();
     OnUpdateViewGrid1();
+  }
+  void OnInitMenuPopup(WTL::CMenuHandle menuPopup, UINT nIndex, BOOL bSysMenu)
+  {
+    _OnInitMenuPopup();
     SetMsgHandled(FALSE);
   }
 
@@ -318,8 +333,17 @@ public:
     lExStyle |= WS_EX_STATICEDGE;
     SetWindowLong(GWL_EXSTYLE, lExStyle);
 
+    WTL::CMessageLoop* pLoop = _Module.GetMessageLoop();
+   // pLoop->AddIdleHandler(this);
+
     SetMsgHandled(FALSE);
     return 0;
+  }
+  void OnDestroy()
+  {
+    WTL::CMessageLoop* pLoop = _Module.GetMessageLoop();
+    pLoop->RemoveIdleHandler(this);
+    SetMsgHandled(FALSE);
   }
   BOOL OnEraseBkgnd(WTL::CDCHandle dc)
   {
@@ -547,6 +571,7 @@ public:
 	void	Activate();
 	void	UpdateStatusInfo();
 	void	DrawToFile(CAtlFile* pFile);	// ###1.63
+  CBZDoc2* GetBZDoc() { return m_pDoc; }
 
 // Implementation
 private:

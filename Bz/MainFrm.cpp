@@ -110,8 +110,13 @@ void CMainFrame::OnFileSaveDumpList(UINT uNotifyCode, int nID, CWindow wndCtl)
 void CMainFrame::OnFileOpen(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
   CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-  CBZDoc2 *pDoc = pCoreData->GetActiveBZDoc2();
-  if(pDoc)pDoc->OnFileOpen();
+  CBZView *pBZView = pCoreData->GetActiveBZView();
+  if(pBZView)
+  {
+    CBZDoc2 *pDoc = pBZView->GetBZDoc();
+    if(pDoc)pDoc->OnFileOpen(NULL, m_hWnd);
+    pBZView->Update();
+  }
 }
 void CMainFrame::OnFileSave(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
@@ -196,11 +201,12 @@ void CMainFrame::OnFileRecent(UINT uNotifyCode, int nID, CWindow wndCtl)
     {
       m_recent.MoveToTop(nID);
       CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-      CBZDoc2 *pDoc = pCoreData->GetActiveBZDoc2();
-      if(pDoc)
+      CBZView *pBZView = pCoreData->GetActiveBZView();
+      if(pBZView)
       {
-        if(!pDoc->CloseDocument(m_hWnd))return;
-        pDoc->OnOpenDocument(path, m_hWnd);
+        CBZDoc2 *pDoc = pBZView->GetBZDoc();
+        if(pDoc)pDoc->OnFileOpen(path, m_hWnd);
+        pBZView->Update();
       }
     } else m_recent.RemoveFromList(nID);
 
@@ -208,8 +214,7 @@ void CMainFrame::OnFileRecent(UINT uNotifyCode, int nID, CWindow wndCtl)
   }
 }
 
-
-void CMainFrame::OnInitMenuPopup(WTL::CMenuHandle menuPopup, UINT nIndex, BOOL bSysMenu)
+void CMainFrame::_OnInitMenuPopup()
 {
   OnUpdateViewBitmap();
   OnUpdateViewStruct();
@@ -237,8 +242,67 @@ void CMainFrame::OnInitMenuPopup(WTL::CMenuHandle menuPopup, UINT nIndex, BOOL b
       UIEnable(ID_FILE_SAVE_AS, pDoc->OnUpdateFileSaveAs());
     }
   }
+}
+
+void CMainFrame::OnInitMenuPopup(WTL::CMenuHandle menuPopup, UINT nIndex, BOOL bSysMenu)
+{
+  _OnInitMenuPopup();
   SetMsgHandled(FALSE);
 }
+
+void CMainFrame::OnViewBitmap(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  GetSplitInfo();
+  m_bBmpView = !m_bBmpView;
+  m_bStructView = FALSE;
+  m_bInspectView = FALSE;
+  m_bAnalyzerView = FALSE;
+  if(m_bBmpView)CreateSubView();
+  else pCoreData->DeleteAllSubViews();
+  ResetSplitter();
+  //CreateClient();
+}
+void CMainFrame::OnViewStruct(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  GetSplitInfo();
+  m_bBmpView = FALSE;
+  m_bStructView = !m_bStructView;
+  m_bInspectView = FALSE;
+  m_bAnalyzerView = FALSE;
+  if(m_bStructView)CreateSubView();
+  else pCoreData->DeleteAllSubViews();
+  ResetSplitter();
+  //CreateClient();
+}
+void CMainFrame::OnViewInspect(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  GetSplitInfo();
+  m_bBmpView = FALSE;
+  m_bStructView = FALSE;
+  m_bInspectView = !m_bInspectView;
+  m_bAnalyzerView = FALSE;
+  if(m_bInspectView)CreateSubView();
+  else pCoreData->DeleteAllSubViews();
+  ResetSplitter();
+  //CreateClient();
+}
+void CMainFrame::OnViewAnalyzer(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  GetSplitInfo();
+  m_bBmpView = FALSE;
+  m_bStructView = FALSE;
+  m_bInspectView = FALSE;
+  m_bAnalyzerView = !m_bAnalyzerView;
+  if(m_bAnalyzerView)CreateSubView();
+  else pCoreData->DeleteAllSubViews();
+  ResetSplitter();
+  //CreateClient();
+}
+
 
 
 void CMainFrame::UpdateInspectViewChecks()
@@ -297,90 +361,128 @@ void CMainFrame::UpdateFrameTitle(BOOL bAddToTitle)
 //	return FALSE;
 //}
 
-BOOL CMainFrame::CreateClient()
+void CMainFrame::AddSubView()
 {
   CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-
-	BOOL bReCreate = pCoreData->IsFirst();
-  //CBZDoc2 *pDoc1 = NULL, *pDoc2 = NULL;
-
-  if(pCoreData->IsFirst())
+  if(m_bBmpView)
   {
-    pCoreData->AddBZDoc2(new CBZDoc2);
-  } else if(!m_nSplitView0 &&  m_nSplitView)
-  {
-    //dup doc
-    CBZDoc2 *doc2 = new CBZDoc2;
-    pCoreData->GetBZDoc2(0)->DuplicateDoc(doc2);
-  } else if( m_nSplitView0 && !m_nSplitView)
-  {
-    //close doc2
-    pCoreData->DeleteView(0, TRUE/*bDelDoc*/);
+    CBZBmpView2 *pBmpView = new CBZBmpView2;
+    pCoreData->AddSubView(pBmpView);
+    pBmpView->Create(m_pWndSplitter->m_hWnd);
+    //pBmpView->OnInitialUpdate();
+  } else if(m_bInspectView) {
+    CBZInspectView *pInsView = new CBZInspectView;
+    pCoreData->AddSubView(pInsView);
+    pInsView->Create(m_pWndSplitter->m_hWnd);
+    //pInsView->OnInitialUpdate();
+  } else if(m_bAnalyzerView) {
+    CBZAnalyzerView *pAnaView = new CBZAnalyzerView;
+    pCoreData->AddSubView(pAnaView);
+    pAnaView->Create(m_pWndSplitter->m_hWnd);
+    //pAnaView->OnInitialUpdate();
+  } else {
+    CBZFormView *pFormView = new CBZFormView;
+    pCoreData->AddSubView(pFormView);
+    pFormView->Create(m_pWndSplitter->m_hWnd);
+    //pFormView->OnInitialUpdate();
   }
+}
+void CMainFrame::AddBZView()
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  CBZView *pBZView = new CBZView;
+  pBZView->Create(m_pWndSplitter==NULL ? m_hWnd : m_pWndSplitter->m_hWnd);
+  pCoreData->AddBZView(pBZView);
+}
 
+void CMainFrame::ReSplit(BOOL bSubView)
+{
+/*  if(!m_nSplitView0 &&  m_nSplitView)
+  {
+    if(bSubView)
+    {
+      m_pWndSplitter->m_paneW
+    }
+  } else if( m_nSplitView0 && !m_nSplitView)
+  {*/
+    //close doc2
+   // pCoreData->DeleteView(0, TRUE/*bDelDoc*/);
+   /* ReSplit(bSubView);
+  }
+*/
+}
+
+BOOL CMainFrame::CreateSubView()
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  pCoreData->DeleteAllSubViews();
+  AddSubView();
+  if(m_nSplitView)AddSubView();
+  return TRUE;
+}
+
+BOOL CMainFrame::PreparaSplitter()
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
 	BOOL bSubView = (m_bBmpView || m_bStructView || m_bInspectView || m_bAnalyzerView);
-
-
-	if(bReCreate) {
-		// Backup (Caret, Scroll...)
-    unsigned int iBZView = pCoreData->GetCountBZView();
-    for(unsigned int i=0; i<iBZView; i++)
-      pCoreData->GetBZView(i)->ReCreateBackup();
-
-		DestroyAllChildWnd(FALSE/*bDelDoc*/);
-	}
-
 
   {
     int x = (bSubView ? 2 : 1) * (m_nSplitView==ID_VIEW_SPLIT_V ? 2 : 1);
     int y = (m_nSplitView==ID_VIEW_SPLIT_H ? 2 : 1);
-    if(x!=1 || y!=1)
+    //if(x!=1 || y!=1)
     {
-      if(m_pWndSplitter==NULL)m_pWndSplitter = new CTamaSplitterWindow;
-      m_pWndSplitter->CreateStatic(m_hWnd, x, y);
-      pCoreData->SetSplitterWnd(m_pWndSplitter);
+      if(m_pWndSplitter==NULL)
+      {
+        m_pWndSplitter = new CTamaSplitterWindow;
+        m_pWndSplitter->CreateStatic(m_hWnd, x, y);
+        pCoreData->SetSplitterWnd(m_pWndSplitter);
+      } else {
+      }
     }
+  }
+  return TRUE;
+}
+
+
+BOOL CMainFrame::ResetSplitter()
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+	BOOL bSubView = (m_bBmpView || m_bStructView || m_bInspectView || m_bAnalyzerView);
+
+  ATLTRACE("ResetSplitter(): Split=%s, Bmp=%d, Strct=%d, Insp=%d, Ana=%d\n", m_nSplitView==0?"-":(m_nSplitView==ID_VIEW_SPLIT_H ? "c•ªŠ„":"‰¡•ªŠ„"), m_bBmpView, m_bStructView, m_bInspectView, m_bAnalyzerView);
+
+  int paneCnt = 0;
+  {
+    int paneW = 1;
+    int paneH = 1;
+    if(bSubView)paneW+=1;
+    if(m_nSplitView==ID_VIEW_SPLIT_V)paneW*=2;
+    else if(m_nSplitView==ID_VIEW_SPLIT_H)paneH=2;
+    ATLTRACE("RecalcPaneSize: w=%d, h=%d\n", paneW, paneH);
+    m_pWndSplitter->m_paneW = paneW;
+    m_pWndSplitter->m_paneH = paneH;
+    paneCnt = paneW*paneH;
   }
 
   int rep = !m_nSplitView ? 1 : 2;
-  for(int i=0; i<rep; i++)
-  {
-    CBZView *pBZView = new CBZView;
-    pBZView->Create(m_pWndSplitter==NULL ? m_hWnd : m_pWndSplitter->m_hWnd);
-    pCoreData->AddBZView(pBZView);
-    if(bSubView)
-    {
-      if(m_bBmpView)
-      {
-        CBZBmpView2 *pBmpView = new CBZBmpView2;
-        pBmpView->Create(m_pWndSplitter->m_hWnd);
-        pCoreData->AddSubView(pBmpView);
-        //pBmpView->OnInitialUpdate();
-      } else if(m_bInspectView) {
-        CBZInspectView *pInsView = new CBZInspectView;
-        pInsView->Create(m_pWndSplitter->m_hWnd);
-        pCoreData->AddSubView(pInsView);
-        //pInsView->OnInitialUpdate();
-      } else if(m_bAnalyzerView) {
-        CBZAnalyzerView *pAnaView = new CBZAnalyzerView;
-        pAnaView->Create(m_pWndSplitter->m_hWnd);
-        pCoreData->AddSubView(pAnaView);
-        //pAnaView->OnInitialUpdate();
-      } else {
-        CBZFormView *pFormView = new CBZFormView;
-        pFormView->Create(m_pWndSplitter->m_hWnd);
-        pCoreData->AddSubView(pFormView);
-        //pFormView->OnInitialUpdate();
-      }
-    }
+  //for(int i=0; i<rep; i++)
+  //{
+  //  AddBZView();
+  //  if(bSubView)AddSubView();
     //pBZView->OnInitialUpdate();
-  }
+  //}
 
+  ATLASSERT(m_pWndSplitter);
   if(m_pWndSplitter!=NULL)
   {
     int iBZX = 0, iBZY = 0;
-    int iBZShiftX = bSubView ? 1 : 0;
-    int iBZShiftY = ID_VIEW_SPLIT_H ? 1 : 0;
+    int iBZShiftX = 0;
+    if(m_nSplitView==ID_VIEW_SPLIT_V)
+    {
+      if(bSubView)iBZShiftX = 2;
+      else iBZShiftX = 1;
+    }
+    int iBZShiftY = m_nSplitView==ID_VIEW_SPLIT_H ? 1 : 0;
     for(int i=0; i<rep; i++)
     {
       if(bSubView)
@@ -390,7 +492,7 @@ BOOL CMainFrame::CreateClient()
       }
       CBZView *pBZView = pCoreData->GetBZView(i);
       m_pWndSplitter->SetSplitterPane(pBZView->m_hWnd, iBZX, iBZY);
-      iBZX += iBZShiftX;
+      iBZX  = iBZShiftX;
       iBZY += iBZShiftY;
     }
 
@@ -398,17 +500,18 @@ BOOL CMainFrame::CreateClient()
     if(bSubView && m_nSplitView==ID_VIEW_SPLIT_V)
     {
       m_pWndSplitter->SetSplitterPosX(1, 200);
-      m_pWndSplitter->SetSplitterPosX(2, 200);
-      m_pWndSplitter->SetSplitterPosX(3, 200);
+      m_pWndSplitter->SetSplitterPosX(2, 820);
+      m_pWndSplitter->SetSplitterPosX(3, 1020);
     } else {
       if(bSubView)m_pWndSplitter->SetSplitterPosX(1, 200);
+      else if(m_nSplitView==ID_VIEW_SPLIT_V)m_pWndSplitter->SetSplitterPosX(1, 620);
       if(m_nSplitView==ID_VIEW_SPLIT_H)m_pWndSplitter->SetSplitterPosY(1, 200);
     }
     }
     m_pWndSplitter->InitSplitLayout();
   }
 
-  ::SetActiveWindow(pCoreData->GetBZView(0)->m_hWnd);
+  ::SetFocus(pCoreData->GetBZView(0)->m_hWnd);//SetActiveWindow
   pCoreData->SetActive(0);
 
   pCoreData->GetBZView(0)->Update();
@@ -418,6 +521,67 @@ BOOL CMainFrame::CreateClient()
   } else {
     m_hWndClient = pCoreData->GetBZView(0)->m_hWnd;
   }
+
+  if(bSubView)paneCnt/=2;
+  ATLASSERT(pCoreData->m_arrView.GetSize()==paneCnt);
+  if(bSubView)ATLASSERT(pCoreData->m_arrSubView.GetSize()==paneCnt);
+  ATLASSERT(pCoreData->m_arrDoc.GetSize()==paneCnt);
+  ATLTRACE("  m_arrDoc[0]: %08X\n", pCoreData->m_arrDoc[0]);
+  if(paneCnt==2)ATLTRACE("  m_arrDoc[1]: %08X\n", pCoreData->m_arrDoc[1]);
+  return TRUE;
+}
+
+BOOL CMainFrame::CreateClient()
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+
+	BOOL bFirst/*bReCreate*/ = pCoreData->IsFirst();
+  //CBZDoc2 *pDoc1 = NULL, *pDoc2 = NULL;
+
+	BOOL bSubView = (m_bBmpView || m_bStructView || m_bInspectView || m_bAnalyzerView);
+
+  PreparaSplitter();
+
+  if(bFirst)
+  {
+    pCoreData->AddBZDoc2(new CBZDoc2);
+
+    AddBZView();
+    if(bSubView)AddSubView();
+  } else if(!m_nSplitView0 &&  m_nSplitView)
+  {
+    //dup doc
+    CBZDoc2 *doc2 = new CBZDoc2;
+    CBZDoc2 *doc1 = pCoreData->GetBZDoc2(0);
+    if(doc1!=NULL)doc1->DuplicateDoc(doc2);
+    pCoreData->AddBZDoc2(doc2);
+
+    AddBZView();
+    if(bSubView)
+    {
+      AddSubView();
+    }
+    //ReSplit(bSubView);
+    pCoreData->GetBZView(1)->Update();
+  } else if( m_nSplitView0 && !m_nSplitView)
+  {
+    //close doc2
+    pCoreData->DeleteView(1, TRUE/*bDelDoc*/);
+    //ReSplit(bSubView);
+  }
+
+
+	if(!bFirst)//bReCreate)
+  {
+		// Backup (Caret, Scroll...)
+    //unsigned int iBZView = pCoreData->GetCountBZView();
+    //for(unsigned int i=0; i<iBZView; i++)
+    //  pCoreData->GetBZView(i)->ReCreateBackup();
+
+		//DestroyAllChildWnd(FALSE/*bDelDoc*/);
+	}
+
+  ResetSplitter();
 
 	/*if(bReCreate) {
 			RecalcLayout();

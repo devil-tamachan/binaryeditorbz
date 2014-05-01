@@ -98,10 +98,10 @@ void CTextView::OnChangeFont(HDC hPrintDC)
 void CTextView::InitCaret(BOOL bShow)
 {
 #ifdef _DEBUG
-	//ATLTRACE("CTextView::InitCaret()\n");
-	//CWnd *tw = GetFocus();
-	//if(tw!=NULL)ATLTRACE("GetFocus() = 0x%x, this->m_hWnd == 0x%x\n", (tw->m_hWnd), m_hWnd);
-	//else ATLTRACE("GetFocus() == NULL\n");
+	ATLTRACE("CTextView::InitCaret()\n");
+	HWND hwndFocused = GetFocus();
+	if(hwndFocused!=NULL)ATLTRACE("GetFocus() = 0x%x, this->m_hWnd == 0x%x\n", hwndFocused, m_hWnd);
+	else ATLTRACE("GetFocus() == NULL\n");
 #endif
 
 	if(GetFocus() == m_hWnd) {
@@ -346,12 +346,12 @@ void CTextView::MoveCaret(POINT pt)
 {
 //	if(pt.x == -1)
 //		TRACE("!");
-	//TRACE("CTextView::MoveCaret(): x=%d, y=%d\n", pt.x, pt.y);
+	ATLTRACE("CTextView::MoveCaret(): x=%d, y=%d\n", pt.x, pt.y);
 	m_ptCaret = pt;
 	if(GetFocus() == m_hWnd) {
 		GridToPixel(pt);
     SetCaretPos(pt.x, pt.y);
-		//TRACE("CTextView::MoveCaret(): SetCaretPos x=%d, y=%d\n", pt.x, pt.y);
+		ATLTRACE("CTextView::MoveCaret(): SetCaretPos x=%d, y=%d\n", pt.x, pt.y);
 		if(pt.x >= 0) {
 			HIMC hIMC;
 			if(hIMC = ImmGetContext(m_hWnd)) {

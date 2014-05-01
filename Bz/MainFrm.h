@@ -54,18 +54,32 @@ class CBZInspectView;
 	if(uMsg == WM_COMMAND) \
 		CHAIN_MSG_MAP_ACTIVEBZVIEW()
 
-class CMainFrame : public WTL::CFrameWindowImpl<CMainFrame>, public WTL::CUpdateUI<CMainFrame>
+#define CHAIN_ACTIVEBZVIEW() \
+	if(uMsg == WM_COMMAND||uMsg == WM_INITMENUPOPUP) \
+		CHAIN_MSG_MAP_ACTIVEBZVIEW()
+
+class CMainFrame : public WTL::CFrameWindowImpl<CMainFrame>, public WTL::CUpdateUI<CMainFrame>, public WTL::CIdleHandler
 {
 public:
   DECLARE_FRAME_WND_CLASS_EX(_T(BZ_CLASSNAME), IDR_MAINFRAME, CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS, COLOR_WINDOW)
 
+  virtual BOOL OnIdle()
+  {
+    _OnInitMenuPopup();
+    UIUpdateToolBar();
+    //UIUpdateMenuBar();
+    return FALSE;
+  }
+
   BEGIN_MSG_MAP(CMainFrame)
     MSG_WM_CREATE(OnCreate)
     MSG_WM_CLOSE(OnClose)
+    MSG_WM_DESTROY(OnDestroy)
     MSG_WM_SHOWWINDOW(OnShowWindow)
     MSG_WM_INITMENUPOPUP(OnInitMenuPopup)
     //MSG_WM_SETMESSAGESTRING(WM_SETMESSAGESTRING, OnSetMessageString)MFCの独自メッセージ
 
+    COMMAND_ID_HANDLER_EX(ID_APP_EXIT, OnFileExit)
     COMMAND_ID_HANDLER_EX(ID_JUMP_FIND, OnJumpFind)
     COMMAND_ID_HANDLER_EX(ID_VIEW_BITMAP, OnViewBitmap)
     COMMAND_ID_HANDLER_EX(ID_VIEW_STRUCT, OnViewStruct)
@@ -94,7 +108,7 @@ public:
 
     COMMAND_RANGE_HANDLER_EX(ID_FILE_MRU_FIRST, ID_FILE_MRU_LAST, OnFileRecent)
 
-    CHAIN_COMMANDS_ACTIVEBZVIEW()
+    CHAIN_ACTIVEBZVIEW()
     CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
     CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
   END_MSG_MAP()
@@ -102,22 +116,22 @@ public:
   BOOL ChainMsg2ActiveBZView(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult);
 
   BEGIN_UPDATE_UI_MAP(CMainFrame)
-    UPDATE_ELEMENT(ID_VIEW_BITMAP, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_VIEW_STRUCT, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_VIEW_BITMAP, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+    UPDATE_ELEMENT(ID_VIEW_STRUCT, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
     UPDATE_ELEMENT(ID_VIEW_FULLPATH, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_SUBCURSOR, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_SYNCSCROLL, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_INSPECT, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_ANALYZER, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_VIEW_SPLIT_H, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_VIEW_SPLIT_V, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_VIEW_SPLIT_H, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+    UPDATE_ELEMENT(ID_VIEW_SPLIT_V, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
     UPDATE_ELEMENT(ID_LANG_JPN, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_LANG_ENU, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_EDIT_READONLY, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_EDIT_READONLY, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
     UPDATE_ELEMENT(ID_EDIT_READONLYOPEN, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_EDIT_UNDO, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_EDIT_REDO, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_FILE_SAVE, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_FILE_SAVE, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
     UPDATE_ELEMENT(ID_FILE_SAVE_AS, UPDUI_MENUPOPUP)
   END_UPDATE_UI_MAP()
 
@@ -132,6 +146,7 @@ public:
   void OnUpdateViewSplitV()     { UISetCheck(ID_VIEW_SPLIT_V, m_nSplitView == ID_VIEW_SPLIT_V);/*pCmdUI->Enable(!m_bBmpView && !m_bStructView);*/ }
   void OnUpdateLanguage() { UISetRadioMenuItem(ID_LANG_JPN + options.bLanguage, ID_LANG_JPN, ID_LANG_ENU); }
   void OnUpdateEditReadOnlyOpen() { UISetCheck(ID_EDIT_READONLYOPEN, options.bReadOnlyOpen); }
+  void _OnInitMenuPopup();
   void OnInitMenuPopup(WTL::CMenuHandle menuPopup, UINT nIndex, BOOL bSysMenu);
 
   int OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -198,6 +213,9 @@ public:
     CBZCoreData *pCoreData = CBZCoreData::GetInstance();
     pCoreData->m_pMainFrame = this;
 
+    WTL::CMessageLoop* pLoop = _Module.GetMessageLoop();
+    pLoop->AddIdleHandler(this);
+
     Invalidate();
     /*
     if (!(options.barState & BARSTATE_NOFLAT ? m_wndToolBar.Create(this)
@@ -255,42 +273,25 @@ public:
 
     SetMsgHandled(FALSE);
   }
+  void OnDestroy()
+  {
+    WTL::CMessageLoop* pLoop = _Module.GetMessageLoop();
+    pLoop->RemoveIdleHandler(this);
+    SetMsgHandled(FALSE);
+  }
   void OnShowWindow(BOOL bShow, UINT nStatus);
 
-
+  void OnFileExit(UINT uNotifyCode, int nID, CWindow wndCtl) { PostMessage(WM_CLOSE); }
   void OnJumpFind(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
     //ShowControlBar(&m_wndToolBar, TRUE, FALSE);
     //m_wndToolBar.m_combo.SetFocus();
     m_combo_toolbar.SetFocus();
   }
-  void OnViewBitmap(UINT uNotifyCode, int nID, CWindow wndCtl)
-  {
-    GetSplitInfo();
-    m_bBmpView = !m_bBmpView;
-    m_bStructView = FALSE;
-    m_bInspectView = FALSE;
-    m_bAnalyzerView = FALSE;
-    CreateClient();
-  }
-  void OnViewStruct(UINT uNotifyCode, int nID, CWindow wndCtl)
-  {
-    GetSplitInfo();
-    m_bBmpView = FALSE;
-    m_bStructView = !m_bStructView;
-    m_bInspectView = FALSE;
-    m_bAnalyzerView = FALSE;
-    CreateClient();
-  }
-  void OnViewInspect(UINT uNotifyCode, int nID, CWindow wndCtl)
-  {
-    GetSplitInfo();
-    m_bBmpView = FALSE;
-    m_bStructView = FALSE;
-    m_bInspectView = !m_bInspectView;
-    m_bAnalyzerView = FALSE;
-    CreateClient();
-  }
+  void OnViewBitmap(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnViewStruct(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnViewInspect(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnViewAnalyzer(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnJumpTo(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
     //ShowControlBar(&m_wndToolBar, TRUE, FALSE);
@@ -322,15 +323,6 @@ public:
   }
   void OnViewSubCursor(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnViewSyncScroll(UINT uNotifyCode, int nID, CWindow wndCtl);
-  void OnViewAnalyzer(UINT uNotifyCode, int nID, CWindow wndCtl)
-  {
-    GetSplitInfo();
-    m_bBmpView = FALSE;
-    m_bStructView = FALSE;
-    m_bInspectView = FALSE;
-    m_bAnalyzerView = !m_bAnalyzerView;
-    CreateClient();
-  }
   void OnHelpIndex(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
     ShellExecute(NULL, _T("open"), _T("http://devil-tamachan.github.io/BZDoc/"), NULL, NULL, SW_SHOWNORMAL);
@@ -435,6 +427,14 @@ public:
     return pCoreData->GetSplitterWnd();
   }
 
+
+  void SetActiveView(CBZView *pBZView)
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    pCoreData->SetActiveByBZView(pBZView);
+  }
+
+
 public:
 	BOOL m_bDisableStatusInfo;
 protected:
@@ -482,6 +482,12 @@ public:
     m_recent.AddToList(path);
     m_recent.WriteToRegistry(_T("Software\\c.mos\\BZ\\Settings"));
   }
+  void AddSubView();
+  void AddBZView();
+  void ReSplit(BOOL bSubView);
+  BOOL CreateSubView();
+  BOOL PreparaSplitter();
+  BOOL ResetSplitter();
   BOOL CreateClient();
   void UpdateFrameTitle(BOOL bAddToTitle = TRUE);
   void GetSplitInfo()
@@ -542,11 +548,6 @@ public:
       m_pWndSplitter = NULL;
       pCoreData->SetSplitterWnd(NULL);
     }
-  }
-
-  void SetActiveView(CBZView *)
-  {
-
   }
 };
 

@@ -9,6 +9,7 @@
 
 CBZDoc2::CBZDoc2() : m_pSFC(NULL)
 {
+  ATLTRACE("+BZDoc2: %08X\n", this);
   m_dwBase = 0;
 
   //ReCreate restore
@@ -32,6 +33,7 @@ void CBZDoc2::DeleteContents()
 
 CBZDoc2::~CBZDoc2()
 {
+  ATLTRACE("-BZDoc2: %08X\n", this);
   ReleaseSFC();
 }
 
@@ -186,14 +188,14 @@ CClip_ERR2:
   return FALSE;
 }
 
-BOOL CBZDoc2::OnNewDocument()
-{
+//BOOL CBZDoc2::OnNewDocument()
+//{
 //  if (!CDocument::OnNewDocument())
-    return FALSE;
+//    return FALSE;
 //  return TRUE;
-}
+//}
 
-BOOL CBZDoc2::OnOpenDocument(LPCTSTR lpszPathName, HWND hWnd)
+BOOL CBZDoc2::OpenDocument(LPCTSTR lpszPathName, HWND hWnd)
 {
   CSuperFileCon *pSFC = new CSuperFileCon();
   if(!pSFC || !pSFC->Open(lpszPathName))
@@ -213,11 +215,11 @@ BOOL CBZDoc2::OnOpenDocument(LPCTSTR lpszPathName, HWND hWnd)
   return TRUE;
 }
 
-BOOL CBZDoc2::OnSaveDocument(LPCTSTR lpszPathName)
-{
-  return TRUE;
-  //return CDocument::OnSaveDocument(lpszPathName);
-}
+//BOOL CBZDoc2::OnSaveDocument(LPCTSTR lpszPathName)
+//{
+//  return TRUE;
+//  //return CDocument::OnSaveDocument(lpszPathName);
+//}
 
 BOOL CBZDoc2::CloseDocument(HWND hWnd)
 {
@@ -242,15 +244,19 @@ BOOL CBZDoc2::CloseDocument(HWND hWnd)
   return TRUE;
 }
 
-BOOL CBZDoc2::OnFileOpen(HWND hWnd)
+BOOL CBZDoc2::OnFileOpen(LPCTSTR lpszPathName, HWND hWnd)
 {
   //CWaitCursor wait;
   BOOL bRet = FALSE;
   if(!CloseDocument(hWnd))return FALSE;
 
-  WTL::CFileDialog dlg(TRUE, _T("*"), NULL, OFN_NOVALIDATE
+  if(lpszPathName==NULL)
+  {
+    WTL::CFileDialog dlg(TRUE, _T("*"), NULL, OFN_NOVALIDATE
       , _T("すべてのファイル (*)\0*\0\0"), hWnd);
-  if(dlg.DoModal() == IDOK)bRet = OnOpenDocument(dlg.m_szFileName, hWnd);
+    if(dlg.DoModal() == IDOK)bRet = OpenDocument(dlg.m_szFileName, hWnd);
+    else return FALSE;
+  } else  bRet = OpenDocument(lpszPathName, hWnd);
 
   if(!bRet)
   {
@@ -276,6 +282,7 @@ BOOL CBZDoc2::OnFileSave(HWND hWnd)
     WTL::CFileDialog dlg(FALSE, _T("*"), NULL, OFN_NOVALIDATE | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT/*OFN_PATHMUSTEXIST*/
       , _T("すべてのファイル (*)\0*\0\0"), hWnd);
     if(dlg.DoModal() == IDOK && m_pSFC)bRet = m_pSFC->SaveAs(dlg.m_szFileName);
+    else return FALSE;
   }
   if(!bRet)
   {

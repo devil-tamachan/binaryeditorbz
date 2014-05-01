@@ -83,7 +83,7 @@ private:
 public:
   void DuplicateDoc(CBZDoc2* pDstDoc)
   {
-    if(m_pSFC->AddRef())pDstDoc->m_pSFC = m_pSFC;
+    if(m_pSFC && m_pSFC->AddRef())pDstDoc->m_pSFC = m_pSFC;
     pDstDoc->m_bReadOnly = m_bReadOnly;
     pDstDoc->m_dwBase = m_dwBase;
     //pDstDoc->SetTitle(GetTitle());
@@ -126,7 +126,7 @@ public:
   //void PreCloseFrame(CFrameWnd* /*pFrameArg*/);
 
 protected:
-  virtual BOOL OnNewDocument();
+  //virtual BOOL OnNewDocument();
 
 public:
   void OnUpdateEditReadOnly(BOOL *bEnable, BOOL *bChecked);
@@ -135,13 +135,14 @@ public:
   BOOL OnUpdateFileSave();
   BOOL OnUpdateFileSaveAs();
 
-  BOOL OnOpenDocument(LPCTSTR lpszPathName, HWND hWnd = NULL);
-  BOOL OnSaveDocument(LPCTSTR lpszPathName);
+private:
+  BOOL OpenDocument(LPCTSTR lpszPathName, HWND hWnd = NULL);
+  //BOOL OnSaveDocument(LPCTSTR lpszPathName);
+  BOOL CloseDocument(HWND hWnd = NULL);
   void DeleteContents();
 
-  BOOL CloseDocument(HWND hWnd = NULL);
-
-  BOOL OnFileOpen(HWND hWnd = NULL);
+public:
+  BOOL OnFileOpen(LPCTSTR lpszPathName = NULL, HWND hWnd = NULL);
   BOOL OnFileSave(HWND hWnd = NULL);
   void OnFileSaveAs(HWND hWnd = NULL);
   void OnEditReadOnly();

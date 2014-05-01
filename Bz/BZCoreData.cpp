@@ -40,13 +40,7 @@ class CBZView;
 
 void CBZCoreData::DeleteView(DWORD dwIndex, BOOL bDelDoc)
 {
-  if(m_arrSubView.GetSize()>dwIndex)
-  {
-    ATL::CWindow *pSubView = m_arrSubView[dwIndex];
-    pSubView->DestroyWindow();
-    delete pSubView;
-    m_arrSubView.RemoveAt(dwIndex);
-  }
+  DeleteSubView(dwIndex);
   if(m_arrView.GetSize()>dwIndex)
   {
     CBZView *pBZView = m_arrView[dwIndex];
@@ -61,6 +55,17 @@ void CBZCoreData::DeleteView(DWORD dwIndex, BOOL bDelDoc)
   }
   if(m_dwActive==dwIndex)m_dwActive = 0;
   else if(m_dwActive>dwIndex)m_dwActive--;
+}
+
+void CBZCoreData::DeleteSubView(DWORD dwIndex)
+{
+  if(m_arrSubView.GetSize()>dwIndex)
+  {
+    ATL::CWindow *pSubView = m_arrSubView[dwIndex];
+    pSubView->DestroyWindow();
+    delete *pSubView;
+    m_arrSubView.RemoveAt(dwIndex);
+  }
 }
 
 void CBZCoreData::Invalidate(BOOL bErase)

@@ -576,7 +576,9 @@ void CBZView::Update()
 {
 	ATLTRACE("CBZView::OnUpdate()\n");
 	
+  ATLTRACE(" old: %08X\n", m_pDoc);
 	m_pDoc = GetBZDoc2();
+  ATLTRACE(" new: %08X\n", m_pDoc);
 	//ASSERT_VALID(m_pDoc);
 //#ifdef FILE_MAPPING
 //	if(m_pDoc)

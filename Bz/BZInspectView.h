@@ -40,7 +40,7 @@ public:
 	enum { IDD = IDD_BZINSPECTVIEW };
 
   BEGIN_MSG_MAP(CBZInspectView)
-    MSG_WM_CREATE(OnCreate)
+    //MSG_WM_CREATE(OnCreate)
     MSG_WM_INITDIALOG(OnInitDialog)
     COMMAND_ID_HANDLER_EX(IDC_INS_INTEL, OnBnClickedInsIntel)
     COMMAND_ID_HANDLER_EX(IDC_INS_SIGNED, OnBnClickedInsSigned)
@@ -98,18 +98,14 @@ public:
     return pCoreData->GetSplitterWnd();
   }
 
-
+/*`
   int OnCreate(LPCREATESTRUCT lpCreateStruct)
   {
     if(options.xSplitStruct == 0)
       options.xSplitStruct = lpCreateStruct->cx;
 
-    LONG lExStyle = GetWindowLong(GWL_EXSTYLE);
-    lExStyle |= WS_EX_STATICEDGE;
-    SetWindowLong(GWL_EXSTYLE, lExStyle);
-
     return 0;
-  }
+  }*/
 
   BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
   {
@@ -120,6 +116,12 @@ public:
     _UpdateChecks();
 
     m_pView = GetBZView();
+
+    LONG lExStyle = GetWindowLong(GWL_EXSTYLE);
+    lExStyle |= WS_EX_STATICEDGE;
+    SetWindowLong(GWL_EXSTYLE, lExStyle);
+
+    ShowWindow(SW_SHOW);
 
     return TRUE;
   }

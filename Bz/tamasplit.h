@@ -210,6 +210,7 @@ public:
 			{
 				unsigned int idx = CalcSplitIndex(x,y);
 				ATL::CWindow wnd = ATL::CWindow(m_hWndPane[idx]);
+        ATLASSERT(wnd.m_hWnd);
 				if(wnd.m_hWnd)
 				{
 					wnd.MoveWindow(m_borderRealX[x], m_borderRealY[y], GetPaneWidth(x), GetPaneHeight(y), TRUE);

@@ -145,7 +145,7 @@ public:
   enum { IDD = IDD_DIALOG1 };
 
   BEGIN_MSG_MAP(CBZFormView)
-    MSG_WM_CREATE(OnCreate)
+    //MSG_WM_CREATE(OnCreate)
     MSG_WM_INITDIALOG(OnInitDialog)
     MSG_WM_DESTROY(OnDestroy)
     COMMAND_HANDLER_EX(IDC_LIST_TAG, LBN_SELCHANGE, OnSelchangeListTag)
@@ -251,16 +251,18 @@ public:
     lExStyle |= WS_EX_STATICEDGE;
     SetWindowLong(GWL_EXSTYLE, lExStyle);
 
+    ShowWindow(SW_SHOW);
+
     return TRUE;
   }
 
-  int OnCreate(LPCREATESTRUCT lpCreateStruct)
+  /*int OnCreate(LPCREATESTRUCT lpCreateStruct)
   {
     if(options.xSplitStruct == 0)
       options.xSplitStruct = lpCreateStruct->cx;
 
     return 0;
-  }
+  }*/
 	void OnDestroy()
   {
     if(!m_bNoDefFile) {
