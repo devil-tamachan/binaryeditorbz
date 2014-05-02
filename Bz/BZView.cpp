@@ -571,6 +571,23 @@ Error:
     return;
   }
 
+  void CBZView::OnDropFiles(HDROP hDropInfo)
+  {
+    unsigned int numFile = ::DragQueryFile(hDropInfo, -1, NULL, 0);
+    for(unsigned int i=0; i<numFile; i++)
+    {
+      CString path;
+      ::DragQueryFile(hDropInfo, i, path.GetBuffer(1024+2), 1024);
+      path.ReleaseBuffer();
+      if(m_pDoc)m_pDoc->OnFileOpen(path, m_hWnd);
+      Update();
+      CMainFrame *pMainFrame = GetMainFrame();
+      if(pMainFrame)pMainFrame->UpdateFrameTitle();
+    }
+    ::DragFinish(hDropInfo);
+  }
+
+
 
 void CBZView::Update() 
 {
@@ -732,8 +749,77 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 
 //	if(p && !(p = m_pDoc->QueryMapView(p, ofs))) return;
 	InitCharMode(ofs);
-  m_pDoc->Cache(ofs, 1000);
-  if(pDoc1)pDoc1->Cache(ofs, 1000);
+
+  BOOL fSJISSkipNextTopChar = FALSE;
+
+  if(m_charset == CTYPE_SJIS)
+  {
+    UINT64 ofs0 = ofs;
+    int numSearch = 0;
+    if(ofs > ofs-16)
+    {
+      ofs -= 16;
+      numSearch = 16;
+    } else {
+      ofs = 0;
+      numSearch = ofs;
+    }
+
+    for_to_(i,numSearch)
+    {
+      if(ofs >= dwTotal || (m_charset == CTYPE_UNICODE && ofs+1 >= dwTotal)) {
+        //SetColor();
+        //PutChar(' ', 16-i);
+        ofs++;
+        break;
+      }
+      LPBYTE pB = NULL;
+      DWORD dwB = 3;
+      for(;dwB>0;dwB--)
+      {
+        pB = m_pDoc->CacheForce(ofs, dwB);//3,2,1バイト確保（可能なら多いほうが良い）
+        if(pB)break;
+      }
+      if(!pB)return;
+      WORD c = *pB;//注意: WORDだけどpがLPBYTEなので1バイトしか格納されていない
+      ofs++;
+
+      if(c < 0x20)
+      {
+        //c = CHAR_NG;
+      }
+      else if(!fSJISSkipNextTopChar && _ismbblead(c)/*IsMBS(p, ofs-1, FALSE)*/ && dwTotal > ofs && (dwB>=2 && _ismbbtrail(*(pB+1))))
+      {
+        BYTE c1 = *(pB+1);
+        if(_ismbclegal(MAKEWORD(c1, c))) {
+          //PutChar((char)c);
+          c = *(pB+1);
+          if(i < 15) {
+            ofs++;
+            i++;
+          } else fSJISSkipNextTopChar = TRUE;
+        } else {
+          //c = CHAR_NG;
+        }
+      } else {
+        //LPBYTE pPrev = NULL;
+        //if(!fSJISSkipNextTopChar && i==0 && ofs>=2)pPrev = m_pDoc->CacheForce(ofs-2, 1);
+
+        if(fSJISSkipNextTopChar || (i == 0 && _ismbbtrail(c) /*IsMBS(p, ofs-1, TRUE)*/ ))//&& pPrev && _ismbblead(pPrev[0])))
+        {
+          fSJISSkipNextTopChar = FALSE;
+          //c=' ';
+        } else if((c > 0x7E && c < 0xA1) || c > 0xDF)
+        {
+          //c = CHAR_NG;
+        }
+      }
+    }
+    ofs = ofs0;
+  } else {
+    m_pDoc->Cache(ofs, 1000);
+    if(pDoc1)pDoc1->Cache(ofs, 1000);
+  }
 
 	for(/*int */y = rClip.y1; y <= rClip.y2; y++) {
 		Locate(0, y);
@@ -856,24 +942,30 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 					break;
 				case CTYPE_SJIS:
 				{
-					if(c < 0x20) c = CHAR_NG;
-					else if(_ismbblead(c)/*IsMBS(p, ofs-1, FALSE)*/ && dwTotal > ofs && (dwB>=2 && _ismbbtrail(*(pB+1))))
-					{
-						BYTE c1 = *(pB+1);
-						if(_ismbclegal(MAKEWORD(c1, c))) {
-							PutChar((char)c);
-							c = *(pB+1);
-							if(i < 15) {
-								ofs++;
-								i++;
-							}
-						} else
-							c = CHAR_NG;
-					}
-					else if(i == 0 && _ismbbtrail(c)/*IsMBS(p, ofs-1, TRUE)*/)
-						 c=' ';
-					else if((c > 0x7E && c < 0xA1) || c > 0xDF)
-						c = CHAR_NG;
+          if(c < 0x20) c = CHAR_NG;
+          else if(!fSJISSkipNextTopChar && _ismbblead(c)/*IsMBS(p, ofs-1, FALSE)*/ && dwTotal > ofs && (dwB>=2 && _ismbbtrail(*(pB+1))))
+          {
+            BYTE c1 = *(pB+1);
+            if(_ismbclegal(MAKEWORD(c1, c))) {
+              PutChar((char)c);
+              c = *(pB+1);
+              if(i < 15) {
+                ofs++;
+                i++;
+              } else fSJISSkipNextTopChar = TRUE;
+            } else
+              c = CHAR_NG;
+          } else {
+            LPBYTE pPrev = NULL;
+            if(!fSJISSkipNextTopChar && i==0 && ofs>=2)pPrev = m_pDoc->CacheForce(ofs-2, 1);
+
+            if(fSJISSkipNextTopChar || (i == 0 && _ismbbtrail(c) /*IsMBS(p, ofs-1, TRUE)*/ && pPrev && _ismbblead(pPrev[0])))
+            {
+              fSJISSkipNextTopChar = FALSE;
+              c=' ';
+            } else if((c > 0x7E && c < 0xA1) || c > 0xDF)
+              c = CHAR_NG;
+          }
 					break;
 				}
 				case CTYPE_JIS:

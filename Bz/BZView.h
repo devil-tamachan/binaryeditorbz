@@ -79,6 +79,7 @@ public:
     MSG_WM_ERASEBKGND(OnEraseBkgnd)
     //MSG_WM_ACTIVATE(OnActivate)‚±‚È‚¢
     MSG_WM_KILLFOCUS(OnKillFocus)
+    MSG_WM_DROPFILES(OnDropFiles)
     MSG_WM_TIMER(OnTimer)
     MSG_WM_KEYDOWN(OnKeyDown)
     MSG_WM_CHAR(OnChar)
@@ -337,6 +338,8 @@ public:
 
     WTL::CMessageLoop* pLoop = _Module.GetMessageLoop();
    // pLoop->AddIdleHandler(this);
+    
+    DragAcceptFiles();
 
     SetMsgHandled(FALSE);
     return 0;
@@ -371,6 +374,8 @@ public:
     ATLTRACE("------------------kill focus\n");
 		Invalidate(FALSE);
   }
+
+  void OnDropFiles(HDROP hDropInfo);
   void OnTimer(UINT_PTR nIDEvent)
   {
     if(m_timer == TIMER_UP) OnKeyDown(VK_UP, 0, 0);

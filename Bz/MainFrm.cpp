@@ -324,6 +324,7 @@ void CMainFrame::OnClose()
   {
     CBZView *bzView = pCoreData->GetBZView(i);
     if(!(bzView->AskSave()))return; //Cancel Close
+    bzView->Invalidate();
   }
 
   GetFrameState();
