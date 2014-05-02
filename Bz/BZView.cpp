@@ -817,7 +817,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
       }
     }
     ofs = ofs0;
-  } else {
+  } else { //charset != SJIS
     m_pDoc->Cache(ofs, 1000);
     if(pDoc1)pDoc1->Cache(ofs, 1000);
   }
@@ -1003,7 +1003,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 						else {
 							WORD w = 0;
 							if(!(c & 0x20)) {	// U+0080..U+07FF 00000xxx:xxyyyyyy 110xxxxx 10yyyyyy
-								if(dwB>=2) c = CHAR_NG;
+								if(dwB<2) c = CHAR_NG;
 								else {
 									if(((*(pB+1))&0xC0/*11000000*/) != 0x80/*10000000*/)
 									{
@@ -1014,7 +1014,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 									}
 								}
 							} else  {			// U+0800..U+FFFF xxxxyyyy:yyzzzzzz 1110xxxx 10yyyyyy 10zzzzzz 
-								if(dwB>=3) c = CHAR_NG;
+								if(dwB<3) c = CHAR_NG;
 								else {
 									if(((*(pB+1))&0xC0) != 0x80 || ((*(pB+2))&0xC0) != 0x80)
 									{
