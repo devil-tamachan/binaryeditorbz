@@ -922,7 +922,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
       if(m_charset == CTYPE_UNICODE) {
         LPWORD pW = (LPWORD)m_pDoc->CacheForce(ofs, 2);
         if(!pW)return;
-				WORD w = SwapWord(*pW);	// ### 1.54a
+				WORD w = /*SwapWord(*/*pW/*)*/;	// ### 1.54a
 				PutUnicodeChar(w);
 				ofs += 2;
 				i++;
