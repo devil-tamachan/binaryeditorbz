@@ -748,7 +748,8 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 	}
 
 //	if(p && !(p = m_pDoc->QueryMapView(p, ofs))) return;
-	InitCharMode(ofs);
+	if(ofs < dwTotal)
+    InitCharMode(ofs);
 
   BOOL fSJISSkipNextTopChar = FALSE;
 
@@ -1715,33 +1716,31 @@ void CBZView::InitCharMode(UINT64 ofs)
 		GetCharCode(0x0F);
 		while(n) {
 			n--;
-//			BYTE c = *(--p);
-      //BYTE c;
-      //if(!m_pDoc->Read(&c, n, 1))return;
       LPBYTE pC = m_pDoc->CacheForce(n, 1);
+      //ATLASSERT(pC);
       if(!pC)return;
 			if(*pC < 0x21 || *pC > 0x7E) break;
 		}
 		while(n++ < ofs) {
-      //WORD w = 0;
-      //if(!m_pDoc->Read(&w, n, 1))return;
       LPBYTE pC = m_pDoc->CacheForce(n, 1);
+      ATLASSERT(pC);
+      if(!pC)return;
 			GetCharCode(*pC);
 		}
 	} else if(m_charset == CTYPE_EUC) {
 		GetCharCode(0);
 		while(n) {
 			n--;
-			//BYTE c = *(--p);
-      //BYTE c;
-      //if(!m_pDoc->Read(&c, n, 1))return;
       LPBYTE pC = m_pDoc->CacheForce(n, 1);
+      //ATLASSERT(pC);
+      if(!pC)return;
 			if(*pC < 0xA1 || *pC > 0xFE) break;
 		}
 		while(n++ < ofs) {
       WORD w = 0;
-      //if(!m_pDoc->Read(&w, n, 1))return;
       LPBYTE pC = m_pDoc->CacheForce(n, 1);
+      ATLASSERT(pC);
+      if(!pC)return;
 			GetCharCode(*pC);
 		}
 	}
