@@ -7,7 +7,7 @@
 
 
 
-CBZDoc2::CBZDoc2() : m_pSFC(NULL)
+CBZDoc2::CBZDoc2()
 {
   ATLTRACE("+BZDoc2: %08X\n", this);
   m_dwBase = 0;
@@ -16,7 +16,8 @@ CBZDoc2::CBZDoc2() : m_pSFC(NULL)
   m_restoreCaret = 0;
   //m_restoreScroll = {0};
   m_bReadOnly = FALSE;
-  //m_pSFC = new CSuperFileCon();
+  m_pSFC = NULL;
+  DeleteContents();
 }
 
 void CBZDoc2::DeleteContents()
