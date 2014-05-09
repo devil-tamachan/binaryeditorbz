@@ -915,6 +915,7 @@ private:
     _RemoveNeedlessHiddenNode();
     m_file.Flush();
     _FileMap_DestroyAll();
+    m_filePath = lpszPathName;
     if(m_dwTotalSavedFile>0 && !_FileMap_InsertFile(0, m_dwTotalSavedFile, 0))
     {
       ATLASSERT(FALSE);
