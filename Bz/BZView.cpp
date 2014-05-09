@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BZFormVw.h"
 #include "BZInspectView.h"
 #include "BZAnalyzerView.h"
+#include "BZBmpVw2.h"
 #include "MainFrm.h"
 #include "ColorDlg.h"
 #include "SettingDlg.h"
@@ -42,6 +43,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include  <winnls.h>
 #include  <mbstring.h>
 
+class cBZBmpView2;
 
 
 //static const UINT nMsgFindReplace = ::RegisterWindowMessage(FINDMSGSTRING);
@@ -632,6 +634,11 @@ void CBZView::Update()
 			CBZAnalyzerView* pView = (CBZAnalyzerView*)GetSubView();
 			if(pView!=NULL)
 				pView->Clear();
+		}
+    if(pMainFrame->m_bBmpView) {
+			CBZBmpView2* pView = (CBZBmpView2*)GetSubView();
+			if(pView!=NULL)
+				pView->OnInitialUpdate();
 		}
 	}
 	Invalidate();

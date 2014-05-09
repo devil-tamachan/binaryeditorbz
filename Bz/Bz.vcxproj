@@ -290,6 +290,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
+    <None Include="resource" />
     <None Include="res\bmppoint.cur" />
     <None Include="res\BZ.ico" />
     <None Include="res\BZ.rc2" />

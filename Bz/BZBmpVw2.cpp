@@ -36,15 +36,54 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include "MainFrm.h"
 
 
+void MakeBzPallet256(DWORD *pRGB)
+{
+  *pRGB++ = 0xFFFFFF;
+  for_to(i, 31) *pRGB++ = 0x00FFFF;
+  for_to_(i, 128-32) *pRGB++ = 0xFF0000;
+  for_to_(i, 128) *pRGB++ = 0x000000;
+}
 
-/////////////////////////////////////////////////////////////////////////////
-// CBZBmpView2 drawing
+void MakeRedPallet256(DWORD *pRGB)
+{
+  for(unsigned int i=0; i<=0xff; i++)
+  {
+    *pRGB++ = 0 | (i&0xff)<<16;
+  }
+}
 
 
+void MakeSafetyPallet256(DWORD *pRGB)
+{
+  // safety pallet http://msdn.microsoft.com/en-us/library/bb250466%28VS.85%29.aspx
+  DWORD* pRGBorig = pRGB;
 
+  //	*pRGB++ = 0xFFFFFF;
+  for(unsigned int r=0; r<=0xff; r+=0x33)
+    for(unsigned int g=0; g<=0xff; g+=0x33)
+      for(unsigned int b=0; b<=0xff; b+=0x33)
+        *pRGB++ = b|(g<<8)|(r<<16);
+  for(unsigned int gr=0; gr<=0xffffff; gr+=0x111111)
+    *pRGB++ = gr;
+  *pRGB++ = 0xC0C0C0;
+  *pRGB++ = 0x808080;
+  *pRGB++ = 0x800000;
+  *pRGB++ = 0x800080;
+  *pRGB++ = 0x008000;
+  *pRGB++ = 0x008080;
+  pRGBorig[255] = 0xffffff;
+  //	TRACE("pallet[0]=0x%x, [255]=0x%x\n", ((DWORD*)(m_lpbi+1))[0], ((DWORD*)(m_lpbi+1))[255]);
+}
 
-
-
-
-
-// ###1.54c
+void Make8bitBITMAPINFOHEADER(LPBITMAPINFOHEADER lpbi, LONG w, LONG h)
+{
+  //	lpbi->biSize = sizeof(BITMAPINFOHEADER);
+  lpbi->biWidth = w;
+  lpbi->biHeight = h;
+  lpbi->biPlanes = 1;
+  lpbi->biBitCount = options.nBmpColorWidth;//8;
+  lpbi->biCompression = BI_RGB;
+  lpbi->biSizeImage = 0;
+  lpbi->biClrUsed = 0;
+  lpbi->biClrImportant = 0;
+}

@@ -133,12 +133,14 @@ void CMainFrame::OnFileSave(UINT uNotifyCode, int nID, CWindow wndCtl)
   CBZCoreData *pCoreData = CBZCoreData::GetInstance();
   CBZDoc2 *pDoc = pCoreData->GetActiveBZDoc2();
   if(pDoc)pDoc->OnFileSave();
+  UpdateFrameTitle();
 }
 void CMainFrame::OnFileSaveAs(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
   CBZCoreData *pCoreData = CBZCoreData::GetInstance();
   CBZDoc2 *pDoc = pCoreData->GetActiveBZDoc2();
   if(pDoc)pDoc->OnFileSaveAs();
+  UpdateFrameTitle();
 }
 void CMainFrame::OnEditReadOnly(UINT uNotifyCode, int nID, CWindow wndCtl)
 {

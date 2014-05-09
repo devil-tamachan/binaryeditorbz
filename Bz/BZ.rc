@@ -13,13 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 日本語 resources
+// 日本語 (日本) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
-#ifdef _WIN32
 LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 #pragma code_page(932)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -35,7 +33,7 @@ IDR_MAINFRAME           ICON                    "res\\Bz.ico"
 // Dialog
 //
 
-IDD_DIALOG1 DIALOG  0, 0, 100, 280
+IDD_DIALOG1 DIALOG 0, 0, 100, 280
 STYLE DS_SETFONT | WS_CHILD
 FONT 9, "ＭＳ Ｐゴシック"
 BEGIN
@@ -46,7 +44,7 @@ BEGIN
     CONTROL         "All",IDB_TAGALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,2,20,10
 END
 
-IDD_SETUP_COLOR DIALOG  0, 0, 174, 83
+IDD_SETUP_COLOR DIALOG 0, 0, 174, 83
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "カラー設定"
 FONT 9, "ＭＳ Ｐゴシック"
@@ -75,7 +73,7 @@ BEGIN
     LTEXT           "2012-2014 Mod by devil.tamachan@gmail.com",IDC_STATIC,66,36,134,8
 END
 
-IDD_SETTING DIALOG  0, 0, 187, 99
+IDD_SETTING DIALOG 0, 0, 187, 99
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "高度な設定"
 FONT 9, "ＭＳ Ｐゴシック"
@@ -96,7 +94,7 @@ BEGIN
     LTEXT           "行毎に区切る。(0で連続)",IDC_STATIC,76,64,76,8,SS_NOPREFIX
 END
 
-IDD_INPUT DIALOG  0, 0, 150, 51
+IDD_INPUT DIALOG 0, 0, 150, 51
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "先頭アドレス設定"
 FONT 9, "ＭＳ Ｐゴシック"
@@ -160,7 +158,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
@@ -234,7 +232,7 @@ END
 // Menu
 //
 
-IDR_MAINFRAME MENU 
+IDR_MAINFRAME MENU
 BEGIN
     POPUP "ファイル(&F)"
     BEGIN
@@ -242,7 +240,7 @@ BEGIN
         MENUITEM "開く(&O)...\tCtrl+O",           ID_FILE_OPEN
         POPUP "最近使ったファイル"
         BEGIN
-            MENUITEM "---",                        ID_FILE_MRU_FIRST, GRAYED
+            MENUITEM "---",                         ID_FILE_MRU_FIRST, GRAYED
         END
         MENUITEM "上書き保存(&S)\tCtrl+S",           ID_FILE_SAVE
         MENUITEM "名前を付けて保存(&A)...",             ID_FILE_SAVE_AS
@@ -333,7 +331,7 @@ BEGIN
         POPUP "Language(&L)..."
         BEGIN
             MENUITEM "日本語(&J)",                     ID_LANG_JPN
-            MENUITEM "English(&E)",                      ID_LANG_ENU
+            MENUITEM "English(&E)",                 ID_LANG_ENU
         END
         MENUITEM SEPARATOR
         MENUITEM "BZ.DEFの編集(&E)",               ID_TOOLS_EDITDEF
@@ -346,7 +344,7 @@ BEGIN
     END
 END
 
-IDR_BMPVIEW MENU 
+IDR_BMPVIEW MENU
 BEGIN
     POPUP "BmpView"
     BEGIN
@@ -360,6 +358,9 @@ BEGIN
         MENUITEM "32bit color",                 ID_BMPVIEW_32BITCOLOR
         MENUITEM SEPARATOR
         MENUITEM "Address Tooltip",             ID_BMPVIEW_ADDRESSTOOLTIP
+        MENUITEM SEPARATOR
+        MENUITEM "BZ Palette",                  ID_BMPVIEW_PALETTE_BZ
+        MENUITEM "Safety Palette",              ID_BMPVIEW_PALETTE_SAFETY
     END
 END
 
@@ -369,7 +370,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS 
+IDR_MAINFRAME ACCELERATORS
 BEGIN
     "A",            ID_EDIT_SELECT_ALL,     VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -413,7 +414,7 @@ IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR  19, 17
+IDR_MAINFRAME TOOLBAR 19, 17
 BEGIN
     BUTTON      ID_FILE_OPEN
     BUTTON      ID_FILE_SAVE
@@ -503,7 +504,6 @@ END
 
 3 TEXTINCLUDE 
 BEGIN
-//    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
     "#define _AFX_NO_TRACKER_RESOURCES\r\n"
     "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
@@ -532,26 +532,26 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "BZ"
     IDP_OLE_INIT_FAILED     "OLE の初期化に失敗しました。OLE ライブラリのバージョンが正しいことを確認してください。"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_APP_TITLE       "BZ"
     AFX_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "印刷プレビュー　モードを閉じます。"
     IDS_AUTOCOLOR           "自動"
     IDS_OTHERCOLOR          "その他..."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_COLOR_ADDRESS       "アドレスヘッダー"
     IDS_COLOR_ADDRESS2      "アドレスヘッダー2"
@@ -563,7 +563,7 @@ BEGIN
     IDS_COLOR_MEMBER        "構造体メンバ"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_INDICATOR_INFO       "XXXX:XXXX: 0xXXXXXXXX (0,000,000,000)bytes"
     ID_INDICATOR_SIZE       "0,000,000,000bytes"
@@ -571,25 +571,25 @@ BEGIN
     ID_INDICATOR_INS        "上書"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW             "新しいドキュメントを作成します。\n新規"
     ID_FILE_OPEN            "既存のドキュメントを開きます。\n開く"
     ID_FILE_SAVE            "現在のドキュメントを上書きして保存します。\n上書き保存"
     ID_FILE_SAVE_AS         "現在のドキュメントを新しい名前で保存します。\n名前を付けて保存"
-    ID_FILE_PRINT_SETUP      "印刷ｵﾌﾟｼｮﾝを変更します。\nﾍﾟｰｼﾞの設定"
+    ID_FILE_PRINT_SETUP     "印刷ｵﾌﾟｼｮﾝを変更します。\nﾍﾟｰｼﾞの設定"
     ID_FILE_PRINT           "現在のドキュメントを印刷します。\n印刷"
     ID_FILE_PRINT_PREVIEW   "印刷プレビューを表示します。\n印刷プレビュー"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "Bzのバージョン、および著作権を表示します。\nバージョン情報"
     ID_APP_EXIT             "ドキュメントの保存を確認し、Bzを終了します。\n終了"
     ID_HELP_INDEX           "ヘルプを開きます。"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_MRU_FILE1       "このドキュメントを開きます。"
     ID_FILE_MRU_FILE2       "このドキュメントを開きます。"
@@ -603,7 +603,7 @@ BEGIN
     ID_FILE_MRU_FILE10      "このドキュメントを開きます。"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_COPY            "選択範囲をクリップボードにコピーします。\nコピー"
     ID_EDIT_CUT             "選択範囲を切り取ってクリップボードに移動します。\n切り取り"
@@ -613,13 +613,13 @@ BEGIN
     ID_EDIT_REDO            "取り消した操作をやり直します。\nやり直し"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_TOOLBAR         "ツール バーの表示/非表示を切り替えます。\nツール バー"
     ID_VIEW_STATUS_BAR      "ステータス バーの表示/非表示を切り替えます。\nステータス バー"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_CHAR_ASCII           "ASCIIコードで表示します。"
     ID_CHAR_SJIS            "シフトJISコードで表示します。"
@@ -636,7 +636,7 @@ BEGIN
     ID_BYTEORDER_INTEL      "バイトの並び順をIntel系(little endian)で処理します。"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_BYTEORDER_68K        "バイトの並び順をMotorola系(big endian)で処理します。"
     ID_VIEW_BITMAP          "ファイルをビットマップで表示します。\nビットマップ"
@@ -645,7 +645,7 @@ BEGIN
     ID_VIEW_SPLIT_V         "画面を左右に分割して、ドキュメントをコピーします。\n左右分割"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_FONT            "フォントを設定します。"
     ID_VIEW_COLOR           "指定部分のカラーを設定します。"
@@ -659,7 +659,7 @@ BEGIN
     ID_JUMP_RETURN          "ジャンプする前のアドレスへ戻ります。\nリターン"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_JUMP_MARK            "カーソル位置にマークを設定/解除します。"
     ID_JUMP_MARKNEXT        "次のマークへジャンプします。"
@@ -668,7 +668,7 @@ BEGIN
     ID_LANG_JPN             "メニュー等を日本語で表示します。"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_LANG_ENU             "メニュー等を英語で表示します。"
     ID_TOOLS_EDITDEF        "BZ.DEFファイルをテキストエディタで開きます。"
@@ -678,7 +678,7 @@ BEGIN
     ID_JUMP_BASE            "ファイルの先頭アドレスを0以外に設定します。"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_SAVEDUMP_CAPTION    "ダンプリストを保存"
     IDS_EBCDIC_FILE         "EBCDIC.DEF"
@@ -686,26 +686,26 @@ BEGIN
     IDS_EDIT_RO             "書禁"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_COLOR_OVERBROTHER   "比較で相手より大きい"
     IDS_COLOR_HORIZON       "水平線"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_EDIT_OVR            "上書"
     IDS_EDIT_INS            "挿入"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_CHANGE_LANGUAGE     "言語の変更は、次回起動時から有効です."
     IDS_COMPARE_OK          "違いは見つかりません."
     IDS_ALLFILTER           "すべてのﾌｧｲﾙ (*.*)"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_ERR_FILENOTFOUND    "'%s'を開けません."
     IDS_ERR_SYNTAX          "文法エラー'%s'"
@@ -713,7 +713,7 @@ BEGIN
     IDS_ERR_READFILE        "ファイルの読み込みでエラーが発生しました."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_ERR_RANGE           "アドレスがファイルサイズを超えています."
     IDS_ERR_READONLY        "ファイルは編集禁止です."
@@ -723,7 +723,7 @@ BEGIN
     IDS_ERR_COPY            "コピーするデータのサイズが大きすぎます。"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCSIZE          "このウィンドウのサイズを変更します。"
     AFX_IDS_SCMOVE          "このウィンドウを画面の別の位置に移動します。"
@@ -734,13 +734,13 @@ BEGIN
     AFX_IDS_SCCLOSE         "ドキュメントの保存を確認し、作業中のウィンドウを閉じます。"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCRESTORE       "ウィンドウを通常のサイズに戻します。"
     AFX_IDS_SCTASKLIST      "アプリケーションの切り替え"
 END
 
-#endif    // 日本語 resources
+#endif    // 日本語 (日本) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -750,7 +750,6 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-//#define _AFX_NO_SPLITTER_RESOURCES
 #define _AFX_NO_OLE_RESOURCES
 #define _AFX_NO_TRACKER_RESOURCES
 #define _AFX_NO_PROPERTY_RESOURCES

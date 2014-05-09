@@ -121,6 +121,8 @@
 #define ID_BMPVIEW_24BITCOLOR           32851
 #define ID_BMPVIEW_32BITCOLOR           32852
 #define ID_BMPVIEW_ADDRESSTOOLTIP       32853
+#define ID_BMPVIEW_PALETTE_BZ           32854
+#define ID_BMPVIEW_PALETTE_SAFETY       32855
 #define ID_VIEW_ANALYZER                32858
 #define ID_INDICATOR_INFO               0xE710
 #define ID_INDICATOR_SIZE               0xE711

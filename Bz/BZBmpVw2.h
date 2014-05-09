@@ -35,58 +35,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // #define BMPWIDTH	128		### 1.54c
 #define BMPSPACE	8	//margine
 
-/*
-void MakeBzPallet256(DWORD *pRGB)
-{
-*pRGB++ = 0xFFFFFF;
-for_to(i, 31) *pRGB++ = 0x00FFFF;
-for_to_(i, 128-32) *pRGB++ = 0xFF0000;
-for_to_(i, 128) *pRGB++ = 0x000000;
-}*/
-
-void MakeRedPallet256(DWORD *pRGB)
-{
-  for(unsigned int i=0; i<=0xff; i++)
-  {
-    *pRGB++ = 0 | (i&0xff)<<16;
-  }
-}
-
-
-void MakeSafetyPallet256(DWORD *pRGB)
-{
-  // safety pallet http://msdn.microsoft.com/en-us/library/bb250466%28VS.85%29.aspx
-  DWORD* pRGBorig = pRGB;
-
-  //	*pRGB++ = 0xFFFFFF;
-  for(unsigned int r=0; r<=0xff; r+=0x33)
-    for(unsigned int g=0; g<=0xff; g+=0x33)
-      for(unsigned int b=0; b<=0xff; b+=0x33)
-        *pRGB++ = b|(g<<8)|(r<<16);
-  for(unsigned int gr=0; gr<=0xffffff; gr+=0x111111)
-    *pRGB++ = gr;
-  *pRGB++ = 0xC0C0C0;
-  *pRGB++ = 0x808080;
-  *pRGB++ = 0x800000;
-  *pRGB++ = 0x800080;
-  *pRGB++ = 0x008000;
-  *pRGB++ = 0x008080;
-  pRGBorig[255] = 0xffffff;
-  //	TRACE("pallet[0]=0x%x, [255]=0x%x\n", ((DWORD*)(m_lpbi+1))[0], ((DWORD*)(m_lpbi+1))[255]);
-}
-
-void Make8bitBITMAPINFOHEADER(LPBITMAPINFOHEADER lpbi, LONG w, LONG h)
-{
-  //	lpbi->biSize = sizeof(BITMAPINFOHEADER);
-  lpbi->biWidth = w;
-  lpbi->biHeight = h;
-  lpbi->biPlanes = 1;
-  lpbi->biBitCount = options.nBmpColorWidth;//8;
-  lpbi->biCompression = BI_RGB;
-  lpbi->biSizeImage = 0;
-  lpbi->biClrUsed = 0;
-  lpbi->biClrImportant = 0;
-}
+void MakeBzPallet256(DWORD *pRGB);
+void MakeRedPallet256(DWORD *pRGB);
+void MakeSafetyPallet256(DWORD *pRGB);
+void Make8bitBITMAPINFOHEADER(LPBITMAPINFOHEADER lpbi, LONG w, LONG h);
 
 #include "tamascrlu64v.h"
 
@@ -137,6 +89,7 @@ public:
 
   void OnSize(UINT nType, WTL::CSize size)
   {
+    SetMsgHandled(false);
     if(bFirst)
     {
       OnInitialUpdate();
@@ -222,6 +175,11 @@ public:
     if(point.y<=0)point.y = 0;
     else point.y /= options.nBmpZoom;
     UINT64 dwBase = GetScrollPosU64V();
+    /*{
+      WTL::CRect rd;
+      GetClientRect(rd);
+    ATLASSERT(dwBase==rd.top);
+    }*/
     if(dwBase > BMPSPACE)dwBase = (dwBase - BMPSPACE)/options.nBmpZoom;
     else dwBase = 0;
     if(point.x >= 0 && point.x < options.nBmpWidth && point.y >= 0) {
@@ -237,7 +195,11 @@ public:
             //pView->Activate();
           } else if(options.bAddressTooltip) {
             TCHAR tmp[22];
-            wsprintf(tmp, _T("0x%016I64X"), currentAddress);
+#ifdef _DEBUG
+            wsprintf(tmp, _T("0x%016I64X, %d"), currentAddress, point.y);
+#else
+            wsprintf(tmp, _T("0x%016I64X), currentAddress);
+#endif
             WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, tmp);
             m_tooltip.UpdateTipText(toolinfo);
             ATLTRACE(_T("UpdateTooltip: %016I64X, %016I64X\n"), currentAddress, m_tooltipLastAddress);
@@ -348,7 +310,9 @@ public:
       options.nBmpZoom = (options.nBmpZoom == 1) ? 2 : 1;
       break;
     }
-    GetMainFrame()->CreateClient();
+    //GetMainFrame()->CreateClient();
+    OnInitialUpdate();
+    Invalidate();
   }
 
 
@@ -366,7 +330,9 @@ public:
       options.nBmpColorWidth = 32;
       break;
     }
-    GetMainFrame()->CreateClient();
+    //GetMainFrame()->CreateClient();
+    OnInitialUpdate();
+    Invalidate();
   }
 
   void OnBmpViewAddressTooltip(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -381,7 +347,7 @@ public:
     m_isLButtonDown = false;
     bFirst = TRUE;
     m_cBmpX = 0;
-    m_cBmpY = 0;
+    //m_cBmpY = 0;
   }
 
   ~CBZBmpView2()
@@ -392,7 +358,8 @@ public:
 
 private:
   long	m_cBmpX;
-  long	m_cBmpY;
+  //long	m_cBmpY;
+  UINT64	m_cBmpY64;
   LPBITMAPINFOHEADER m_lpbi;
   WTL::CToolTipCtrl m_tooltip;
   UINT64 m_tooltipLastAddress;
@@ -433,10 +400,11 @@ public:
 
     m_lpbi->biSize = sizeof(BITMAPINFOHEADER);
     m_cBmpX = options.nBmpWidth;
-    UINT64 cBmpY64 = dwTotal / (UINT64)(options.nBmpWidth * (options.nBmpColorWidth/8));
-    if(cBmpY64 > INT_MAX)m_cBmpY = -INT_MAX;
-    else m_cBmpY = -((long)cBmpY64);
-    Make8bitBITMAPINFOHEADER(m_lpbi, m_cBmpX, m_cBmpY/*top-down DIB*/);
+    m_cBmpY64 = dwTotal / (UINT64)(options.nBmpWidth * (options.nBmpColorWidth/8));
+    ATLTRACE("cBmpY64(%I64u) = dwTotal(%I64u) / (UINT64)(options.nBmpWidth(%d) * (options.nBmpColorWidth(%d)/8))\n", m_cBmpY64, dwTotal, options.nBmpWidth, options.nBmpColorWidth);
+    //if(cBmpY64 > INT_MAX)m_cBmpY = -INT_MAX;
+    //else m_cBmpY = -((long)cBmpY64);
+    Make8bitBITMAPINFOHEADER(m_lpbi, m_cBmpX, 1/*top-down DIB*/);
 
 
     DWORD* pRGB = (DWORD*)(m_lpbi+1);
@@ -445,8 +413,8 @@ public:
 
     // TODO: calculate the total size of this view
     int cViewX = m_cBmpX * options.nBmpZoom + BMPSPACE*2;
-    UINT64 cViewY = cBmpY64 * options.nBmpZoom + BMPSPACE*2;
-		SetScrollSizeU64V(cViewX, cViewY);
+    UINT64 cViewY = m_cBmpY64 * options.nBmpZoom + BMPSPACE*2;
+    SetScrollSizeU64V(cViewX, cViewY);
     SetScrollPage(1,150);
     SetScrollLine(1,20);
 
@@ -467,57 +435,111 @@ public:
     m_tooltip.AddTool(toolinfo);
   }
 
+  void GetClipBox64(LPRECT lprect, UINT64 *top, UINT64 *bottom)
+  {
+    int v = GetScrollPos(SB_VERT);
+    UINT64 v64 = GetScrollPosU64V();
+    (*top)    = (lprect->top)    - v + v64;
+    (*bottom) = (lprect->bottom) - v + v64;
+  }
+
+  void ConvertYRealSpace(UINT64 *y)
+  {
+    int v = GetScrollPos(SB_VERT);
+    UINT64 v64 = GetScrollPosU64V();
+    (*y)    += v;
+    (*y)    -= v64;
+  }
+  
+  UINT64 CalcAddress(long y)
+  {
+    return 0;
+  }
+
   void DoPaint(WTL::CDCHandle dc)
   {
-    dc.SetBkColor(RGB(255,255,255));
-
     //CMemDC pMemDC(dc);
     //CRect rClip;
     //pMemDC->GetClipBox(rClip);
 
-    WTL::CRect rClip;
-    dc.GetClipBox(rClip);
-    WTL::CMemoryDC pMemDC(dc.m_hDC, rClip);
+    WTL::CRect rClipOrig;
+    dc.GetClipBox(rClipOrig);
+    
+    UINT64 top = 0, bottom = 0;
+    WTL::CRect rClipX = rClipOrig;
+    GetClipBox64(rClipX, &top, &bottom);
+/*    {
+      WTL::CRect rd;
+      GetClientRect(rd);
+      UINT64 dwBase = GetScrollPosU64V();
+      //ATLASSERT(dwBase==rd.top);
+      ATLTRACE("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! dwBase=%I64u, rd.top=%ld, GetScrollPos=%d\n", dwBase, rd.top, GetScrollPos(SB_VERT));
+    }*/
+    //ATLTRACE("Clip: left=%ld, right=%ld, top=%ld(0x%08lX), bottom=%ld, %d x %d\n", rClip.left, rClip.right, rClip.top, rClip.top, rClip.bottom, rClip.Width(), abs(rClip.Height()));
+    //WTL::CMemoryDC pMemDC(dc.m_hDC, rClip);
+    WTL::CDCHandle pMemDC = dc;
+
+    pMemDC.FillSolidRect(rClipOrig, RGB(0xFF, 0xFF, 0xFF));
 
     CBZDoc2* pDoc = GetBZDoc2();
     ATLASSERT(pDoc);
     if(!pDoc->IsOpen())return; //if(pDoc->GetDocPtr()==NULL)return;
 
-    rClip.top -= rClip.top % options.nBmpZoom;
-    rClip.bottom += rClip.bottom % options.nBmpZoom;
+    top    -= top % options.nBmpZoom;
+    bottom += bottom % options.nBmpZoom;
 
-    int nSpaceTop = (rClip.top < BMPSPACE) ? BMPSPACE - rClip.top : 0;
-    long nBottom = m_cBmpY * options.nBmpZoom + BMPSPACE;
-    if(rClip.bottom >= nBottom)
-      rClip.bottom = nBottom;
+    int nSpaceTop = (top < BMPSPACE) ? BMPSPACE - top : 0;
+    UINT64 nBottom64 = m_cBmpY64 * options.nBmpZoom + BMPSPACE;
+    if(bottom >= nBottom64)
+    {
+      long b = nBottom64;
+      if(nBottom64>LONG_MAX)b = LONG_MAX;
+      bottom = b;
+    }
 
-    int nBmpHeight = (rClip.Height() - nSpaceTop) / options.nBmpZoom;
+    if(top > bottom)return;
+
+    int nBmpHeight = (((long)(bottom-top)) - nSpaceTop) / options.nBmpZoom;
     m_lpbi->biHeight = -nBmpHeight;
 
-    ATLTRACE("Clip: left=%ld, top=%ld(0x%08lX) %dx%d\n", rClip.left, rClip.top, rClip.top, rClip.Width(), rClip.Height());
-    DWORD dwOffset = ((DWORD)rClip.top - (DWORD)(BMPSPACE - nSpaceTop)) / (DWORD)options.nBmpZoom * (DWORD)m_cBmpX;
-    ATLTRACE("DWORD dwOffset 0x%08X = ((DWORD)rClip.top 0x%08X - (DWORD)(BMPSPACE 0x%X - nSpaceTop 0x%X)) * (DWORD)m_cBmp.cx 0x%08X / (DWORD)options.nBmpZoom 0x%08X;\n", dwOffset, (DWORD)rClip.top, BMPSPACE, nSpaceTop, m_cBmpX, options.nBmpZoom);
-    dwOffset*=(DWORD)(options.nBmpColorWidth/8);
-    ATLTRACE("dwOffset 0x%08X *=(DWORD)(options.nBmpColorWidth %ld /8);\n", dwOffset, options.nBmpColorWidth);
+    //ATLTRACE("Clip: left=%ld, right=%ld, top=%ld(0x%08lX), bottom=%ld, %d x %d\n", rClip.left, rClip.right, rClip.top, rClip.top, rClip.bottom, rClip.Width(), abs(rClip.Height()));
+    UINT64 qwOffset = (top - (BMPSPACE - nSpaceTop)) / options.nBmpZoom * m_cBmpX;
+    //ATLTRACE("DWORD dwOffset 0x%08X = ((DWORD)rClip.top 0x%08X - (DWORD)(BMPSPACE 0x%X - nSpaceTop 0x%X)) * (DWORD)m_cBmp.cx 0x%08X / (DWORD)options.nBmpZoom 0x%08X;\n", dwOffset, (DWORD)rClip.top, BMPSPACE, nSpaceTop, m_cBmpX, options.nBmpZoom);
+    qwOffset*=(DWORD)(options.nBmpColorWidth/8);
+    //ATLTRACE("dwOffset 0x%08X *=(DWORD)(options.nBmpColorWidth %ld /8);\n", dwOffset, options.nBmpColorWidth);
+
+    //ATLTRACE("dst: %d, %d, %d x %d\nsrc: %d, %d, %d x %d\n", BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
+    //    , m_cBmpX * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
+    //    , 0/*srcX*/, 0/*srcY*/, m_cBmpX/*srcW*/, nBmpHeight/*srcH*/);
+
+    ConvertYRealSpace(&top);
 
     DWORD dwReadSize = m_cBmpX * nBmpHeight * (options.nBmpColorWidth/8);
     if(dwReadSize<=pDoc->GetMaxCacheSize())
     {
-      LPBYTE p = pDoc->CacheForce(dwOffset, dwReadSize);
-      if(p)
-        ::StretchDIBits(pMemDC.m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
+      LPBYTE lpBits = pDoc->CacheForce(qwOffset, dwReadSize);
+      if(lpBits)
+        ::StretchDIBits(pMemDC.m_hDC, BMPSPACE/*dstX*/, top + nSpaceTop/*dstY*/
         , m_cBmpX * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
         , 0/*srcX*/, 0/*srcY*/, m_cBmpX/*srcW*/, nBmpHeight/*srcH*/
-        , p/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
+        , lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
+      else 
+      {
+        ATLASSERT(FALSE);
+      }
+      ATLTRACE("------------------CacheHit! ");
     } else {
       LPBYTE lpBits = (LPBYTE)malloc(dwReadSize);
       if(!lpBits)return;
-      if(pDoc->Read(lpBits, dwOffset, dwReadSize))
+      if(pDoc->Read(lpBits, qwOffset, dwReadSize))
       {
-        ::StretchDIBits(pMemDC.m_hDC, BMPSPACE/*dstX*/, rClip.top + nSpaceTop/*dstY*/
+        ::StretchDIBits(pMemDC.m_hDC, BMPSPACE/*dstX*/, top + nSpaceTop/*dstY*/
           , m_cBmpX * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
           , 0/*srcX*/, 0/*srcY*/, m_cBmpX/*srcW*/, nBmpHeight/*srcH*/
           , lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
+        ATLTRACE("------------------Read! ");
+      } else {
+        ATLASSERT(FALSE);
       }
       free(lpBits);
     }

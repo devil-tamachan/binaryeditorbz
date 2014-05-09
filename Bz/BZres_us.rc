@@ -16,10 +16,8 @@
 // âpåÍ (ïƒçë) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -63,7 +61,7 @@ END
 // Menu
 //
 
-IDR_BMPVIEW MENU 
+IDR_BMPVIEW MENU
 BEGIN
     POPUP "BmpView"
     BEGIN
@@ -77,10 +75,13 @@ BEGIN
         MENUITEM "32bit color",                 ID_BMPVIEW_32BITCOLOR
         MENUITEM SEPARATOR
         MENUITEM "Address Tooltip",             ID_BMPVIEW_ADDRESSTOOLTIP
+        MENUITEM SEPARATOR
+        MENUITEM "BZ Palette",                  ID_BMPVIEW_PALETTE_BZ
+        MENUITEM "Safety Palette",              ID_BMPVIEW_PALETTE_SAFETY
     END
 END
 
-IDR_MAINFRAME MENU 
+IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -88,7 +89,7 @@ BEGIN
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
         POPUP "Recent File"
         BEGIN
-            MENUITEM "---",                        ID_FILE_MRU_FIRST, GRAYED
+            MENUITEM "---",                         ID_FILE_MRU_FIRST, GRAYED
         END
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
@@ -198,7 +199,7 @@ END
 // Dialog
 //
 
-IDD_DIALOG1 DIALOG  0, 0, 100, 280
+IDD_DIALOG1 DIALOG 0, 0, 100, 280
 STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -209,7 +210,7 @@ BEGIN
     CONTROL         "All",IDB_TAGALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,2,20,10
 END
 
-IDD_SETUP_COLOR DIALOG  0, 0, 174, 83
+IDD_SETUP_COLOR DIALOG 0, 0, 174, 83
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Color Setting"
 FONT 8, "MS Sans Serif"
@@ -238,7 +239,7 @@ BEGIN
     LTEXT           "2012-2014 Mod by devil.tamachan@gmail.com",IDC_STATIC,66,36,144,8
 END
 
-IDD_SETTING DIALOG  0, 0, 172, 94
+IDD_SETTING DIALOG 0, 0, 172, 94
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Advanced"
 FONT 8, "MS Sans Serif"
@@ -259,7 +260,7 @@ BEGIN
     CONTROL         "lines.",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,108,64,16,8
 END
 
-IDD_INPUT DIALOG  0, 0, 150, 51
+IDD_INPUT DIALOG 0, 0, 150, 51
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Start address"
 FONT 8, "MS Sans Serif"
@@ -332,7 +333,7 @@ IDR_MAINFRAME           ICON                    "res\\BZ.ico"
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
@@ -405,7 +406,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS 
+IDR_MAINFRAME ACCELERATORS
 BEGIN
     "A",            ID_EDIT_SELECT_ALL,     VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -442,7 +443,7 @@ END
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR  19, 17
+IDR_MAINFRAME TOOLBAR 19, 17
 BEGIN
     BUTTON      ID_FILE_OPEN
     BUTTON      ID_FILE_SAVE
@@ -531,26 +532,26 @@ MANIFEST_RESOURCE_ID    RT_MANIFEST             "Bz.manifest"
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "BZ"
     IDP_OLE_INIT_FAILED     "OLE initialization failed.  Make sure that the OLE libraries are the correct version."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_APP_TITLE       "BZ"
     AFX_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
     IDS_AUTOCOLOR           "Auto"
     IDS_OTHERCOLOR          "Other..."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_COLOR_ADDRESS       "Address Header"
     IDS_COLOR_ADDRESS2      "Address Header2"
@@ -562,7 +563,7 @@ BEGIN
     IDS_COLOR_MEMBER        "Structure Member"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_INDICATOR_INFO       "XXXX:XXXX: 0xXXXXXXXX (0,000,000,000)bytes"
     ID_INDICATOR_SIZE       "0,000,000,000bytes"
@@ -570,25 +571,25 @@ BEGIN
     ID_INDICATOR_INS        "OVR "
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
     ID_FILE_SAVE            "Save the active document\nSave"
     ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
-    ID_FILE_PRINT_SETUP      "Change the printing options\nPage Setup"
+    ID_FILE_PRINT_SETUP     "Change the printing options\nPage Setup"
     ID_FILE_PRINT           "Print the active document\nPrint"
     ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "About Bz"
     ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
     ID_HELP_INDEX           "Display help"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_MRU_FILE1       "Open this document"
     ID_FILE_MRU_FILE2       "Open this document"
@@ -602,7 +603,7 @@ BEGIN
     ID_FILE_MRU_FILE10      "Open this document"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
     ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
@@ -612,13 +613,13 @@ BEGIN
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_CHAR_ASCII           "Ascii character set"
     ID_CHAR_SJIS            "Shift-JIS charcter set"
@@ -635,7 +636,7 @@ BEGIN
     ID_BYTEORDER_INTEL      "Byte storage order is assumed 'little endian'"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_BYTEORDER_68K        "Byte storage order is assumed 'big endian'"
     ID_VIEW_BITMAP          "Show file content as Bitmap\nBitmap view"
@@ -644,7 +645,7 @@ BEGIN
     ID_VIEW_SPLIT_V         "Split view vertically\nSplit Vert"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_FONT            "Change font"
     ID_VIEW_COLOR           "Change Text Color"
@@ -658,7 +659,7 @@ BEGIN
     ID_JUMP_RETURN          "Return to previous address\nReturn"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_JUMP_MARK            "Toggle Mark"
     ID_JUMP_MARKNEXT        "Jump to Next Mark"
@@ -667,7 +668,7 @@ BEGIN
     ID_LANG_JPN             "Switch Language to Japanese"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_LANG_ENU             "Switch Language to English"
     ID_TOOLS_EDITDEF        "Open BZ.DEF file by text editor"
@@ -677,7 +678,7 @@ BEGIN
     ID_JUMP_BASE            "Set file base address."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_SAVEDUMP_CAPTION    "Save Dump List"
     IDS_EBCDIC_FILE         "EBCDIC.DEF"
@@ -685,26 +686,26 @@ BEGIN
     IDS_EDIT_RO             "R.O."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_COLOR_OVERBROTHER   "Overs"
     IDS_COLOR_HORIZON       "Horizontal Line"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_EDIT_OVR            "OVR"
     IDS_EDIT_INS            "INS"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_CHANGE_LANGUAGE     "Please restart BZ"
     IDS_COMPARE_OK          "No difference"
     IDS_ALLFILTER           "All Files (*.*)"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_ERR_FILENOTFOUND    "Cannot open '%s'"
     IDS_ERR_SYNTAX          "Syntax error '%s'"
@@ -712,7 +713,7 @@ BEGIN
     IDS_ERR_READFILE        "Fail to Read File"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_ERR_RANGE           "Out of Range"
     IDS_ERR_READONLY        "Read Only"
@@ -722,7 +723,7 @@ BEGIN
     IDS_ERR_COPY            "Copy block too large"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCSIZE          "Change the window size"
     AFX_IDS_SCMOVE          "Change the window position"
@@ -733,7 +734,7 @@ BEGIN
     AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCRESTORE       "Restore the window to normal size"
     AFX_IDS_SCTASKLIST      "Activate Task List"
