@@ -215,13 +215,8 @@ public:
     if(nSBCode == SB_THUMBTRACK) {		// ### 1.54
       if(options.bAddressTooltip)
       {
-        int pointX = m_ptOffset.x;
-        if(pointX<=0)pointX = 0;
-        else pointX /= options.nBmpZoom;
-        UINT64 dwBase = GetScrollPosU64V();
-        if(dwBase > BMPSPACE)dwBase = (dwBase - BMPSPACE)/options.nBmpZoom;
-        else dwBase = 0;
-        UINT64 currentAddress = dwBase*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (((UINT64)pointX) * (options.nBmpColorWidth/8));
+        UINT64 yVS = CalcY(GetScrollPosU64V());
+        UINT64 currentAddress = CalcAddress(yVS);
         TCHAR tmp[22];
         wsprintf(tmp, _T("0x%016I64X"), currentAddress);
         WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, tmp);
