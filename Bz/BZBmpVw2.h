@@ -102,25 +102,19 @@ public:
   void OnLButtonDown(UINT nFlags, WTL::CPoint point)
   {
     m_isLButtonDown = true;
-
+    
+    UINT64 yVS = ConvYRealSpace2VirtualSpace(point.y);
+    yVS += GetScrollPosU64V();
+    yVS = CalcY(yVS);
+    UINT64 currentAddress = CalcAddress(yVS);
     point.x += m_ptOffset.x;
     point.x -= BMPSPACE;
-    point.y -= BMPSPACE;
     if(point.x<=0)point.x = 0;
     else point.x /= options.nBmpZoom;
-    if(point.y<=0)point.y = 0;
-    else point.y /= options.nBmpZoom;
-    UINT64 dwBase = GetScrollPosU64V();
-    if(dwBase > BMPSPACE)dwBase = (dwBase - BMPSPACE)/options.nBmpZoom;
-    else dwBase = 0;
-    if(point.x >= 0 && point.x < options.nBmpWidth && point.y >= 0) {
-      UINT64 dwNewCaret = (dwBase + (UINT64)point.y)*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (((UINT64)point.x) * (options.nBmpColorWidth/8));
+    if(point.x >= 0 && point.x < options.nBmpWidth && point.y >= BMPSPACE) {
+      currentAddress += (((UINT64)point.x) * (options.nBmpColorWidth/8));
       CBZView* pView = GetBZView();
-      if(dwNewCaret < pView->GetFileSize()) {
-        pView->m_dwCaret = dwNewCaret;
-        pView->GotoCaret();
-        //pView->Activate();
-      }
+      if(pView)pView->MoveCaretTo(currentAddress);
     }
   }
 
@@ -164,32 +158,23 @@ public:
 
   void OnMouseMove(UINT nFlags, WTL::CPoint point)
   {
+    UINT64 yVS = ConvYRealSpace2VirtualSpace(point.y);
+    yVS += GetScrollPosU64V();
+    yVS = CalcY(yVS);
+    UINT64 currentAddress = CalcAddress(yVS);
     point.x += m_ptOffset.x;
     point.x -= BMPSPACE;
-    point.y -= BMPSPACE;
     if(point.x<=0)point.x = 0;
     else point.x /= options.nBmpZoom;
-    if(point.y<=0)point.y = 0;
-    else point.y /= options.nBmpZoom;
-    UINT64 dwBase = GetScrollPosU64V();
-    /*{
-      WTL::CRect rd;
-      GetClientRect(rd);
-    ATLASSERT(dwBase==rd.top);
-    }*/
-    if(dwBase > BMPSPACE)dwBase = (dwBase - BMPSPACE)/options.nBmpZoom;
-    else dwBase = 0;
-    if(point.x >= 0 && point.x < options.nBmpWidth && point.y >= 0) {
-      UINT64 currentAddress = (dwBase + (UINT64)point.y)*(options.nBmpWidth * (options.nBmpColorWidth/8)) + (((UINT64)point.x) * (options.nBmpColorWidth/8));
+    if(point.x >= 0 && point.x < options.nBmpWidth && point.y >= BMPSPACE) {
+      currentAddress += (((UINT64)point.x) * (options.nBmpColorWidth/8));
       if(currentAddress != m_tooltipLastAddress)
       {
         CBZView* pView = GetBZView();
         if(currentAddress < pView->GetFileSize()) {
           if(m_isLButtonDown)
           {
-            pView->m_dwCaret = currentAddress;
-            pView->GotoCaret();
-            //pView->Activate();
+            pView->MoveCaretTo(currentAddress);
           } else if(options.bAddressTooltip) {
             TCHAR tmp[22];
 #ifdef _DEBUG
@@ -203,7 +188,6 @@ public:
             m_tooltipLastAddress = currentAddress;
             m_tooltip.Activate(true);
             m_tooltip.Popup();
-            //CScrollView::OnMouseMove(nFlags, point);
             return;
           }
         }

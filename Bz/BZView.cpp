@@ -1281,6 +1281,7 @@ UINT64 CBZView::PointToOffset(WTL::CPoint pt)
 	return (ofs > dwTotal) ? dwTotal : ofs;
 }
 
+//m_dwOldCaret = m_dwCaret;‚µ‚È‚¢‚ÆƒoƒO‚é
 BOOL CBZView::GotoCaret()
 {
 	if(DrawCaret()) {
