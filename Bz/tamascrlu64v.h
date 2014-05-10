@@ -27,9 +27,14 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+//GetScrollPos(SB_VERT)使うな！
+//かわりにm_ptOffset.yを使え！
+//  スクロール下いっぱいまでスクロールして更に下ボタンクリックでスクロールしてから右左スクロールするとバグる
+
 
 #define SB_WHEELUP   10
 #define SB_WHEELDOWN 11
+#define SB_UPDATEFROMPARAM 12
 
 template <class T>
 class CTamaScrollU64VImpl : public WTL::CScrollImpl< T >
@@ -50,6 +55,26 @@ public:
     m_u64VMax = 0;
 
     m_cellV = 1;
+  }
+
+  UINT64 ConvYRealSpace2VirtualSpace(long y)
+  {
+    long v = m_ptOffset.y;//GetScrollPos(SB_VERT);
+    UINT64 v64 = GetScrollPosU64V();
+    
+    UINT64 yVS = y<0?0:y;
+    yVS += - v + v64;
+    
+    return yVS;
+  }
+  long ConvYVirtualSpace2RealSpace(UINT64 yVS)
+  {
+    long v = m_ptOffset.y;//GetScrollPos(SB_VERT);スクロール下いっぱいまでスクロールして更に下ボタンクリックでスクロールしてから右左スクロールするとバグる
+    UINT64 v64 = GetScrollPosU64V();
+    yVS += v;
+    yVS -= v64;
+    ATLASSERT(yVS>=0);
+    return yVS<0 ? 0 : (long)yVS;
   }
   
   void SetScrollSizeU64V(int cx, UINT64 cy, BOOL bRedraw = TRUE, bool bResetOffset = true)
@@ -208,6 +233,9 @@ public:
           UpdateFromU64V();
         }
         break;
+      case SB_UPDATEFROMPARAM:
+        UpdateFromU64V();
+        break;
       default:
         return;
       }
@@ -235,6 +263,22 @@ public:
     CScrollImpl< T >::DoScroll(nType, nScrollCode, cxyOffset, cxySizeAll, cxySizePage, cxySizeLine);
   }
 
+  bool AdjustScrollOffsetU64V(long &x, UINT64 &yVS)
+  {
+    long xOld = x;
+    UINT64 yOldVS = yVS;
+
+    long xMax = m_sizeAll.cx - m_sizeClient.cx;
+    if(xMax<0)x=xMax=0;
+    else if(x < 0)x = 0;
+    else if(x > xMax)x = xMax;
+
+    UINT64 yMaxVS = m_u64VMax - m_sizeClient.cy;
+    if(yVS > yMaxVS)yVS = yMaxVS;
+
+    return (xOld!=x || yOldVS!=yVS);
+  }
+
   LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled)
   {
 		//bHandled = FALSE;
@@ -251,6 +295,28 @@ public:
       pT->SetScrollInfo(SB_HORZ, &si, TRUE);
       si.nPage = m_sizeClient.cy;
       pT->SetScrollInfo(SB_VERT, &si, TRUE);
+    }
+
+    long x = m_ptOffset.x;
+    UINT64 yVS = m_u64V;
+    if(AdjustScrollOffsetU64V(x, yVS))
+    {
+			if(yVS!=m_u64V)
+      {
+        ATLTRACE("OnSize y: %016I64X -> %016I64X\n", m_u64V, yVS);
+        m_u64V = yVS;
+        pT->DoScroll(SB_VERT, SB_UPDATEFROMPARAM, (int&)m_ptOffset.y, m_sizeAll.cy, m_sizePage.cy, m_sizeLine.cy);
+      }
+      if(x!=m_ptOffset.x) {
+        ATLTRACE("OnSize x: %ld -> %ld\n", m_ptOffset.x, x);
+        pT->ScrollWindowEx(x-m_ptOffset.x, 0, 0);
+        {
+          SCROLLINFO si = { sizeof(SCROLLINFO), SIF_POS };
+          si.nPos = x;
+          pT->SetScrollInfo(SB_HORZ, &si, FALSE);
+        }
+        m_ptOffset.x = x;
+      }
     }
 
     return 0;
