@@ -2951,7 +2951,7 @@ FFL_ERR1:
   {
     TAMAOLDFILECHUNK *pSplitChunk;
     pSplitChunk = _OldFileMap_LookUp(pOldFilemapHead, dwSplitPoint);
-    ATLASSERT(pSplitChunk->type!=OF_FD);
+    //ATLASSERT(pSplitChunk->type!=OF_FD);
     if(!pSplitChunk)
     {
       //ATLASSERT(FALSE);
@@ -2970,6 +2970,7 @@ FFL_ERR1:
       pNewFirstChunk->dwEnd   = dwSplitPoint-1;
       pNewFirstChunk->type = pSplitChunk->type;
       pNewFirstChunk->dwNewFileAddr = pSplitChunk->dwNewFileAddr;
+      pNewFirstChunk->pDataBuf = pSplitChunk->pDataBuf;
       RB_INSERT(_TAMAOLDFILECHUNK_HEAD, pOldFilemapHead, pNewFirstChunk);
       pSplitChunk->dwStart = dwSplitPoint;
       if(pSplitChunk->type==OF_FF)pSplitChunk->dwNewFileAddr += dwFirstSize;
