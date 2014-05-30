@@ -68,6 +68,13 @@ void CBZCoreData::DeleteSubView(DWORD dwIndex)
   }
 }
 
+void CBZCoreData::ReplaceBZDoc2(int index, CBZDoc2 *doc, BOOL bDeleteDoc)
+{
+  CBZDoc2 *pOldDoc = GetBZDoc2(index);
+  m_arrDoc.SetAtIndex(index, doc);
+  if(bDeleteDoc)delete pOldDoc;
+}
+
 void CBZCoreData::Invalidate(BOOL bErase)
 {
   if(m_pMainFrame)m_pMainFrame->Invalidate(bErase);

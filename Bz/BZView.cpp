@@ -110,16 +110,18 @@ void CBZView::OnUpdateStatusInfo()
 {
   if(GetMainFrame()->m_bDisableStatusInfo) return;
   if(GetFileSize()) {
-    UISetText(ID_INDICATOR_INFO, GetStatusInfoText());
-    UIEnable(ID_INDICATOR_INFO, TRUE);
-  } else
-    UIEnable(ID_INDICATOR_INFO, FALSE);
+    UISetText(1/*ID_INDICATOR_INFO*/, GetStatusInfoText());
+    //UIEnable(ID_INDICATOR_INFO, TRUE);
+  } else {
+    UISetText(1/*ID_INDICATOR_INFO*/, _T(""));
+    //UIEnable(ID_INDICATOR_INFO, FALSE);
+  }
 }
 void CBZView::OnUpdateStatusIns()
   {
     CString sText;
     sText.LoadString(m_pDoc->IsReadOnly() ? IDS_EDIT_RO : IDS_EDIT_OVR + m_bIns);
-    UISetText(ID_INDICATOR_INS, sText);
+    UISetText(4/*ID_INDICATOR_INS*/, sText);
   }
 void CBZView::OnUpdateJump()
 {
@@ -390,6 +392,7 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     if(bCtrl) OnDoubleClick();	// ### 1.62
     else
       PostMessage(WM_COMMAND, ID_JUMP_FINDNEXT);
+    UpdateStatusBar();
     return;
   case VK_INSERT:
     if(!m_pDoc->IsReadOnly()
@@ -400,6 +403,7 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
         m_bIns = !m_bIns;
         InitCaret();
         m_bEnterVal = FALSE;
+        UpdateStatusBar();
         return;
     }
     goto Error;
@@ -411,6 +415,7 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     if(bShift && GetMainFrame()->m_bStructView) {
       CBZFormView* pView = (CBZFormView*)(GetSubView());
       if(pView)pView->Activate();
+      UpdateStatusBar();
       return;
     }
     m_bCaretOnChar = !m_bCaretOnChar;
@@ -460,6 +465,7 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 #endif //FILE_MAPPING
     if(m_bBlock) {
       CutOrCopy(EDIT_DELETE);
+      UpdateStatusBar();
       return;
     } else {
       if(dwNewCaret == dwTotal
@@ -487,10 +493,36 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     }
   } else
     MoveCaretTo(dwNewCaret);
+  UpdateStatusBar();
   return;
 Error:
   MessageBeep(MB_NOFOCUS);
   return;
+}
+
+
+int CBZView::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+  m_nColAddr = ADDRCOLUMNS;
+  /*SetViewSize(WTL::CSize(VIEWCOLUMNS, 0));*/
+
+  LONG lExStyle = GetWindowLong(GWL_EXSTYLE);
+  lExStyle |= WS_EX_STATICEDGE;
+  SetWindowLong(GWL_EXSTYLE, lExStyle);
+
+  WTL::CMessageLoop* pLoop = _Module.GetMessageLoop();
+  // pLoop->AddIdleHandler(this);
+
+  DragAcceptFiles();
+
+  CMainFrame *pMainFrame = GetMainFrame();
+  if(pMainFrame)
+  {
+    UIAddStatusBar(pMainFrame->m_statusbar);
+  }
+
+  SetMsgHandled(FALSE);
+  return 0;
 }
 
 void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
@@ -597,22 +629,21 @@ void CBZView::Update()
 	
 	m_pDoc = GetBZDoc2();
 	//ASSERT_VALID(m_pDoc);
-//#ifdef FILE_MAPPING
-//	if(m_pDoc)
-//		m_pDoc->QueryMapViewTama2(0, 1);//ファイルサイズが０の場合で、デフォルト設定ではない場合、ファイルマッピングモードで開くとエラー
 	m_nColAddr = (options.bDWordAddr) ? ADDRCOLUMNS_MAP : ADDRCOLUMNS;
-	if(GetViewWidth() != VIEWCOLUMNS) {
+	/*if(GetViewWidth() != VIEWCOLUMNS) {
     SetViewSize(WTL::CSize(VIEWCOLUMNS, 0));
 		m_bResize = FALSE;
-		// ResizeFrame();
-	}
-//#else
-//	m_nColAddr = ADDRCOLUMNS;
-//#endif //FILE_MAPPING
+		//ResizeFrame();
+	}*/
 
 	UpdateDocSize();
-	ScrollToPos(WTL::CPoint(0,0));
+	//ScrollToPos(WTL::CPoint(0,0));
+    //SetScrollSizeU64V(cViewX, cViewY);
+    SetScrollPage(3,PAGESKIP);
+    SetScrollLine(1,1);
 	SetScrollHome(WTL::CPoint(0, DUMP_Y));
+    ScrollTop();
+    ScrollAllLeft();
 	m_dwCaret = m_dwOldCaret = m_dwBlock = m_dwStruct = 0;
 	m_nMember = INVALID;
 	m_nBytes = 1;
@@ -674,6 +705,37 @@ void CBZView::OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo)
 }
 */
 
+void CBZView::PrePrintPage/*BeginPrintJob(HDC hDC)*/(UINT nPage, HDC hDC)
+{
+  if(!m_bBeginPrintJob)
+  {
+    CTextView::BeginPrintJob(hDC);
+
+    WTL::CDCHandle cdc(hDC);
+    WTL::CRect rMargin;
+    GetMargin(rMargin, hDC);
+    POINT pt;
+    pt.x = cdc.GetDeviceCaps(HORZRES) - rMargin.left - rMargin.right;
+    pt.y = cdc.GetDeviceCaps(VERTRES) - rMargin.top - rMargin.bottom;
+    PixelToGrid(pt);
+    m_nPageLen = pt.y-1;
+    CMainFrame *pMainFrame = GetMainFrame();
+    if(pMainFrame)
+    {
+      unsigned int maxPage = GetMaxPrintingPage()-1;
+      pMainFrame->m_wndPrintPreview.m_nMaxPage = maxPage; //https://twitter.com/deviltamachan/status/469481807562305536
+      pMainFrame->m_job.m_nEndPage = maxPage;
+    }
+    //SetMaxPrintingPage(pInfo);
+
+    m_bBeginPrintJob = TRUE;
+  }
+  SetMargin(hDC);
+
+  m_dwPrint = (m_bBlock) ? (BlockBegin()&~(16-1)) : 0;
+  m_dwPrint += nPage * m_nPageLen * 16;
+}
+
 void CBZView::SetColor(TextColor n)
 {
 	CTextView::SetColor(options.colors[n][0], options.colors[n][1]);
@@ -701,7 +763,8 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 	//LPBYTE p  = m_pDoc->GetDocPtr();
 //	if(!p) return;
 
-  WTL::CRect rClip;
+  //WTL::CRect rClip;
+  CRectU64V rClipU64V;
 	UINT64 ofs;
 	UINT64 dwBegin = BlockBegin();
 	UINT64 dwEnd   = BlockEnd();
@@ -709,38 +772,43 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 
 	UINT64 dwTotalP1 = 0;
 
-	int y;
-
 	PutBegin(dc);
 	if(IsToFile()) {
-		DrawHeader();
-		rClip.y1 = DUMP_Y;
-		rClip.y2 = LONG_MAX;
+		DrawHeader2File();
+		rClipU64V.y1 = DUMP_Y;
+		rClipU64V.y2 = LONG_MAX;
 		ofs = 0;
 		if(m_bBlock) {
 			ofs = dwBegin & ~0xF;
 			dwTotal = dwEnd;
 		}
 	} else if(bPrint/*pDC->IsPrinting()*/) {		// ### 1.54
-		DrawHeader();
-		rClip.y1 = DUMP_Y;
-		rClip.y2 = m_nPageLen;
+		rClipU64V.y1 = DUMP_Y;
+		rClipU64V.y2 = m_nPageLen;
 		ofs = m_dwPrint;
+		DrawHeader(ofs);
   } else {
     if(dc==NULL)return;
+      WTL::CRect rClip;
     if(lpUpdateRect)
     {
+      ATLTRACE("lpUpdateRect = (%d,%d,%d,%d)\n", lpUpdateRect->left, lpUpdateRect->right, lpUpdateRect->top, lpUpdateRect->bottom);
       rClip = lpUpdateRect;
     } else {
       dc.GetClipBox(&rClip);
+      ATLTRACE("rClip = (%d,%d,%d,%d)\n", rClip.left, rClip.right, rClip.top, rClip.bottom);
+      //rClipU64V = rClip;
     }
-		PixelToGrid(rClip);
+    PixelToGrid(rClip);
+    BOOL bDrawHeader = FALSE;
 		if(rClip.y1 < DUMP_Y) {
-			DrawHeader();
+      bDrawHeader = TRUE;
 			rClip.y1 += DUMP_Y;
 		}
-		POINT ptOrg = GetScrollPos();
-		ofs = (ptOrg.y + rClip.y1 - DUMP_Y)*16;
+    rClipU64V = rClip;
+    ATLTRACE("rClipU64V = (%d,%d,%I64u,%I64u)\n", rClipU64V.left, rClipU64V.right, rClipU64V.top, rClipU64V.bottom);
+    ofs = (rClipU64V.top + m_u64V - DUMP_Y)*16;
+		if(bDrawHeader)DrawHeader(ofs);
 	}
 	if(!IsToFile() && (bPrint/*pDC->IsPrinting()*/ && m_bBlock))
 		dwTotal = dwEnd;
@@ -829,13 +897,15 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
     if(pDoc1)pDoc1->Cache(ofs, 1000);
   }
 
-	for(/*int */y = rClip.y1; y <= rClip.y2; y++) {
+	UINT64 y;
+
+	for(/*int */y = rClipU64V.y1; y <= rClipU64V.y2; y++) {
 		Locate(0, y);
 		if(ofs > dwTotal) break;
 		if(IsToFile() && options.nDumpPage) {
 			if(y > DUMP_Y && ((y - DUMP_Y) % options.nDumpPage) == 0) {
 				Locate(0, y); // crlf
-				DrawHeader();
+				DrawHeader2File();
 				Locate(0, y); // crlf
 			}
 		}
@@ -845,20 +915,31 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 //		if(p && !(p = m_pDoc->QueryMapView(p, ofs1))) return;
 	//	if(p1 && !(p1 = pView1->m_pDoc->QueryMapView(p1, ofs1))) return;
 
+    DWORD ofsHi = HIDWORD(ofs1);
+    DWORD ofsLo = LODWORD(ofs1);
     //描画: 先頭のアドレス
-		if(m_nColAddr > ADDRCOLUMNS) {
-			PutFormatStr("%04X:%04X", HIWORD(ofs1), LOWORD(ofs1));
+		if(options.bDWordAddr)//m_nColAddr > ADDRCOLUMNS)
+    {
+			PutFormatStr("%04X:%04X-%04X:%04X", HIWORD(ofsHi), LOWORD(ofsHi), HIWORD(ofsLo), LOWORD(ofsLo));
 			SetColor();
 			PutStr("  ");
 		} else
 #endif //FILE_MAPPING
 		{
-			if(ofs1 < 0x1000000) {			// ###1.54
+      if(ofs1 < 0x1000000) {			// ###1.54
 				PutFormatStr("%06X", ofs1);
 				SetColor();
 				PutStr("  ");
+			} else if(ofs1 < 0x100000000) {
+				PutFormatStr("%X", ofs1);
+				SetColor();
+				PutStr(" ");
+			} else if(ofsHi < 0x1000000) {
+				PutFormatStr("%06X-%08X", ofsHi, ofsLo);
+				SetColor();
+				PutStr("  ");
 			} else {
-				PutFormatStr("%07X", ofs1);
+				PutFormatStr("%X-%08X", ofsHi, ofsLo);
 				SetColor();
 				PutStr(" ");
 			}
@@ -1071,9 +1152,9 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 	if(IsToFile()) {
 		PutEnd();
 	} else {
-		if(y <= rClip.y2) {
+		if(y <= rClipU64V.y2) {
 			SetColor();
-			for(y; y<=rClip.y2+1; y++) {
+			for(y; y<=rClipU64V.y2+1; y++) {
 				Locate(0, y);
 				PutChar(' ', VIEWCOLUMNS);
 			}
@@ -1083,44 +1164,8 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 		DrawCaret();
 	}
 
-	/* Grid表示 */
-	if(!IsToFile() && options.iGrid==1) {
-		DrawGrid(dc, rClip);
-	}
 }
 
-void CBZView::DrawGrid(HDC hDC, RECT& rClip)
-{
-  WTL::CDCHandle cdc(hDC);
-	int OldBkMode = cdc.GetBkMode();
-	cdc.SetBkMode(TRANSPARENT);
-  WTL::CPen redSolid;
-  redSolid.CreatePen(PS_SOLID, 1, options.colors[TCOLOR_HORIZON][0]/*RGB(0xe2,0x04,0x1b)*/);
-	WTL::CPen redDot;
-  redDot.CreatePen(PS_SOLID, 1, options.colors[TCOLOR_HORIZON][1]/*RGB(0x3e,0xb3,0x70)*/);
-  HPEN penOld = cdc.SelectPen(redSolid);
-	WTL::CPoint ptScroll = GetScrollPos();
-
-	int startLine = ptScroll.y + rClip.top;
-	int endLine = ptScroll.y + rClip.bottom;
-	int gridHeightNum = 16;
-	int startGridLine;
-	if(startLine % gridHeightNum == 0)startGridLine = startLine;
-	else startGridLine = startLine - startLine % gridHeightNum;
-	int gridLineWidth = m_cell.cx*(16*4+12);
-	int minusTop = ptScroll.y*m_cell.cy;
-	int kirikae=0;
-	for(; startGridLine <= endLine; startGridLine += gridHeightNum/2) {
-		//		TRACE("Grid: startGridLine=%d, y=%d\n", startGridLine, (startGridLine+1)*m_cell.cy);
-		if(kirikae)cdc.SelectPen(redDot);
-		else cdc.SelectPen(redSolid);
-		kirikae=!kirikae;
-		cdc.MoveTo(0, (startGridLine+1)*m_cell.cy - minusTop - 1);
-		cdc.LineTo(gridLineWidth, (startGridLine+1)*m_cell.cy - minusTop - 1);
-	}
-	cdc.SelectPen(penOld);
-	cdc.SetBkMode(OldBkMode);
-}
 
 void CBZView::PutUnicodeChar(WORD w)
 {
@@ -1161,44 +1206,66 @@ void CBZView::PutUnicodeChar(WORD w)
 #endif
 }
 
-void CBZView::DrawHeader()
+void CBZView::DrawHeader2File()
 {
 	if(IsToFile() && !options.sDumpHeader.IsEmpty()) {
 		m_pFile->Write(options.sDumpHeader, options.sDumpHeader.GetLength());
-	} else {
-		SetHeaderColor();
-		Locate(DUMP_X,0);
-		for_to(i,16)
-			PutFormatStr("+%1X ", i);
-		PutChar();
-		for_to_(i,16)
-			PutFormatStr("%1X", i);
 	}
+}
+
+void CBZView::DrawHeader(UINT64 ofs)
+{
+  SetHeaderColor();
+  Locate(GetDUMP_X(ofs),0);
+  for_to(i,16)
+    PutFormatStr("+%1X ", i);
+  PutChar();
+  for_to_(i,16)
+    PutFormatStr("%1X", i);
+}
+
+HRESULT CBZView::CalcOffsetByClientRect(UINT64 *pQWStart, UINT64 *pQWMax, UINT64 *pQWMax2 /*=NULL*/)
+{
+  UINT64 v64 = GetScrollPosU64V();
+  UINT64 dwOrg = v64 * 16;
+
+  RECT rClient;
+  GetClientRect(&rClient);
+  PixelToGrid(rClient);
+  UINT64 dwBottom = (dwOrg + (rClient.y2 - DUMP_Y) * 16) + 16; //下が欠けた最下ラインのカレットが表示されないので+16
+  UINT64 dwMax = GetFileSize() + 1;
+  UINT64 dwMax2 = dwMax;
+  if(dwBottom > dwOrg && dwBottom < dwMax)
+  {
+    dwMax = dwBottom;
+    dwMax2 = dwBottom-16;
+  }
+
+  if(pQWStart)*pQWStart = dwOrg;
+  if(pQWMax)*pQWMax = dwMax;
+  if(pQWMax2)*pQWMax2 = dwMax2;
+
+  return S_OK;
 }
 
 void CBZView::DrawDummyCaret(HDC hDC)
 {
 	if(GetFocus() != this->m_hWnd) {
-		POINT ptOrg = GetScrollPos();
-		DWORD dwOrg = ptOrg.y * 16;
-
-		RECT rClient;
-		GetClientRect(&rClient);
-		PixelToGrid(rClient);
-		DWORD dwBottom = dwOrg + (rClient.y2 - DUMP_Y) * 16;
-		UINT64 dwMax = GetFileSize() + 1;
-		if(dwBottom > dwOrg && dwBottom < dwMax)	// ###1.61
-			dwMax = dwBottom;
+    UINT64 dwOrg = 0, dwMax = 0;
+    CalcOffsetByClientRect(&dwOrg, &dwMax);
 		POINT pt;
 		LONG ptx2 = -1;	// ###1.62
 		if(m_dwCaret < dwOrg || m_dwCaret >= dwMax) {
 		} else {
-			pt.x = (m_dwCaret - dwOrg)%16;
-			ptx2 = pt.x + CHAR_X;
-			pt.x = pt.x*3 + DUMP_X;
+      pt.x = (m_dwCaret - dwOrg)%16;
+      int dump_x = GetDUMP_X(m_dwCaret);
+      int char_x = dump_x + 3*16 + 1;
+			ptx2 = pt.x + char_x;
+			pt.x = pt.x*3 + dump_x;
 			if(m_bCaretOnChar) Swap(pt.x, ptx2);
-			pt.x -= ptOrg.x;
-			ptx2 -= ptOrg.x;
+      long ptOrgX = m_ptOffset.x/m_cellH;
+			pt.x -= ptOrgX;
+			ptx2 -= ptOrgX;
 			pt.y = (m_dwCaret - dwOrg)/16 + DUMP_Y;
 
 			GridToPixel(pt);
@@ -1212,32 +1279,23 @@ void CBZView::DrawDummyCaret(HDC hDC)
 BOOL CBZView::DrawCaret()
 {
 	BOOL bDraw = FALSE;
-	POINT ptOrg = GetScrollPos();
-	DWORD dwOrg = ptOrg.y * 16; //表示開始オフセット (最左上)
-
-	RECT rClient;
-	GetClientRect(&rClient);
-	PixelToGrid(rClient);
-  DWORD dwBottom = (dwOrg + (rClient.y2 - DUMP_Y) * 16) + 16; //下が欠けた最下ラインのカレットが表示されないので+16
-	UINT64 dwMax = GetFileSize() + 1;
-  UINT64 dwMax2 = dwMax;
-	if(dwBottom > dwOrg && dwBottom < dwMax)	// ###1.61
-  {
-		dwMax = dwBottom;
-    dwMax2 = dwBottom-16;
-  }
+  UINT64 dwOrg = 0, dwMax = 0, dwMax2 = 0;
+  CalcOffsetByClientRect(&dwOrg, &dwMax, &dwMax2);
 
 	POINT pt;
 	LONG ptx2 = -1;	// ###1.62
 	if(m_dwCaret < dwOrg || m_dwCaret >= dwMax) {
 		pt.x = pt.y = -1;
 	} else {
-		pt.x = (m_dwCaret - dwOrg)%16;
-		ptx2 = pt.x + CHAR_X;
-		pt.x = pt.x*3 + DUMP_X;
+    pt.x = (m_dwCaret - dwOrg)%16;
+    int dump_x = GetDUMP_X(m_dwCaret);
+    int char_x = dump_x + 3*16 + 1;
+		ptx2 = pt.x + char_x;
+		pt.x = pt.x*3 + dump_x;
 		if(m_bCaretOnChar) Swap(pt.x, ptx2);
-		pt.x -= ptOrg.x;
-		ptx2 -= ptOrg.x;
+    long ptOrgX = m_ptOffset.x/m_cellH;
+    pt.x -= ptOrgX;
+    ptx2 -= ptOrgX;
 		pt.y = (m_dwCaret - dwOrg)/16 + DUMP_Y;
     if(m_dwCaret >= dwMax2)ScrollBy(0, 1, !m_bBlock);
 		bDraw = TRUE;
@@ -1257,26 +1315,30 @@ BOOL CBZView::DrawCaret()
 
 UINT64 CBZView::PointToOffset(WTL::CPoint pt)
 {
-	WTL::CRect r;
+  WTL::CRect r;
 	GetClientRect(&r);
 	if(!r.PtInRect(pt))
-		return UINT_MAX;
+		return _UI64_MAX;
 	PixelToGrid(pt);
-	pt += GetScrollPos();
-	if(pt.y < DUMP_Y) // || pt.x == CHAR_X-1 || pt.x >= CHAR_X+16)	// ###1.5
- 		return UINT_MAX;
-	if(pt.x >= CHAR_X) {
-		if((pt.x -= CHAR_X) > 16) pt.x = 16;
-		m_bCaretOnChar = TRUE;	
+  
+	pt.x += m_ptOffset.x/m_cellH;
+  UINT64 pty = GetScrollPosU64V() + pt.y;
+	if(pty < DUMP_Y) // || pt.x == CHAR_X-1 || pt.x >= CHAR_X+16)	// ###1.5
+ 		return _UI64_MAX;
+  int dump_x = GetDUMP_X(pty*16);
+  int char_x = dump_x + 3*16 + 1;
+	if(pt.x >= char_x) {
+		if((pt.x -= char_x) > 16) pt.x = 16;
+		m_bCaretOnChar = TRUE;
 	} else {
-		if(pt.x < DUMP_X)
+		if(pt.x < dump_x)
 			pt.x = 0;
 		else
-			pt.x -= DUMP_X;
+			pt.x -= dump_x;
 		pt.x/=3;
 		m_bCaretOnChar = FALSE;
 	}
-	UINT64 ofs = (pt.y - DUMP_Y)*16 + pt.x;
+	UINT64 ofs = (pty - DUMP_Y)*16 + pt.x;
   UINT64 dwTotal = GetFileSize();
 	return (ofs > dwTotal) ? dwTotal : ofs;
 }
@@ -1289,10 +1351,9 @@ BOOL CBZView::GotoCaret()
 			Invalidate(FALSE);
 		return TRUE;
 	}
-	POINT pt;
-	pt.x = 0;
-	pt.y = m_dwCaret/16 - 1;
-	ScrollToPos(pt);
+	long ptx = 0;
+	UINT64 pty = m_dwCaret/16 - 1;
+  ScrollToPos(ptx, pty);
 	Invalidate(FALSE);
 	return FALSE;
 }
@@ -1338,10 +1399,9 @@ void CBZView::UpdateDocSize()
 {
 	//m_dwTotal = m_pDoc->GetDocSize();
   UINT64 dwTotal = GetFileSize();
-	SIZE cTotal;
-	cTotal.cx = VIEWCOLUMNS;
-	cTotal.cy = dwTotal / 16 + 2;
-	SetTextSize(cTotal, PAGESKIP);
+	long cTotalX = VIEWCOLUMNS;
+	UINT64 cTotalY = dwTotal / 16 + 2;
+	SetTextSize(cTotalX, cTotalY);
 	Invalidate(FALSE);
 }
 
@@ -1352,7 +1412,7 @@ void CBZView::ChangeFont(LOGFONT& logFont)
 	m_pFont = new WTL::CFont;
 	m_pFont->CreateFontIndirect(&logFont);
 	OnChangeFont();
-	m_bResize = FALSE;
+	//m_bResize = FALSE;
 	Invalidate(TRUE);
 }
 
@@ -1621,6 +1681,7 @@ void CBZView::CutOrCopy(CutMode mode)
       m_bBlock = FALSE;
       GotoCaret();
       UpdateDocSize();
+      Invalidate();
     }
 	}
 }
@@ -2072,18 +2133,18 @@ void CBZView::ReCreateBackup()
 {
 	if(m_pDoc)
 	{
-		m_pDoc->m_restoreCaret = m_dwCaret;
-		m_pDoc->m_restoreScroll = this->GetScrollPos();
-		m_pDoc->m_restoreScroll.x = 0;
+//		m_pDoc->m_restoreCaret = m_dwCaret;
+//		m_pDoc->m_restoreScroll = this->GetScrollPos();
+	//	m_pDoc->m_restoreScroll.x = 0;
 	}
 }
 void CBZView::ReCreateRestore()
 {
 	if(m_pDoc)
 	{
-		m_dwCaret = m_pDoc->m_restoreCaret;
-		DrawCaret();
-		ScrollToPos(m_pDoc->m_restoreScroll);
+	//	m_dwCaret = m_pDoc->m_restoreCaret;
+	//	DrawCaret();
+//		ScrollToPos(m_pDoc->m_restoreScroll);
 	}
 }
 

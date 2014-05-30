@@ -98,13 +98,17 @@ public:
     COMMAND_ID_HANDLER_EX(ID_FILE_SAVE_DUMPLIST, OnFileSaveDumpList)
     //ON_COMMAND( ID_HELP_INDEX, OnHelpIndex )
     COMMAND_RANGE_HANDLER_EX(ID_LANG_JPN, ID_LANG_ENU, OnLanguage)
+    COMMAND_ID_HANDLER_EX(ID_FILE_NEW,  OnFileNew)
     COMMAND_ID_HANDLER_EX(ID_FILE_OPEN, OnFileOpen)
     COMMAND_ID_HANDLER_EX(ID_FILE_SAVE, OnFileSave)
     COMMAND_ID_HANDLER_EX(ID_FILE_SAVE_AS, OnFileSaveAs)
     COMMAND_ID_HANDLER_EX(ID_EDIT_READONLY, OnEditReadOnly)
     COMMAND_ID_HANDLER_EX(ID_EDIT_READONLYOPEN, OnEditReadOnlyOpen)
     COMMAND_ID_HANDLER_EX(ID_FILE_PRINT, OnFilePrint)
+    COMMAND_ID_HANDLER_EX(ID_FILE_PRINT_PREVIEW, OnFilePrintPreview)
     COMMAND_ID_HANDLER_EX(ID_FILE_PRINT_SETUP, OnFilePrintSetup)
+
+    NOTIFY_HANDLER_EX(ATL_IDW_STATUS_BAR, NM_CLICK, OnStatusBarClicked)
 
     COMMAND_RANGE_HANDLER_EX(ID_FILE_MRU_FIRST, ID_FILE_MRU_LAST, OnFileRecent)
 
@@ -133,6 +137,7 @@ public:
     UPDATE_ELEMENT(ID_EDIT_REDO, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_FILE_SAVE, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
     UPDATE_ELEMENT(ID_FILE_SAVE_AS, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_FILE_PRINT_PREVIEW, UPDUI_MENUPOPUP)
   END_UPDATE_UI_MAP()
 
   void OnUpdateViewBitmap();
@@ -146,17 +151,15 @@ public:
   void OnUpdateViewSplitV()     { UISetCheck(ID_VIEW_SPLIT_V, m_nSplitView == ID_VIEW_SPLIT_V);/*pCmdUI->Enable(!m_bBmpView && !m_bStructView);*/ }
   void OnUpdateLanguage() { UISetRadioMenuItem(ID_LANG_JPN + options.bLanguage, ID_LANG_JPN, ID_LANG_ENU); }
   void OnUpdateEditReadOnlyOpen() { UISetCheck(ID_EDIT_READONLYOPEN, options.bReadOnlyOpen); }
+  void OnUpdatePrintPreview() { UISetCheck(ID_FILE_PRINT_PREVIEW, m_bPrintPreview); }
   void _OnInitMenuPopup();
   void OnInitMenuPopup(WTL::CMenuHandle menuPopup, UINT nIndex, BOOL bSysMenu);
 
   int OnCreate(LPCREATESTRUCT lpCreateStruct)
   {
-    {//OnCreateClient
-      m_bStructView = options.bStructView;
-      m_bInspectView = options.bInspectView;
-      m_bAnalyzerView = options.bAnalyzerView;
-      CreateClient();
-    }
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    pCoreData->m_pMainFrame = this;
+
     if(options.ptFrame.x && options.ptFrame.y)
     {
       WINDOWPLACEMENT wndpl;
@@ -209,9 +212,13 @@ public:
     m_recent.SetMenuHandle(menuRecent);
     m_recent.SetMaxEntries(15);
     m_recent.ReadFromRegistry(_T("Software\\c.mos\\BZ\\Settings"));
-    
-    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-    pCoreData->m_pMainFrame = this;
+
+    {//OnCreateClient
+      m_bStructView = options.bStructView;
+      m_bInspectView = options.bInspectView;
+      m_bAnalyzerView = options.bAnalyzerView;
+      CreateClient();
+    }
 
     WTL::CMessageLoop* pLoop = _Module.GetMessageLoop();
     pLoop->AddIdleHandler(this);
@@ -373,6 +380,7 @@ public:
       MessageBox(strMsg);
     }
   }
+  void OnFileNew (UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnFileOpen(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnFileSave(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnFileSaveAs(UINT uNotifyCode, int nID, CWindow wndCtl);
@@ -380,8 +388,10 @@ public:
   void OnEditReadOnlyOpen(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnFilePrint(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnFilePrintSetup(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnFilePrintPreview(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnFileRecent(UINT uNotifyCode, int nID, CWindow wndCtl);
-
+  
+  LRESULT OnStatusBarClicked(LPNMHDR pnmh);
 
 public:
   CMainFrame()
@@ -393,6 +403,11 @@ public:
     m_bAnalyzerView= FALSE;
     m_nSplitView = m_nSplitView0 = 0;
     m_bDisableStatusInfo = FALSE;
+
+    m_bPrintPreview = FALSE;
+
+    m_printerCur.OpenDefaultPrinter();
+    m_devmodeCur.CopyFromPrinter(m_printerCur);
 
     //	EnableActiveAccessibility();
   }
@@ -442,6 +457,9 @@ public:
   WTL::CPrinter m_printerCur;
   WTL::CDevMode m_devmodeCur;
   WTL::CPrintJob m_job;
+  //WTL::CZoomPrintPreviewWindow m_wndPrintPreview;
+  WTL::CZoomPrintPreviewWindow m_wndPrintPreview;
+  BOOL m_bPrintPreview;
 
   WTL::CToolBarCtrl m_mainToolbar;
   WTL::CMultiPaneStatusBarCtrl m_statusbar;
@@ -479,31 +497,35 @@ public:
   void UpdateFrameTitle();
   void GetSplitInfo()
   {
-    if(IsIconic() || IsZoomed()) return;
-/*    WTL::CRect rFrame;
-    GetWindowRect(rFrame);
-
-    int nCur, nMin;
-    switch(options.nSplitView = m_nSplitView)
+    if(IsIconic() || IsZoomed())
+      return;
+    
     {
-    case 0:
-      options.cyFrame = rFrame.Height();
-      break;
-    case ID_VIEW_SPLIT_H:
-      options.cyFrame2 = rFrame.Height();
-      m_pSplitter->GetRowInfo(0, nCur, nMin);
-      options.ySplit = nCur;
-      break;
-    case ID_VIEW_SPLIT_V:
-      options.cxFrame2 = rFrame.Width();
-      m_pSplitter->GetColumnInfo(0, nCur, nMin);
-      options.xSplit = nCur;
-      if(m_bBmpView || m_bStructView || m_bInspectView || m_bAnalyzerView) {
-        m_pSplitter->GetColumnInfo(1, nCur, nMin);
-        options.xSplit += nCur;
+      WTL::CRect rFrame;
+      GetWindowRect(rFrame);
+
+      int nCur, nMin;
+      switch(options.nSplitView = m_nSplitView)
+      {
+      case 0:
+        options.cyFrame = rFrame.Height();
+        break;
+      case ID_VIEW_SPLIT_H:
+        options.cyFrame2 = rFrame.Height();
+        //m_pSplitter->GetRowInfo(0, nCur, nMin);
+        //options.ySplit = nCur;
+        break;
+      case ID_VIEW_SPLIT_V:
+        options.cxFrame2 = rFrame.Width();
+        //m_pSplitter->GetColumnInfo(0, nCur, nMin);
+        //options.xSplit = nCur;
+        //if(m_bBmpView || m_bStructView || m_bInspectView || m_bAnalyzerView) {
+        //  m_pSplitter->GetColumnInfo(1, nCur, nMin);
+        //  options.xSplit += nCur;
+        //}
+        break;
       }
-      break;
-    }*/
+    }
     options.bStructView = m_bStructView;
     options.bInspectView = m_bInspectView;
     options.bAnalyzerView = m_bAnalyzerView;

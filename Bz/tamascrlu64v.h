@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //かわりにm_ptOffset.yを使え！
 //  スクロール下いっぱいまでスクロールして更に下ボタンクリックでスクロールしてから右左スクロールするとバグる
 
+#pragma once
 
 #define SB_WHEELUP   10
 #define SB_WHEELDOWN 11
@@ -44,8 +45,10 @@ public:
   DWORD m_step;
   UINT64 m_u64V; // == m_lowV + si.nPos*m_step
   UINT64 m_u64VMax; // ==10 (m_u64V == [0:10])
-
+  
+  DWORD m_cellH;
   DWORD m_cellV;
+	POINT	m_ptHome;
   
   CTamaScrollU64VImpl()
   {
@@ -54,8 +57,19 @@ public:
     m_u64V = 0;
     m_u64VMax = 0;
 
+    m_cellH = 1;
     m_cellV = 1;
+    m_ptHome.x = 0;
+    m_ptHome.y = 0;
   }
+
+#ifdef DEFINED_CRECTU64V
+  void ConvYRealClientSpace2VirtualSpace(CRectU64V &rect)
+  {
+    rect.top = ConvYRealSpace2VirtualSpace(rect.top);
+    rect.bottom = ConvYRealSpace2VirtualSpace(rect.bottom);
+  }
+#endif
 
   UINT64 ConvYRealSpace2VirtualSpace(long y)
   {
@@ -75,6 +89,57 @@ public:
     yVS -= v64;
     ATLASSERT(yVS>=0);
     return yVS<0 ? 0 : (long)yVS;
+  }
+
+  void SetScrollHome(POINT ptHome)
+  {
+    m_ptHome = ptHome;
+  }
+
+  void ScrollToPos(long ptx, UINT64 pty)
+  {
+		T* pT = static_cast<T*>(this);
+		ATLASSERT(::IsWindow(pT->m_hWnd));
+
+    if(pty!=m_u64V)
+    {
+      pT->DoScroll(SB_VERT, SB_UPDATEFROMPARAM, (int&)m_ptOffset.y, m_sizeAll.cy, m_sizePage.cy, m_sizeLine.cy, &pty);
+    }
+    if(ptx!=m_ptOffset.x/m_cellH)
+    {
+      long dx;
+      int nScrollCode;
+      if(ptx>m_ptOffset.x/m_cellH)
+      {
+        dx = ptx - m_ptOffset.x/m_cellH;
+        nScrollCode = SB_LINEDOWN;
+      } else {
+        dx = m_ptOffset.x/m_cellH - ptx;
+        nScrollCode = SB_LINEUP;
+      }
+      pT->DoScroll(SB_HORZ, nScrollCode, (int&)m_ptOffset.x, m_sizeAll.cx, m_sizePage.cx, dx*m_cellH);
+    }
+  }
+
+	void ScrollBy(int dx, int dy, BOOL bScrl = TRUE)
+  {
+		T* pT = static_cast<T*>(this);
+		ATLASSERT(::IsWindow(pT->m_hWnd));
+
+    if(dy!=0)
+    {
+      UINT64 newU64V = m_u64V;
+      newU64V += dy;
+      if(dy<0 && newU64V > m_u64V)newU64V = 0;
+      else if(dy>0 && newU64V < m_u64V)newU64V = 0xFFFFffffFFFFffff;
+      pT->DoScroll(SB_VERT, SB_UPDATEFROMPARAM, (int&)m_ptOffset.y, m_sizeAll.cy, m_sizePage.cy, m_sizeLine.cy, &newU64V);
+    }
+    if(dx!=0)
+    {
+      pT->DoScroll(SB_HORZ, dx>0 ? SB_LINEDOWN : SB_LINEUP, (int&)m_ptOffset.x, m_sizeAll.cx, m_sizePage.cx, abs((int)(dx*m_cellH)));
+    }
+    //if(bScrl)
+    //  ScrollClient(-dx, -dy);
   }
   
   void SetScrollSizeU64V(int cx, UINT64 cy, BOOL bRedraw = TRUE, bool bResetOffset = true)
@@ -97,6 +162,12 @@ public:
     ATLTRACE("SetScrollSizeU64V - m_u64V:%I64d, m_u64VMax:%I64d, nMin:%d, nMax:%d, m_sizeAll.cy:%d, nPos:%d\n", m_u64V, m_u64VMax, si.nMin, si.nMax, m_sizeAll.cy, si.nPos);
       pT->SetScrollInfo(SB_VERT, &si, bRedraw);
     }
+		T* pT = static_cast<T*>(this);
+		ATLASSERT(::IsWindow(pT->m_hWnd));
+
+    WTL::CRect clientRect;
+    pT->GetClientRect(clientRect);
+    _OnSize(clientRect.right, clientRect.bottom);
   }
   
   void AdjustFromU64VMax(BOOL bRedraw = TRUE)
@@ -165,12 +236,13 @@ public:
   }
 #endif
   
-  void DoScroll(int nType, int nScrollCode, int& cxyOffset, int cxySizeAll, int cxySizePage, int cxySizeLine)
+  void DoScroll(int nType, int nScrollCode, int& cxyOffset, int cxySizeAll, int cxySizePage, int cxySizeLine, const UINT64 *pNewU64V = NULL)
   {
 #ifdef _DEBUG
     TRACEParams();
 #endif
     UINT64 oldU64V = m_u64V;
+
     if(nType == SB_VERT)
     {
       switch(nScrollCode)
@@ -234,6 +306,12 @@ public:
         }
         break;
       case SB_UPDATEFROMPARAM:
+        if(pNewU64V == NULL)
+        {
+          ATLASSERT(FALSE);
+          return;
+        }
+        m_u64V = *pNewU64V;
         UpdateFromU64V();
         break;
       default:
@@ -245,6 +323,7 @@ public:
       int dy = 0;
       if(oldU64V == m_u64V)
       {
+        ATLTRACE("return oldU64V == m_u64V\n");
         return;
       } else if(oldU64V > m_u64V)
       {
@@ -256,11 +335,14 @@ public:
         if(diffU64V > INT_MAX/m_cellV)diffU64V=INT_MAX/m_cellV;
         dy = -(int)(diffU64V*m_cellV);
       }
-      pT->ScrollWindowEx(0, dy, m_uScrollFlags);
-      ATLTRACE("SetScrollPos - x=0, y=%d, Dy: %d\n", m_ptOffset.y, dy);
+      WTL::CRect rectClient;
+      pT->GetClientRect(rectClient);
+      if(dy)rectClient.top = m_ptHome.y*m_cellV;
+      ATLTRACE("SetScrollPos - x=0, y=%d, Dy: %d, rectClient.top=%d, %d\n", m_ptOffset.y, dy, rectClient.top, m_ptHome.y*m_cellV);
+      pT->ScrollWindowEx(0, dy, m_uScrollFlags, rectClient, rectClient);
       return;
     }
-    CScrollImpl< T >::DoScroll(nType, nScrollCode, cxyOffset, cxySizeAll, cxySizePage, cxySizeLine);
+    CScrollImpl< T >::DoScroll(nType, nScrollCode, cxyOffset, cxySizeAll, cxySizePage*m_cellH, cxySizeLine*m_cellH);
   }
 
   bool AdjustScrollOffsetU64V(long &x, UINT64 &yVS)
@@ -279,15 +361,20 @@ public:
     return (xOld!=x || yOldVS!=yVS);
   }
 
-  LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled)
+  LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
   {
 		//bHandled = FALSE;
 
-    T* pT = static_cast<T*>(this);
-    ATLASSERT(::IsWindow(pT->m_hWnd));
-
     m_sizeClient.cx = GET_X_LPARAM(lParam);
     m_sizeClient.cy = GET_Y_LPARAM(lParam) / m_cellV / m_step;
+
+    return _OnSize(m_sizeClient.cx, m_sizeClient.cy);
+  }
+
+  LRESULT _OnSize(long pageWidth, long pageHeight)
+  {
+    T* pT = static_cast<T*>(this);
+    ATLASSERT(::IsWindow(pT->m_hWnd));
 
     {
       SCROLLINFO si = { sizeof(SCROLLINFO), SIF_PAGE };
@@ -297,25 +384,24 @@ public:
       pT->SetScrollInfo(SB_VERT, &si, TRUE);
     }
 
-    long x = m_ptOffset.x;
+    long x = m_ptOffset.x/m_cellH;
     UINT64 yVS = m_u64V;
     if(AdjustScrollOffsetU64V(x, yVS))
     {
 			if(yVS!=m_u64V)
       {
         ATLTRACE("OnSize y: %016I64X -> %016I64X\n", m_u64V, yVS);
-        m_u64V = yVS;
-        pT->DoScroll(SB_VERT, SB_UPDATEFROMPARAM, (int&)m_ptOffset.y, m_sizeAll.cy, m_sizePage.cy, m_sizeLine.cy);
+        pT->DoScroll(SB_VERT, SB_UPDATEFROMPARAM, (int&)m_ptOffset.y, m_sizeAll.cy, m_sizePage.cy, m_sizeLine.cy, &yVS);
       }
-      if(x!=m_ptOffset.x) {
+      if(x!=m_ptOffset.x/m_cellH) {
         ATLTRACE("OnSize x: %ld -> %ld\n", m_ptOffset.x, x);
-        pT->ScrollWindowEx(x-m_ptOffset.x, 0, 0);
+        pT->ScrollWindowEx(x-m_ptOffset.x/m_cellH, 0, 0);
         {
           SCROLLINFO si = { sizeof(SCROLLINFO), SIF_POS };
           si.nPos = x;
           pT->SetScrollInfo(SB_HORZ, &si, FALSE);
         }
-        m_ptOffset.x = x;
+        m_ptOffset.x = x*m_cellH;
       }
     }
 

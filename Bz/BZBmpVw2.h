@@ -40,7 +40,7 @@ void MakeRedPallet256(DWORD *pRGB);
 void MakeSafetyPallet256(DWORD *pRGB);
 void Make8bitBITMAPINFOHEADER(LPBITMAPINFOHEADER lpbi, LONG w, LONG h);
 
-#include "tamascrlu64v.h"
+//#include "tamascrlu64v.h"
 
 
 class CBZBmpView2 : public CTamaScrollWindowU64VImpl<CBZBmpView2>
@@ -101,6 +101,8 @@ public:
 
   void OnLButtonDown(UINT nFlags, WTL::CPoint point)
   {
+    if(!bEnable)return;
+
     m_isLButtonDown = true;
     
     UINT64 yVS = ConvYRealSpace2VirtualSpace(point.y);
@@ -120,6 +122,8 @@ public:
 
   void OnRButtonDown(UINT nFlags, WTL::CPoint point)
   {
+    if(!bEnable)return;
+
     WTL::CMenu menu;
     menu.LoadMenu(IDR_BMPVIEW);
     WTL::CMenuHandle pMenu = menu.GetSubMenu(0);
@@ -158,6 +162,8 @@ public:
 
   void OnMouseMove(UINT nFlags, WTL::CPoint point)
   {
+    if(!bEnable)return;
+
     UINT64 yVS = ConvYRealSpace2VirtualSpace(point.y);
     yVS += GetScrollPosU64V();
     yVS = CalcY(yVS);
@@ -310,6 +316,7 @@ public:
     m_tooltipLastAddress = 0xffffffff;
     m_isLButtonDown = false;
     bFirst = TRUE;
+    bEnable = FALSE;
   }
 
   ~CBZBmpView2()
@@ -326,6 +333,7 @@ private:
   BOOL m_isLButtonDown;
 
   BOOL bFirst;//for OnInitialUpdate
+  BOOL bEnable;
 
 public:
 
@@ -351,7 +359,17 @@ public:
   {
     CBZDoc2* pDoc = GetBZDoc2();
     UINT64 dwTotal = pDoc->GetDocSize();
-    if(dwTotal < (DWORD)options.nBmpWidth) return;
+    if(dwTotal < (DWORD)options.nBmpWidth)
+    {
+      bEnable = FALSE;
+      SetScrollSizeU64V(1, 1);
+      SetScrollPage(100,150);
+      SetScrollLine(10,20);
+      ScrollTop();
+      ScrollAllLeft();
+      return;
+    }
+    bEnable = TRUE;
 
     if(!m_lpbi) 
       m_lpbi = (LPBITMAPINFOHEADER)MemAlloc(sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*256/*256pallet*/);
@@ -412,6 +430,8 @@ public:
     WTL::CRect rClipOrig;
     dc.GetClipBox(rClipOrig);
     dc.FillSolidRect(rClipOrig, RGB(0xFF, 0xFF, 0xFF));
+
+    if(!bEnable)return;
     
     UINT64 topVS = ConvYRealSpace2VirtualSpace(rClipOrig.top);
     topVS = CalcY(topVS);

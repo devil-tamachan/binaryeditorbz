@@ -29,6 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
+//#include "tamascrlu64v.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CTextView view
 
@@ -37,33 +39,35 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SB_WHEELUP   10
 #define SB_WHEELDOWN 11
 
-class CTextView : public CWindowImpl<CTextView>, public WTL::CPrintJobInfo
+class CTextView : public CTamaScrollWindowU64VImpl<CTextView>, public WTL::CPrintJobInfo
 {
 public:
   BEGIN_MSG_MAP_EX(CTextView)
     MSG_WM_CREATE(OnCreate)
-    MSG_WM_PAINT(OnPaint)
-    MSG_WM_SIZE(OnSize)
-    MSG_WM_VSCROLL(OnVScroll)
-    MSG_WM_HSCROLL(OnHScroll)
+    //MSG_WM_PAINT(OnPaint)
+    //MSG_WM_SIZE(OnSize)
+    //MSG_WM_VSCROLL(OnVScroll)
+    //MSG_WM_HSCROLL(OnHScroll)
     MSG_WM_SETFOCUS(OnSetFocus)
     MSG_WM_KILLFOCUS(OnKillFocus)
-    MSG_WM_MOUSEWHEEL(OnMouseWheel)
+    //MSG_WM_MOUSEWHEEL(OnMouseWheel)
     //COMMAND_ID_HANDLER_EX(ID_FILE_PRINT, OnFilePrint)
     //COMMAND_ID_HANDLER_EX(ID_FILE_PRINT_DIRECT, OnFilePrint)
     //COMMAND_ID_HANDLER_EX(ID_FILE_PRINT_PREVIEW, OnFilePrintPreview)
+    CHAIN_MSG_MAP(CTamaScrollWindowU64VImpl<CTextView>)
   END_MSG_MAP()
 
   CTextView()
   {
     m_pFont = NULL;
     m_pVText = NULL;
-    m_bResize = FALSE;
+    //m_bResize = FALSE;
     m_bPrinting = FALSE;
     m_ptCaret2.x = m_ptCaret2.y = -1;
     m_bShowCaret2 = FALSE;
-    m_bOnSize = FALSE;
+    //m_bOnSize = FALSE;
     m_pFile = NULL;
+    m_cTotalX = 0;
   }
 
   ~CTextView()
@@ -78,13 +82,13 @@ public:
     if(m_pFont == NULL) SetDefaultFont();
     return 0;
   }
-  void OnSize(UINT nType, WTL::CSize size)
+  /*void OnSize(UINT nType, WTL::CSize size)
   {
     if(size.cx && size.cy) InitScrollBar();	// ### 1.62
    // SetMsgHandled(FALSE);
-  }
-  void OnVScroll(UINT nSBCode, UINT nPos, WTL::CScrollBar pScrollBar) { OnScrollBar(SB_VERT, nSBCode); }
-  void OnHScroll(UINT nSBCode, UINT nPos, WTL::CScrollBar pScrollBar) { OnScrollBar(SB_HORZ, nSBCode); }
+  }*/
+  //void OnVScroll(UINT nSBCode, UINT nPos, WTL::CScrollBar pScrollBar) { OnScrollBar(SB_VERT, nSBCode); }
+  //void OnHScroll(UINT nSBCode, UINT nPos, WTL::CScrollBar pScrollBar) { OnScrollBar(SB_HORZ, nSBCode); }
   void OnSetFocus(CWindow wndOld)
   {
     InitCaret();
@@ -96,30 +100,30 @@ public:
     HideCaret2();
     Invalidate(true);//非アクティブウィンドウの擬似カレット描画
   }
-  BOOL OnMouseWheel(UINT nFlags, short zDelta, WTL::CPoint pt)
+  /*BOOL OnMouseWheel(UINT nFlags, short zDelta, WTL::CPoint pt)
   {
     OnScrollBar(SB_VERT, zDelta > 0 ? SB_WHEELUP : SB_WHEELDOWN);
     return TRUE;
-  }
-  void OnPaint(WTL::CDCHandle dc)
-  {
-    //if(dc.IsPrinting()) return;
+  //}*/
+  //void OnPaint(WTL::CDCHandle dc)
+  //{
+  //  //if(dc.IsPrinting()) return;
 
-    if(!m_bResize) {
-      ResizeFrame();
-    }
-  }
+  //  if(!m_bResize) {
+  //    ResizeFrame();
+  //  }
+  //}
 
 
 // Attributes
 public:
-	BOOL	m_bResize;
+	//BOOL	m_bResize;
 protected:
-	SIZE	m_cTotal;
-	SIZE	m_cView;
+	//SIZE	m_cTotal;//スクロールサイズ
+  long m_cTotalX;
+	/*SIZE	m_cView;*/
 	int		m_nPage;
 	SIZE	m_cell;
-	POINT	m_ptHome;
 	POINT	m_ptCaret;
 	POINT	m_ptCaret2;		// ### 1.62
 	BOOL	m_bShowCaret2;
@@ -129,9 +133,10 @@ protected:
   WTL::CFont*	m_pFont;
   WTL::CFontHandle m_pOldFont;
 	WTL::CFont*	m_pScrnFont;
-	BOOL	m_bOnSize;		// ### 1.62
+	//BOOL	m_bOnSize;		// ### 1.62 TRUE=スクロール調整中
 
-	int		m_xLoc, m_yLoc;
+	int		m_xLoc;
+  UINT64 m_yLoc;
 	DWORD	m_colText;
 	DWORD	m_colBk;
 	char*	m_pVText;
@@ -147,28 +152,28 @@ protected:
 
 // Operations
 private:
-	void ScrollClient(int dx, int dy);
-	void ScrlBarRange(int nBar, LONG& val);
-	void OnScrollBar(int nBar, UINT nSBCode);
+	//void ScrollClient(int dx, int dy);
+	//void ScrlBarRange(int nBar, LONG& val);
+	//void OnScrollBar(int nBar, UINT nSBCode);
 protected:
 	void InitCaret(BOOL bShow = TRUE);
-	void SetViewSize(SIZE cView) { m_cView = cView; };
-	int  GetViewWidth() { return m_cView.cx; }
-	void SetTextSize(SIZE cTotal, int nPage);
-	POINT GetScrollPos();
-	void ScrollToPos(POINT ptOrg);
-	void SetScrollHome(POINT ptHome);
-	void ScrollBy(int dx, int dy, BOOL bScrl);
-	void InitScrollBar();	// ### 1.62
-	void SetTextSize(SIZE cTotal); // ### 1.63
+	//void SetViewSize(SIZE cView) { m_cView = cView; };
+	//int  GetViewWidth() { return m_cView.cx; }
+	//POINT GetScrollPos();
+	//void ScrollToPos(POINT ptOrg);
+	//void SetScrollHome(POINT ptHome);
+	//void InitScrollBar();	// ### 1.62
+	//void SetTextSize(SIZE cTotal, int nPage);
+	void SetTextSize(long cTotalX, UINT64 cTotalY); // ### 1.63 スクロールサイズを設定
 
 public:
 	void OnChangeFont(HDC hDC = NULL);
-	void ResizeFrame();
+	/*void ResizeFrame();*/
 	void AlignTextPos(POINT& pt);
 	void AlignTextPos(RECT& rect);
 	void PixelToGrid(POINT& pt);
 	void PixelToGrid(RECT& rect);
+  void PixelToGridU64V(CRectU64V &rect);
 	void GridToPixel(POINT& pt);
 	void MoveCaret(POINT pt);
 	void MoveCaret2(POINT pt);				// ### 1.62
@@ -176,7 +181,7 @@ public:
 	void HideCaret2();
 	void InvertCaret(POINT pt);
 
-	void Locate(int x, int y);
+	void Locate(int x, UINT64 y);
 	void SetColor(DWORD colText=COLOR_WINDOWTEXT, DWORD colBk=COLOR_WINDOW);
 	void PutChar(char c=' ', int n=1);
 	void PutStr(LPCSTR str);
@@ -191,7 +196,6 @@ public:
   {
     m_bPrinting = TRUE;
     SetDefaultFont(hDC);
-    SetMargin(hDC);
   }
 
   virtual void EndPrintJob(HDC /*hDC*/, bool /*bAborted*/)

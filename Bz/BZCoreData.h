@@ -148,7 +148,11 @@ public:
   {
     m_arrSubView.Add(pSubView);
   }
-
+  void ReplaceBZDoc2(int index, CBZDoc2 *doc, BOOL bDeleteDoc = TRUE);
+  void ReplaceActiveBZDoc2(CBZDoc2 *doc, BOOL bDeleteDoc = TRUE)
+  {
+    ReplaceBZDoc2(m_dwActive, doc, bDeleteDoc);
+  }
   void SetActive(DWORD dwIndex)
   {
     m_dwActive = dwIndex;

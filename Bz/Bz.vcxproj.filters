@@ -157,6 +157,9 @@
     <ClInclude Include="TextView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="tamascrlu64v.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="Bz.manifest">

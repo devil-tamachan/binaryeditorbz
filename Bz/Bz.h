@@ -34,6 +34,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <Shlwapi.h>
 
+#define DEFINED_CRECTU64V
+class CRectU64V
+{
+public:
+  long left;
+  UINT64 top;
+  long right;
+  UINT64 bottom;
+
+public:
+  CRectU64V() : left(0), top(0), right(0), bottom(0)
+  {
+  }
+  
+  void operator =(LPRECT src)
+  {
+    left = src->left;
+    top = src->top;
+    right = src->right;
+    bottom = src->bottom;
+  }
+};
+
+#define HIDWORD(ll) ((DWORD)((((UINT64)(ll)) >> 32) & 0xFFFFffff))
+#define LODWORD(ll) ((DWORD)(((UINT64)(ll)) & 0xFFFFffff))
 
 /////////////////////////////////////////////////////////////////////////////
 // CBZOptions

@@ -41,11 +41,11 @@ class CInputDlg;
 //static DWORD  MemCompByte2(LPCVOID p1, LPCVOID p2, DWORD len);
 
 #define ADDRCOLUMNS 6
-#define ADDRCOLUMNS_MAP 9
-#define DUMP_X		(m_nColAddr + 2)  // 8
+#define ADDRCOLUMNS_MAP 9+6+1
+//#define DUMP_X		(m_nColAddr + 2)  // 8?
 #define DUMP_Y		1
-#define CHAR_X		(m_nColAddr + 51) // 57
-#define VIEWCOLUMNS	(m_nColAddr + 68) // 74
+//#define CHAR_X		(m_nColAddr + 51) // 57?
+#define VIEWCOLUMNS	(21 + 66)//(21 + 68)
 #define PAGESKIP	16
 
 #define TIMER_DOWN	1
@@ -62,6 +62,29 @@ enum CutMode { EDIT_COPY, EDIT_CUT, EDIT_DELETE };
 
 class CBZView : public CTextView, public WTL::CUpdateUI<CBZView>, public WTL::CIdleHandler
 {
+public:
+  int GetDUMP_X(UINT64 ofs)
+  {
+    if(options.bDWordAddr)
+    {
+      return 21;//"%04X:%04X-%04X:%04X  "
+    } else {
+      DWORD ofsHi = HIDWORD(ofs);
+      /*if(ofs < 0x1000000) { //"%06X  "
+      return 8;
+      } else */if(ofs < 0x10000000) {//"%07X "
+        return 8;
+      } else if(ofs < 0x100000000) {//"08X "
+        return 9;
+        /*} else if(ofsHi < 0x1000000) {//"%06X-%08X  "
+        return 17;*/
+      } else if(ofsHi < 0x10000000) {//"%07X-%08X "
+        return 17;
+      } else {//"%08X-%08X "
+        return 18;
+      }
+    }
+  }
 public:
   virtual BOOL OnIdle()
   {
@@ -140,10 +163,10 @@ public:
     UPDATE_ELEMENT(ID_CHAR_UTF8, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_CHAR_EBCDIC, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_CHAR_EPWING, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_INDICATOR_INFO, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_INDICATOR_SIZE, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_INDICATOR_CHAR, UPDUI_MENUPOPUP)
-    UPDATE_ELEMENT(ID_INDICATOR_INS, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(1/*ID_INDICATOR_INFO*/, UPDUI_STATUSBAR)
+    UPDATE_ELEMENT(2/*ID_INDICATOR_SIZE*/, UPDUI_STATUSBAR)
+    UPDATE_ELEMENT(3/*ID_INDICATOR_CHAR*/, UPDUI_STATUSBAR)
+    UPDATE_ELEMENT(4/*ID_INDICATOR_INS*/, UPDUI_STATUSBAR)
     UPDATE_ELEMENT(ID_BYTEORDER_INTEL, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_BYTEORDER_68K, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_JUMP_COMPARE, UPDUI_MENUPOPUP)
@@ -176,16 +199,18 @@ public:
       else
         sResult = SeparateByComma64(dwTotal);
       sResult += _T(" bytes");
-      UISetText(ID_INDICATOR_SIZE, sResult);
-      UIEnable(ID_INDICATOR_SIZE, TRUE);
-    } else
-      UIEnable(ID_INDICATOR_SIZE, FALSE);
+      UISetText(2/*ID_INDICATOR_SIZE*/, sResult);
+      //UIEnable(2/*ID_INDICATOR_SIZE*/, TRUE);
+    } else {
+      UISetText(2/*ID_INDICATOR_SIZE*/, _T(""));
+      //UIEnable(2/*ID_INDICATOR_SIZE*/, FALSE);
+    }
   }
   void OnUpdateStatusChar()
   {
     static TCHAR *sCharSet[CTYPE_COUNT] = { _T("ASCII"), _T("S-JIS"), _T("UTF-16"), _T("JIS"), _T("EUC"), _T("UTF-8"), _T("EBCDIC"), _T("EPWING") };
-    UISetText(ID_INDICATOR_CHAR, sCharSet[m_charset]);
-    UIEnable(ID_INDICATOR_CHAR, TRUE);
+    UISetText(3/*ID_INDICATOR_CHAR*/, sCharSet[m_charset]);
+    //UIEnable(ID_INDICATOR_CHAR, TRUE);
   }
   void OnUpdateStatusIns();
   void OnUpdateByteOrder() { UISetRadioMenuItem((UINT)options.bByteOrder + ID_BYTEORDER_INTEL, ID_BYTEORDER_INTEL, ID_BYTEORDER_68K); }
@@ -214,6 +239,12 @@ public:
   {
     _OnInitMenuPopup();
     SetMsgHandled(FALSE);
+  }
+
+  void UpdateStatusBar()
+  {
+    _OnInitMenuPopup();
+    UIUpdateStatusBar();
   }
 
 public:
@@ -310,12 +341,12 @@ public:
     }
   }
   void OnStatusInfo(UINT uNotifyCode=0, int nID=0, CWindow wndCtl=NULL) { if((m_nBytes*=2) == 8) m_nBytes = 1; }
-  void OnStatusSize(UINT uNotifyCode, int nID, CWindow wndCtl) { m_bHexSize = !m_bHexSize; }
-  void OnStatusChar(UINT uNotifyCode, int nID, CWindow wndCtl)
+  void OnStatusSize(UINT /*uNotifyCode*/=0, int /*nID*/=0, CWindow /*wndCtl*/=NULL) { m_bHexSize = !m_bHexSize; }
+  void OnStatusChar(UINT /*uNotifyCode*/=0, int /*nID*/=0, CWindow /*wndCtl*/=NULL)
   {
     m_charset = (CharSet)(m_charset + 1);
     if(m_charset >= CTYPE_COUNT) m_charset = CTYPE_ASCII;
-    OnCharMode(m_charset + ID_CHAR_ASCII);
+    OnCharMode(0, m_charset + ID_CHAR_ASCII);
   }
   void OnByteOrder(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnViewGrid1(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -327,23 +358,7 @@ public:
 
 
 public:
-  int OnCreate(LPCREATESTRUCT lpCreateStruct)
-  {
-    m_nColAddr = ADDRCOLUMNS;
-    SetViewSize(WTL::CSize(VIEWCOLUMNS, 0));
-
-    LONG lExStyle = GetWindowLong(GWL_EXSTYLE);
-    lExStyle |= WS_EX_STATICEDGE;
-    SetWindowLong(GWL_EXSTYLE, lExStyle);
-
-    WTL::CMessageLoop* pLoop = _Module.GetMessageLoop();
-   // pLoop->AddIdleHandler(this);
-    
-    DragAcceptFiles();
-
-    SetMsgHandled(FALSE);
-    return 0;
-  }
+  int OnCreate(LPCREATESTRUCT lpCreateStruct);
   BOOL AskSave();
   void OnDestroy()
   {
@@ -388,6 +403,7 @@ public:
     Activate();
     m_bCaretOnChar = !m_bCaretOnChar;
     GotoCaret();
+    UpdateStatusBar();
     SetMsgHandled(FALSE);
   }
   void OnLButtonDown(UINT nFlags, WTL::CPoint point)
@@ -399,7 +415,7 @@ public:
     }
     BOOL bOnChar = m_bCaretOnChar;
     UINT64 ofs = PointToOffset(point);
-    if(ofs != UINT_MAX) {
+    if(ofs != _UI64_MAX) {
       if(m_dwCaret != ofs || bOnChar != m_bCaretOnChar) {
         m_dwOldCaret = m_dwCaret;
         if(nFlags & MK_SHIFT) {
@@ -413,6 +429,7 @@ public:
       SetCapture();
     }
     m_bEnterVal = FALSE;
+    UpdateStatusBar();
     SetMsgHandled(FALSE);
   }
   void OnLButtonUp(UINT nFlags, WTL::CPoint point)
@@ -422,18 +439,20 @@ public:
       KillTimer(m_timer);
       m_timer = 0;
     }
+    UpdateStatusBar();
     SetMsgHandled(FALSE);
   }
   void OnLButtonDblClk(UINT nFlags, WTL::CPoint point)
   {
     OnDoubleClick();
+    UpdateStatusBar();
     SetMsgHandled(FALSE);
   }
   void OnMouseMove(UINT nFlags, WTL::CPoint point)
   {
     if(nFlags & MK_LBUTTON) {
       UINT64 ofs = PointToOffset(point);
-      if(ofs != UINT_MAX) {
+      if(ofs != _UI64_MAX) {
         if(m_timer) {
           KillTimer(m_timer);
           m_timer = 0;
@@ -457,11 +476,13 @@ public:
           m_timer = SetTimer(point.y < 0 ? TIMER_UP : TIMER_DOWN, 50, NULL);
       }
     }
+    UpdateStatusBar();
     SetMsgHandled(FALSE);
   }
   BOOL OnMouseWheel(UINT nFlags, short zDelta, WTL::CPoint pt)
   {
-    BOOL ret = CTextView::OnMouseWheel(nFlags, zDelta, pt);
+    SetMsgHandled(false);
+    //BOOL ret = CTextView::OnMouseWheel(nFlags, zDelta, pt);
 
     CBZView *pActiveView = GetActiveBZView();
     if(options.bSyncScroll && pActiveView==this)
@@ -469,18 +490,19 @@ public:
       CBZView* pView1 = GetBrotherView();
       if(pView1)
       {
-        POINT pt = GetScrollPos();
-        pView1->ScrollToPos(pt);
+       // POINT pt = GetScrollPos();
+       // pView1->ScrollToPos(pt);
         pView1->Invalidate();
         //pView1->OnVScroll(nSBCode, nPos, NULL);
         //	TRACE("OnVScroll: m_dwCaret=%d\n", m_dwCaret);
       }
     }
-    return ret;
+    return TRUE;//ret;
   }
   void OnVScroll(UINT nSBCode, UINT nPos, WTL::CScrollBar pScrollBar)
   {
-    CTextView::OnVScroll(nSBCode, nPos, pScrollBar);
+    SetMsgHandled(false);
+    //CTextView::OnVScroll(nSBCode, nPos, pScrollBar);
 
     CBZView *pActiveView = GetActiveBZView();
     if(options.bSyncScroll && pActiveView==this)
@@ -488,8 +510,8 @@ public:
       CBZView* pView1 = GetBrotherView();
       if(pView1)
       {
-        POINT pt = GetScrollPos();
-        pView1->ScrollToPos(pt);
+       // POINT pt = GetScrollPos();
+       // pView1->ScrollToPos(pt);
         pView1->Invalidate();
         //pView1->OnVScroll(nSBCode, nPos, NULL);
         //		TRACE("OnVScroll: m_dwCaret=%d\n", m_dwCaret);
@@ -516,6 +538,8 @@ public:
     m_timer = 0;
     m_nPageLen = 0;		// ### 1.54
     m_nBytesLength = 1;
+    m_maxPage = 0;
+    m_bBeginPrintJob = FALSE;
   }
   virtual ~CBZView()
   {
@@ -566,9 +590,9 @@ private:
 	BOOL	m_bCaretOnChar;
 	BOOL	m_bEnterVal;
 	int		m_timer;
-	CBZDoc2*	m_pDoc;
 	UINT64	m_dwPrint;
 public:
+	CBZDoc2*	m_pDoc;
 	int		m_nPageLen;
 private:
 	CharSet m_charset;
@@ -576,6 +600,8 @@ private:
 	int		m_nColAddr;		// ###1.60
 	static LPSTR m_pEbcDic;	// ###1.63
 	static BOOL  m_bLoadEbcDic;
+public:
+  BOOL m_bBeginPrintJob;
 
 public:
   UINT64 GetFileSize();
@@ -594,7 +620,8 @@ public:
 
 // Implementation
 private:
-	void	DrawHeader();
+	void	DrawHeader(UINT64 ofs);
+	void	DrawHeader2File();
 	void	DrawGrid(HDC hDC, RECT& rClip);
 	void	DrawDummyCaret(HDC hDC);
 	BOOL	DrawCaret();
@@ -645,18 +672,20 @@ public:
 	void ReCreateBackup();
 	void ReCreateRestore();
 
+  DWORD m_maxPage;
+
   virtual bool IsValidPage(UINT nPage)
   {
-    return (nPage==0);
+    //return (nPage<m_maxPage);
+    return true;
   }
 
   virtual bool PrintPage(UINT nPage, HDC hDC)
   {
-    // Å‰‚Ìƒy[ƒW‚¾‚¯ˆóü
-    if(nPage >= 1)
+    if(nPage >= m_maxPage)
       return false;
 
-    OnPaint(hDC);
+    OnPaint(hDC, TRUE);
 
     return true;
   }
@@ -665,22 +694,10 @@ public:
     UINT64 dwTotal = GetFileSize();
     UINT64 dwSize64 = (m_bBlock) ? BlockEnd()-(BlockBegin()&~(16-1)) : dwTotal;
     UINT64 maxPage64 = dwSize64/16/ m_nPageLen + 1;
-    return maxPage64<=0xFFffFFff ? (DWORD)maxPage64 : 0xFFffFFff;
+    m_maxPage = maxPage64<=0xFFffFFff ? (DWORD)maxPage64 : 0xFFffFFff;
+    return m_maxPage;
   }
-  virtual void BeginPrintJob(HDC hDC)
-  {
-    CTextView::BeginPrintJob(hDC);
-
-    WTL::CDCHandle cdc(hDC);
-    WTL::CRect rMargin;
-    GetMargin(rMargin, hDC);
-    POINT pt;
-    pt.x = cdc.GetDeviceCaps(HORZRES) - rMargin.left - rMargin.right;
-    pt.y = cdc.GetDeviceCaps(VERTRES) - rMargin.top - rMargin.bottom;
-    PixelToGrid(pt);
-    m_nPageLen = pt.y-1;
-  //  SetMaxPrintingPage(pInfo);
-  }
+  virtual void PrePrintPage/*BeginPrintJob*/(UINT nPage, HDC hDC);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -697,6 +714,9 @@ protected:
 //	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 //	virtual void OnBeginPrinting(WTL::CDC* pDC, CPrintInfo* pInfo);
 	//}}AFX_VIRTUAL
+
+public:
+  HRESULT CalcOffsetByClientRect(UINT64 *pQWStart, UINT64 *pQWMax, UINT64 *pQWMax2 = NULL);
 };
 
 

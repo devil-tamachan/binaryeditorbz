@@ -318,6 +318,7 @@
     <ClInclude Include="SettingDlg.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="SuperFileCon.h" />
+    <ClInclude Include="tamascrlu64v.h" />
     <ClInclude Include="tamasplit.h" />
     <ClInclude Include="TextView.h" />
   </ItemGroup>

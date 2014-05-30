@@ -79,6 +79,8 @@ void CTextView::OnChangeFont(HDC hPrintDC)
 	cdc.GetTextMetrics(&tm);
 	m_cell.cx = tm.tmAveCharWidth;
 	m_cell.cy = tm.tmHeight;
+  m_cellH = tm.tmAveCharWidth;
+	m_cellV = tm.tmHeight;
 //	pDC->LPtoDP(&m_cell);
 	cdc.SelectFont(pOldFont);
 	if(!hPrintDC) {			// ###1.5
@@ -131,46 +133,46 @@ void CTextView::InitCaret(BOOL bShow)
 
 /////////////////////////////////////////////////////////////////////////////
 // CTextView drawing
-
-void CTextView::ResizeFrame()
-{
-	m_bResize = TRUE;
-  WTL::CRect rFrame, rClient;
-	CMainFrame* pMainFrame = GetMainFrame();
-  if(!pMainFrame)return;
-	GetWindowRect(rClient);
-	pMainFrame->GetWindowRect(rFrame);
-//	TRACE("Client %d,%d  Frame %d,%d\n", rClient.Width(), rClient.Height(), rFrame.Width(), rFrame.Height());
-	rFrame.x2 = rClient.x1 + (m_cView.cx + 2) * m_cell.cx + GetSystemMetrics(SM_CXVSCROLL);
-	pMainFrame->MoveWindow(rFrame);
-	//InitCaret(FALSE);
-}
-
+//
+//void CTextView::ResizeFrame()
+//{
+//	m_bResize = TRUE;
+//  WTL::CRect rFrame, rClient;
+//	CMainFrame* pMainFrame = GetMainFrame();
+//  if(!pMainFrame)return;
+//	GetWindowRect(rClient);
+//	pMainFrame->GetWindowRect(rFrame);
+////	TRACE("Client %d,%d  Frame %d,%d\n", rClient.Width(), rClient.Height(), rFrame.Width(), rFrame.Height());
+//	rFrame.x2 = rClient.x1 + (/*m_cView.cx*/m_cTotalX + 2) * m_cell.cx + GetSystemMetrics(SM_CXVSCROLL);
+//	pMainFrame->MoveWindow(rFrame);
+//	//InitCaret(FALSE);
+//}
+/*
 void CTextView::SetTextSize(SIZE cTotal, int nPage)
 {
 	m_nPage  = nPage;
-/*	SCROLLINFO sbi;
+	SCROLLINFO sbi;
 	sbi.fMask = SIF_RANGE;
 	sbi.nMin  = 0;
 	sbi.nMax  = cTotal.cy;
 	SetScrollInfo(SB_VERT, &sbi, FALSE);
 	sbi.nMax  = cTotal.cx;
 	SetScrollInfo(SB_HORZ, &sbi, FALSE);
-*/
 	
 	SetTextSize(cTotal);
-	InitScrollBar();	// ### 1.62
+	//InitScrollBar();	// ### 1.62
 }
-
-void CTextView::SetTextSize(SIZE cTotal)
+*/
+void CTextView::SetTextSize(long cTotalX, UINT64 cTotalY)
 {
-	if(!m_pVText || m_cTotal.cx != cTotal.cx) {
+	if(!m_pVText || m_cTotalX != cTotalX) {
 		delete m_pVText;
-		m_pVText = new char[cTotal.cx+1];
+		m_pVText = new char[cTotalX+1];
 	}
-	m_cTotal = cTotal;
+	m_cTotalX = cTotalX;
+  SetScrollSizeU64V(m_cTotalX*m_cellH, cTotalY);
 }
-
+/*
 POINT CTextView::GetScrollPos()
 {
 	POINT pt;
@@ -189,12 +191,8 @@ void CTextView::ScrollToPos(POINT pt)
 	sbi.nPos = pt.y;
 	SetScrollInfo(SB_VERT, &sbi, TRUE);
 }
-
-void CTextView::SetScrollHome(POINT ptHome)
-{
-	m_ptHome = ptHome;
-}
-
+*/
+/*
 void CTextView::InitScrollBar()	// ### 1.62
 {
 	if(m_bOnSize || m_cTotal.cx <= 0 || m_cTotal.cy <= 0)
@@ -217,7 +215,7 @@ void CTextView::InitScrollBar()	// ### 1.62
 	SetScrollInfo(SB_VERT, &sbi, TRUE);
 
 	m_bOnSize = FALSE;
-}
+}*/
 
 /////////////////////////////////////////////////////////////////////////////
 // CTextView message handlers
@@ -245,6 +243,7 @@ void CTextView::ClientToGrid(POINT& pt)
 	PixelToGrid(pt);
 }
 */
+
 void CTextView::PixelToGrid(POINT& pt)
 {
 	pt.x /= m_cell.cx;
@@ -252,6 +251,14 @@ void CTextView::PixelToGrid(POINT& pt)
 }
 
 void CTextView::PixelToGrid(RECT& rect)
+{
+	rect.x1 /= m_cell.cx;
+	rect.x2 /= m_cell.cx;
+	rect.y1 /= m_cell.cy;
+	rect.y2 /= m_cell.cy;
+}
+
+void CTextView::PixelToGridU64V(CRectU64V &rect)
 {
 	rect.x1 /= m_cell.cx;
 	rect.x2 /= m_cell.cx;
@@ -275,7 +282,7 @@ void CTextView::GridToPixel(RECT& rect)
 }
 */
 
-
+/*
 void CTextView::OnScrollBar(int nBar, UINT nSBCode)
 {
 	SCROLLINFO sbi = { sizeof(SCROLLINFO), SIF_ALL };
@@ -331,17 +338,7 @@ void CTextView::ScrollClient(int dx, int dy)
 	ScrollWindow(dx*m_cell.cx, dy*m_cell.cy, &rClient, &rClient);
 }
 
-void CTextView::ScrollBy(int dx, int dy, BOOL bScrl)
-{
-	POINT pt = GetScrollPos();
-	pt.x += dx;
-	pt.y += dy;
-	ScrlBarRange(SB_VERT, pt.y);
-	ScrollToPos(pt);
-	if(bScrl)
-		ScrollClient(-dx, -dy);
-}
-
+*/
 void CTextView::MoveCaret(POINT pt)
 {
 //	if(pt.x == -1)
@@ -405,7 +402,7 @@ void CTextView::InvertCaret(POINT pt)
 /////////////////////////////////////////////////////////////////////////////
 // CTextView Virtual Text VRAM
 
-void CTextView::Locate(int x, int y)
+void CTextView::Locate(int x, UINT64 y)
 {
 	PutFlush();
 	m_xLoc = x;
@@ -430,7 +427,11 @@ void CTextView::SetColor(DWORD colText, DWORD colBk)
 
 void CTextView::PutChar(char c, int n)
 {
-	if(!n || m_nText >= m_cTotal.cx) return;
+	if(!n || m_nText >= m_cTotalX)
+  {
+    ATLASSERT(FALSE);
+    return;
+  }
 	for_to(i, n)
 		*(m_pVText + m_nText++) = c;
 	*(m_pVText + m_nText) = '\0';
@@ -474,7 +475,7 @@ void CTextView::PutFlush()
 			m_nText = 0;
 			return;
 		}
-		POINT pt = GetScrollPos();
+		//POINT pt = GetScrollPos();
     if(!m_bPrinting) {
 			COLORREF colText = GetSystemColor(m_colText);
 			COLORREF colBk   = GetSystemColor(m_colBk);
@@ -482,8 +483,9 @@ void CTextView::PutFlush()
 			m_dc.SetBkColor(colBk);
 		}
 		int xFrom = m_xLoc;
+    //ATLTRACE("PutFlush::TextOut(%d, %d)\n", (m_xLoc/*-pt.x*/)*m_cell.cx, ConvYVirtualSpace2RealSpace(m_yLoc/*-m_u64V*/)*m_cell.cy);
 		int xTo = xFrom + m_nText;
-		::TextOutA(m_dc.m_hDC, (m_xLoc-pt.x)*m_cell.cx, m_yLoc*m_cell.cy, m_pVText, m_nText);
+    ::TextOutA(m_dc.m_hDC, (m_xLoc/*-pt.x*/)*m_cell.cx-m_ptOffset.x, ConvYVirtualSpace2RealSpace(m_yLoc/*-m_u64V*/)*m_cell.cy, m_pVText, m_nText);
 		m_xLoc += m_nText;
 		m_nText = 0;
 		if(m_bShowCaret2 && m_yLoc == m_ptCaret2.y && m_ptCaret2.x >= xFrom && m_ptCaret2.x < xTo) {	// ### 1.62

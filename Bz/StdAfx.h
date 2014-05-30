@@ -55,9 +55,12 @@ extern WTL::CAppModule _Module;
 #include <crtdbg.h>
 #endif
 
+#include "Bz.h"
+
 #define SFC_EASYDEBUG
 #include "SuperFileCon.h"
 
+#include "tamascrlu64v.h"
 #include "tamasplit.h"
 #include "BZCoreData.h"
 

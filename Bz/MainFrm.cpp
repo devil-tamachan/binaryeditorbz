@@ -81,11 +81,11 @@ void CMainFrame::OnUpdateViewBitmap()
 
 void CMainFrame::OnShowWindow(BOOL bShow, UINT nStatus)
 {
-  if(bShow && m_nSplitView != ID_VIEW_SPLIT_V) {
-    CBZView *pBZView = GetActiveBZView();
-    if(pBZView)
-      pBZView->ResizeFrame();
-  }
+  //if(bShow && m_nSplitView != ID_VIEW_SPLIT_V) {
+  //  CBZView *pBZView = GetActiveBZView();
+  //  if(pBZView)
+  //    pBZView->ResizeFrame();
+  //}
 }
 void CMainFrame::OnViewSubCursor(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
@@ -115,6 +115,19 @@ void CMainFrame::OnFileSaveDumpList(UINT uNotifyCode, int nID, CWindow wndCtl)
       file.Close();
     }
   }
+}
+void CMainFrame::OnFileNew(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  CBZView *pBZView = pCoreData->GetActiveBZView();
+  if(pBZView)
+  {
+    if(!(pBZView->AskSave()))return; //Cancel Close
+    CBZDoc2 *pNewDoc = new CBZDoc2();
+    pCoreData->ReplaceActiveBZDoc2(pNewDoc, TRUE);
+    pBZView->Update();
+  }
+  UpdateFrameTitle();
 }
 void CMainFrame::OnFileOpen(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
@@ -160,6 +173,8 @@ void CMainFrame::OnFilePrint(UINT uNotifyCode, int nID, CWindow wndCtl)
   CBZView *bzView = GetActiveBZView();
   if(bzView==NULL || bzView->m_bPrinting)return;
 
+  bzView->m_bBeginPrintJob = FALSE;
+
   dlg.m_pdex.hDevMode = m_devmodeCur.CopyToHDEVMODE();
   dlg.m_pdex.hDevNames = m_printerCur.CopyToHDEVNAMES();
 	dlg.m_pdex.nMinPage = 1;
@@ -179,7 +194,7 @@ void CMainFrame::OnFilePrint(UINT uNotifyCode, int nID, CWindow wndCtl)
     if(dlg.m_pdex.dwResultAction == PD_RESULT_PRINT)
     {
       m_job.StartPrintJob(false, m_printerCur, m_devmodeCur, bzView,
-        _T("BZ"), 0, 0, (dlg.PrintToFile() != FALSE));
+        bzView->m_pDoc->GetDocName(), 0, 0, (dlg.PrintToFile() != FALSE));
     }
   }
   ::GlobalFree(dlg.m_pdex.hDevMode);
@@ -192,6 +207,7 @@ void CMainFrame::OnFilePrintSetup(UINT uNotifyCode, int nID, CWindow wndCtl)
 
   dlg.m_psd.hDevMode = m_devmodeCur.CopyToHDEVMODE();
   dlg.m_psd.hDevNames = m_printerCur.CopyToHDEVNAMES();
+  dlg.m_psd.rtMargin = options.rMargin;
 
   if(dlg.DoModal() == IDOK)
   {
@@ -199,10 +215,42 @@ void CMainFrame::OnFilePrintSetup(UINT uNotifyCode, int nID, CWindow wndCtl)
 
     m_printerCur.ClosePrinter();
     m_printerCur.OpenPrinter(dlg.m_psd.hDevNames, m_devmodeCur);
+    dlg.GetMargins(options.rMargin, NULL);
   }
   ::GlobalFree(dlg.m_psd.hDevMode);
   ::GlobalFree(dlg.m_psd.hDevNames);
 }
+void CMainFrame::OnFilePrintPreview(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CBZView *bzView = GetActiveBZView();
+  if(bzView==NULL || m_printerCur.IsNull() || m_devmodeCur.IsNull())return;
+
+  CTamaSplitterWindow *pSplitter = GetSplitter();
+  if(m_bPrintPreview){
+    m_hWndClient = NULL;
+    if(pSplitter)
+    {
+      pSplitter->ShowWindow(SW_SHOW);
+      m_hWndClient = pSplitter->m_hWnd;
+    }
+    m_wndPrintPreview.DestroyWindow();
+    bzView->m_bBeginPrintJob = FALSE;
+    m_bPrintPreview = FALSE;
+    bzView->EndPrintJob(0,0);
+  } else {
+    bzView->m_bBeginPrintJob = FALSE;
+    m_wndPrintPreview.SetPrintPreviewInfo(m_printerCur, m_devmodeCur, bzView, 0, 0);
+    m_wndPrintPreview.SetPage(0);
+    m_wndPrintPreview.Create(m_hWnd, rcDefault, NULL, 0, /*WS_EX_CLIENTEDGE |*/ WS_EX_STATICEDGE);
+    m_hWndClient = m_wndPrintPreview;
+    if(pSplitter)pSplitter->ShowWindow(SW_HIDE);
+    m_bPrintPreview = TRUE;
+  }
+ // UISetCheck(ID_FILE_PRINT_PREVIEW, m_bPrintPreview);
+
+  UpdateLayout();
+}
+
 void CMainFrame::OnFileRecent(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
   CString path;
@@ -255,6 +303,7 @@ void CMainFrame::_OnInitMenuPopup()
       UIEnable(ID_FILE_SAVE_AS, pDoc->OnUpdateFileSaveAs());
     }
   }
+  OnUpdatePrintPreview();
 }
 
 void CMainFrame::OnInitMenuPopup(WTL::CMenuHandle menuPopup, UINT nIndex, BOOL bSysMenu)
@@ -316,6 +365,31 @@ void CMainFrame::OnViewAnalyzer(UINT uNotifyCode, int nID, CWindow wndCtl)
   //CreateClient();
 }
 
+LRESULT CMainFrame::OnStatusBarClicked(LPNMHDR pnmh)
+{
+  NMMOUSE *pmmouse = (NMMOUSE *)pnmh;
+  int paneIdx = pmmouse->dwItemSpec;
+  
+  CBZView *pBZView = GetActiveBZView();
+  if(pBZView)
+  {
+    switch(paneIdx)
+    {
+    case 1:
+      pBZView->OnStatusInfo();
+      break;
+    case 2:
+      pBZView->OnStatusSize();
+      break;
+    case 3:
+      pBZView->OnStatusChar();
+      break;
+    }
+    pBZView->_OnInitMenuPopup();
+    pBZView->UIUpdateStatusBar();
+  }
+  return 0;
+}
 
 
 void CMainFrame::OnClose()
@@ -631,8 +705,13 @@ BOOL CMainFrame::CreateClient()
 
 void CMainFrame::ChangeView(CBZView* pView) 
 {
-	if(m_nSplitView) 
-		SetActiveView(GetBrotherView(pView));
+	if(m_nSplitView)
+  {
+    CBZView *pBroBZView = GetBrotherView(pView);
+    ATLASSERT(pBroBZView);
+		SetActiveView(pBroBZView);
+    pBroBZView->UpdateStatusBar();
+  }
 }
 
 CBZView *CMainFrame::GetBrotherView(CBZView* pView)
