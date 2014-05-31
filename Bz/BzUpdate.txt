@@ -1,5 +1,16 @@
 ## CHANGELOG
 
+### 1.9.3 2014/05/31 (devil.tamachan@gmail.com)
+ - (修正) Issue 27 スクロールバー操作で落ちます (Special Thanks: gnanas)
+ - (修正) Issue 30 UTF8の日本語表示がおかしい (Special Thanks! takamitsu)
+ - (追加) Issue 31 BMPビューの旧BZカラーパレットサポート (Special Thanks! g1e2n04)
+ - (追加) 4GB超ファイルに対応
+ - (追加) 完全WTL化（脱MFC）
+ - (修正) UTF16が文字化けする
+ - (修正) 新規作成 + SaveAsした場合、GetFilePath()がNULLを返す（パスが更新されない）バグ
+ - (修正) SuperFileCon: 一回で50MB以上の削除をすると、保存時にアクセス違反でクラッシュするバグ
+ - (修正) キーを押したまま入力中に表示が更新されない / HDDがガリガリする
+
 ### 1.9.2 2013/11/20 (devil.tamachan@gmail.com)
  - (修正) 挿入すると挿入点直後のデータが壊れるバグ (1.9.1で混入)
 
