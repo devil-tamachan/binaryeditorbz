@@ -56,6 +56,7 @@ public:
   _inline const LPBYTE CacheForce(UINT64 dwStart, size_t dwNeedSize) { return m_pSFC ? m_pSFC->CacheForce(dwStart, dwNeedSize) : NULL; }
   _inline size_t GetMaxCacheSize()             { return m_pSFC ? m_pSFC->GetMaxCacheSize() : 0; }
   _inline size_t GetRemainCache(UINT64 dwStart) { return m_pSFC ? m_pSFC->GetRemainCache(dwStart) : 0; }
+  _inline DWORD GetSFCRefCount() { return m_pSFC ? m_pSFC->GetRefCount() : 0; }
 
   _inline BOOL IsModified() { return m_pSFC ? m_pSFC->IsModified() : FALSE; };
 

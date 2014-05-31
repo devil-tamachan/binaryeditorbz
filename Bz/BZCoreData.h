@@ -135,14 +135,7 @@ public:
   {
     while(GetCountBZView()>0)DeleteView(0, bDelDoc);
   }
-  void RemoveAllDocs()
-  {
-    for(int i=0;i<m_arrDoc.GetSize();i++)
-    {
-      delete m_arrDoc[i];
-    }
-    m_arrDoc.RemoveAll();
-  }
+  void RemoveAllDocs();
 
   void AddBZDoc2(CBZDoc2 *doc)
   {

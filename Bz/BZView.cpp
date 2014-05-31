@@ -590,9 +590,14 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         else m_pDoc->Write(buffer, m_dwCaret, len);
         UpdateDocSize();
         MemFree(buffer);
-        //Invalidate(FALSE);
         if(!m_bEnterVal)
+        {
           MoveCaretTo(m_dwCaret + len);
+        } else {
+          Invalidate(FALSE);
+          UpdateWindow();
+        }
+        RedrawSamefileBrotherView();
       }
       return;
     }
@@ -600,14 +605,31 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     if(bInsert)m_pDoc->Insert(&nChar, m_dwCaret, 1);
     else m_pDoc->Write(&nChar, m_dwCaret, 1);
     UpdateDocSize();
-    //Invalidate(FALSE);
+    Invalidate(FALSE);
     if(!m_bEnterVal) {
       MoveCaretTo(m_dwCaret+1);
+    } else {
+      Invalidate(FALSE);
+      UpdateWindow();
     }
+    RedrawSamefileBrotherView();
     return;
 Error:
     MessageBeep(MB_NOFOCUS);
     return;
+  }
+
+  void CBZView::RedrawSamefileBrotherView()
+  {
+    if(m_pDoc->GetSFCRefCount() > 1)
+    {
+      CBZView* pView = GetBrotherView();
+      if(pView)
+      {
+        pView->Invalidate(FALSE);
+        pView->UpdateWindow();
+      }
+    }
   }
 
   void CBZView::OnDropFiles(HDROP hDropInfo)
@@ -1398,14 +1420,14 @@ void CBZView::MoveCaretTo(UINT64 dwNewCaret)
 
   int dy = dwNewCaret/16 - m_dwCaret/16;
 
-  WTL::CRect rect;
+  /*WTL::CRect rect;
   UINT64 v64 = GetScrollPosU64V();
   UINT64 dwOrg = v64 * 16;
   UINT64 dwOldCaret = m_dwCaret;
   if(dwOldCaret >= dwOrg)
   {
     GetClientRect(rect);
-  }
+  }*/
 
   m_dwCaret = dwNewCaret;
   int scrolldy=0;
@@ -1414,14 +1436,15 @@ void CBZView::MoveCaretTo(UINT64 dwNewCaret)
     scrolldy += dy;
   }
   
-  if(dwOldCaret >= dwOrg)
+  /*if(dwOldCaret >= dwOrg)
   {
     rect.top = ((dwOldCaret - dwOrg)/16 + DUMP_Y - scrolldy)*m_cellV;
     rect.bottom = rect.top + m_cellV;
     InvalidateRect(rect, FALSE);
-  }
-	if(m_bBlock)
-		Invalidate(FALSE);
+  }*/
+  Invalidate(FALSE);
+	//if(m_bBlock)
+	//	Invalidate(FALSE);
 
   UpdateWindow();
 }

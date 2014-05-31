@@ -79,3 +79,12 @@ void CBZCoreData::Invalidate(BOOL bErase)
 {
   if(m_pMainFrame)m_pMainFrame->Invalidate(bErase);
 }
+
+void CBZCoreData::RemoveAllDocs()
+{
+  for(int i=0;i<m_arrDoc.GetSize();i++)
+  {
+    delete m_arrDoc[i];
+  }
+  m_arrDoc.RemoveAll();
+}
