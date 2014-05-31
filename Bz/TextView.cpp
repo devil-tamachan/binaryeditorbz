@@ -170,7 +170,7 @@ void CTextView::SetTextSize(long cTotalX, UINT64 cTotalY)
 		m_pVText = new char[cTotalX+1];
 	}
 	m_cTotalX = cTotalX;
-  SetScrollSizeU64V(m_cTotalX*m_cellH, cTotalY);
+  SetScrollSizeU64V(m_cTotalX*m_cellH, cTotalY, FALSE, false);
 }
 /*
 POINT CTextView::GetScrollPos()
@@ -364,9 +364,9 @@ void CTextView::MoveCaret(POINT pt)
 
 // Sub caret drawing ### 1.62
 
-void CTextView::MoveCaret2(POINT pt)
+void CTextView::MoveCaret2(POINT pt, BOOL bRedraw)
 {
-	if(m_bShowCaret2) {
+	if(m_bShowCaret2 && bRedraw) {
 		InvertCaret(m_ptCaret2);
 		InvertCaret(pt);
 	}

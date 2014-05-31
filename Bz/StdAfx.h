@@ -57,7 +57,7 @@ extern WTL::CAppModule _Module;
 
 #include "Bz.h"
 
-#define SFC_EASYDEBUG
+//#define SFC_EASYDEBUG
 #include "SuperFileCon.h"
 
 #include "tamascrlu64v.h"

@@ -321,6 +321,7 @@ void CBZView::OnEditUndo(UINT uNotifyCode, int nID, CWindow wndCtl)
       m_dwCaret = dwRetStart;
       GotoCaret();
       UpdateDocSize();
+      Invalidate(FALSE);
     } else {
       ATLASSERT(FALSE);
     }
@@ -333,6 +334,7 @@ void CBZView::OnEditRedo(UINT uNotifyCode, int nID, CWindow wndCtl)
       m_dwCaret = dwRetStart;
       GotoCaret();
       UpdateDocSize();
+      Invalidate(FALSE);
     } else {
       ATLASSERT(FALSE);
     }
@@ -344,6 +346,7 @@ void CBZView::OnEditPaste(UINT uNotifyCode, int nID, CWindow wndCtl)
       m_dwOldCaret = m_dwCaret;
       m_dwCaret = dwPaste;
       UpdateDocSize();
+      Invalidate(FALSE);
     }
   }
 void CBZView::OnViewColor(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -471,6 +474,7 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
       if(dwNewCaret == dwTotal
         || !m_pDoc->Delete(dwNewCaret, 1)) goto Error;
       UpdateDocSize();
+      Invalidate(FALSE);
     }
     break;
   default:
@@ -527,6 +531,7 @@ int CBZView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
   {
+  ATLTRACE("OnChar\n");
     static UINT preChar = 0;
     UINT64 dwTotal = GetFileSize();
 
@@ -585,7 +590,7 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         else m_pDoc->Write(buffer, m_dwCaret, len);
         UpdateDocSize();
         MemFree(buffer);
-        Invalidate(FALSE);
+        //Invalidate(FALSE);
         if(!m_bEnterVal)
           MoveCaretTo(m_dwCaret + len);
       }
@@ -595,7 +600,7 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     if(bInsert)m_pDoc->Insert(&nChar, m_dwCaret, 1);
     else m_pDoc->Write(&nChar, m_dwCaret, 1);
     UpdateDocSize();
-    Invalidate(FALSE);
+    //Invalidate(FALSE);
     if(!m_bEnterVal) {
       MoveCaretTo(m_dwCaret+1);
     }
@@ -672,7 +677,7 @@ void CBZView::Update()
 				pView->OnInitialUpdate();
 		}
 	}
-	Invalidate();
+	Invalidate(FALSE);
 	InitCaret();
 	DrawCaret();
 }
@@ -760,6 +765,7 @@ void CBZView::DrawToFile(CAtlFile* pFile) 	// ###1.63
 
 void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 {
+  ATLTRACE("OnPaint\n");
 	//LPBYTE p  = m_pDoc->GetDocPtr();
 //	if(!p) return;
 
@@ -827,6 +833,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
     InitCharMode(ofs);
 
   BOOL fSJISSkipNextTopChar = FALSE;
+  ATLTRACE("OnPaint2\n");
 
   if(m_charset == CTYPE_SJIS)
   {
@@ -1276,11 +1283,12 @@ void CBZView::DrawDummyCaret(HDC hDC)
 	}
 }
 
-BOOL CBZView::DrawCaret()
+BOOL CBZView::DrawCaret(int *pScrolldy /*=NULL*/)
 {
 	BOOL bDraw = FALSE;
   UINT64 dwOrg = 0, dwMax = 0, dwMax2 = 0;
   CalcOffsetByClientRect(&dwOrg, &dwMax, &dwMax2);
+  if(pScrolldy)*pScrolldy=0;
 
 	POINT pt;
 	LONG ptx2 = -1;	// ###1.62
@@ -1297,13 +1305,17 @@ BOOL CBZView::DrawCaret()
     pt.x -= ptOrgX;
     ptx2 -= ptOrgX;
 		pt.y = (m_dwCaret - dwOrg)/16 + DUMP_Y;
-    if(m_dwCaret >= dwMax2)ScrollBy(0, 1, !m_bBlock);
+    if(m_dwCaret >= dwMax2)
+    {
+      ScrollBy(0, 1, !m_bBlock);
+      dwOrg += 16;
+      if(pScrolldy)*pScrolldy=1;
+    }
 		bDraw = TRUE;
 	}
 	MoveCaret(pt);
 	pt.x = ptx2;
 	MoveCaret2(pt);
-
 	
 	if(GetMainFrame() && GetMainFrame()->m_bInspectView) {
 		CBZInspectView* pView = (CBZInspectView*)GetSubView();
@@ -1384,15 +1396,34 @@ void CBZView::MoveCaretTo(UINT64 dwNewCaret)
 		dwNewCaret = dwTotal;
 	}
 
-	int dy = dwNewCaret/16 - m_dwCaret/16;
-	m_dwCaret = dwNewCaret;
-	if(!DrawCaret()) {
-		ScrollBy(0, dy, !m_bBlock);
-	}
+  int dy = dwNewCaret/16 - m_dwCaret/16;
+
+  WTL::CRect rect;
+  UINT64 v64 = GetScrollPosU64V();
+  UINT64 dwOrg = v64 * 16;
+  UINT64 dwOldCaret = m_dwCaret;
+  if(dwOldCaret >= dwOrg)
+  {
+    GetClientRect(rect);
+  }
+
+  m_dwCaret = dwNewCaret;
+  int scrolldy=0;
+	if(!DrawCaret(&scrolldy)) {
+    ScrollBy(0, dy, !m_bBlock);
+    scrolldy += dy;
+  }
+  
+  if(dwOldCaret >= dwOrg)
+  {
+    rect.top = ((dwOldCaret - dwOrg)/16 + DUMP_Y - scrolldy)*m_cellV;
+    rect.bottom = rect.top + m_cellV;
+    InvalidateRect(rect, FALSE);
+  }
 	if(m_bBlock)
 		Invalidate(FALSE);
 
-	
+  UpdateWindow();
 }
 
 void CBZView::UpdateDocSize()
@@ -1402,7 +1433,7 @@ void CBZView::UpdateDocSize()
 	long cTotalX = VIEWCOLUMNS;
 	UINT64 cTotalY = dwTotal / 16 + 2;
 	SetTextSize(cTotalX, cTotalY);
-	Invalidate(FALSE);
+	//Invalidate(FALSE);
 }
 
 

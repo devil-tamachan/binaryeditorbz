@@ -624,7 +624,7 @@ private:
 	void	DrawHeader2File();
 	void	DrawGrid(HDC hDC, RECT& rClip);
 	void	DrawDummyCaret(HDC hDC);
-	BOOL	DrawCaret();
+	BOOL	DrawCaret(int *pScrolldy = NULL);
 	UINT64	PointToOffset(WTL::CPoint pt);
 	void	CutOrCopy(CutMode mode);
 public:

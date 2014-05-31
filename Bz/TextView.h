@@ -176,7 +176,7 @@ public:
   void PixelToGridU64V(CRectU64V &rect);
 	void GridToPixel(POINT& pt);
 	void MoveCaret(POINT pt);
-	void MoveCaret2(POINT pt);				// ### 1.62
+	void MoveCaret2(POINT pt, BOOL bRedraw = TRUE);				// ### 1.62
 	void ShowCaret2();
 	void HideCaret2();
 	void InvertCaret(POINT pt);

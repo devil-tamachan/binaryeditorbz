@@ -186,7 +186,7 @@ public:
 #ifdef _DEBUG
             wsprintf(tmp, _T("0x%016I64X, %d"), currentAddress, point.y);
 #else
-            wsprintf(tmp, _T("0x%016I64X), currentAddress);
+            wsprintf(tmp, _T("0x%016I64X"), currentAddress);
 #endif
             WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, tmp);
             m_tooltip.UpdateTipText(toolinfo);
