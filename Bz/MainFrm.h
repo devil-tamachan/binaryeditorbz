@@ -381,7 +381,7 @@ public:
     }
   }
   void OnFileNew (UINT uNotifyCode, int nID, CWindow wndCtl);
-  void OnFileOpen(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnFileOpen(UINT /*uNotifyCode*/=0, int /*nID*/=0, CWindow /*wndCtl*/=NULL);
   void OnFileSave(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnFileSaveAs(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnEditReadOnly(UINT uNotifyCode, int nID, CWindow wndCtl);

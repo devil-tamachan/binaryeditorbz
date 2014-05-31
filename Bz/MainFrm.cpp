@@ -129,7 +129,7 @@ void CMainFrame::OnFileNew(UINT uNotifyCode, int nID, CWindow wndCtl)
   }
   UpdateFrameTitle();
 }
-void CMainFrame::OnFileOpen(UINT uNotifyCode, int nID, CWindow wndCtl)
+void CMainFrame::OnFileOpen(UINT /*uNotifyCode*/, int /*nID*/, CWindow /*wndCtl*/)
 {
   CBZCoreData *pCoreData = CBZCoreData::GetInstance();
   CBZView *pBZView = pCoreData->GetActiveBZView();

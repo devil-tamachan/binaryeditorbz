@@ -45,7 +45,7 @@ WTL::CAppModule _Module;
 HINSTANCE g_hInstDll = NULL;
 BOOL g_bFirstInstance;
 
-int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
+int Run(LPTSTR lpstrCmdLine = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
   WTL::CMessageLoop theLoop;
 	_Module.AddMessageLoop(&theLoop);
@@ -59,6 +59,19 @@ int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	}
 
 	wndMain.ShowWindow(nCmdShow);
+
+  if(_tcslen(lpstrCmdLine) > 0)
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    CBZView *pBZView = pCoreData->GetActiveBZView();
+    if(pBZView)
+    {
+      CBZDoc2 *pDoc = pBZView->GetBZDoc();
+      if(pDoc)pDoc->OnFileOpen(lpstrCmdLine, wndMain.m_hWnd);
+      pBZView->Update();
+    }
+    wndMain.UpdateFrameTitle();
+  }
 
 	int nRet = theLoop.Run();
 
