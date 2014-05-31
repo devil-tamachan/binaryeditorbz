@@ -165,7 +165,9 @@ public:
       ATLASSERT(FALSE);
       m_dwCacheAllocSize = 0;
     }
+#ifdef SFC_EASYDEBUG
     _EasyDebug_CreateEasyDebugFile();
+#endif
   }
   ~CSuperFileCon(void)
   {
