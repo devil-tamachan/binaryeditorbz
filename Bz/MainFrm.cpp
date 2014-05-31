@@ -407,6 +407,7 @@ void CMainFrame::OnClose()
   GetSplitInfo();
 
   pCoreData->m_pMainFrame = NULL;
+  pCoreData->RemoveAllDocs();
 
   SetMsgHandled(FALSE);
 }
