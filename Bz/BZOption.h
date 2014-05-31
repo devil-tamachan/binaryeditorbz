@@ -94,6 +94,8 @@ public:
     bReadOnlyOpen = GetProfileInt(key, _T("ReadOnly"), TRUE);
     nBmpWidth = GetProfileInt(key, _T("BmpWidth"), 128);
     nBmpZoom =  GetProfileInt(key, _T("BmpZoom"), 1);
+    nBmpPallet =  GetProfileInt(key, _T("BmpPallet"), 1);
+    if(nBmpPallet!=0 && nBmpPallet!=1)nBmpPallet = 1;
     dwMaxOnMemory = GetProfileInt(key, _T("MaxOnMemory"), 1024 * 1024);		// ###1.60
     dwMaxMapSize =  GetProfileInt(key, _T("MaxMapSize"), 1024 * 1024 * 64);	// ###1.61
     bTagAll =  GetProfileInt(key, _T("TagAll"), FALSE);
@@ -183,6 +185,7 @@ public:
     WriteProfileInt(key, _T("ReadOnly"), bReadOnlyOpen);
     WriteProfileInt(key, _T("BmpWidth"), nBmpWidth);
     WriteProfileInt(key, _T("BmpZoom"), nBmpZoom);
+    WriteProfileInt(key, _T("BmpPallet"), nBmpPallet);
     WriteProfileInt(key, _T("MaxOnMemory"), dwMaxOnMemory);
     WriteProfileInt(key, _T("MaxMapSize"), dwMaxMapSize);
     WriteProfileInt(key, _T("TagAll"), bTagAll);
@@ -234,6 +237,7 @@ public:
 	BOOL bReadOnlyOpen;
 	int  nBmpWidth;
 	int  nBmpZoom;
+  int  nBmpPallet;
 	DWORD dwMaxOnMemory;
 	DWORD dwMaxMapSize;
 	BOOL  bTagAll;
