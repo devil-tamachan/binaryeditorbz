@@ -61,6 +61,7 @@ public:
     COMMAND_RANGE_HANDLER_EX(ID_BMPVIEW_WIDTH128, ID_BMPVIEW_ZOOM, OnBmpViewMode)
     COMMAND_RANGE_HANDLER_EX(ID_BMPVIEW_8BITCOLOR, ID_BMPVIEW_32BITCOLOR, OnBmpViewColorWidth)
     COMMAND_ID_HANDLER_EX(ID_BMPVIEW_ADDRESSTOOLTIP, OnBmpViewAddressTooltip)
+    COMMAND_RANGE_HANDLER_EX(ID_BMPVIEW_PALETTE_BZ, ID_BMPVIEW_PALETTE_SAFETY, OnPalletMode)
     CHAIN_MSG_MAP(CTamaScrollWindowU64VImpl<CBZBmpView2>)
   END_MSG_MAP()
 
@@ -141,6 +142,15 @@ public:
     switch(options.nBmpColorWidth)
     {
     case 8:
+      switch(options.nBmpPallet)
+      {
+      case 0:
+        pMenu.CheckMenuItem(ID_BMPVIEW_PALETTE_BZ, MF_BYCOMMAND | MF_CHECKED);
+        break;
+      case 1:
+        pMenu.CheckMenuItem(ID_BMPVIEW_PALETTE_SAFETY, MF_BYCOMMAND | MF_CHECKED);
+        break;
+      }
       pMenu.CheckMenuItem(ID_BMPVIEW_8BITCOLOR, MF_BYCOMMAND | MF_CHECKED);
       break;
     case 24:
@@ -310,6 +320,27 @@ public:
     options.bAddressTooltip = !options.bAddressTooltip;
   }
 
+  void OnPalletMode(UINT uNotifyCode, int nID, CWindow wndCtl)
+  {
+    switch(nID)
+    {
+    case ID_BMPVIEW_PALETTE_BZ:
+      options.nBmpPallet = 0;
+      options.nBmpColorWidth = 8;
+      break;
+    case ID_BMPVIEW_PALETTE_SAFETY:
+      options.nBmpPallet = 1;
+      options.nBmpColorWidth = 8;
+      break;
+    default:
+      return;
+    }
+    //GetMainFrame()->CreateClient();
+    OnInitialUpdate();
+    Invalidate();
+    UpdateWindow();
+  }
+
   CBZBmpView2()
   {
     m_lpbi = NULL;
@@ -381,7 +412,8 @@ public:
 
 
     DWORD* pRGB = (DWORD*)(m_lpbi+1);
-    MakeSafetyPallet256(pRGB); //MakeBzPallet256(pRGB);
+    if(options.nBmpPallet==0)MakeBzPallet256(pRGB);
+    else MakeSafetyPallet256(pRGB);
     //	MakeRedPallet256(pRGB);
 
     // TODO: calculate the total size of this view
