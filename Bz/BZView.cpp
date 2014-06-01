@@ -1484,51 +1484,60 @@ void CBZView::UpdateStatusInfo()
 	GetMainFrame()->m_statusbar.SetText(1, GetStatusInfoText());
 }
 
+CString CBZView::FormatAddress(UINT64 ofs)
+{
+  CString ret;
+  DWORD ofsHi = HIDWORD(ofs);
+  DWORD ofsLo = LODWORD(ofs);
+
+  if(options.bDWordAddr)
+  {
+    ret.Format(_T("%04X:%04X-%04X:%04X"), HIWORD(ofsHi), LOWORD(ofsHi), HIWORD(ofsLo), LOWORD(ofsLo));
+  } else {
+    if(ofs < 0x1000000) {			// ###1.54
+      ret.Format(_T("%06X"), ofs);
+    } else if(ofs < 0x100000000) {
+      ret.Format(_T("%X"), ofs);
+    } else if(ofsHi < 0x1000000) {
+      ret.Format(_T("%06X-%08X"), ofsHi, ofsLo);
+    } else {
+      ret.Format(_T("%X-%08X"), ofsHi, ofsLo);
+    }
+  }
+  return ret;
+}
+
 
 CString CBZView::GetStatusInfoText()
 {
 	CString sResult;
   UINT64 dwTotal = GetFileSize();
 	if(dwTotal) {
-		LPCTSTR pFmtHexa;
-		int val;
 		if(m_bBlock) {
-			if(m_nColAddr > ADDRCOLUMNS) 
-				sResult.Format(_T("%04X:%04X-%04X:%04X"), HIWORD(BlockBegin()), LOWORD(BlockBegin()), HIWORD(BlockEnd()), LOWORD(BlockEnd()));  // ###1.61
-			else
-				sResult.Format(_T("%06X-%06X"), BlockBegin(), BlockEnd());
-			val = BlockEnd() - BlockBegin();
-			pFmtHexa = _T(" 0x%X(%s) bytes");
+      sResult.Format(_T("%s - %s"), FormatAddress(BlockBegin()), FormatAddress(BlockEnd()));  // ###1.61
+			UINT64 blockSize = BlockEnd() - BlockBegin();
 
 			CString sValue;
-			sValue.Format(pFmtHexa, val, (LPCTSTR)SeparateByComma(val));
+			sValue.Format(_T(" 0x%I64X(%s) bytes"), blockSize, (LPCTSTR)SeparateByComma64(blockSize));
 			sResult += sValue;
 		} else if(m_nBytes<=4) {
 			static TCHAR szFmtHexa[] = _T(": 0x%02X (%s)");
-			if(m_nColAddr > ADDRCOLUMNS)
-				sResult.Format(_T("%04X:%04X"), HIWORD(m_dwCaret), LOWORD(m_dwCaret));
-			else
-				sResult.Format(_T("%06X"), m_dwCaret);
-//#ifdef FILE_MAPPING
-			//if(m_pDoc->IsOutOfMap(m_pDoc->GetDocPtr() + m_dwCaret)) return sResult;
-      if(m_dwCaret+m_nBytes >= dwTotal)return sResult;
-//#endif //FILE_MAPPING
-			val = GetValue(m_dwCaret, m_nBytes);
-			szFmtHexa[6] = '0'+ m_nBytes * 2;
-			pFmtHexa = szFmtHexa;
+			sResult.Format(_T("%s"), FormatAddress(m_dwCaret));
 
-			CString sValue;
-			sValue.Format(pFmtHexa, val, (LPCTSTR)SeparateByComma(val));
-			sResult += sValue;
+      if(m_dwCaret+m_nBytes >= dwTotal)return sResult;
+
+      int val = GetValue(m_dwCaret, m_nBytes);
+      szFmtHexa[6] = '0'+ m_nBytes * 2;
+      LPCTSTR pFmtHexa = szFmtHexa;
+
+      CString sValue;
+      sValue.Format(pFmtHexa, val, (LPCTSTR)SeparateByComma(val));
+      sResult += sValue;
 		} else if(m_nBytes==8) {
-			if(m_nColAddr > ADDRCOLUMNS)
-				sResult.Format(_T("%04X:%04X"), HIWORD(m_dwCaret), LOWORD(m_dwCaret));
-			else
-				sResult.Format(_T("%06X"), m_dwCaret);
-//#ifdef FILE_MAPPING
-			//if(m_pDoc->IsOutOfMap(m_pDoc->GetDocPtr() + m_dwCaret)) return sResult;
+      sResult.Format(_T("%s"), FormatAddress(m_dwCaret));
+
       if(m_dwCaret+8 >= dwTotal)return sResult;
-//#endif //FILE_MAPPING
+
 			ULONGLONG qval = GetValue64(m_dwCaret);
 
 			CString sValue;

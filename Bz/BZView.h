@@ -718,6 +718,7 @@ protected:
 public:
   HRESULT CalcOffsetByClientRect(UINT64 *pQWStart, UINT64 *pQWMax, UINT64 *pQWMax2 = NULL);
   void RedrawSamefileBrotherView();
+  CString FormatAddress(UINT64 ofs);
 };
 
 
