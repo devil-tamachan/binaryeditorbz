@@ -469,12 +469,17 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     if(m_bBlock) {
       CutOrCopy(EDIT_DELETE);
       UpdateStatusBar();
+      Invalidate(FALSE);
+      UpdateWindow();
+      RedrawSamefileBrotherView();
       return;
     } else {
       if(dwNewCaret == dwTotal
         || !m_pDoc->Delete(dwNewCaret, 1)) goto Error;
       UpdateDocSize();
       Invalidate(FALSE);
+      UpdateWindow();
+      RedrawSamefileBrotherView();
     }
     break;
   default:
@@ -498,6 +503,9 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
   } else
     MoveCaretTo(dwNewCaret);
   UpdateStatusBar();
+  Invalidate(FALSE);
+  UpdateWindow();
+  RedrawSamefileBrotherView();
   return;
 Error:
   MessageBeep(MB_NOFOCUS);
@@ -1726,11 +1734,18 @@ int CBZView::ReadHexa(LPCSTR sHexa, LPBYTE& buffer)
 void CBZView::CutOrCopy(CutMode mode)
 {
 	UINT64 dwPtr  = BlockBegin();
-	DWORD dwSize = BlockEnd() - dwPtr;
+	UINT64 qwSize = BlockEnd() - dwPtr;
 	if(mode != EDIT_DELETE)
   {
+    DWORD dwSize = qwSize & 0xFFFFffff;
+    if(qwSize > 0xFFFFffff)
+    {
+      dwSize = 0xFFFFffff;
+      MessageBox(_T("コピーできる最大サイズを超えました。最大0xFFFFFFFFバイトまでコピーされます。削除は全範囲削除されます。"), _T("Error"));
+    }
 		if(!m_pDoc->CopyToClipboard(dwPtr, dwSize))
     {
+      MessageBox(_T("コピー失敗しました"), _T("Error"));
       if(mode==EDIT_CUT)
       {
         ATLASSERT(FALSE);
@@ -1738,7 +1753,7 @@ void CBZView::CutOrCopy(CutMode mode)
       }
     }
   } else if(mode != EDIT_COPY) {
-    if(m_pDoc->Delete(dwPtr, dwSize))
+    if(m_pDoc->Delete(dwPtr, qwSize))
     {
       m_dwCaret = m_dwOldCaret = dwPtr;
       m_bBlock = FALSE;
