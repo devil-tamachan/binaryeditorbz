@@ -1,5 +1,10 @@
 ## CHANGELOG
 
+### 1.9.4 2014/06/01 (devil.tamachan@gmail.com)
+ - (修正) コマンドライン引数でファイル名を与えても開かないバグ
+ - (修正) ウィンドウと閉じる際にBZDoc2を解放し忘れ
+ - (修正) 半バイト分入力時に表示が更新されないバグ / 同じファイルを分割ビューで表示しているとき更新されないバグ
+
 ### 1.9.3 2014/05/31 (devil.tamachan@gmail.com)
  - (修正) Issue 27 スクロールバー操作で落ちます (Special Thanks: gnanas)
  - (修正) Issue 30 UTF8の日本語表示がおかしい (Special Thanks! takamitsu)
