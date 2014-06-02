@@ -67,7 +67,11 @@ int Run(LPTSTR lpstrCmdLine = NULL, int nCmdShow = SW_SHOWDEFAULT)
     if(pBZView)
     {
       CBZDoc2 *pDoc = pBZView->GetBZDoc();
-      if(pDoc)pDoc->OnFileOpen(lpstrCmdLine, wndMain.m_hWnd);
+      CString filename = lpstrCmdLine;
+      LPTSTR pFilename = filename.GetBuffer();
+      PathUnquoteSpaces(pFilename);
+      filename.ReleaseBuffer();
+      if(pDoc)pDoc->OnFileOpen(filename, wndMain.m_hWnd);
       pBZView->Update();
     }
     wndMain.UpdateFrameTitle();
