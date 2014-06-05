@@ -643,7 +643,7 @@ COPYFF_ERR1:
         return nRet;
       }
     }
-    return TRUE;
+    return 1;
   }
   int _OldFileMap_ConvFD(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, TAMADataChunk ***pDataChunks, DWORD *pNumDataChunks)
   {
