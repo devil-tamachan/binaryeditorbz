@@ -296,7 +296,7 @@ COPYFF_ERR1:
     free(buf);
     return FALSE;
   }
-  void _ClearSavedFlags(CAtlFile *pWriteFile, BOOL bSaveAs)
+  BOOL _ClearSavedFlags(CAtlFile *pWriteFile, BOOL bSaveAs)
   {
     TAMAFILECHUNK *pChunk;
     RB_FOREACH(pChunk, _TAMAFILECHUNK_HEAD, &m_filemapHead)
@@ -305,10 +305,18 @@ COPYFF_ERR1:
       pChunk->bSaved = FALSE;
       if(pChunk->dataChunk->dataType == CHUNK_FILE && pChunk->dwStart == _TAMAFILECHUNK_GetRealStartAddr(pChunk) /*サイズも確認したほうがいい？*/)
       {
-        if(bSaveAs)_CopyFF(pChunk, pWriteFile);
+        if(bSaveAs)
+        {
+          if(!_CopyFF(pChunk, pWriteFile))
+          {
+            ATLASSERT(FALSE);
+            return FALSE;
+          }
+        }
         pChunk->bSaved = TRUE; //file change nothing
       }
     }
+    return TRUE;
   }
   void _ClearDataChunkSavingFlag()
   {
@@ -591,7 +599,7 @@ COPYFF_ERR1:
     }
     return TRUE;
   }
-  void _Save_UpdateAllDataChunkSavingType(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead)
+  int _Save_UpdateAllDataChunkSavingType(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead)
   {
     _ClearDataChunkSavingFlag();
 
@@ -613,7 +621,7 @@ COPYFF_ERR1:
           break;
         default:
           ATLASSERT(FALSE);
-          break;
+          return -2;
         }
       }
     }
@@ -622,11 +630,22 @@ COPYFF_ERR1:
     {
       TAMAUndoRedo *undo = m_undo[i];
       ATLASSERT(undo);
-      _OldFileMap_ConvFD(pOldFilemapHead, &undo->dataNext, &undo->nDataNext);
-      _OldFileMap_ConvFD(pOldFilemapHead, &undo->dataPrev, &undo->nDataPrev);
+      int nRet = _OldFileMap_ConvFD(pOldFilemapHead, &undo->dataNext, &undo->nDataNext);
+      if(nRet!=1)
+      {
+        ATLASSERT(FALSE);
+        return nRet;
+      }
+      nRet     = _OldFileMap_ConvFD(pOldFilemapHead, &undo->dataPrev, &undo->nDataPrev);
+      if(nRet!=1)
+      {
+        ATLASSERT(FALSE);
+        return nRet;
+      }
     }
+    return TRUE;
   }
-  BOOL _OldFileMap_ConvFD(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, TAMADataChunk ***pDataChunks, DWORD *pNumDataChunks)
+  int _OldFileMap_ConvFD(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, TAMADataChunk ***pDataChunks, DWORD *pNumDataChunks)
   {
     for(DWORD i=0;i<*pNumDataChunks;i++)
     {
@@ -645,10 +664,16 @@ COPYFF_ERR1:
         bool bOverWrite = true;//DWORD iS = i;
         TAMAOLDFILECHUNK *pOldFileChunkNext = pOldFileChunkS;
         ATLASSERT(nRemain > 0);
+        BOOL iCnt = 0;
         while(1)
         {
           TAMADataChunk *newDataChunk = _OldFileMap_Conv2TAMADataChunk(pOldFileChunkNext, &nRemain, dwOldFileAddrS);
           ATLASSERT(newDataChunk);
+          if(newDataChunk==NULL)
+          {
+            ATLASSERT(FALSE);
+            return iCnt>0 ? -2 : -1;
+          }
           dwOldFileAddrS += newDataChunk->dwSize;
           if(bOverWrite)//if(iS==i)
           {
@@ -659,6 +684,12 @@ COPYFF_ERR1:
             BOOL bRetInsert = _TAMADATACHUNKS_Insert(pDataChunks, pNumDataChunks, i+1, newDataChunk);
             ATLASSERT(bRetInsert);
             ATLASSERT(i<0xFFffFFff);
+            if(!bRetInsert)
+            {
+              ATLASSERT(FALSE);
+              _TAMADataChunk_Release(newDataChunk);
+              return iCnt>0 ? -2 : -1;
+            }
             i++;
           }
           //nRemain -= nNextChunkSize;
@@ -669,13 +700,14 @@ COPYFF_ERR1:
           if(pOldFileChunkNext==NULL)
           {
             ATLASSERT(FALSE);
-            return FALSE;
+            return -2;
           }
           ATLASSERT(pOldFileChunkNext->type == OF_FD || pOldFileChunkNext->type == OF_FF);
+          iCnt++;
         }
       }
     }
-    return TRUE;
+    return 1;
   }
   TAMADataChunk* _OldFileMap_Conv2TAMADataChunk(TAMAOLDFILECHUNK *pOldFileChunk, UINT64 *pNRemain, UINT64 dwStart)
   {
@@ -698,17 +730,27 @@ COPYFF_ERR1:
         ATLASSERT(pTAMADataBuf);
         dataChunk = _TAMADataChunk_CreateMemAssignTAMADataBuf(nChunkSize, dwSkip, pTAMADataBuf);
         ATLASSERT(dataChunk);
+        if(dataChunk==NULL)
+        {
+          ATLASSERT(FALSE);
+          return NULL;
+        }
         dataChunk->savingType = DC_DONE;
         break;
       }
     case OF_FF:
       dataChunk = _TAMADataChunk_CreateFileChunk(nChunkSize, pOldFileChunk->dwNewFileAddr + dwSkip);
       ATLASSERT(dataChunk);
+      if(dataChunk==NULL)
+      {
+        ATLASSERT(FALSE);
+        return NULL;
+      }
       dataChunk->savingType = DC_DONE;
       break;
     default:
       ATLASSERT(FALSE);
-      return FALSE;
+      return NULL;
     }
     *pNRemain -= nChunkSize;
     return dataChunk;
@@ -762,12 +804,12 @@ COPYFF_ERR1:
     ATLTRACE("_TAMADATACHUNKS_Insert: 0x%08X\n", pInsertDataChunk);
 #endif
     (*pNumDataChunks)++;
-    *pDataChunks = (TAMADataChunk **)realloc(*pDataChunks, (*pNumDataChunks)*sizeof(TAMADataChunk *));
-    if(*pDataChunks==NULL)
+    TAMADataChunk ** newDataChunks = (TAMADataChunk **)realloc(*pDataChunks, (*pNumDataChunks)*sizeof(TAMADataChunk *));
+    if(newDataChunks==NULL)
     {
-      *pNumDataChunks=0;
       return FALSE;
     }
+    *pDataChunks = newDataChunks;
     TAMADataChunk **pMoveStart = (*pDataChunks)+nInsertIndex;
     size_t nCopy = (*pNumDataChunks - nInsertIndex - 1)*sizeof(TAMADataChunk *);
     if(nCopy>0)memmove(pMoveStart+1, pMoveStart, nCopy);
@@ -777,16 +819,41 @@ COPYFF_ERR1:
   
   BOOL _Save_ProccessAllChunks(CAtlFile *pWriteFile, BOOL bSaveAs)
   {
-    _ClearSavedFlags(pWriteFile, bSaveAs);
+    if(!_ClearSavedFlags(pWriteFile, bSaveAs))
+    {
+      ATLASSERT(FALSE);
+      return FALSE;
+    }
     struct _TAMAOLDFILECHUNK_HEAD oldFilemapHead;
-    _OldFileMap_Make(&oldFilemapHead, &m_file);
-    _Save_UpdateAllDataChunkSavingType(&oldFilemapHead);
+    if(!_OldFileMap_Make(&oldFilemapHead, &m_file))
+    {
+      if(bSaveAs)
+      {
+        ATLASSERT(FALSE);
+        _OldFileMap_FreeAll(&oldFilemapHead, TRUE);
+        //出力先ファイル削除しないと！ -> まあいっかｗ壊れたファイルでも残ってるほうがいいかも
+        return FALSE;
+      } else {
+        ATLASSERT(FALSE);
+        _OldFileMap_FreeAll(&oldFilemapHead, TRUE);
+        return FALSE;
+      }
+    }
+    int nRet = _Save_UpdateAllDataChunkSavingType(&oldFilemapHead);
+    if(nRet!=1)
+    {
+      ATLASSERT(FALSE);
+      _OldFileMap_FreeAll(&oldFilemapHead, TRUE);
+      if(nRet==-2)FatalError();
+      return FALSE;
+    }
     _OldFileMap_FreeAll(&oldFilemapHead, TRUE);//FALSE);
     if(!_Save_ExtendFileSize(pWriteFile)
       || !_Save_ShiftAllFF(pWriteFile)
       || !_Save_WriteAllDF(pWriteFile) )
     {
       ATLASSERT(FALSE);
+      FatalError();
       return FALSE;
     }
 #ifdef GTEST
@@ -869,6 +936,10 @@ COPYFF_ERR1:
     _EasyDebug_OutputOp1(SFCOP_SAVE);
 #endif
     BOOL bRet = _Save_ProccessAllChunks(&m_file, FALSE/*bSaveAs*/);
+    if(!bRet)
+    {
+      return FALSE;
+    }
     if(m_dwTotal < m_dwTotalSavedFile)
     {
       ATLTRACE("Change File Size: %u -> %u\n", m_dwTotalSavedFile, m_dwTotal);
@@ -912,6 +983,10 @@ private:
     if(FAILED(dstFile.SetSize(m_dwTotal)))return FALSE;
 
     BOOL bRet = _Save_ProccessAllChunks(&dstFile, TRUE/*bSaveAs*/);
+    if(!bRet)
+    {
+      return FALSE;
+    }
     m_file = dstFile;
     m_dwTotalSavedFile = m_dwTotal;
     _RemoveNeedlessHiddenNode();
@@ -2793,7 +2868,12 @@ FFL_ERR1:
           {
             UINT64 dwOldFileAddrS = _TAMADataChunk_GetRealStartAddr(dataChunk);
             UINT64 dwOldFileAddrE = dwOldFileAddrS + dataChunk->dwSize - 1;
-            _OldFileMap_FF(pOldFilemapHead, dwOldFileAddrS, dwOldFileAddrE, pChunk->dwStart);
+            if(!_OldFileMap_FF(pOldFilemapHead, dwOldFileAddrS, dwOldFileAddrE, pChunk->dwStart))
+            {
+              ATLASSERT(FALSE);
+              _OldFileMap_FreeAll(pOldFilemapHead, TRUE);
+              return FALSE;
+            }
             //dataChunk->savingType = DC_FF;
           }
           break;
@@ -2822,7 +2902,12 @@ FFL_ERR1:
           {
             UINT64 dwOldFileAddrS = _TAMADataChunk_GetRealStartAddr(dataChunk);
             UINT64 dwOldFileAddrE = dwOldFileAddrS + dataChunk->dwSize - 1;
-            _OldFileMap_FD(pOldFilemapHead, dwOldFileAddrS, dwOldFileAddrE);
+            if(!_OldFileMap_FD(pOldFilemapHead, dwOldFileAddrS, dwOldFileAddrE))
+            {
+              ATLASSERT(FALSE);
+              _OldFileMap_FreeAll(pOldFilemapHead, TRUE);
+              return FALSE;
+            }
             //dataChunk->savingType = DC_FD;
           }
         }
@@ -2839,7 +2924,12 @@ FFL_ERR1:
           {
             UINT64 dwOldFileAddrS = _TAMADataChunk_GetRealStartAddr(dataChunk);
             UINT64 dwOldFileAddrE = dwOldFileAddrS + dataChunk->dwSize - 1;
-            _OldFileMap_FD(pOldFilemapHead, dwOldFileAddrS, dwOldFileAddrE);
+            if(!_OldFileMap_FD(pOldFilemapHead, dwOldFileAddrS, dwOldFileAddrE))
+            {
+              ATLASSERT(FALSE);
+              _OldFileMap_FreeAll(pOldFilemapHead, TRUE);
+              return FALSE;
+            }
             //dataChunk->savingType = DC_FD;
           }
         }
@@ -2847,7 +2937,12 @@ FFL_ERR1:
     }
     
 //#ifndef _WIN64
-    if(!_OldFileMap_FDLimitter(pOldFilemapHead))return FALSE;
+    if(!_OldFileMap_FDLimitter(pOldFilemapHead))
+    {
+      ATLASSERT(FALSE);
+      _OldFileMap_FreeAll(pOldFilemapHead, TRUE);
+      return FALSE;
+    }
 //#endif
 
     //FDチャンクのメモリ確保。ファイルからデータ読み込み
@@ -2895,7 +2990,11 @@ FFL_ERR1:
         while(dwReadSize > OLDFILEMAP_FD_MAX)
         {
           UINT64 newStart = pOldFileChunk->dwStart + OLDFILEMAP_FD_MAX;
-          _OldFileMap_SplitPoint(pOldFilemapHead, newStart);
+          if(!_OldFileMap_SplitPoint(pOldFilemapHead, newStart))
+          {
+            ATLASSERT(FALSE);
+            return FALSE;
+          }
           pOldFileChunk = _OldFileMap_LookUp(pOldFilemapHead, newStart);
           dwReadSize = pOldFileChunk->dwEnd - pOldFileChunk->dwStart + 1;
         }
@@ -3005,14 +3104,18 @@ FFL_ERR1:
     }
   }
 
-  void _OldFileMap_FF(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, UINT64 dwStart, UINT64 dwEnd, UINT64 dwNewFileAddr)
+  BOOL _OldFileMap_FF(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, UINT64 dwStart, UINT64 dwEnd, UINT64 dwNewFileAddr)
   {
     TAMAOLDFILECHUNK *pOldFileChunkS = _OldFileMap_LookUp(pOldFilemapHead, dwStart);
     ATLASSERT(pOldFileChunkS);
-    if(pOldFileChunkS->type == OF_FF && pOldFileChunkS->dwEnd >= dwEnd && dwNewFileAddr - pOldFileChunkS->dwNewFileAddr == dwStart - pOldFileChunkS->dwStart)return;
+    if(pOldFileChunkS->type == OF_FF && pOldFileChunkS->dwEnd >= dwEnd && dwNewFileAddr - pOldFileChunkS->dwNewFileAddr == dwStart - pOldFileChunkS->dwStart)return TRUE;
     if(pOldFileChunkS->dwStart < dwStart && (pOldFileChunkS->type != OF_FF || dwNewFileAddr - pOldFileChunkS->dwNewFileAddr != dwStart - pOldFileChunkS->dwStart))
     {
-      _OldFileMap_SplitPoint(pOldFilemapHead, dwStart);
+      if(!_OldFileMap_SplitPoint(pOldFilemapHead, dwStart))
+      {
+        ATLASSERT(FALSE);
+        return FALSE;
+      }
       pOldFileChunkS = _OldFileMap_LookUp(pOldFilemapHead, dwStart);
     }
 
@@ -3020,7 +3123,11 @@ FFL_ERR1:
     ATLASSERT(pOldFileChunkE);
     if(pOldFileChunkE->dwEnd > dwEnd && (pOldFileChunkE->type != OF_FF || dwNewFileAddr - pOldFileChunkE->dwNewFileAddr != dwStart - pOldFileChunkE->dwStart))
     {
-      _OldFileMap_SplitPoint(pOldFilemapHead, dwEnd+1);
+      if(!_OldFileMap_SplitPoint(pOldFilemapHead, dwEnd+1))
+      {
+        ATLASSERT(FALSE);
+        return FALSE;
+      }
       pOldFileChunkS = _OldFileMap_LookUp(pOldFilemapHead, dwStart);
       pOldFileChunkE = _OldFileMap_LookUp(pOldFilemapHead, dwEnd);
     }
@@ -3039,6 +3146,7 @@ FFL_ERR1:
       pChunk = RB_NEXT(_TAMAOLDFILECHUNK_HEAD, pOldFilemapHead, pChunk);
       ATLASSERT(pChunk);
     }
+    return TRUE;
   }
 
   void _OldFileMap_MeltFD(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, TAMAOLDFILECHUNK *pChunk)
@@ -3063,14 +3171,18 @@ FFL_ERR1:
     }
   }
 
-  void _OldFileMap_FD(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, UINT64 dwStart, UINT64 dwEnd)
+  BOOL _OldFileMap_FD(struct _TAMAOLDFILECHUNK_HEAD *pOldFilemapHead, UINT64 dwStart, UINT64 dwEnd)
   {
     TAMAOLDFILECHUNK *pOldFileChunkS = _OldFileMap_LookUp(pOldFilemapHead, dwStart);
     ATLASSERT(pOldFileChunkS);
-    if(pOldFileChunkS->type == OF_FD && pOldFileChunkS->dwEnd >= dwEnd)return;
+    if(pOldFileChunkS->type == OF_FD && pOldFileChunkS->dwEnd >= dwEnd)return TRUE;
     if(pOldFileChunkS->type == OF_NOREF && pOldFileChunkS->dwStart < dwStart)
     {
-      _OldFileMap_SplitPoint(pOldFilemapHead, dwStart);
+      if(!_OldFileMap_SplitPoint(pOldFilemapHead, dwStart))
+      {
+        ATLASSERT(FALSE);
+        return FALSE;
+      }
       pOldFileChunkS = _OldFileMap_LookUp(pOldFilemapHead, dwStart);
     }
 
@@ -3078,7 +3190,11 @@ FFL_ERR1:
     ATLASSERT(pOldFileChunkE);
     if(pOldFileChunkE->type == OF_NOREF && pOldFileChunkE->dwEnd > dwEnd)
     {
-      _OldFileMap_SplitPoint(pOldFilemapHead, dwEnd+1);
+      if(!_OldFileMap_SplitPoint(pOldFilemapHead, dwEnd+1))
+      {
+        ATLASSERT(FALSE);
+        return FALSE;
+      }
       pOldFileChunkS = _OldFileMap_LookUp(pOldFilemapHead, dwStart);
       pOldFileChunkE = _OldFileMap_LookUp(pOldFilemapHead, dwEnd);
     }
@@ -3096,6 +3212,7 @@ FFL_ERR1:
       pChunk = RB_NEXT(_TAMAOLDFILECHUNK_HEAD, pOldFilemapHead, pChunk);
       ATLASSERT(pChunk);
     }
+    return TRUE;
   }
 
 #ifdef GTEST
