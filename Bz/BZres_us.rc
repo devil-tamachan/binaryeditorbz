@@ -148,12 +148,8 @@ BEGIN
         MENUITEM "Split &Vertically",           ID_VIEW_SPLIT_V
         MENUITEM "Sync Scroll",                 ID_VIEW_SYNCSCROLL
         MENUITEM SEPARATOR
-        MENUITEM "Grid",                        ID_VIEW_GRID1
-        MENUITEM SEPARATOR
         MENUITEM "Full &Pathname",              ID_VIEW_FULLPATH
         MENUITEM "Sub Cu&rsor",                 ID_VIEW_SUBCURSOR
-        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
-        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
     END
     POPUP "&Jump"
     BEGIN

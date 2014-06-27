@@ -299,12 +299,8 @@ BEGIN
         MENUITEM "左右に分割(&V)",                   ID_VIEW_SPLIT_V
         MENUITEM "スクロールの同期(&V)",                ID_VIEW_SYNCSCROLL
         MENUITEM SEPARATOR
-        MENUITEM "グリッド表示(&G)",                  ID_VIEW_GRID1
-        MENUITEM SEPARATOR
         MENUITEM "フルパス名(&P)",                   ID_VIEW_FULLPATH
         MENUITEM "サブカーソル(&R)",                  ID_VIEW_SUBCURSOR
-        MENUITEM "ツールバー(&T)",                   ID_VIEW_TOOLBAR
-        MENUITEM "ステータスバー(&S)",                 ID_VIEW_STATUS_BAR
     END
     POPUP "移動(&J)"
     BEGIN
