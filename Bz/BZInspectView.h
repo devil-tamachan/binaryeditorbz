@@ -239,6 +239,11 @@ public:
     m_check_intel.SetCheck(!options.bByteOrder);
     m_check_signed.SetCheck(m_bSigned);
   }
+
+  int GetWindowIdealWidth()
+  {
+    return 180;
+  }
 };
 
 

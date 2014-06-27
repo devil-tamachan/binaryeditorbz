@@ -254,6 +254,11 @@ public:
   BOOL MakeExportDir(LPTSTR pathOutputDir, LPCTSTR pathDstFolder);
   int MakeExportPath(LPTSTR pathOutput, LPCTSTR pathDir, unsigned long ulStartAddr);
   HRESULT SaveFile(LPCTSTR pathOutputDir, unsigned long ulStartAddr, LPBYTE outbuf, unsigned int outbufsize);
+
+  int GetWindowIdealWidth()
+  {
+    return 180;
+  }
 };
 
 

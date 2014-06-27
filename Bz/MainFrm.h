@@ -558,6 +558,9 @@ public:
       pCoreData->SetSplitterWnd(NULL);
     }
   }
+
+  int GetSubViewIdealWidth(DWORD idx);
+  void ResetWindowWidth();
 };
 
 //inline CMainFrame* GetMainFrame() { return (CMainFrame*)AfxGetMainWnd(); };

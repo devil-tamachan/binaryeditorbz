@@ -725,6 +725,119 @@ CBZView *CMainFrame::GetBrotherView(CBZView* pView)
 }
 
 
+int CMainFrame::GetSubViewIdealWidth(DWORD idx)
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  ATL::CWindow *pSub0 = pCoreData->GetSubView(idx);
+  if(pSub0==NULL)
+  {
+    ATLASSERT(FALSE);
+    return 0;
+  }
+  if(m_bBmpView)
+  {
+    CBZBmpView2 *pBmpView = (CBZBmpView2*)pSub0;
+    return pBmpView->GetWindowIdealWidth();
+  } else if(m_bStructView) {
+    CBZFormView *pFormView = (CBZFormView*)pSub0;
+    return pFormView->GetWindowIdealWidth();
+  } else if(m_bInspectView) {
+    CBZInspectView *pInsView = (CBZInspectView*)pSub0;
+    return pInsView->GetWindowIdealWidth();
+  } else if(m_bAnalyzerView) {
+    CBZAnalyzerView *pAnaView = (CBZAnalyzerView*)pSub0;
+    return pAnaView->GetWindowIdealWidth();
+  }
+  return 0;
+}
+
+
+void CMainFrame::ResetWindowWidth()
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  CTamaSplitterWindow *pSplitter = pCoreData->GetSplitterWnd();
+  if(pSplitter==NULL)return;
+  DWORD dwViewCnt = pCoreData->GetCountBZView();
+
+  int wEdge = GetSystemMetrics(SM_CXSIZEFRAME);
+
+  CSimpleArray<int> m_arrBZWidth;
+  for(DWORD i=0;i<dwViewCnt;i++)
+  {
+    CBZView *pBZView = pCoreData->GetBZView(i);
+    if(pBZView==NULL)return;
+    m_arrBZWidth.Add(pBZView->GetWindowIdealWidth());
+  }
+  
+  CSimpleArray<int> m_arrSubWidth;
+  BOOL bSubView = (m_bBmpView || m_bStructView || m_bInspectView || m_bAnalyzerView);
+  if(bSubView)
+  {
+    for(DWORD i=0;i<dwViewCnt;i++)
+    {
+      m_arrSubWidth.Add(GetSubViewIdealWidth(i));
+    }
+  }
+
+  int newSize = 0;
+  int subMax = 0;
+  if(m_nSplitView==ID_VIEW_SPLIT_V)
+  {
+    for(int i=0;i<m_arrBZWidth.GetSize();i++)newSize += m_arrBZWidth[i];
+    for(int i=0;i<m_arrSubWidth.GetSize();i++)newSize += m_arrSubWidth[i];
+  } else {
+    int bzMax = 0;
+    /*int*/ subMax= 0;
+    int t;
+    for(int i=0;i<m_arrBZWidth.GetSize();i++)
+    {
+      t = m_arrBZWidth[i];
+      if(t > bzMax)bzMax = t;
+    }
+    for(int i=0;i<m_arrSubWidth.GetSize();i++)
+    {
+      t = m_arrSubWidth[i];
+      if(t > subMax)subMax = t;
+    }
+    newSize = bzMax + subMax;
+  }
+  WTL::CRect rFrame;
+	GetWindowRect(rFrame);
+  WTL::CRect rScreen;
+  SystemParametersInfo(SPI_GETWORKAREA, 0, (LPRECT)rScreen, 0);
+  rFrame.x2 = rFrame.x1 + newSize + wEdge*(dwViewCnt+1) + GetSystemMetrics(SM_CXVSCROLL)*dwViewCnt + (bSubView?wEdge*dwViewCnt:0);
+  if(rFrame.Width() > rScreen.Width())rFrame.x2 = rFrame.x1 + rScreen.Width();
+  MoveWindow(rFrame);
+
+  //各ビューのサイズ調整配分
+  if(bSubView || m_nSplitView)
+  {
+    if(bSubView && !m_nSplitView)
+    {
+      pSplitter->SetSplitterPosX(1, m_arrSubWidth[0]);
+    } else if(!bSubView && m_nSplitView==ID_VIEW_SPLIT_V) {
+      pSplitter->SetSplitterPosX(1, m_arrBZWidth[0]);
+    } else if(bSubView && m_nSplitView) {
+      switch(m_nSplitView)
+      {
+      case ID_VIEW_SPLIT_V:
+        {
+          int x = m_arrSubWidth[0];
+          pSplitter->SetSplitterPosX(1, x);
+          x += m_arrBZWidth[0];
+          pSplitter->SetSplitterPosX(2, x);
+          x += m_arrSubWidth[1];
+          pSplitter->SetSplitterPosX(3, x);
+          break;
+        }
+      case ID_VIEW_SPLIT_H:
+        pSplitter->SetSplitterPosX(1, subMax);
+        break;
+      }
+    }
+    pSplitter->InitSplitLayout();
+  }
+}
 
 //LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 //{

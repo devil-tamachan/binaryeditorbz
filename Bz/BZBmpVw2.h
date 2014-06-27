@@ -293,6 +293,7 @@ public:
     //GetMainFrame()->CreateClient();
     OnInitialUpdate();
     Invalidate();
+    GetMainFrame()->ResetWindowWidth();
   }
 
 
@@ -522,6 +523,11 @@ public:
       }
       free(lpBits);
     }
+  }
+
+  int GetWindowIdealWidth()
+  {
+    return m_sizeAll.cx + BMPSPACE*2 + GetSystemMetrics(SM_CXVSCROLL);
   }
 };
 

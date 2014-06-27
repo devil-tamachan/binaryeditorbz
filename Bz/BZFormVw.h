@@ -336,6 +336,11 @@ public:
   }
   LRESULT OnDblclkListMember(LPNMHDR pnmh);
 	LRESULT OnItemchangedListMember(LPNMHDR pnmh);
+
+  int GetWindowIdealWidth()
+  {
+    return 180;
+  }
 };
 
 /////////////////////////////////////////////////////////////////////////////

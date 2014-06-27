@@ -710,6 +710,7 @@ void CBZView::Update()
 	Invalidate(FALSE);
 	InitCaret();
 	DrawCaret();
+  if(pMainFrame)pMainFrame->ResetWindowWidth();
 }
 
 
