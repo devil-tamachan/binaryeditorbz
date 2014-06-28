@@ -154,6 +154,7 @@ public:
     m_dwTotal = 0;
     m_dwTotalSavedFile = 0;
     m_bReadOnly = FALSE;
+    m_bClearUndoRedoWhenSave = FALSE;
     m_savedIndex = m_redoIndex = m_dwHiddenStart = m_dwHiddenSize = 0;
     m_dwRefCount = 1;
     
@@ -819,9 +820,16 @@ COPYFF_ERR1:
   
   BOOL _Save_ProccessAllChunks(CAtlFile *pWriteFile, BOOL bSaveAs)
   {
+RETRY__Save_ProccessAllChunks:
+    if(m_bClearUndoRedoWhenSave)_UndoRedo_DestroyAll();
     if(!_ClearSavedFlags(pWriteFile, bSaveAs))
     {
       ATLASSERT(FALSE);
+      if(!m_bClearUndoRedoWhenSave)
+      {
+        m_bClearUndoRedoWhenSave = TRUE;
+        goto RETRY__Save_ProccessAllChunks;
+      }
       return FALSE;
     }
     struct _TAMAOLDFILECHUNK_HEAD oldFilemapHead;
@@ -832,10 +840,20 @@ COPYFF_ERR1:
         ATLASSERT(FALSE);
         _OldFileMap_FreeAll(&oldFilemapHead, TRUE);
         //出力先ファイル削除しないと！ -> まあいっかｗ壊れたファイルでも残ってるほうがいいかも
+        if(!m_bClearUndoRedoWhenSave)
+        {
+          m_bClearUndoRedoWhenSave = TRUE;
+          goto RETRY__Save_ProccessAllChunks;
+        }
         return FALSE;
       } else {
         ATLASSERT(FALSE);
         _OldFileMap_FreeAll(&oldFilemapHead, TRUE);
+        if(!m_bClearUndoRedoWhenSave)
+        {
+          m_bClearUndoRedoWhenSave = TRUE;
+          goto RETRY__Save_ProccessAllChunks;
+        }
         return FALSE;
       }
     }
@@ -845,6 +863,11 @@ COPYFF_ERR1:
       ATLASSERT(FALSE);
       _OldFileMap_FreeAll(&oldFilemapHead, TRUE);
       if(nRet==-2)FatalError();
+      else if(!m_bClearUndoRedoWhenSave)
+      {
+        m_bClearUndoRedoWhenSave = TRUE;
+        goto RETRY__Save_ProccessAllChunks;
+      }
       return FALSE;
     }
     _OldFileMap_FreeAll(&oldFilemapHead, TRUE);//FALSE);
@@ -1655,9 +1678,12 @@ err_TAMAUndoRedoCreate:
     return nRedoSize;
   }
   size_t GetUndoCountCanRemove(){ return min(m_savedIndex, m_redoIndex); }
-  size_t GetRedoCountCanRemove(size_t *pDelIndex = NULL){ size_t delIndex = max(m_savedIndex, m_redoIndex);
-  if(pDelIndex)*pDelIndex = delIndex;
-  return m_undo.GetCount() - delIndex; }
+  size_t GetRedoCountCanRemove(size_t *pDelIndex = NULL)
+  {
+    size_t delIndex = max(m_savedIndex, m_redoIndex);
+    if(pDelIndex)*pDelIndex = delIndex;
+    return m_undo.GetCount() - delIndex;
+  }
   BOOL ClearUndoRedoAll()
   {
     BOOL nRet=	ClearRedo();
@@ -1883,6 +1909,16 @@ ERR_CACHE2:
     return m_bReadOnly;
   }
   
+  _inline BOOL IsClearUndoRedoWhenSave()
+  {
+    return m_bClearUndoRedoWhenSave;
+  }
+  
+  void SetClearUndoRedoWhenSave(BOOL bClearUndoRedoWhenSave)
+  {
+    m_bClearUndoRedoWhenSave = bClearUndoRedoWhenSave;
+  }
+  
   CString GetFilePath()
   {
     return m_filePath;
@@ -1895,6 +1931,7 @@ private:
   UINT64	m_dwTotal;
   UINT64	m_dwTotalSavedFile;
   BOOL	m_bReadOnly;
+  BOOL  m_bClearUndoRedoWhenSave;
   
   DWORD m_dwRefCount;
 
@@ -1977,6 +2014,7 @@ private:
     m_dwTotal = 0;
     m_dwTotalSavedFile = 0;
     m_bReadOnly = FALSE;
+    m_bClearUndoRedoWhenSave = FALSE;
     m_savedIndex = m_redoIndex = m_dwHiddenStart = m_dwHiddenSize = 0;
     _ClearInternalCacheData();
   }
