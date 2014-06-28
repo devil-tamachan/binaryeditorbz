@@ -275,6 +275,29 @@ void CMainFrame::OnFileRecent(UINT uNotifyCode, int nID, CWindow wndCtl)
   }
 }
 
+void CMainFrame::OnToolsSetting(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  BOOL bQWordAddr = options.bQWordAddr;
+  BOOL bClearUndoRedoWhenSave = options.bClearUndoRedoWhenSave;
+  CSettingDlg dlgSetting;
+  dlgSetting.DoModal();
+  if(bQWordAddr != options.bQWordAddr)
+  {
+    RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+  }
+  if(bClearUndoRedoWhenSave != options.bClearUndoRedoWhenSave)
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    DWORD nDoc = pCoreData->GetCountBZDoc2();
+    for(DWORD i=0; i<nDoc; i++)
+    {
+      CBZDoc2 *doc = pCoreData->GetBZDoc2(i);
+      if(doc)doc->SetClearUndoRedoWhenSave(options.bClearUndoRedoWhenSave);
+    }
+  }
+}
+
+
 void CMainFrame::_OnInitMenuPopup()
 {
   OnUpdateViewBitmap();

@@ -59,6 +59,8 @@ public:
   _inline DWORD GetSFCRefCount() { return m_pSFC ? m_pSFC->GetRefCount() : 0; }
 
   _inline BOOL IsModified() { return m_pSFC ? m_pSFC->IsModified() : FALSE; };
+  
+  _inline void SetClearUndoRedoWhenSave(BOOL bClearUndoRedoWhenSave) { return m_pSFC ? m_pSFC->SetClearUndoRedoWhenSave(bClearUndoRedoWhenSave) : 0; }
 
   CString GetFilePath() { return m_pSFC ? m_pSFC->GetFilePath() : _T(""); }
   CString GetDocName()

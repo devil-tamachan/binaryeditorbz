@@ -311,14 +311,7 @@ public:
     options.barState ^= BARSTATE_FULLPATH;
     UpdateFrameTitle();
   }
-  void OnToolsSetting(UINT uNotifyCode, int nID, CWindow wndCtl)
-  {
-    BOOL bDWordAddr = options.bDWordAddr;
-    CSettingDlg dlgSetting;
-    dlgSetting.DoModal();
-    if(bDWordAddr != options.bDWordAddr) {
-    }
-  }
+  void OnToolsSetting(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnViewSubCursor(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnViewSyncScroll(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnHelpIndex(UINT uNotifyCode, int nID, CWindow wndCtl)

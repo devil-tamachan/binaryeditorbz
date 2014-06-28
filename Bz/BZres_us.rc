@@ -7,8 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
-
+#include "afxres.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -235,25 +234,20 @@ BEGIN
     LTEXT           "2012-2014 Mod by devil.tamachan@gmail.com",IDC_STATIC,66,36,144,8
 END
 
-IDD_SETTING DIALOG 0, 0, 172, 94
+IDD_SETTING DIALOGEX 0, 0, 172, 94
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Advanced"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,4,78,44,14
     PUSHBUTTON      "Cancel",IDCANCEL,56,78,44,14
     PUSHBUTTON      "&Help",IDHELP,124,78,44,14
-    RTEXT           "Max size of file, opened On Memory:",IDC_STATIC,4,8,112,8
-    EDITTEXT        IDE_MAXONMEMORY,120,5,28,14,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "KB",IDC_STATIC,156,8,10,8
-    LTEXT           "(larger than this, will be open by File Mapping mode.)",IDC_STATIC,8,20,164,8
-    RTEXT           "View size of File Mapping:",IDC_STATIC,4,36,112,8
-    EDITTEXT        IDE_MAXMAPSIZE,120,32,28,14,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "MB",IDC_STATIC,156,36,11,8
-    CONTROL         "Display 32bit address always",IDB_DWORDADDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,48,101,10
+    CONTROL         "Display 64bit address always",IDC_QWORDADDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,48,101,10
     CONTROL         "Dump list is divided every ",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,4,64,80,8
     EDITTEXT        IDE_DUMPPAGE,84,61,20,14,ES_AUTOHSCROLL
     CONTROL         "lines.",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,108,64,16,8
+    CONTROL         "Fast Save",IDC_CLEARUNDOREDOWHENSAVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,47,10
+    LTEXT           "(Clear all Undo/Redo history when you save)",IDC_STATIC,21,18,138,8
 END
 
 IDD_INPUT DIALOG 0, 0, 150, 51

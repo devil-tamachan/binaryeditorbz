@@ -26,7 +26,7 @@
 #define IDE_MAXONMEMORY                 1014
 #define IDB_TAGALL                      1014
 #define IDE_MAXMAPSIZE                  1015
-#define IDB_DWORDADDR                   1016
+#define IDC_QWORDADDR                   1016
 #define IDE_DUMPPAGE                    1017
 #define IDE_VALUE                       1018
 #define IDB_RESET                       1019
@@ -54,6 +54,7 @@
 #define IDB_ANALYZER_SAVE               1041
 #define IDB_ANALYZER_SAVEALL            1042
 #define IDC_COMBO_TOOLBAR               1043
+#define IDC_CLEARUNDOREDOWHENSAVE       1044
 #define IDS_COLOR_ADDRESS               3000
 #define IDS_COLOR_ADDRESS2              3001
 #define IDS_COLOR_TEXT                  3002

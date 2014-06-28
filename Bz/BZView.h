@@ -65,7 +65,7 @@ class CBZView : public CTextView, public WTL::CUpdateUI<CBZView>, public WTL::CI
 public:
   int GetDUMP_X(UINT64 ofs)
   {
-    if(options.bDWordAddr)
+    if(options.bQWordAddr)
     {
       return 21;//"%04X:%04X-%04X:%04X  "
     } else {

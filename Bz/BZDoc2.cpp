@@ -29,6 +29,7 @@ void CBZDoc2::DeleteContents()
 
   ReleaseSFC();
   m_pSFC = new CSuperFileCon();
+  m_pSFC->SetClearUndoRedoWhenSave(options.bClearUndoRedoWhenSave);
   m_arrMarks.RemoveAll();
 }
 
@@ -199,6 +200,7 @@ CClip_ERR2:
 BOOL CBZDoc2::OpenDocument(LPCTSTR lpszPathName, HWND hWnd)
 {
   CSuperFileCon *pSFC = new CSuperFileCon();
+  pSFC->SetClearUndoRedoWhenSave(options.bClearUndoRedoWhenSave);
   if(!pSFC || !pSFC->Open(lpszPathName))
   {
 //    ATLASSERT(FALSE);

@@ -664,7 +664,7 @@ void CBZView::Update()
 	
 	m_pDoc = GetBZDoc2();
 	//ASSERT_VALID(m_pDoc);
-	m_nColAddr = (options.bDWordAddr) ? ADDRCOLUMNS_MAP : ADDRCOLUMNS;
+	m_nColAddr = (options.bQWordAddr) ? ADDRCOLUMNS_MAP : ADDRCOLUMNS;
 	/*if(GetViewWidth() != VIEWCOLUMNS) {
     SetViewSize(WTL::CSize(VIEWCOLUMNS, 0));
 		m_bResize = FALSE;
@@ -956,7 +956,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
     DWORD ofsHi = HIDWORD(ofs1);
     DWORD ofsLo = LODWORD(ofs1);
     //•`‰æ: æ“ª‚ÌƒAƒhƒŒƒX
-		if(options.bDWordAddr)//m_nColAddr > ADDRCOLUMNS)
+		if(options.bQWordAddr)//m_nColAddr > ADDRCOLUMNS)
     {
 			PutFormatStr("%04X:%04X-%04X:%04X", HIWORD(ofsHi), LOWORD(ofsHi), HIWORD(ofsLo), LOWORD(ofsLo));
 			SetColor();
@@ -1499,7 +1499,7 @@ CString CBZView::FormatAddress(UINT64 ofs)
   DWORD ofsHi = HIDWORD(ofs);
   DWORD ofsLo = LODWORD(ofs);
 
-  if(options.bDWordAddr)
+  if(options.bQWordAddr)
   {
     ret.Format(_T("%04X:%04X-%04X:%04X"), HIWORD(ofsHi), LOWORD(ofsHi), HIWORD(ofsLo), LOWORD(ofsLo));
   } else {

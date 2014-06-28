@@ -43,15 +43,17 @@ public:
 
 	CSettingDlg() : CDialogImpl<CSettingDlg>()
 	{
-		m_dwMaxOnMemory = options.dwMaxOnMemory / 1024;
-		m_dwMaxMapSize  = options.dwMaxMapSize / (1024*1024);
-		m_bDWordAddr = options.bDWordAddr;
+	//	m_dwMaxOnMemory = options.dwMaxOnMemory / 1024;
+	//	m_dwMaxMapSize  = options.dwMaxMapSize / (1024*1024);
+		m_bQWordAddr = options.bQWordAddr;
+    m_bClearUndoRedoWhenSave = options.bClearUndoRedoWhenSave; 
 		m_nDumpPage = options.nDumpPage;
 	}
 
-	UINT	m_dwMaxOnMemory;
-	UINT	m_dwMaxMapSize;
-	BOOL	m_bDWordAddr;
+//	UINT	m_dwMaxOnMemory;
+//	UINT	m_dwMaxMapSize;
+	BOOL	m_bQWordAddr;
+  BOOL  m_bClearUndoRedoWhenSave;
 	int		m_nDumpPage;
 
 	BEGIN_MSG_MAP(CSettingDlg)
@@ -62,9 +64,10 @@ public:
 	END_MSG_MAP()
 
 	BEGIN_DDX_MAP(CSettingDlg)
-		DDX_UINT(IDE_MAXONMEMORY, m_dwMaxOnMemory)
-		DDX_UINT(IDE_MAXMAPSIZE, m_dwMaxMapSize)
-		DDX_CHECK(IDB_DWORDADDR, m_bDWordAddr);
+//		DDX_UINT(IDE_MAXONMEMORY, m_dwMaxOnMemory)
+//		DDX_UINT(IDE_MAXMAPSIZE, m_dwMaxMapSize)
+		DDX_CHECK(IDC_QWORDADDR, m_bQWordAddr);
+    DDX_CHECK(IDC_CLEARUNDOREDOWHENSAVE, m_bClearUndoRedoWhenSave);
 		DDX_INT(IDE_DUMPPAGE, m_nDumpPage)
 	END_DDX_MAP()
 
@@ -78,9 +81,10 @@ public:
 	{
 		DoDataExchange(DDX_SAVE);
 
-		options.dwMaxOnMemory = m_dwMaxOnMemory * 1024;
-		options.dwMaxMapSize  = m_dwMaxMapSize * (1024*1024);
-		options.bDWordAddr = m_bDWordAddr;
+	//	options.dwMaxOnMemory = m_dwMaxOnMemory * 1024;
+	//	options.dwMaxMapSize  = m_dwMaxMapSize * (1024*1024);
+		options.bQWordAddr = m_bQWordAddr;
+    options.bClearUndoRedoWhenSave = m_bClearUndoRedoWhenSave;
 		options.nDumpPage = m_nDumpPage;
 		EndDialog(nID);
 	}

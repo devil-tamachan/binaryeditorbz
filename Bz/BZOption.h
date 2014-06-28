@@ -112,7 +112,8 @@ public:
 
     sDumpHeader = GetProfileString(key, _T("DumpHeader"));	// ###1.63
     nDumpPage = GetProfileInt(key, _T("DumpPage"), 0);
-    bDWordAddr = GetProfileInt(key, _T("DWordAddr"), FALSE);
+    bQWordAddr = GetProfileInt(key, _T("QWordAddr"), FALSE);
+    bClearUndoRedoWhenSave = GetProfileInt(key, _T("ClearUndoRedoWhenSave"), FALSE);
 
     bSyncScroll = GetProfileInt(key, _T("SyncScroll"), true);
     iGrid = GetProfileInt(key, _T("Grid"), 0);
@@ -197,7 +198,8 @@ public:
 
     WriteProfileString(key, _T("DumpHeader"), sDumpHeader);
     WriteProfileInt(key, _T("DumpPage"), nDumpPage);
-    WriteProfileInt(key, _T("DWordAddr"), bDWordAddr);
+    WriteProfileInt(key, _T("QWordAddr"), bQWordAddr);
+    WriteProfileInt(key, _T("ClearUndoRedoWhenSave"), bClearUndoRedoWhenSave);
 
     WriteProfileInt(key, _T("SyncScroll"), bSyncScroll);
     WriteProfileInt(key, _T("Grid"), iGrid);
@@ -245,7 +247,8 @@ public:
 
 	CString sDumpHeader;
 	int nDumpPage;
-	BOOL  bDWordAddr;
+	BOOL  bQWordAddr;
+  BOOL  bClearUndoRedoWhenSave;
 
 	BOOL  bSyncScroll;
 	int  iGrid;

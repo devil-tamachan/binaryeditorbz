@@ -73,25 +73,20 @@ BEGIN
     LTEXT           "2012-2014 Mod by devil.tamachan@gmail.com",IDC_STATIC,66,36,134,8
 END
 
-IDD_SETTING DIALOG 0, 0, 187, 99
+IDD_SETTING DIALOGEX 0, 0, 187, 99
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "高度な設定"
-FONT 9, "ＭＳ Ｐゴシック"
+FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,4,80,44,14
     PUSHBUTTON      "キャンセル",IDCANCEL,52,80,44,14
-    RTEXT           "オンメモリで処理するファイルの最大サイズ:",IDC_STATIC,4,8,128,8
-    EDITTEXT        IDE_MAXONMEMORY,134,5,28,14,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "KB",IDC_STATIC,164,8,10,8
-    LTEXT           "（これより大きなファイルは、File Mappingモードで開きます。）",IDC_STATIC,4,20,184,8
     PUSHBUTTON      "ヘルプ",IDHELP,140,80,44,14
-    RTEXT           "File MappingモードのViewサイズ:",IDC_STATIC,4,36,128,8
-    EDITTEXT        IDE_MAXMAPSIZE,134,33,28,14,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "MB",IDC_STATIC,164,36,11,8
-    CONTROL         "アドレスを常に8桁で表示",IDB_DWORDADDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,50,84,10
+    CONTROL         "アドレスを常に16桁で表示",IDC_QWORDADDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,50,84,10
     CONTROL         "ダンプリストを",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,8,64,40,8
     EDITTEXT        IDE_DUMPPAGE,52,61,20,14,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "行毎に区切る。(0で連続)",IDC_STATIC,76,64,76,8,SS_NOPREFIX
+    CONTROL         "高速保存　（元に戻す＆やり直し履歴を保存時に全削除）",IDC_CLEARUNDOREDOWHENSAVE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,179,10
 END
 
 IDD_INPUT DIALOG 0, 0, 150, 51
