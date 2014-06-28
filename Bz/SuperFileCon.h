@@ -2014,7 +2014,7 @@ private:
     m_dwTotal = 0;
     m_dwTotalSavedFile = 0;
     m_bReadOnly = FALSE;
-    m_bClearUndoRedoWhenSave = FALSE;
+    //m_bClearUndoRedoWhenSave = FALSE;
     m_savedIndex = m_redoIndex = m_dwHiddenStart = m_dwHiddenSize = 0;
     _ClearInternalCacheData();
   }
