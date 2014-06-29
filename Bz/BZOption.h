@@ -113,7 +113,7 @@ public:
     sDumpHeader = GetProfileString(key, _T("DumpHeader"));	// ###1.63
     nDumpPage = GetProfileInt(key, _T("DumpPage"), 0);
     bQWordAddr = GetProfileInt(key, _T("QWordAddr"), FALSE);
-    bClearUndoRedoWhenSave = GetProfileInt(key, _T("ClearUndoRedoWhenSave"), FALSE);
+    bClearUndoRedoWhenSave = GetProfileInt(key, _T("ClearUndoRedoWhenSave"), TRUE);
 
     bSyncScroll = GetProfileInt(key, _T("SyncScroll"), true);
     iGrid = GetProfileInt(key, _T("Grid"), 0);
