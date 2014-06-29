@@ -86,7 +86,9 @@ BEGIN
     EDITTEXT        IDE_DUMPPAGE,52,61,20,14,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "行毎に区切る。(0で連続)",IDC_STATIC,76,64,76,8,SS_NOPREFIX
     CONTROL         "高速保存　（元に戻す＆やり直し履歴を保存時に全削除）",IDC_CLEARUNDOREDOWHENSAVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,179,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,28,173,10
+    PUSHBUTTON      "Bz全体の設定をリセット",IDB_RESETSETTINGS,97,7,83,15
+    LTEXT           "(編集箇所が大きいほど恩恵があります)",IDC_STATIC,50,40,117,8
 END
 
 IDD_INPUT DIALOG 0, 0, 150, 51

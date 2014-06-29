@@ -52,6 +52,15 @@ extern BOOL g_bFirstInstance;
 class CBZOptions
 {
 public:
+  void ResetSettings()
+  {
+    CRegKey key(HKEY_CURRENT_USER);
+    key.RecurseDeleteKey(_T("Software\\c.mos\\BZ\\Settings"));
+    key.Flush();
+    key.Close();
+    Load();
+  }
+
   void Load()
   {
     CRegKey key;

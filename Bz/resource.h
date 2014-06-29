@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by BZ.rc
+// Used by BZres_us.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDD_BZINSPECTVIEW               103
@@ -55,6 +55,7 @@
 #define IDB_ANALYZER_SAVEALL            1042
 #define IDC_COMBO_TOOLBAR               1043
 #define IDC_CLEARUNDOREDOWHENSAVE       1044
+#define IDB_RESETSETTINGS               1045
 #define IDS_COLOR_ADDRESS               3000
 #define IDS_COLOR_ADDRESS2              3001
 #define IDS_COLOR_TEXT                  3002
@@ -155,7 +156,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        145
 #define _APS_NEXT_COMMAND_VALUE         32860
-#define _APS_NEXT_CONTROL_VALUE         1044
+#define _APS_NEXT_CONTROL_VALUE         1046
 #define _APS_NEXT_SYMED_VALUE           107
 #endif
 #endif

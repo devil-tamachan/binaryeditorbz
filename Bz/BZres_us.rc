@@ -246,8 +246,9 @@ BEGIN
     CONTROL         "Dump list is divided every ",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,4,64,80,8
     EDITTEXT        IDE_DUMPPAGE,84,61,20,14,ES_AUTOHSCROLL
     CONTROL         "lines.",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,108,64,16,8
-    CONTROL         "Fast Save",IDC_CLEARUNDOREDOWHENSAVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,47,10
-    LTEXT           "(Clear all Undo/Redo history when you save)",IDC_STATIC,21,18,138,8
+    CONTROL         "Fast Save",IDC_CLEARUNDOREDOWHENSAVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,27,47,10
+    LTEXT           "(Clear all Undo/Redo history when you save)",IDC_STATIC,18,38,138,8
+    PUSHBUTTON      "Reset Settings",IDB_RESETSETTINGS,108,7,57,14
 END
 
 IDD_INPUT DIALOG 0, 0, 150, 51

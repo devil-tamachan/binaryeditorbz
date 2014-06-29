@@ -61,6 +61,7 @@ public:
 		COMMAND_ID_HANDLER_EX(IDOK, OnOK)
 		COMMAND_ID_HANDLER_EX(IDCANCEL, OnCancel)
 		COMMAND_ID_HANDLER_EX(IDHELP, OnHelp)
+		COMMAND_ID_HANDLER_EX(IDB_RESETSETTINGS, OnResetSettings)
 	END_MSG_MAP()
 
 	BEGIN_DDX_MAP(CSettingDlg)
@@ -100,6 +101,12 @@ public:
 		//AfxGetApp()->HtmlHelp(HID_FILEMAPPING);
 		ShellExecute(NULL, _T("open"), _T("http://devil-tamachan.github.io/BZDoc/#filemapping.filemapping"), NULL, NULL, SW_SHOWNORMAL);
 	}
+
+	void OnResetSettings(UINT uNotifyCode, int nID, CWindow wndCtl)
+	{
+    options.ResetSettings();
+		EndDialog(nID);
+  }
 
 };
 
