@@ -505,7 +505,11 @@ void CMainFrame::AddSubView()
   } else if(m_bInspectView) {
     CBZInspectView *pInsView = new CBZInspectView;
     pCoreData->AddSubView(pInsView);
-    pInsView->Create(m_pWndSplitter->m_hWnd);
+    HWND hWnd = pInsView->Create(m_pWndSplitter->m_hWnd);
+    if(hWnd==NULL)
+    {
+      ATLTRACE("0x%X\n", GetLastError());
+    }
     //pInsView->OnInitialUpdate();
   } else if(m_bAnalyzerView) {
     CBZAnalyzerView *pAnaView = new CBZAnalyzerView;

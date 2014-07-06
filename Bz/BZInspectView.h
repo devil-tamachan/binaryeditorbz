@@ -34,7 +34,7 @@ class CMainFrame;
 class CBZInspectView : public CDialogImpl<CBZInspectView>, public WTL::CWinDataExchange<CBZInspectView>
 {
 public:
-  CBZInspectView() : m_bSigned(true) { }
+  CBZInspectView() : m_bSigned(true), m_pView(NULL), bInit(FALSE) { }
   virtual ~CBZInspectView() { }
 
 	enum { IDD = IDD_BZINSPECTVIEW };
@@ -66,6 +66,7 @@ public:
 private:
 	bool m_bSigned;
 	CBZView* m_pView;
+  BOOL bInit;
 public:
   WTL::CEdit m_editHex;
 	WTL::CEdit m_edit8bits;
@@ -123,6 +124,8 @@ public:
 
     ShowWindow(SW_SHOW);
 
+    bInit = TRUE;
+
     return TRUE;
   }
 
@@ -176,6 +179,8 @@ public:
 
   void Update(void)
   {
+    if(!bInit)return;
+
     int val;
     CString strVal;
 

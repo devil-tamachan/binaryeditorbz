@@ -8,22 +8,37 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
 		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
 		ReleaseUPX|Win32 = ReleaseUPX|Win32
+		ReleaseUPX|x64 = ReleaseUPX|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.Debug|Win32.ActiveCfg = Debug|Win32
 		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.Debug|Win32.Build.0 = Debug|Win32
+		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.Debug|x64.ActiveCfg = Debug|x64
+		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.Debug|x64.Build.0 = Debug|x64
 		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.Release|Win32.ActiveCfg = Release|Win32
 		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.Release|Win32.Build.0 = Release|Win32
+		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.Release|x64.ActiveCfg = Release|x64
+		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.Release|x64.Build.0 = Release|x64
 		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.ReleaseUPX|Win32.ActiveCfg = ReleaseUPX|Win32
 		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.ReleaseUPX|Win32.Build.0 = ReleaseUPX|Win32
+		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.ReleaseUPX|x64.ActiveCfg = ReleaseUPX|x64
+		{1DE442F2-3EC9-446A-98E5-039BA4311D46}.ReleaseUPX|x64.Build.0 = ReleaseUPX|x64
 		{87E12023-4E2C-4616-BF04-7E474EE0506E}.Debug|Win32.ActiveCfg = Debug|Win32
 		{87E12023-4E2C-4616-BF04-7E474EE0506E}.Debug|Win32.Build.0 = Debug|Win32
+		{87E12023-4E2C-4616-BF04-7E474EE0506E}.Debug|x64.ActiveCfg = Debug|x64
+		{87E12023-4E2C-4616-BF04-7E474EE0506E}.Debug|x64.Build.0 = Debug|x64
 		{87E12023-4E2C-4616-BF04-7E474EE0506E}.Release|Win32.ActiveCfg = Release|Win32
 		{87E12023-4E2C-4616-BF04-7E474EE0506E}.Release|Win32.Build.0 = Release|Win32
+		{87E12023-4E2C-4616-BF04-7E474EE0506E}.Release|x64.ActiveCfg = Release|x64
+		{87E12023-4E2C-4616-BF04-7E474EE0506E}.Release|x64.Build.0 = Release|x64
 		{87E12023-4E2C-4616-BF04-7E474EE0506E}.ReleaseUPX|Win32.ActiveCfg = ReleaseUPX|Win32
 		{87E12023-4E2C-4616-BF04-7E474EE0506E}.ReleaseUPX|Win32.Build.0 = ReleaseUPX|Win32
+		{87E12023-4E2C-4616-BF04-7E474EE0506E}.ReleaseUPX|x64.ActiveCfg = ReleaseUPX|x64
+		{87E12023-4E2C-4616-BF04-7E474EE0506E}.ReleaseUPX|x64.Build.0 = ReleaseUPX|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
