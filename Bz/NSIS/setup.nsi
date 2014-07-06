@@ -7,7 +7,7 @@ RequestExecutionLevel admin
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "BzEditor"
-!define PRODUCT_VERSION "1.9.3"
+!define PRODUCT_VERSION "1.9.5"
 !define PRODUCT_PUBLISHER "c.mos"
 !define PRODUCT_WEB_SITE "http://www.vcraft.jp/"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"
@@ -126,11 +126,13 @@ Section "MainSection" SEC01
   CreateDirectory "$SMPROGRAMS\BzEditor"
 ;  CreateDirectory "$INSTDIR\htm"
   File "..\Release\Bz.exe"
+  File "..\Release64\Bz64.exe"
 ;  File "..\chm\Bz.chm"
 ;  File "..\index.htm"
   File "data\Bz.txt"
   File "..\..\SPECIALTHANKS.txt"
   File "..\Release\Bzres_us.dll"
+  File "..\Release64\Bzres_us64.dll"
 ;  SetOutPath "$INSTDIR\htm"
 ;  File "..\htm\basic.htm"
 ;  File "..\htm\bmpview.htm"
@@ -154,8 +156,13 @@ SectionEnd
 
 Section -AdditionalIcons
   CreateDirectory "$SMPROGRAMS\BzEditor"
+${If} ${RunningX64}
+  CreateShortCut "$SMPROGRAMS\BzEditor\Bz.lnk" "$INSTDIR\Bz64.exe"
+  CreateShortCut "$SENDTO\Bz.lnk" "$INSTDIR\Bz64.exe"
+${Else}
   CreateShortCut "$SMPROGRAMS\BzEditor\Bz.lnk" "$INSTDIR\Bz.exe"
   CreateShortCut "$SENDTO\Bz.lnk" "$INSTDIR\Bz.exe"
+${Endif}
   CreateShortCut "$SMPROGRAMS\BzEditor\Uninstall.lnk" "$INSTDIR\uninst.exe"
 SectionEnd
 
@@ -222,6 +229,7 @@ FunctionEnd
 Section Uninstall
   Delete "$INSTDIR\uninst.exe"
   Delete "$INSTDIR\Bz.exe"
+  Delete "$INSTDIR\Bz64.exe"
 ;  Delete "$APPDATA\BzEditor\Bz.def"
   Delete "$INSTDIR\Bz.chm"
   Delete "$INSTDIR\index.htm"
@@ -240,6 +248,7 @@ Section Uninstall
   Delete "$INSTDIR\Bz.txt"
   Delete "$INSTDIR\SPECIALTHANKS.txt"
   Delete "$INSTDIR\Bzres_us.dll"
+  Delete "$INSTDIR\Bzres_us64.dll"
 
   Delete "$SMPROGRAMS\BzEditor\Uninstall.lnk"
   Delete "$SENDTO\Bz.lnk"
