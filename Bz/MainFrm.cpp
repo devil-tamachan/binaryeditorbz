@@ -108,7 +108,7 @@ void CMainFrame::OnFileSaveDumpList(UINT uNotifyCode, int nID, CWindow wndCtl)
   if(dlg.DoModal() == IDOK){
     CAtlFile file;
     //if(file.Open(sFileName, CFile::modeCreate | CFile::modeWrite)) {
-    if(SUCCEEDED(file.Create(sFileName, GENERIC_WRITE, 0, CREATE_ALWAYS)))
+    if(SUCCEEDED(file.Create(dlg.m_szFileName, GENERIC_WRITE, 0, CREATE_ALWAYS)))
     {
       CBZView *pBZView = GetActiveBZView();
       if(pBZView)pBZView->DrawToFile(&file);
