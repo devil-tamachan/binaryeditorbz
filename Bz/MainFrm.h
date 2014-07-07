@@ -58,10 +58,18 @@ class CBZInspectView;
 	if(uMsg == WM_COMMAND||uMsg == WM_INITMENUPOPUP) \
 		CHAIN_MSG_MAP_ACTIVEBZVIEW()
 
-class CMainFrame : public WTL::CFrameWindowImpl<CMainFrame>, public WTL::CUpdateUI<CMainFrame>, public WTL::CIdleHandler
+class CMainFrame : public WTL::CFrameWindowImpl<CMainFrame>, public WTL::CUpdateUI<CMainFrame>, public WTL::CMessageFilter, public WTL::CIdleHandler
 {
 public:
   DECLARE_FRAME_WND_CLASS_EX(_T(BZ_CLASSNAME), IDR_MAINFRAME, CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS, COLOR_WINDOW)
+
+  WTL::CAccelerator m_acc;
+
+  virtual BOOL PreTranslateMessage(MSG* pMsg)
+  {
+    if(!m_acc.IsNull() && m_acc.TranslateAccelerator(m_hWnd, pMsg))return TRUE;
+    return FALSE;
+  }
 
   virtual BOOL OnIdle()
   {
@@ -160,6 +168,8 @@ public:
     CBZCoreData *pCoreData = CBZCoreData::GetInstance();
     pCoreData->m_pMainFrame = this;
 
+    m_acc.LoadAccelerators(IDR_MAINFRAME);
+
     if(options.ptFrame.x && options.ptFrame.y)
     {
       WINDOWPLACEMENT wndpl;
@@ -221,6 +231,7 @@ public:
     }
 
     WTL::CMessageLoop* pLoop = _Module.GetMessageLoop();
+    pLoop->AddMessageFilter(this);
     pLoop->AddIdleHandler(this);
 
     Invalidate();
@@ -274,6 +285,7 @@ public:
   void OnDestroy()
   {
     WTL::CMessageLoop* pLoop = _Module.GetMessageLoop();
+    pLoop->RemoveMessageFilter(this);
     pLoop->RemoveIdleHandler(this);
     SetMsgHandled(FALSE);
   }
