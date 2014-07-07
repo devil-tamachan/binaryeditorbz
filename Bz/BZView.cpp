@@ -137,7 +137,7 @@ void CBZView::OnUpdateJump()
 
 void CBZView::OnJumpFindnext(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-  CComboBox4ToolBar* pCombo = &(GetMainFrame()->m_combo_toolbar);
+  WTL::CComboBox* pCombo = &(GetMainFrame()->m_combo_toolbar);
   UINT64 dwTotal = GetFileSize();
 
   CStringA sFind;
@@ -252,7 +252,7 @@ void CBZView::OnJumpCompare(UINT uNotifyCode, int nID, CWindow wndCtl)
   if(!pView1) return;
   CBZDoc2 *pDoc1 = pView1->m_pDoc;
   if(!pDoc1) return;
-  CComboBox4ToolBar* pCombo = &(GetMainFrame()->m_combo_toolbar);
+  WTL::CComboBox* pCombo = &(GetMainFrame()->m_combo_toolbar);
   pCombo->SetWindowText(_T(""));
 
   UINT64 len;//‚±‚ê‚©‚ç”äŠr‚·‚éƒoƒCƒg—Ê

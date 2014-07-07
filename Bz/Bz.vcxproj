@@ -477,7 +477,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="ComboBox4ToolBar.cpp" />
     <ClCompile Include="MainFrm.cpp">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -548,7 +547,6 @@
     <ClInclude Include="BZView.h" />
     <ClInclude Include="ColorCombo.h" />
     <ClInclude Include="ColorDlg.h" />
-    <ClInclude Include="ComboBox4ToolBar.h" />
     <ClInclude Include="kb976038.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MemDC.h" />

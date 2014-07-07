@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include "BZDoc2.h"
 #include "SettingDlg.h"
 #include "AboutDlg.h"
-#include "ComboBox4ToolBar.h"
+//#include "ComboBox4ToolBar.h"
 
 #define BZ_CLASSNAME "BzEditorClass"
 
@@ -68,6 +68,8 @@ public:
   virtual BOOL PreTranslateMessage(MSG* pMsg)
   {
     if(!m_acc.IsNull() && m_acc.TranslateAccelerator(m_hWnd, pMsg))return TRUE;
+    if((pMsg->hwnd == m_hWndEditSearchbox) && (pMsg->message == WM_KEYDOWN))return OnKeyDownSearchbox((TCHAR)(pMsg->wParam), (UINT)(pMsg->lParam) & 0xFFFF, (UINT)((pMsg->lParam & 0xFFFF0000) >> 16));
+
     return FALSE;
   }
 
@@ -202,6 +204,7 @@ public:
       m_mainToolbar.GetItemRect(idxFindBox, rectFindBox);
       m_combo_toolbar.Create(m_mainToolbar, rectFindBox, NULL
         , WS_CHILD | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWN, 0, IDT_FINDBOX);
+      m_hWndEditSearchbox = m_combo_toolbar.GetWindow(GW_CHILD);
       //m_combo_toolbar.SetFont(AtlGetDefaultGuiFont());
       //WTL::CEdit editBox = m_combo_toolbar.GetEditCtrl();
       //editBox.ModifyStyle(0, ES_RIGHT);
@@ -457,7 +460,7 @@ public:
 	UINT m_nSplitView0;
 	BOOL m_bCompare;
 
-  CComboBox4ToolBar m_combo_toolbar;
+  WTL::CComboBox m_combo_toolbar;
 
   WTL::CPrinter m_printerCur;
   WTL::CDevMode m_devmodeCur;
@@ -467,6 +470,7 @@ public:
   BOOL m_bPrintPreview;
 
   WTL::CToolBarCtrl m_mainToolbar;
+  HWND m_hWndEditSearchbox;
   WTL::CMultiPaneStatusBarCtrl m_statusbar;
 
   WTL::CRecentDocumentList m_recent;
@@ -566,6 +570,7 @@ public:
 
   int GetSubViewIdealWidth(DWORD idx);
   void ResetWindowWidth();
+  BOOL OnKeyDownSearchbox(UINT nChar, UINT nRepCnt, UINT nFlags);
 };
 
 //inline CMainFrame* GetMainFrame() { return (CMainFrame*)AfxGetMainWnd(); };

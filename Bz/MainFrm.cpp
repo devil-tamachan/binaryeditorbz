@@ -879,6 +879,48 @@ void CMainFrame::ResetWindowWidth()
 //}
 
 
+BOOL CMainFrame::OnKeyDownSearchbox(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+  CBZView* pBZView = GetActiveBZView();
+  BOOL bCtrl  = (GetKeyState(VK_CONTROL) < 0);
+  switch (nChar)
+  {
+  case VK_ESCAPE:
+    pBZView->SetFocus();
+    return TRUE;
+  case VK_RETURN:
+    if(!m_combo_toolbar.GetDroppedState()) {
+      ::PostMessage(pBZView->m_hWnd, WM_COMMAND, ID_JUMP_FINDNEXT, 0);
+      return TRUE;
+    }
+    break;
+  case VK_DOWN:
+    if(!m_combo_toolbar.GetDroppedState()) {
+      m_combo_toolbar.ShowDropDown();
+      return TRUE;
+    }
+    break;
+  case 'X':
+    if(bCtrl) {
+      m_combo_toolbar.Cut();
+      return TRUE;
+    }
+    break;
+  case 'C':
+    if(bCtrl) {
+      m_combo_toolbar.Copy();
+      return TRUE;
+    }
+    break;
+  case 'V':
+    if(bCtrl) {
+      m_combo_toolbar.Paste();
+      return TRUE;
+    }
+    break;
+  }
+  return FALSE;
+}
 
 
 
