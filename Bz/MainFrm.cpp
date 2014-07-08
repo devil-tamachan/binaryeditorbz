@@ -843,7 +843,7 @@ void CMainFrame::ResetWindowWidth()
     {
       pSplitter->SetSplitterPosX(1, m_arrSubWidth[0]);
     } else if(!bSubView && m_nSplitView==ID_VIEW_SPLIT_V) {
-      pSplitter->SetSplitterPosX(1, m_arrBZWidth[0]);
+      pSplitter->SetSplitterPosX(1, m_arrBZWidth[0]+GetSystemMetrics(SM_CXVSCROLL)+wEdge);
     } else if(bSubView && m_nSplitView) {
       switch(m_nSplitView)
       {
