@@ -238,49 +238,6 @@ public:
     pLoop->AddIdleHandler(this);
 
     Invalidate();
-    /*
-    if (!(options.barState & BARSTATE_NOFLAT ? m_wndToolBar.Create(this)
-      : m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP)) ||
-      !m_wndToolBar.LoadToolBar(IDR_MAINFRAME)) {
-        TRACE0("Failed to create toolbar\n");
-        return -1;      // fail to create
-    }
-    m_wndToolBar.m_cyTopBorder = 2;
-    m_wndToolBar.m_cyBottomBorder = 2;
-    m_wndToolBar.m_cxLeftBorder = 6;
-    m_wndToolBar.m_cxRightBorder = 8;
-
-    if (!m_wndToolBar.CreateComboBox(ID_JUMP_FIND, ID_JUMP_FINDNEXT, COMBO_WIDTH, COMBO_HEIGHT)) {
-      TRACE0("Failed to create combobox in toolbar\n");
-      return -1;      // fail to create
-    }
-    */
-    /*if (!m_wndStatusBar.Create(this) ||
-      !m_wndStatusBar.SetIndicators(indicators,
-      sizeof(indicators)/sizeof(UINT))) {
-        TRACE0("Failed to create status bar\n");
-        return -1;      // fail to create
-    }*/
-
-    // TODO: Remove this if you don't want tool tips or a resizeable toolbar
-    //m_wndToolBar.SetBarStyle(m_wndToolBar.GetBarStyle() |
-   //   CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
-
-    // TODO: Delete these three lines if you don't want the toolbar to
-    //  be dockable
-    //m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
-    //EnableDocking(CBRS_ALIGN_ANY);
-    //DockControlBar(&m_wndToolBar);
-
-    //m_wndStatusBar.SetPaneInfo(0, ID_SEPARATOR,	SBPS_STRETCH | SBPS_NOBORDERS, 160);
-
-    //ShowControlBar(&m_wndToolBar, (options.barState & BARSTATE_TOOL) != 0, FALSE);
-    //ShowControlBar(&m_wndStatusBar, (options.barState & BARSTATE_STATUS) != 0, FALSE);
-
-    //UINT nID;
-    //UINT nStyle;
-    //m_wndStatusBar.GetPaneInfo(1, nID, nStyle, m_nPaneWidth);
-    //m_wndStatusBar.SetPaneText(1, _T(""));
 
     return 0;
   }
@@ -297,8 +254,6 @@ public:
   void OnFileExit(UINT uNotifyCode, int nID, CWindow wndCtl) { PostMessage(WM_CLOSE); }
   void OnJumpFind(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
-    //ShowControlBar(&m_wndToolBar, TRUE, FALSE);
-    //m_wndToolBar.m_combo.SetFocus();
     m_combo_toolbar.SetFocus();
   }
   void OnViewBitmap(UINT uNotifyCode, int nID, CWindow wndCtl);
@@ -307,18 +262,12 @@ public:
   void OnViewAnalyzer(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnJumpTo(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
-    //ShowControlBar(&m_wndToolBar, TRUE, FALSE);
-    //m_wndToolBar.m_combo.SetFocus();
-    //m_wndToolBar.m_combo.SetText(_T("> "));
     m_combo_toolbar.SetFocus();
     m_combo_toolbar.SetWindowText(_T("> "));
     SetSearchboxCursor(2);
   }
   void OnEditValue(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
-    //ShowControlBar(&m_wndToolBar, TRUE, FALSE);
-    //m_wndToolBar.m_combo.SetFocus();
-    //m_wndToolBar.m_combo.SetText(_T("< %"));
     m_combo_toolbar.SetFocus();
     m_combo_toolbar.SetWindowText(_T("< %"));
     SetSearchboxCursor(3);
@@ -469,7 +418,6 @@ public:
   WTL::CPrinter m_printerCur;
   WTL::CDevMode m_devmodeCur;
   WTL::CPrintJob m_job;
-  //WTL::CZoomPrintPreviewWindow m_wndPrintPreview;
   WTL::CZoomPrintPreviewWindow m_wndPrintPreview;
   BOOL m_bPrintPreview;
 
@@ -479,22 +427,12 @@ public:
 
   WTL::CRecentDocumentList m_recent;
 
-
-public:  // control bar embedded members
-	//CStatusBarEx m_wndStatusBar;
-	//CComboToolBar m_wndToolBar;
-
 // Operations
 public:
 	void ChangeView(CBZView* pView);
   void SwitchActiveBZView();
 	CBZView *GetBrotherView(CBZView* pView);
 
-protected:
-	//virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
-	//virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-
-// Implementation
 public:
   void AddRecentList(LPCTSTR path)
   {
@@ -586,7 +524,6 @@ public:
   }
 };
 
-//inline CMainFrame* GetMainFrame() { return (CMainFrame*)AfxGetMainWnd(); };
 
 /////////////////////////////////////////////////////////////////////////////
 

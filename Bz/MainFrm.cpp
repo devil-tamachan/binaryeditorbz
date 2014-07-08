@@ -107,7 +107,6 @@ void CMainFrame::OnFileSaveDumpList(UINT uNotifyCode, int nID, CWindow wndCtl)
 
   if(dlg.DoModal() == IDOK){
     CAtlFile file;
-    //if(file.Open(sFileName, CFile::modeCreate | CFile::modeWrite)) {
     if(SUCCEEDED(file.Create(dlg.m_szFileName, GENERIC_WRITE, 0, CREATE_ALWAYS)))
     {
       CBZView *pBZView = GetActiveBZView();
@@ -385,7 +384,6 @@ void CMainFrame::OnViewAnalyzer(UINT uNotifyCode, int nID, CWindow wndCtl)
   if(m_bAnalyzerView)CreateSubView();
   else pCoreData->DeleteAllSubViews();
   ResetSplitter();
-  //CreateClient();
 }
 
 LRESULT CMainFrame::OnStatusBarClicked(LPNMHDR pnmh)
@@ -469,29 +467,12 @@ void CMainFrame::UpdateFrameTitle()
       sPath = PathFindFileName(sPath);//pDoc->GetTitle();
     }
     s += sPath;
-    //		s += pDoc->IsFileMapping()?_T(" (FileMap)"):_T(" (Mem)");
     if(pDoc->IsModified())
       s += " *";
     SetWindowText(s);
   }
 }
 
-
-//BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)   ‚½‚Ô‚ñíœ‚µ‚Ä‚à–â‘è‚È‚¢Bˆê‰žŽc‚µ‚Ä‚¨‚­
-//{
-//	if(CFrameWnd::PreCreateWindow(cs)) {
-//		WNDCLASSEX wc;
-//		wc.cbSize = sizeof(WNDCLASSEX);
-//		VERIFY(::GetClassInfoEx(AfxGetInstanceHandle(), cs.lpszClass, &wc));
-//		wc.lpszClassName = _T(BZ_CLASSNAME);
-//		wc.hIcon  = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-//		wc.hIconSm = (HICON)::LoadImage(AfxGetResourceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 16, 16, 0);
-//		::RegisterClassEx(&wc);
-//		cs.lpszClass = _T(BZ_CLASSNAME);
-//		return TRUE;
-//	}
-//	return FALSE;
-//}
 
 void CMainFrame::AddSubView()
 {
@@ -653,10 +634,7 @@ BOOL CMainFrame::ResetSplitter()
 BOOL CMainFrame::CreateClient()
 {
   CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-
 	BOOL bFirst/*bReCreate*/ = pCoreData->IsFirst();
-  //CBZDoc2 *pDoc1 = NULL, *pDoc2 = NULL;
-
 	BOOL bSubView = (m_bBmpView || m_bStructView || m_bInspectView || m_bAnalyzerView);
 
   PreparaSplitter();
