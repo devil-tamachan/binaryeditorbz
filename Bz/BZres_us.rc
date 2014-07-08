@@ -155,7 +155,7 @@ BEGIN
     BEGIN
         MENUITEM "&Find...\tCtrl+F",            ID_JUMP_FIND
         MENUITEM "Find &Next\tF3",              ID_JUMP_FINDNEXT
-        MENUITEM "&Compare",                    ID_JUMP_COMPARE
+        MENUITEM "&Compare\tF4",                    ID_JUMP_COMPARE
         MENUITEM SEPARATOR
         MENUITEM "&To...",                      ID_JUMP_TO
         MENUITEM "&Offset",                     ID_JUMP_OFFSET
@@ -404,6 +404,7 @@ BEGIN
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "D",            ID_EDIT_COPY_DUMP,      VIRTKEY, CONTROL, NOINVERT
     "F",            ID_JUMP_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_JUMP_TO,             VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
@@ -418,6 +419,7 @@ BEGIN
     VK_F2,          ID_JUMP_MARKNEXT,       VIRTKEY, NOINVERT
     VK_F2,          ID_JUMP_MARK,           VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_JUMP_FINDNEXT,       VIRTKEY, NOINVERT
+    VK_F4,          ID_JUMP_COMPARE,        VIRTKEY, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
     VK_HOME,        ID_JUMP_START,          VIRTKEY, CONTROL, NOINVERT

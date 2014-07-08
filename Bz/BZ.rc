@@ -303,7 +303,7 @@ BEGIN
     BEGIN
         MENUITEM "検索(&F)...\tCtrl+F",           ID_JUMP_FIND
         MENUITEM "次を検索(&N)\tF3",                ID_JUMP_FINDNEXT
-        MENUITEM "ファイルの比較(&C)",                 ID_JUMP_COMPARE
+        MENUITEM "ファイルの比較(&C)\tF4",                 ID_JUMP_COMPARE
         MENUITEM SEPARATOR
         MENUITEM "指定アドレスへ(&A)...",              ID_JUMP_TO
         MENUITEM "オフセットを加算(&O)",                ID_JUMP_OFFSET
