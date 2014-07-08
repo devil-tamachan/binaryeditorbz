@@ -351,6 +351,8 @@ public:
     m_nSplitView = (m_nSplitView == nID) ? 0 : nID;
     CreateClient();
     m_nSplitView0 = m_nSplitView;
+
+    SwitchActiveBZView();
   }
   void OnFilePageSetup(UINT uNotifyCode, int nID, CWindow wndCtl) 
   {
@@ -485,6 +487,7 @@ public:  // control bar embedded members
 // Operations
 public:
 	void ChangeView(CBZView* pView);
+  void SwitchActiveBZView();
 	CBZView *GetBrotherView(CBZView* pView);
 
 protected:

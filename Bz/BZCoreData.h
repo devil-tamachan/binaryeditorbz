@@ -154,6 +154,10 @@ public:
   {
     ReplaceBZDoc2(m_dwActive, doc, bDeleteDoc);
   }
+  DWORD GetActive()
+  {
+    return m_dwActive;
+  }
   void SetActive(DWORD dwIndex)
   {
     m_dwActive = dwIndex;

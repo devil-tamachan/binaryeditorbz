@@ -702,7 +702,9 @@ BOOL CMainFrame::CreateClient()
   } else if( m_nSplitView0 && !m_nSplitView)
   {
     //close doc2
-    pCoreData->DeleteView(1, TRUE/*bDelDoc*/);
+    DWORD dwActive = pCoreData->GetActive();
+    DWORD dwDelViewIdx = dwActive==0 ? 1:0;
+    pCoreData->DeleteView(dwDelViewIdx, TRUE/*bDelDoc*/);
     //ReSplit(bSubView);
   }
 
@@ -740,6 +742,12 @@ void CMainFrame::ChangeView(CBZView* pView)
 		SetActiveView(pBroBZView);
     pBroBZView->UpdateStatusBar();
   }
+}
+
+void CMainFrame::SwitchActiveBZView()
+{
+  CBZView *pActiveBZView = GetActiveBZView();
+  if(pActiveBZView)ChangeView(pActiveBZView);
 }
 
 CBZView *CMainFrame::GetBrotherView(CBZView* pView)
