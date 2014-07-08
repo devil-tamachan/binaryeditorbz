@@ -289,20 +289,7 @@ public:
     CAboutDlg aboutDlg;
     aboutDlg.DoModal();
   }
-  void OnViewSplit(UINT uNotifyCode, int nID, CWindow wndCtl)
-  {
-    /* 最大化していると最大化状態のままウィンドウサイズが調整されて変なウィンドウ（最大化できない＆サイズ変更不可）になってしまうバグの対策 */
-    options.nCmdShow=SW_SHOWNORMAL;
-    ShowWindow(options.nCmdShow);
-
-    GetSplitInfo();
-    m_nSplitView0 = m_nSplitView;
-    m_nSplitView = (m_nSplitView == nID) ? 0 : nID;
-    CreateClient();
-    m_nSplitView0 = m_nSplitView;
-
-    SwitchActiveBZView();
-  }
+  void OnViewSplit(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnFilePageSetup(UINT uNotifyCode, int nID, CWindow wndCtl) 
   {
 /*    CPageSetupDialog dlg;
@@ -496,19 +483,19 @@ public:
       | options.barState & (BARSTATE_FULLPATH | BARSTATE_NOFLAT);
   }
   void UpdateInspectViewChecks();
-  void DestroyAllChildWnd(BOOL bDelDoc)
-  {
-    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-    pCoreData->DeleteAllViews(FALSE/*bDelDoc*/);
+  //void DestroyAllChildWnd(BOOL bDelDoc)
+  //{
+  //  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  //  pCoreData->DeleteAllViews(FALSE/*bDelDoc*/);
 
-    if(m_pWndSplitter)
-    {
-      m_pWndSplitter->DestroyWindow();
-      delete m_pWndSplitter;
-      m_pWndSplitter = NULL;
-      pCoreData->SetSplitterWnd(NULL);
-    }
-  }
+  //  if(m_pWndSplitter)
+  //  {
+  //    m_pWndSplitter->DestroyWindow();
+  //    delete m_pWndSplitter;
+  //    m_pWndSplitter = NULL;
+  //    pCoreData->SetSplitterWnd(NULL);
+  //  }
+  //}
 
   int GetSubViewIdealWidth(DWORD idx);
   void ResetWindowWidth();

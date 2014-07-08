@@ -386,6 +386,31 @@ void CMainFrame::OnViewAnalyzer(UINT uNotifyCode, int nID, CWindow wndCtl)
   ResetSplitter();
 }
 
+void CMainFrame::OnViewSplit(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  /* 最大化していると最大化状態のままウィンドウサイズが調整されて変なウィンドウ（最大化できない＆サイズ変更不可）になってしまうバグの対策 */
+  options.nCmdShow=SW_SHOWNORMAL;
+  ShowWindow(options.nCmdShow);
+
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+
+  UINT nSplitViewNew = (m_nSplitView == nID) ? 0 : nID;
+  if(m_nSplitView && !nSplitViewNew)
+  {
+    DWORD dwActive = pCoreData->GetActive();
+    DWORD dwDelViewIdx = dwActive==0 ? 1:0;
+    CBZView *bzView = pCoreData->GetBZView(dwDelViewIdx);
+    if(!(bzView->AskSave()))return; //Cancel Close
+  }
+  GetSplitInfo();
+  m_nSplitView0 = m_nSplitView;
+  m_nSplitView = nSplitViewNew;
+  CreateClient();
+  m_nSplitView0 = m_nSplitView;
+
+  SwitchActiveBZView();
+}
+
 LRESULT CMainFrame::OnStatusBarClicked(LPNMHDR pnmh)
 {
   NMMOUSE *pmmouse = (NMMOUSE *)pnmh;
