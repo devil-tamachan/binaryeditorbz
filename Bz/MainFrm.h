@@ -312,6 +312,7 @@ public:
     //m_wndToolBar.m_combo.SetText(_T("> "));
     m_combo_toolbar.SetFocus();
     m_combo_toolbar.SetWindowText(_T("> "));
+    SetSearchboxCursor(2);
   }
   void OnEditValue(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
@@ -320,6 +321,7 @@ public:
     //m_wndToolBar.m_combo.SetText(_T("< %"));
     m_combo_toolbar.SetFocus();
     m_combo_toolbar.SetWindowText(_T("< %"));
+    SetSearchboxCursor(3);
   }
   void OnViewFullpath(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
@@ -571,6 +573,15 @@ public:
   int GetSubViewIdealWidth(DWORD idx);
   void ResetWindowWidth();
   BOOL OnKeyDownSearchbox(UINT nChar, UINT nRepCnt, UINT nFlags);
+
+  void SetSearchboxCursor(int pos)
+  {
+    if(!m_hWndEditSearchbox)return;
+    WTL::CEdit editSearchbox;
+    editSearchbox.Attach(m_hWndEditSearchbox);
+    editSearchbox.SetSel(pos, pos, FALSE);
+    editSearchbox.Detach();
+  }
 };
 
 //inline CMainFrame* GetMainFrame() { return (CMainFrame*)AfxGetMainWnd(); };
