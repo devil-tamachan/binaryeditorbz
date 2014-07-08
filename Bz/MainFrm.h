@@ -503,7 +503,6 @@ public:
   }
   void AddSubView();
   void AddBZView();
-  void ReSplit(BOOL bSubView);
   BOOL CreateSubView();
   BOOL PreparaSplitter();
   BOOL ResetSplitter();

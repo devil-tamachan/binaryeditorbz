@@ -531,23 +531,6 @@ void CMainFrame::AddBZView()
   pCoreData->AddBZView(pBZView);
 }
 
-void CMainFrame::ReSplit(BOOL bSubView)
-{
-/*  if(!m_nSplitView0 &&  m_nSplitView)
-  {
-    if(bSubView)
-    {
-      m_pWndSplitter->m_paneW
-    }
-  } else if( m_nSplitView0 && !m_nSplitView)
-  {*/
-    //close doc2
-   // pCoreData->DeleteView(0, TRUE/*bDelDoc*/);
-   /* ReSplit(bSubView);
-  }
-*/
-}
-
 BOOL CMainFrame::CreateSubView()
 {
   CBZCoreData *pCoreData = CBZCoreData::GetInstance();
@@ -697,7 +680,6 @@ BOOL CMainFrame::CreateClient()
     {
       AddSubView();
     }
-    //ReSplit(bSubView);
     pCoreData->GetBZView(1)->Update();
   } else if( m_nSplitView0 && !m_nSplitView)
   {
@@ -705,7 +687,6 @@ BOOL CMainFrame::CreateClient()
     DWORD dwActive = pCoreData->GetActive();
     DWORD dwDelViewIdx = dwActive==0 ? 1:0;
     pCoreData->DeleteView(dwDelViewIdx, TRUE/*bDelDoc*/);
-    //ReSplit(bSubView);
   }
 
 
