@@ -156,6 +156,10 @@ void CMainFrame::OnFileSaveAs(UINT uNotifyCode, int nID, CWindow wndCtl)
 }
 void CMainFrame::OnEditReadOnly(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+  _OnEditReadOnly();
+}
+void CMainFrame::_OnEditReadOnly()
+{
   CBZCoreData *pCoreData = CBZCoreData::GetInstance();
   CBZDoc2 *pDoc = pCoreData->GetActiveBZDoc2();
   if(pDoc)pDoc->OnEditReadOnly();
@@ -429,6 +433,9 @@ LRESULT CMainFrame::OnStatusBarClicked(LPNMHDR pnmh)
       break;
     case 3:
       pBZView->OnStatusChar();
+      break;
+    case 4:
+      _OnEditReadOnly();
       break;
     }
     pBZView->_OnInitMenuPopup();

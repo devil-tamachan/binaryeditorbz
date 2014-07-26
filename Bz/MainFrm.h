@@ -332,6 +332,7 @@ public:
   void OnFileOpen(UINT /*uNotifyCode*/=0, int /*nID*/=0, CWindow /*wndCtl*/=NULL);
   void OnFileSave(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnFileSaveAs(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void _OnEditReadOnly();
   void OnEditReadOnly(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnEditReadOnlyOpen(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnFilePrint(UINT uNotifyCode, int nID, CWindow wndCtl);
