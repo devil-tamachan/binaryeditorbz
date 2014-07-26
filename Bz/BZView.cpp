@@ -539,23 +539,23 @@ int CBZView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
   {
-  ATLTRACE("OnChar\n");
+  ATLTRACE("OnChar 0x%X\n", nChar);
     static UINT preChar = 0;
     UINT64 dwTotal = GetFileSize();
 
-    if(nChar < ' ' || nChar >= 256)
+    if(nChar < ' ' || (!m_bCaretOnChar && nChar >= 256))
       return;
     if(m_pDoc->IsReadOnly())
       goto Error;
-    if(!m_bEnterVal && !preChar) {
+    /*if(!m_bEnterVal && !preChar) {
       DWORD dwSize = 1;
-      if(m_bCaretOnChar && (m_charset == CTYPE_UNICODE || (m_charset > CTYPE_UNICODE && _ismbblead((BYTE)nChar)))) {
+      if(m_bCaretOnChar && (m_charset == CTYPE_UNICODE || (m_charset > CTYPE_UNICODE && _ismbblead(nChar&0xFF)))) {
         if(m_charset == CTYPE_UTF8)		// ### 1.54b
           dwSize = 3;
         else
           dwSize = 2;
       }
-    }
+    }*/
     m_bBlock = FALSE;
     //p = m_pDoc->QueryMapViewTama2(m_dwCaret, 4); //p  = m_pDoc->GetDocPtr() + m_dwCaret;
     if(!m_bCaretOnChar) {
@@ -576,20 +576,24 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         m_bEnterVal = FALSE;
       } else
         m_bEnterVal = TRUE;
-    } else if(m_charset >= CTYPE_UNICODE) {
-      char  mbs[4];
+    } else if(m_charset >= CTYPE_SJIS/*CTYPE_UNICODE*/) {
+      char  mbs[4] = {0};
       char* pb = mbs;
-      if(preChar) {
+      /*if(preChar) {
         *pb++ = preChar;
         preChar = 0;
-      } else if(_ismbblead((BYTE)nChar)) {
-        preChar = nChar;
-        return;
+      } else*/ if(nChar > 0xFF) {
+        //preChar = nChar & 0xFF;
+        //*pb++ = (nChar & 0xFF00) >> 8;
+        //preChar = 0;
+        unsigned int *pUI = (unsigned int *)mbs;
+        *pUI = nChar;
+      } else {
+        *pb++ = nChar & 0xFF;
+        *pb++ = 0;
       }
-      *pb++ = (char)nChar;
-      *pb++ = 0;
       LPBYTE buffer = NULL;
-      int len = ConvertCharSet(m_charset, mbs, buffer);
+      int len = ConvertCharSet2(m_charset, (LPCWSTR)mbs, buffer);
       if(len) {
         if(m_charset == CTYPE_UNICODE) len *= 2;
         pb = (char*)buffer;
@@ -1983,6 +1987,64 @@ WORD CBZView::GetCharCode(WORD c, UINT64 ofs)
 		}
 	}
 	return c;
+}
+
+int CBZView::ConvertCharSet2(CharSet charset, LPCWSTR strFind, LPBYTE &buffer)
+{
+  size_t lenFind = wcslen(strFind);
+	if(charset == CTYPE_UNICODE || charset == CTYPE_UTF8)
+  {
+			if(charset == CTYPE_UTF8) {			// ### 1.54b
+				const int nFindUtf8 = ::WideCharToMultiByte(CP_UTF8, 0, strFind, lenFind, NULL, 0, 0, 0);
+				buffer = (LPBYTE)MemAlloc(nFindUtf8+8);
+				return /*byte*/::WideCharToMultiByte(CP_UTF8, 0, strFind, lenFind, (LPSTR)buffer, nFindUtf8+8, 0, 0);
+			} else {
+        buffer = (LPBYTE)MemAlloc((lenFind+1) * sizeof(WORD));
+        if(!buffer)return 0;
+        wcscpy((wchar_t *)buffer, strFind);
+        return /*wchar_t len*/ lenFind;
+      }
+  } else {
+    const int nLenMB = ::WideCharToMultiByte(CP_ACP, 0, strFind, lenFind, NULL, 0, 0, 0);
+    LPSTR sFind = (char *)calloc(1, nLenMB+8);
+    ::WideCharToMultiByte(CP_ACP, 0, strFind, lenFind, sFind, nLenMB+8, 0, 0);
+		buffer = (LPBYTE)MemAlloc((strlen(sFind) + 1) * sizeof(WORD));
+    if(charset==CTYPE_SJIS)
+    {
+      strcpy((char *)buffer, sFind);
+      return nLenMB;
+    }
+		BYTE *p = (LPBYTE)sFind;
+		BYTE *q = buffer;
+		BYTE c;
+		while(c = *p++) {
+			if(_ismbblead(c)) {
+				if(charset == CTYPE_EBCDIC) {
+					*q++ = CHAR_EBCDIC_NG;
+					c = *p++;
+					if(!c) break;
+					*q++ = CHAR_EBCDIC_NG;
+					continue;
+				}
+				WORD cjis = _mbcjmstojis(MAKEWORD(*p++, c));
+				if(cjis) {
+					if(charset == CTYPE_EUC) cjis |= 0x8080;
+					*q++ = HIBYTE(cjis);
+					*q++ = LOBYTE(cjis);
+				}
+			} else {
+				if(charset == CTYPE_EBCDIC) {	// ### 1.63
+					c = ConvertEbcDic(c);
+					if(c == 0) continue;
+				} else if(charset == CTYPE_EUC && c >= 0xA1 && c <= 0xDF) *q++ = 0x8E;
+				*q++ = c;
+			}
+		}
+		*q++ = '\0';
+    free(sFind);
+    return q - buffer - 1;
+	}
+	return 0;
 }
 
 int CBZView::ConvertCharSet(CharSet charset, LPCSTR sFind, LPBYTE &buffer)

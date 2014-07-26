@@ -106,6 +106,7 @@ public:
     MSG_WM_TIMER(OnTimer)
     MSG_WM_KEYDOWN(OnKeyDown)
     MSG_WM_CHAR(OnChar)
+   // MESSAGE_HANDLER_EX(WM_IME_CHAR, OnImeChar)
     MSG_WM_MBUTTONDOWN(OnMButtonDown)
     MSG_WM_LBUTTONDOWN(OnLButtonDown)
     MSG_WM_LBUTTONUP(OnLButtonUp)
@@ -398,6 +399,11 @@ public:
   }
   void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
   void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+  LRESULT OnImeChar(UINT uMsg, WPARAM wParam, LPARAM lParam)
+  {
+    return DefWindowProc(uMsg, wParam, lParam);
+  }
+
   void OnMButtonDown(UINT nFlags, WTL::CPoint point)
   {
     Activate();
@@ -644,6 +650,7 @@ private:
 	//void	SetValue(LPBYTE p, int bytes, int val);
 	//BOOL	IsMBS(LPBYTE pTop, DWORD ofs, BOOL bTrail);
 	CharSet AutoDetectCharSet();
+	int ConvertCharSet2(CharSet charset, LPCWSTR strFind, LPBYTE &buffer);
 	int ConvertCharSet(CharSet charset, LPCSTR sFind, LPBYTE &buffer);
 	CharSet DetectCodeType(UINT64 dwStart = 0, DWORD dwMaxSize = 0xFFFFffff);//(LPBYTE p, LPBYTE pEnd);
 	void InitCharMode(UINT64 ofs);
