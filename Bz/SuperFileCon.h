@@ -2817,6 +2817,7 @@ FFL_ERR1:
     while(1)
     {
       if(_TAMAFILECHUNK_IsContainPoint(pFCCur, dwEnd))break;
+      ATLASSERT(dwEnd > pFCCur->dwStart);
       pFCCur = __FileMap_LowNext(pFCCur);
       if(!pFCCur)
       {
@@ -2825,8 +2826,6 @@ FFL_ERR1:
       }
       ATLASSERT(dwDataChunksSize<0xFFffFFff);
       dwDataChunksSize++;
-      ATLASSERT(dwEnd > pFCCur->dwStart);
-      ATLASSERT(dwStart < pFCCur->dwEnd);
     }
     TAMAFILECHUNK *pFCEnd = pFCCur;
     TAMADataChunk **pDataChunks = (TAMADataChunk **)malloc(sizeof(TAMADataChunk *)*dwDataChunksSize);
