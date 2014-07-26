@@ -1183,7 +1183,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 					PutStr(CA2WEX<4>(chConv));
 				}
 #else
-				PutChar((char)c);
+				PutChar(c&0xFF);//PutChar((char)c);
 #endif
 			}
 		}
