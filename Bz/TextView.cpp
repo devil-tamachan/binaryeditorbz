@@ -443,6 +443,13 @@ void CTextView::PutStr(LPCSTR str)
 	m_nText += lstrlenA(str);
 }
 
+void CTextView::PutStrN(LPCSTR str, int n)
+{
+  if(n==0)return;
+	lstrcpynA(m_pVText + m_nText, str, n+1);
+	m_nText += n;
+}
+
 void CTextView::PutFormatStr(LPCSTR fmt, ...)
 {
 //	m_nText += wsprintf(m_pVText+m_nText, str, val);

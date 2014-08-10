@@ -41,6 +41,7 @@ COLORREF colorsDefault[TCOLOR_COUNT][2] = {
 	RGB_RED, COLOR_WINDOW | SYSCOLOR,
 	RGB_GREEN2, COLOR_WINDOW | SYSCOLOR,
 	RGB(0xe2,0x04,0x1b), RGB(0x3e,0xb3,0x70),
+	RGB(0xee,0xee,0xee)/*RGB(0xcc,0xcc,0xcc)*/, COLOR_3DLIGHT | SYSCOLOR,
 };
 
 int colWidthDefault[MBRCOL_MAX] = { 26, 80, 60 };

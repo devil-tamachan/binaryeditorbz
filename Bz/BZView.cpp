@@ -322,6 +322,7 @@ void CBZView::OnEditUndo(UINT uNotifyCode, int nID, CWindow wndCtl)
       GotoCaret();
       UpdateDocSize();
       Invalidate(FALSE);
+      UpdateWindow();
     } else {
       ATLASSERT(FALSE);
     }
@@ -335,6 +336,7 @@ void CBZView::OnEditRedo(UINT uNotifyCode, int nID, CWindow wndCtl)
       GotoCaret();
       UpdateDocSize();
       Invalidate(FALSE);
+      UpdateWindow();
     } else {
       ATLASSERT(FALSE);
     }
@@ -347,6 +349,7 @@ void CBZView::OnEditPaste(UINT uNotifyCode, int nID, CWindow wndCtl)
       m_dwCaret = dwPaste;
       UpdateDocSize();
       Invalidate(FALSE);
+      UpdateWindow();
     }
   }
 void CBZView::OnViewColor(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -798,6 +801,35 @@ void CBZView::DrawToFile(CAtlFile* pFile) 	// ###1.63
 	m_pFile = NULL;
 }
 
+//描画: 先頭のアドレス
+void CBZView::DrawAddress(UINT64 ofs1)
+{
+    DWORD ofsHi = HIDWORD(ofs1);
+    DWORD ofsLo = LODWORD(ofs1);
+    CStringA str;
+    str.Format("%04X:%04X-%04X:%04X", HIWORD(ofsHi), LOWORD(ofsHi), HIWORD(ofsLo), LOWORD(ofsLo));
+		if(options.bQWordAddr)//m_nColAddr > ADDRCOLUMNS)
+    {
+			PutStr(str);
+			SetColor();
+			PutStr("  ");
+		} else {
+      unsigned int idxHead = 20-m_dumpx;
+      unsigned int keta = GetKeta(ofs1);
+      keta += (keta-1)/4;
+      unsigned int lenHide = 20-idxHead-1-keta;
+      unsigned int idxAddr = idxHead + lenHide;
+
+      LPCSTR pStr = (LPCSTR)str;
+      SetColor(TCOLOR_ADDRESS3);
+      PutStrN(&(pStr[idxHead]), lenHide);
+      SetHeaderColor();
+      PutStr(&(pStr[idxAddr]));
+      SetColor();
+      PutStr(" ");
+		}
+}
+
 void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 {
   ATLTRACE("OnPaint\n");
@@ -951,41 +983,42 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 				Locate(0, y); // crlf
 			}
 		}
-		SetHeaderColor();
 		UINT64 ofs1 = ofs + m_pDoc->m_dwBase;
-#ifdef FILE_MAPPING
+//#ifdef FILE_MAPPING
 //		if(p && !(p = m_pDoc->QueryMapView(p, ofs1))) return;
 	//	if(p1 && !(p1 = pView1->m_pDoc->QueryMapView(p1, ofs1))) return;
 
-    DWORD ofsHi = HIDWORD(ofs1);
-    DWORD ofsLo = LODWORD(ofs1);
-    //描画: 先頭のアドレス
-		if(options.bQWordAddr)//m_nColAddr > ADDRCOLUMNS)
-    {
-			PutFormatStr("%04X:%04X-%04X:%04X", HIWORD(ofsHi), LOWORD(ofsHi), HIWORD(ofsLo), LOWORD(ofsLo));
-			SetColor();
-			PutStr("  ");
-		} else
-#endif //FILE_MAPPING
-		{
-      if(ofs1 < 0x1000000) {			// ###1.54
-				PutFormatStr("%06X", ofs1);
-				SetColor();
-				PutStr("  ");
-			} else if(ofs1 < 0x100000000) {
-				PutFormatStr("%X", ofs1);
-				SetColor();
-				PutStr(" ");
-			} else if(ofsHi < 0x1000000) {
-				PutFormatStr("%06X-%08X", ofsHi, ofsLo);
-				SetColor();
-				PutStr("  ");
-			} else {
-				PutFormatStr("%X-%08X", ofsHi, ofsLo);
-				SetColor();
-				PutStr(" ");
-			}
-		}
+
+    DrawAddress(ofs1);
+//    DWORD ofsHi = HIDWORD(ofs1);
+//    DWORD ofsLo = LODWORD(ofs1);
+//    //描画: 先頭のアドレス
+//		if(options.bQWordAddr)//m_nColAddr > ADDRCOLUMNS)
+//    {
+//			PutFormatStr("%04X:%04X-%04X:%04X", HIWORD(ofsHi), LOWORD(ofsHi), HIWORD(ofsLo), LOWORD(ofsLo));
+//			SetColor();
+//			PutStr("  ");
+//		} else
+//#endif //FILE_MAPPING
+//		{
+//      if(ofs1 < 0x1000000) {			// ###1.54
+//				PutFormatStr("%02X:%04X", HIWORD(ofs1), LOWORD(ofs1));
+//				SetColor();
+//				PutStr("  ");
+//			} else if(ofs1 < 0x100000000) {
+//				PutFormatStr("%04X:%04X", HIWORD(ofs1), LOWORD(ofs1));
+//				SetColor();
+//				PutStr(" ");
+//			} else if(ofsHi < 0x10000) {
+//				PutFormatStr("%X-%04X:%04X", ofsHi, HIWORD(ofsLo), LOWORD(ofsLo));
+//				SetColor();
+//				PutStr(" ");
+//			} else {
+//				PutFormatStr("%X:%04X-%04X:%04X", HIWORD(ofsHi), LOWORD(ofsHi), HIWORD(ofsLo), LOWORD(ofsLo));
+//				SetColor();
+//				PutStr(" ");
+//			}
+//		}
     //描画: Hex表示 (x16バイト)
 		UINT64 ofs0 = ofs;
 		for_to(i,16) {
@@ -1257,8 +1290,15 @@ void CBZView::DrawHeader2File()
 
 void CBZView::DrawHeader(UINT64 ofs)
 {
+  if(m_bClearHeader)
+  {
+		SetColor();
+    Locate(0,0);
+    PutChar(' ', m_cTotalX);
+    m_bClearHeader = FALSE;
+  }
   SetHeaderColor();
-  Locate(GetDUMP_X(ofs),0);
+  Locate(m_dumpx,0);
   for_to(i,16)
     PutFormatStr("+%1X ", i);
   PutChar();
@@ -1300,10 +1340,10 @@ void CBZView::DrawDummyCaret(HDC hDC)
 		if(m_dwCaret < dwOrg || m_dwCaret >= dwMax) {
 		} else {
       pt.x = (m_dwCaret - dwOrg)%16;
-      int dump_x = GetDUMP_X(m_dwCaret);
-      int char_x = dump_x + 3*16 + 1;
+      //int dump_x = GetDUMP_X(m_dwCaret);
+      int char_x = m_dumpx + 3*16 + 1;
 			ptx2 = pt.x + char_x;
-			pt.x = pt.x*3 + dump_x;
+			pt.x = pt.x*3 + m_dumpx;
 			if(m_bCaretOnChar) Swap(pt.x, ptx2);
       long ptOrgX = m_ptOffset.x/m_cellH;
 			pt.x -= ptOrgX;
@@ -1331,10 +1371,10 @@ BOOL CBZView::DrawCaret(int *pScrolldy /*=NULL*/)
 		pt.x = pt.y = -1;
 	} else {
     pt.x = (m_dwCaret - dwOrg)%16;
-    int dump_x = GetDUMP_X(m_dwCaret);
-    int char_x = dump_x + 3*16 + 1;
+    //int dump_x = GetDUMP_X(m_dwCaret);
+    int char_x = m_dumpx + 3*16 + 1;
 		ptx2 = pt.x + char_x;
-		pt.x = pt.x*3 + dump_x;
+		pt.x = pt.x*3 + m_dumpx;
 		if(m_bCaretOnChar) Swap(pt.x, ptx2);
     long ptOrgX = m_ptOffset.x/m_cellH;
     pt.x -= ptOrgX;
@@ -1372,16 +1412,16 @@ UINT64 CBZView::PointToOffset(WTL::CPoint pt)
   UINT64 pty = GetScrollPosU64V() + pt.y;
 	if(pty < DUMP_Y) // || pt.x == CHAR_X-1 || pt.x >= CHAR_X+16)	// ###1.5
  		return _UI64_MAX;
-  int dump_x = GetDUMP_X(pty*16);
-  int char_x = dump_x + 3*16 + 1;
+  //int dump_x = GetDUMP_X(pty*16);
+  int char_x = m_dumpx + 3*16 + 1;
 	if(pt.x >= char_x) {
 		if((pt.x -= char_x) > 16) pt.x = 16;
 		m_bCaretOnChar = TRUE;
 	} else {
-		if(pt.x < dump_x)
+		if(pt.x < m_dumpx)
 			pt.x = 0;
 		else
-			pt.x -= dump_x;
+			pt.x -= m_dumpx;
 		pt.x/=3;
 		m_bCaretOnChar = FALSE;
 	}
@@ -1469,6 +1509,9 @@ void CBZView::UpdateDocSize()
 	long cTotalX = VIEWCOLUMNS;
 	UINT64 cTotalY = dwTotal / 16 + 2;
 	SetTextSize(cTotalX, cTotalY);
+  m_dumpx = CalcDUMP_X(dwTotal);
+  m_keta = GetKeta(dwTotal);
+  m_bClearHeader = TRUE;
 	//Invalidate(FALSE);
 }
 
@@ -1757,14 +1800,17 @@ void CBZView::CutOrCopy(CutMode mode)
         return;//Failed
       }
     }
-  } else if(mode != EDIT_COPY) {
+  }
+  if(mode != EDIT_COPY)
+  {
     if(m_pDoc->Delete(dwPtr, qwSize))
     {
       m_dwCaret = m_dwOldCaret = dwPtr;
       m_bBlock = FALSE;
       GotoCaret();
       UpdateDocSize();
-      Invalidate();
+      Invalidate(FALSE);
+      UpdateWindow();
     }
 	}
 }
@@ -1794,6 +1840,7 @@ void CBZView::FillValue(int val)
 
   m_pDoc->Fill(ucData, m_nBytes, dwStart, dwSize);
 	Invalidate(FALSE);
+  UpdateWindow();
 }
 
 

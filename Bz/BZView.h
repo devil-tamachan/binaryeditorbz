@@ -60,29 +60,30 @@ class CInputDlg;
 
 enum CutMode { EDIT_COPY, EDIT_CUT, EDIT_DELETE };
 
+const int table_dumpx[] = {8/*0*/, 8/*1*/, 8/*2*/, 8/*3*/, 8/*4*/, 8/*5*/, 8/*6*/, 9/*7*/, 10/*8*/
+                          ,12/*9*/, 13/*10*/, 14/*11*/, 15/*12*/, 17/*13*/, 18/*14*/, 19/*15*/, 20/*16*/};
+
 class CBZView : public CTextView, public WTL::CUpdateUI<CBZView>, public WTL::CIdleHandler
 {
 public:
-  int GetDUMP_X(UINT64 ofs)
+  unsigned int GetKeta(unsigned long long qw)
+  {
+    unsigned int c=0;
+    do
+    {
+      c++;
+    }
+    while(qw >>= 4);
+    return c;
+  }
+
+  int CalcDUMP_X(UINT64 ofs)
   {
     if(options.bQWordAddr)
     {
       return 21;//"%04X:%04X-%04X:%04X  "
     } else {
-      DWORD ofsHi = HIDWORD(ofs);
-      /*if(ofs < 0x1000000) { //"%06X  "
-      return 8;
-      } else */if(ofs < 0x10000000) {//"%07X "
-        return 8;
-      } else if(ofs < 0x100000000) {//"08X "
-        return 9;
-        /*} else if(ofsHi < 0x1000000) {//"%06X-%08X  "
-        return 17;*/
-      } else if(ofsHi < 0x10000000) {//"%07X-%08X "
-        return 17;
-      } else {//"%08X-%08X "
-        return 18;
-      }
+      return table_dumpx[GetKeta(ofs)];
     }
   }
 public:
@@ -524,6 +525,7 @@ public:
       }
     }
   }
+  void DrawAddress(UINT64 ofs);
   void _OnPaint(WTL::CDCHandle dc, LPRECT lpRect, BOOL bPrint);
   void OnPaint(WTL::CDCHandle dc, BOOL bPrint = FALSE)
   {
@@ -546,6 +548,9 @@ public:
     m_nBytesLength = 1;
     m_maxPage = 0;
     m_bBeginPrintJob = FALSE;
+    m_dumpx = 0;
+    m_keta = 1;
+    m_bClearHeader = FALSE;
   }
   virtual ~CBZView()
   {
@@ -608,6 +613,10 @@ private:
 	static BOOL  m_bLoadEbcDic;
 public:
   BOOL m_bBeginPrintJob;
+
+  int m_dumpx;
+  unsigned int m_keta;
+  BOOL m_bClearHeader;
 
 public:
   UINT64 GetFileSize();

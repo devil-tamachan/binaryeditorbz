@@ -562,6 +562,7 @@ BEGIN
     IDS_COLOR_MISMATCH      "値が異なるバイト"
     IDS_COLOR_STRUCT        "構造体"
     IDS_COLOR_MEMBER        "構造体メンバ"
+    IDS_COLOR_ADDRESS3       "アドレス(先頭0部分)"
 END
 
 STRINGTABLE

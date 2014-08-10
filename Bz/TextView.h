@@ -185,6 +185,7 @@ public:
 	void SetColor(DWORD colText=COLOR_WINDOWTEXT, DWORD colBk=COLOR_WINDOW);
 	void PutChar(char c=' ', int n=1);
 	void PutStr(LPCSTR str);
+	void PutStrN(LPCSTR str, int n);
 	void PutFormatStr(LPCSTR fmt, ...);
 	void PutBegin(WTL::CDCHandle dc);
 	void PutEnd();

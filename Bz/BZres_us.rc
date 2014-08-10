@@ -562,6 +562,7 @@ BEGIN
     IDS_COLOR_MISMATCH      "Mismatch Byte"
     IDS_COLOR_STRUCT        "Structure"
     IDS_COLOR_MEMBER        "Structure Member"
+    IDS_COLOR_ADDRESS3       "Address (First0)"
 END
 
 STRINGTABLE
