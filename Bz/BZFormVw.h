@@ -242,6 +242,7 @@ public:
         lvcol.fmt = LVCFMT_LEFT;
         lvcol.pszText = s_MemberColLabel[i];
         lvcol.cx = options.colWidth[i];
+        if(lvcol.cx<5)lvcol.cx=5;
         m_listMember.InsertColumn(i, &lvcol);
       }
     }
@@ -339,7 +340,7 @@ public:
 
   int GetWindowIdealWidth()
   {
-    return 180;
+    return 260;
   }
 };
 
