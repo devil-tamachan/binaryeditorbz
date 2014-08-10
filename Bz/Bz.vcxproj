@@ -558,9 +558,6 @@
     <ClInclude Include="tamasplit.h" />
     <ClInclude Include="TextView.h" />
   </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="Bz.manifest" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
