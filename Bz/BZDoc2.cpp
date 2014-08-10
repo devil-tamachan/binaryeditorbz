@@ -210,7 +210,7 @@ BOOL CBZDoc2::OpenDocument(LPCTSTR lpszPathName, HWND hWnd)
     return FALSE;
   }
   DeleteContents();
-  m_bReadOnly = pSFC->IsReadOnly();
+  m_bReadOnly = pSFC->IsReadOnly() | options.bReadOnlyOpen;
   m_pSFC = pSFC;
 
   CMainFrame *pMainFrame = GetMainFrame();
