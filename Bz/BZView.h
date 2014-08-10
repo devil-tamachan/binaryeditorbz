@@ -81,7 +81,7 @@ public:
   {
     if(options.bQWordAddr)
     {
-      return 21;//"%04X:%04X-%04X:%04X  "
+      return 20;//"%04X:%04X-%04X:%04X "
     } else {
       return table_dumpx[GetKeta(ofs)];
     }

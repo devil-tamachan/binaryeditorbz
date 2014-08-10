@@ -808,26 +808,29 @@ void CBZView::DrawAddress(UINT64 ofs1)
     DWORD ofsLo = LODWORD(ofs1);
     CStringA str;
     str.Format("%04X:%04X-%04X:%04X", HIWORD(ofsHi), LOWORD(ofsHi), HIWORD(ofsLo), LOWORD(ofsLo));
-		if(options.bQWordAddr)//m_nColAddr > ADDRCOLUMNS)
-    {
-			PutStr(str);
-			SetColor();
-			PutStr("  ");
-		} else {
-      unsigned int idxHead = 20-m_dumpx;
-      unsigned int keta = GetKeta(ofs1);
-      keta += (keta-1)/4;
-      unsigned int lenHide = 20-idxHead-1-keta;
-      unsigned int idxAddr = idxHead + lenHide;
+    unsigned int idxHead = 20-m_dumpx;
+    unsigned int keta = GetKeta(ofs1);
+    keta += (keta-1)/4;
+    unsigned int lenHide = 20-idxHead-1-keta;
+    unsigned int idxAddr = idxHead + lenHide;
+    LPCSTR pStr = (LPCSTR)str;
 
-      LPCSTR pStr = (LPCSTR)str;
+		/*if(options.bQWordAddr)
+    {
+      SetColor(TCOLOR_ADDRESS3);
+      PutStrN(&(pStr[idxHead]), lenHide);
+      SetHeaderColor();
+      PutStr(&(pStr[idxAddr]));
+			SetColor();
+			PutStr(" ");
+		} else {*/
       SetColor(TCOLOR_ADDRESS3);
       PutStrN(&(pStr[idxHead]), lenHide);
       SetHeaderColor();
       PutStr(&(pStr[idxAddr]));
       SetColor();
       PutStr(" ");
-		}
+		//}
 }
 
 void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
