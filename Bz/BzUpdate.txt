@@ -1,5 +1,23 @@
 ## CHANGELOG
 
+### 1.9.6 2014/08/10 (devil.tamachan@gmail.com)
+ - (修正) Issue 37 ショートカットキーが効かないバグ (Spetial Thanks! gnanashi0)
+ - (修正) Issue 37 ダンプリストの保存時に入力したファイル名が反映されないバグ (Special Thanks! gnanashi0)
+ - (修正) Issue 37 検索窓のEnterキーが効かないなどのバグ (Special Thanks! gnanashi0)
+ - (追加) Issue 38 ショートカットキー追加 (Special Thanks! gnanashi0)
+ - (修正) Issue 39 分割表示の際カーソルを新しいビューへ移動 & 分割表示解除時、カーソルが無いビューを削除するよう変更 (Special Thanks! gnanashi0)
+ - (修正) Issue 39 分割表示解除時、ファイルの変更が保存されないバグ (Special Thanks! gnanashi0)
+ - (追加) Issue 38 ショートカットキー追加 2 (Special Thanks! gnanashi0)
+ - (修正) Issue 41 日本語入力が出来ないバグ (Special Thanks! GooChan608)
+ - (修正) Issue 41 ステータスバーの"上書/書禁"の切り替えができないバグ (Special Thanks! GooChan608)
+ - (修正) "指定アドレスへ", "値の入力"実行時のキャレット移動処理追加
+ - (修正) サブビュー無し＆左右分割の場合、左のビューのサイズが小さすぎるバグ
+ - (修正) 新アドレス表示 & 削除、カットが動かないバグ修正
+ - (修正) 常に16桁で表示にもカラー表示追加
+ - (修正) Issue 40: 構造体表示が名前しか表示されないバグ
+ - (修正) Issue 43: 読み込み時リードオンリーが働いてない
+ - (追加) Issue 42: 右クリックメニューがほしい
+
 ### 1.9.5 2014/07/06 (devil.tamachan@gmail.com)
  - (修正) Issue 36  引数にダブルクォートされたファイル名を与えても開けない (Special Thanks: gnanas)
  - (修正) Issue 36  ウィンドウサイズが自動調整されないバグ (Special Thanks: gnanas)

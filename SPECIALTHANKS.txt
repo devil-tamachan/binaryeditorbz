@@ -10,12 +10,22 @@ Binary Editor BZ - original version -
 Contribute
 
     doraneko (BZ1.06)
+    tettsu (Bugfix for Inspector View)
+    tanda.sat (Bugfix for English resource)
 
 Bug-report
 
     satou.takashi
     SHIROUZU Hiroaki
     nobumasa.tamaoki
+    k.yukihiko
+    gnanashi0
+    takamitsu
+    GooChan608
+
+Feature-request
+
+    g1e2n04
 
 Libraries
 
