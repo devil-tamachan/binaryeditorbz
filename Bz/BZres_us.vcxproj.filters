@@ -29,7 +29,6 @@
     <None Include="res\Toolbar.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="resource" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

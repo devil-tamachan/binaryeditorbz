@@ -99,6 +99,7 @@ public:
 
   BEGIN_MSG_MAP_EX(CBZView)
     MSG_WM_CREATE(OnCreate)
+    MSG_WM_CONTEXTMENU(OnContextMenu)
     MSG_WM_DESTROY(OnDestroy)
     MSG_WM_ERASEBKGND(OnEraseBkgnd)
     //MSG_WM_ACTIVATE(OnActivate)‚±‚È‚¢
@@ -250,6 +251,19 @@ public:
   }
 
 public:
+  void OnContextMenu(CWindow wnd, WTL::CPoint point)
+  {
+    WTL::CRect rc;
+    GetClientRect(&rc);
+    ClientToScreen(&rc);
+    if(rc.PtInRect(point)){
+      WTL::CMenu menuPopup;
+      menuPopup.LoadMenu(IDR_MENU_POPUP);
+      menuPopup.GetSubMenu(0).TrackPopupMenu(TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON, point.x, point.y, m_hWnd);
+    } else {
+      SetMsgHandled(false);
+    }
+  }
   void OnViewFont(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
     LOGFONT logFont;

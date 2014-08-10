@@ -189,6 +189,18 @@ BEGIN
     END
 END
 
+IDR_MENU_POPUP MENU
+BEGIN
+    POPUP "idx0"
+    BEGIN
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECT_ALL
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

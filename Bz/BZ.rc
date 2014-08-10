@@ -7,8 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
-
+#include "afxres.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -303,7 +302,7 @@ BEGIN
     BEGIN
         MENUITEM "検索(&F)...\tCtrl+F",           ID_JUMP_FIND
         MENUITEM "次を検索(&N)\tF3",                ID_JUMP_FINDNEXT
-        MENUITEM "ファイルの比較(&C)\tF4",                 ID_JUMP_COMPARE
+        MENUITEM "ファイルの比較(&C)\tF4",             ID_JUMP_COMPARE
         MENUITEM SEPARATOR
         MENUITEM "指定アドレスへ(&A)...",              ID_JUMP_TO
         MENUITEM "オフセットを加算(&O)",                ID_JUMP_OFFSET
@@ -354,6 +353,18 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "BZ Palette",                  ID_BMPVIEW_PALETTE_BZ
         MENUITEM "Safety Palette",              ID_BMPVIEW_PALETTE_SAFETY
+    END
+END
+
+IDR_MENU_POPUP MENU
+BEGIN
+    POPUP "idx0"
+    BEGIN
+        MENUITEM "切り取り(&T)\tCtrl+X",            ID_EDIT_CUT
+        MENUITEM "コピー(&C)\tCtrl+C",             ID_EDIT_COPY
+        MENUITEM "貼り付け(&P)\tCtrl+V",            ID_EDIT_PASTE
+        MENUITEM SEPARATOR
+        MENUITEM "すべて選択(&A)\tCtrl+A",           ID_EDIT_SELECT_ALL
     END
 END
 
@@ -483,14 +494,8 @@ IDC_BMPPOINTER          CURSOR                  "res\\bmppoint.cur"
 //
 // RT_MANIFEST
 //
-#define MANIFEST_RESOURCE_ID 1
-#ifdef _WIN32
-#ifdef _WIN64
-MANIFEST_RESOURCE_ID    RT_MANIFEST             "Bz64.manifest"
-#else
+
 MANIFEST_RESOURCE_ID    RT_MANIFEST             "Bz.manifest"
-#endif
-#endif
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -562,7 +567,13 @@ BEGIN
     IDS_COLOR_MISMATCH      "値が異なるバイト"
     IDS_COLOR_STRUCT        "構造体"
     IDS_COLOR_MEMBER        "構造体メンバ"
-    IDS_COLOR_ADDRESS3       "アドレス(先頭0部分)"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_COLOR_OVERBROTHER   "比較で相手より大きい"
+    IDS_COLOR_HORIZON       "水平線"
+    IDS_COLOR_ADDRESS3      "アドレス(先頭0部分)"
 END
 
 STRINGTABLE
@@ -686,12 +697,6 @@ BEGIN
     IDS_EBCDIC_FILE         "EBCDIC.DEF"
     IDS_STRUCT_FILE         "BZ.DEF"
     IDS_EDIT_RO             "書禁"
-END
-
-STRINGTABLE
-BEGIN
-    IDS_COLOR_OVERBROTHER   "比較で相手より大きい"
-    IDS_COLOR_HORIZON       "水平線"
 END
 
 STRINGTABLE

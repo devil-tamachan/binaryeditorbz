@@ -154,4 +154,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="Bz.manifest" />
+  </ItemGroup>
 </Project>

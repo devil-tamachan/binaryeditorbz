@@ -370,7 +370,6 @@
     <None Include="res\bmppoint.cur" />
     <None Include="res\BZ.ico" />
     <None Include="res\Toolbar.bmp" />
-    <None Include="resource" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />

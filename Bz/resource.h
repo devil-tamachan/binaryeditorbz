@@ -15,6 +15,7 @@
 #define IDR_BMPVIEW                     141
 #define IDD_SETTING                     143
 #define IDD_INPUT                       144
+#define IDR_MENU_POPUP                  145
 #define IDC_LIST_TAG                    1000
 #define IDC_LIST_MEMBER                 1001
 #define IDAPPLY                         1002
@@ -155,7 +156,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        145
+#define _APS_NEXT_RESOURCE_VALUE        146
 #define _APS_NEXT_COMMAND_VALUE         32860
 #define _APS_NEXT_CONTROL_VALUE         1046
 #define _APS_NEXT_SYMED_VALUE           107
