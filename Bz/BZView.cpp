@@ -835,7 +835,7 @@ void CBZView::DrawAddress(UINT64 ofs1)
 
 void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 {
-  ATLTRACE("OnPaint\n");
+  //ATLTRACE("OnPaint\n");
 	//LPBYTE p  = m_pDoc->GetDocPtr();
 //	if(!p) return;
 
@@ -868,11 +868,11 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
       WTL::CRect rClip;
     if(lpUpdateRect)
     {
-      ATLTRACE("lpUpdateRect = (%d,%d,%d,%d)\n", lpUpdateRect->left, lpUpdateRect->right, lpUpdateRect->top, lpUpdateRect->bottom);
+      //ATLTRACE("lpUpdateRect = (%d,%d,%d,%d)\n", lpUpdateRect->left, lpUpdateRect->right, lpUpdateRect->top, lpUpdateRect->bottom);
       rClip = lpUpdateRect;
     } else {
       dc.GetClipBox(&rClip);
-      ATLTRACE("rClip = (%d,%d,%d,%d)\n", rClip.left, rClip.right, rClip.top, rClip.bottom);
+      //ATLTRACE("rClip = (%d,%d,%d,%d)\n", rClip.left, rClip.right, rClip.top, rClip.bottom);
       //rClipU64V = rClip;
     }
     PixelToGrid(rClip);
@@ -882,7 +882,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 			rClip.y1 += DUMP_Y;
 		}
     rClipU64V = rClip;
-    ATLTRACE("rClipU64V = (%d,%d,%I64u,%I64u)\n", rClipU64V.left, rClipU64V.right, rClipU64V.top, rClipU64V.bottom);
+    //ATLTRACE("rClipU64V = (%d,%d,%I64u,%I64u)\n", rClipU64V.left, rClipU64V.right, rClipU64V.top, rClipU64V.bottom);
     ofs = (rClipU64V.top + m_u64V - DUMP_Y)*16;
 		if(bDrawHeader)DrawHeader(ofs);
 	}
@@ -903,7 +903,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
     InitCharMode(ofs);
 
   BOOL fSJISSkipNextTopChar = FALSE;
-  ATLTRACE("OnPaint2\n");
+  //ATLTRACE("OnPaint2\n");
 
   if(m_charset == CTYPE_SJIS)
   {
@@ -1442,7 +1442,8 @@ BOOL CBZView::GotoCaret()
 		return TRUE;
 	}
 	long ptx = 0;
-	UINT64 pty = m_dwCaret/16 - 1;
+	UINT64 pty = m_dwCaret/16;
+  if(pty>0)pty--;
   ScrollToPos(ptx, pty);
 	Invalidate(FALSE);
 	return FALSE;
