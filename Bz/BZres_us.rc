@@ -532,12 +532,10 @@ IDC_BMPPOINTER          CURSOR                  "res\\bmppoint.cur"
 //
 
 #define MANIFEST_RESOURCE_ID 1
-#ifdef _WIN32
 #ifdef _WIN64
 MANIFEST_RESOURCE_ID    RT_MANIFEST             "Bz64.manifest"
 #else
 MANIFEST_RESOURCE_ID    RT_MANIFEST             "Bz.manifest"
-#endif
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
