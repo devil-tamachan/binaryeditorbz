@@ -107,7 +107,11 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	g_bFirstInstance = ::FindWindow(_T(BZ_CLASSNAME), NULL) == NULL;
 
 	options.Load();
+#ifdef _WIN64
+  if(options.bLanguage && (g_hInstDll = ::LoadLibrary(_T("BZres_us64.dll"))))
+#else
   if(options.bLanguage && (g_hInstDll = ::LoadLibrary(_T("BZres_us.dll"))))
+#endif
   {
     _AtlBaseModule.SetResourceInstance(g_hInstDll);
   }
