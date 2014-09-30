@@ -343,12 +343,12 @@ void CTextView::MoveCaret(POINT pt)
 {
 //	if(pt.x == -1)
 //		TRACE("!");
-	ATLTRACE("CTextView::MoveCaret(): x=%d, y=%d\n", pt.x, pt.y);
+	//ATLTRACE("CTextView::MoveCaret(): x=%d, y=%d\n", pt.x, pt.y);
 	m_ptCaret = pt;
 	if(GetFocus() == m_hWnd) {
 		GridToPixel(pt);
     SetCaretPos(pt.x, pt.y);
-		ATLTRACE("CTextView::MoveCaret(): SetCaretPos x=%d, y=%d\n", pt.x, pt.y);
+		//ATLTRACE("CTextView::MoveCaret(): SetCaretPos x=%d, y=%d\n", pt.x, pt.y);
 		if(pt.x >= 0) {
 			HIMC hIMC;
 			if(hIMC = ImmGetContext(m_hWnd)) {
@@ -490,9 +490,9 @@ void CTextView::PutFlush()
 			m_dc.SetBkColor(colBk);
 		}
 		int xFrom = m_xLoc;
-    //ATLTRACE("PutFlush::TextOut(%d, %d)\n", (m_xLoc/*-pt.x*/)*m_cell.cx, ConvYVirtualSpace2RealSpace(m_yLoc/*-m_u64V*/)*m_cell.cy);
+    //ATLTRACE("PutFlush::TextOut(%d, %d [%d*%d])\n", (m_xLoc/*-pt.x*/)*m_cell.cx-m_ptOffset.x, ConvYVirtualSpace2RealSpace(m_yLoc/*-m_u64V*/)*m_cell.cy, ConvYVirtualSpace2RealSpace(m_yLoc/*-m_u64V*/), m_cell.cy);
 		int xTo = xFrom + m_nText;
-    ::TextOutA(m_dc.m_hDC, (m_xLoc/*-pt.x*/)*m_cell.cx-m_ptOffset.x, ConvYVirtualSpace2RealSpace(m_yLoc/*-m_u64V*/)*m_cell.cy, m_pVText, m_nText);
+    ::TextOutA(m_dc.m_hDC, (m_xLoc/*-pt.x*/)*m_cell.cx-m_ptOffset.x, m_yLoc*m_cell.cy, m_pVText, m_nText);
 		m_xLoc += m_nText;
 		m_nText = 0;
 		if(m_bShowCaret2 && m_yLoc == m_ptCaret2.y && m_ptCaret2.x >= xFrom && m_ptCaret2.x < xTo) {	// ### 1.62

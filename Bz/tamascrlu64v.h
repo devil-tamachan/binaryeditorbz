@@ -71,7 +71,7 @@ public:
   }
 #endif
 
-  UINT64 ConvYRealSpace2VirtualSpace(long y)
+  UINT64 ConvYRealSpace2VirtualSpace(long y) //たぶんバグってる。2TB超えるとやばい
   {
     long v = m_ptOffset.y;//GetScrollPos(SB_VERT);
     UINT64 v64 = GetScrollPosU64V();
@@ -81,14 +81,17 @@ public:
     
     return yVS;
   }
-  long ConvYVirtualSpace2RealSpace(UINT64 yVS)
+  long ConvYVirtualSpace2RealSpace(UINT64 yVS) //たぶんバグってる。2TB超えるとやばい
   {
-    long v = m_ptOffset.y;//GetScrollPos(SB_VERT);スクロール下いっぱいまでスクロールして更に下ボタンクリックでスクロールしてから右左スクロールするとバグる
+    UINT64 yVSOrig = yVS;
+    INT64 v = m_ptOffset.y;//GetScrollPos(SB_VERT);スクロール下いっぱいまでスクロールして更に下ボタンクリックでスクロールしてから右左スクロールするとバグる
+    v *= m_step;
     UINT64 v64 = GetScrollPosU64V();
-    yVS += v;
-    yVS -= v64;
+    yVS += v64 - v;
     ATLASSERT(yVS>=0);
-    return yVS<0 ? 0 : (long)yVS;
+    long ret = (long)yVS;
+    ATLTRACE("ConvYVirtualSpace2RealSpace(%016I64X) = %ld (yVS=%016I64X) == yVS(%016I64X) + m_ptOffset.y(%X) - GetScrollPosU64V(%016I64X)\n", yVSOrig, (ret<0 ? 0 : ret), yVS, yVSOrig, m_ptOffset.y, v64);
+    return ret<0 ? 0 : ret;
   }
 
   void SetScrollHome(POINT ptHome)
@@ -256,12 +259,14 @@ public:
         UpdateFromU64V();
         break;
       case SB_LINEUP:
+        ATLTRACE("SB_LINEUP --- -(%d)\n", cxySizeLine);
         if(m_u64V >= cxySizeLine)m_u64V -= cxySizeLine;
         else m_u64V = 0;
         UpdateFromU64V();
         break;
       case SB_LINEDOWN:
       {
+        ATLTRACE("SB_LINEDOWN --- +(%d)\n", cxySizeLine);
         UINT64 newV = m_u64V +cxySizeLine;
         if(newV < m_u64V || newV > m_u64VMax)m_u64V = m_u64VMax;
         else m_u64V = newV;
@@ -338,7 +343,7 @@ public:
       WTL::CRect rectClient;
       pT->GetClientRect(rectClient);
       if(dy)rectClient.top = m_ptHome.y*m_cellV;
-      ATLTRACE("SetScrollPos - x=0, y=%d, Dy: %d, rectClient.top=%d, %d\n", m_ptOffset.y, dy, rectClient.top, m_ptHome.y*m_cellV);
+      ATLTRACE("SetScrollPos: y=%d, Dy: %d, rectClient.top=%d, %d\n", m_ptOffset.y, dy, rectClient.top, m_ptHome.y*m_cellV);
       pT->ScrollWindowEx(0, dy, m_uScrollFlags, rectClient, rectClient);
       return;
     }
@@ -401,6 +406,7 @@ public:
           si.nPos = x;
           pT->SetScrollInfo(SB_HORZ, &si, FALSE);
         }
+        ATLASSERT(x*m_cellH >= 0);
         m_ptOffset.x = x*m_cellH;
       }
     }

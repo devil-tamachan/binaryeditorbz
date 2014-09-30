@@ -238,6 +238,7 @@ void CBZView::OnJumpFindnext(UINT uNotifyCode, int nID, CWindow wndCtl)
     return;
   }
 
+  ATLTRACE("FindJump: %08X -> %08X\n", m_dwCaret, dwRetAddress);
   m_dwOldCaret = m_dwCaret;
   m_dwCaret = dwRetAddress;
   m_bCaretOnChar = !pFind;
@@ -550,18 +551,13 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
       return;
     if(m_pDoc->IsReadOnly())
       goto Error;
-    /*if(!m_bEnterVal && !preChar) {
-      DWORD dwSize = 1;
-      if(m_bCaretOnChar && (m_charset == CTYPE_UNICODE || (m_charset > CTYPE_UNICODE && _ismbblead(nChar&0xFF)))) {
-        if(m_charset == CTYPE_UTF8)		// ### 1.54b
-          dwSize = 3;
-        else
-          dwSize = 2;
-      }
-    }*/
+
+    if(m_bCaretOnChar)m_bEnterVal = FALSE;
+
     m_bBlock = FALSE;
-    //p = m_pDoc->QueryMapViewTama2(m_dwCaret, 4); //p  = m_pDoc->GetDocPtr() + m_dwCaret;
-    if(!m_bCaretOnChar) {
+
+    if(!m_bCaretOnChar)
+    {  //数値のところ
       if(nChar >= '0' && nChar <= '9')
         nChar -= '0';
       else if(nChar >= 'A' && nChar <= 'F')
@@ -580,6 +576,7 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
       } else
         m_bEnterVal = TRUE;
     } else if(m_charset >= CTYPE_SJIS/*CTYPE_UNICODE*/) {
+      //画面右の文字表示＆ASCIIじゃない
       char  mbs[4] = {0};
       char* pb = mbs;
       /*if(preChar) {
@@ -605,13 +602,13 @@ void CBZView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         else m_pDoc->Write(buffer, m_dwCaret, len);
         UpdateDocSize();
         MemFree(buffer);
-        if(!m_bEnterVal)
-        {
+        /*if(!m_bEnterVal)
+        {*/
           MoveCaretTo(m_dwCaret + len);
-        } else {
+         /*} else {
           Invalidate(FALSE);
           UpdateWindow();
-        }
+        }*/
         RedrawSamefileBrotherView();
       }
       return;
@@ -815,6 +812,8 @@ void CBZView::DrawAddress(UINT64 ofs1)
     unsigned int idxAddr = idxHead + lenHide;
     LPCSTR pStr = (LPCSTR)str;
 
+    ATLTRACE("DrawAddr: 0x%s\n", str);
+
 		/*if(options.bQWordAddr)
     {
       SetColor(TCOLOR_ADDRESS3);
@@ -882,7 +881,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 			rClip.y1 += DUMP_Y;
 		}
     rClipU64V = rClip;
-    //ATLTRACE("rClipU64V = (%d,%d,%I64u,%I64u)\n", rClipU64V.left, rClipU64V.right, rClipU64V.top, rClipU64V.bottom);
+    ATLTRACE("rClipU64V = (%d,%d,%I64u,%I64u)\n", rClipU64V.left, rClipU64V.right, rClipU64V.top, rClipU64V.bottom);
     ofs = (rClipU64V.top + m_u64V - DUMP_Y)*16;
 		if(bDrawHeader)DrawHeader(ofs);
 	}
@@ -977,12 +976,15 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 	UINT64 y;
 
 	for(/*int */y = rClipU64V.y1; y <= rClipU64V.y2; y++) {
+    ATLTRACE("DoPaint::Locate 1-1(%016I64X)\n", y);
 		Locate(0, y);
 		if(ofs > dwTotal) break;
 		if(IsToFile() && options.nDumpPage) {
 			if(y > DUMP_Y && ((y - DUMP_Y) % options.nDumpPage) == 0) {
+    ATLTRACE("DoPaint::Locate 1-2(%016I64X)\n", y);
 				Locate(0, y); // crlf
 				DrawHeader2File();
+    ATLTRACE("DoPaint::Locate 1-3(%016I64X)\n", y);
 				Locate(0, y); // crlf
 			}
 		}
@@ -1065,6 +1067,8 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 		char chConv[3]={0};
 		bool fPutSkip = FALSE;
 #endif
+
+      ATLTRACE(" -Line %08X", ofs);
 
     //描画: 右側文字表示
 		for_to_(i,16) {
@@ -1233,6 +1237,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 		if(y <= rClipU64V.y2) {
 			SetColor();
 			for(y; y<=rClipU64V.y2+1; y++) {
+        ATLTRACE("DoPaint::Locate 2(%016I64X)\n", y);
 				Locate(0, y);
 				PutChar(' ', VIEWCOLUMNS);
 			}
@@ -1241,7 +1246,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 		DrawDummyCaret(dc);
 		DrawCaret();
 	}
-
+  ATLTRACE("OnPaintEnd\n");
 }
 
 
@@ -1439,6 +1444,7 @@ BOOL CBZView::GotoCaret()
 	if(DrawCaret()) {
 		if(m_bBlock)
 			Invalidate(FALSE);
+      //UpdateWindow();
 		return TRUE;
 	}
 	long ptx = 0;
@@ -1446,6 +1452,7 @@ BOOL CBZView::GotoCaret()
   if(pty>0)pty--;
   ScrollToPos(ptx, pty);
 	Invalidate(FALSE);
+  //UpdateWindow();
 	return FALSE;
 }
 
