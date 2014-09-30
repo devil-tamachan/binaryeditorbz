@@ -64,6 +64,7 @@ public:
   DECLARE_FRAME_WND_CLASS_EX(_T(BZ_CLASSNAME), IDR_MAINFRAME, CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS, COLOR_WINDOW)
 
   WTL::CAccelerator m_acc;
+  WTL::CFont m_fontSearchCombo;
 
   virtual BOOL PreTranslateMessage(MSG* pMsg)
   {
@@ -205,7 +206,18 @@ public:
       m_combo_toolbar.Create(m_mainToolbar, rectFindBox, NULL
         , WS_CHILD | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWN, 0, IDT_FINDBOX);
       m_hWndEditSearchbox = m_combo_toolbar.GetWindow(GW_CHILD);
-      //m_combo_toolbar.SetFont(AtlGetDefaultGuiFont());
+
+      WTL::CLogFont lf;
+      lf.SetBold();
+      //lf.SetHeight(-options.nComboHeight);
+      lf.SetHeight(-11);
+      lf.lfCharSet = SHIFTJIS_CHARSET;
+      lf.lfQuality = DEFAULT_QUALITY;
+      lf.lfPitchAndFamily = VARIABLE_PITCH;
+      lstrcpyn(lf.lfFaceName, _T("‚l‚r ‚oƒSƒVƒbƒN"), LF_FACESIZE);
+      m_fontSearchCombo = lf.CreateFontIndirect();
+
+      m_combo_toolbar.SetFont(m_fontSearchCombo);
       //WTL::CEdit editBox = m_combo_toolbar.GetEditCtrl();
       //editBox.ModifyStyle(0, ES_RIGHT);
 
