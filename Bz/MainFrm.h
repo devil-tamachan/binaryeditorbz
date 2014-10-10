@@ -68,8 +68,12 @@ public:
 
   virtual BOOL PreTranslateMessage(MSG* pMsg)
   {
+    if(pMsg->hwnd == m_hWndEditSearchbox || pMsg->hwnd == m_combo_toolbar.m_hWnd)
+    {
+      if(pMsg->message == WM_KEYDOWN)return OnKeyDownSearchbox((TCHAR)(pMsg->wParam), (UINT)(pMsg->lParam) & 0xFFFF, (UINT)((pMsg->lParam & 0xFFFF0000) >> 16));
+      return FALSE;
+    }
     if(!m_acc.IsNull() && m_acc.TranslateAccelerator(m_hWnd, pMsg))return TRUE;
-    if((pMsg->hwnd == m_hWndEditSearchbox) && (pMsg->message == WM_KEYDOWN))return OnKeyDownSearchbox((TCHAR)(pMsg->wParam), (UINT)(pMsg->lParam) & 0xFFFF, (UINT)((pMsg->lParam & 0xFFFF0000) >> 16));
 
     return FALSE;
   }
