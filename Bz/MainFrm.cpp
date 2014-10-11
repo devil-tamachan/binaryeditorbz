@@ -487,12 +487,52 @@ void CMainFrame::UpdateInspectViewChecks()
     }
   }
 }
+
+BOOL IsUACEnabled()
+{
+  CRegKey reg;
+  LONG lRet;
+
+  lRet = reg.Open(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"), KEY_READ);
+  if(lRet != ERROR_SUCCESS)return FALSE;
+  DWORD dwValue = 0;
+  lRet = reg.QueryDWORDValue(_T("EnableLUA"), dwValue);
+  if(lRet != ERROR_SUCCESS)return FALSE;
+  reg.Close();
+  return dwValue==0 ? FALSE : TRUE;
+}
+
+BOOL IsUACAdminBz()
+{
+  static BOOL IsChecked = FALSE;
+  static BOOL IsUACAdmin = FALSE;
+
+  if(IsChecked)return IsUACAdmin;
+
+  if(!IsUACEnabled())return FALSE;
+
+  HANDLE hToken;
+  TOKEN_ELEVATION tokenElevation;
+  DWORD dwRet = 0;
+  if(!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))return FALSE;
+  if(!GetTokenInformation(hToken, TokenElevation, &tokenElevation, sizeof(TOKEN_ELEVATION), &dwRet))
+  {
+    CloseHandle(hToken);
+    return FALSE;
+  }
+  CloseHandle(hToken);
+  IsChecked = TRUE;
+  IsUACAdmin = tokenElevation.TokenIsElevated;
+  return IsUACAdmin;
+}
+
 void CMainFrame::UpdateFrameTitle()
 {
   CBZDoc2* pDoc = GetActiveBZDoc2();
   if(pDoc) {
     CString s(_T("BZ"));
-    s += " - ";
+    if(IsUACAdminBz())s += " (Admin) - ";
+    else s += " - ";
     CString sPath = pDoc->GetFilePath();
     if(!(options.barState & BARSTATE_FULLPATH) || sPath.IsEmpty())
     {
