@@ -7,7 +7,7 @@ RequestExecutionLevel admin
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "BzEditor"
-!define PRODUCT_VERSION "1.9.6"
+!define PRODUCT_VERSION "1.9.7"
 !define PRODUCT_PUBLISHER "c.mos"
 !define PRODUCT_WEB_SITE "http://www.vcraft.jp/"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"
@@ -127,6 +127,12 @@ Section "MainSection" SEC01
 ;  CreateDirectory "$INSTDIR\htm"
   File "..\Release\Bz.exe"
   File "..\Release64\Bz64.exe"
+  CopyFiles /SILENT $INSTDIR\Bz.exe $INSTDIR\BzAdmin.exe
+  CopyFiles /SILENT $INSTDIR\Bz64.exe $INSTDIR\Bz64Admin.exe
+  File "..\Bz.exe.manifest"
+  File "..\Bz64.exe.manifest"
+  File "..\BzAdmin.exe.manifest"
+  File "..\Bz64Admin.exe.manifest"
 ;  File "..\chm\Bz.chm"
 ;  File "..\index.htm"
   File "data\Bz.txt"
@@ -158,10 +164,14 @@ Section -AdditionalIcons
   CreateDirectory "$SMPROGRAMS\BzEditor"
 ${If} ${RunningX64}
   CreateShortCut "$SMPROGRAMS\BzEditor\Bz.lnk" "$INSTDIR\Bz64.exe"
+  CreateShortCut "$SMPROGRAMS\BzEditor\Bz (Admin).lnk" "$INSTDIR\Bz64Admin.exe"
   CreateShortCut "$SENDTO\Bz.lnk" "$INSTDIR\Bz64.exe"
+  CreateShortCut "$SENDTO\Bz (Admin).lnk" "$INSTDIR\Bz64Admin.exe"
 ${Else}
   CreateShortCut "$SMPROGRAMS\BzEditor\Bz.lnk" "$INSTDIR\Bz.exe"
+  CreateShortCut "$SMPROGRAMS\BzEditor\Bz (Admin).lnk" "$INSTDIR\BzAdmin.exe"
   CreateShortCut "$SENDTO\Bz.lnk" "$INSTDIR\Bz.exe"
+  CreateShortCut "$SENDTO\Bz (Admin).lnk" "$INSTDIR\BzAdmin.exe"
 ${Endif}
   CreateShortCut "$SMPROGRAMS\BzEditor\Uninstall.lnk" "$INSTDIR\uninst.exe"
 SectionEnd
@@ -230,6 +240,14 @@ Section Uninstall
   Delete "$INSTDIR\uninst.exe"
   Delete "$INSTDIR\Bz.exe"
   Delete "$INSTDIR\Bz64.exe"
+  Delete "$INSTDIR\BzAdmin.exe"
+  Delete "$INSTDIR\Bz64Admin.exe"
+  
+  Delete "$INSTDIR\Bz.exe.manifest"
+  Delete "$INSTDIR\Bz64.exe.manifest"
+  Delete "$INSTDIR\BzAdmin.exe.manifest"
+  Delete "$INSTDIR\Bz64Admin.exe.manifest"
+  
 ;  Delete "$APPDATA\BzEditor\Bz.def"
   Delete "$INSTDIR\Bz.chm"
   Delete "$INSTDIR\index.htm"
@@ -252,6 +270,7 @@ Section Uninstall
 
   Delete "$SMPROGRAMS\BzEditor\Uninstall.lnk"
   Delete "$SENDTO\Bz.lnk"
+  Delete "$SENDTO\Bz (Admin).lnk"
 
   RMDir "$INSTDIR\htm"
   RMDir "$SMPROGRAMS\BzEditor"
