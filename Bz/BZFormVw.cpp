@@ -43,7 +43,7 @@ char* g_datatypes[g_nTypes] = {
 DWORD g_datasizes[g_nTypes] = {1,1,1,2,2,2,4,4,4,8,8,8 ,4,8,4
 };
 
-TCHAR *s_MemberColLabel[MBRCOL_MAX] = { _T("+"), _T("Label"), _T("Value") };
+TCHAR *s_MemberColLabel[MBRCOL2_MAX] = { _T("Label"), _T("Value") };
 
 
 
@@ -52,8 +52,8 @@ void CBZFormView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		if(nChar == VK_RETURN) {
       HWND hWndFocus = GetFocus();
 			if(hWndFocus == m_listTag.m_hWnd)
-				m_listMember.SetFocus();
-			else if(hWndFocus == m_listMember.m_hWnd) {
+				m_treeListMember.SetFocus();
+			else if(hWndFocus == m_treeListMember.m_hWnd) {
 				m_pView->Activate();
         PostMessage2MainFrame(WM_COMMAND, ID_EDIT_VALUE);
 			}
@@ -82,12 +82,17 @@ void CBZFormView::SelchangeListTag()
 
 LRESULT CBZFormView::OnDblclkListMember(LPNMHDR pnmh)
   {
-    LPNMITEMACTIVATE pnmia = (LPNMITEMACTIVATE)pnmh;
-
-    if(pnmia->iItem == m_listMember.GetItemCount() - 1) {
+    ATLTRACE("OnDblclkListMember\n");
+    UINT itemCount = m_treeMember.GetCount();
+    HTREEITEM hItem = m_treeMember.GetSelectedItem();
+    if(!hItem)return 0;
+    CString strItem;
+    LPARAM lp = m_treeMember.GetItemText(hItem, strItem);
+    if(strItem.Left(9)==_T(" <next> (")) {
       int iItem = m_listTag.GetCurSel();
       int iTag = m_listTag.GetItemData(iItem);
-      m_pView->m_dwCaret = m_pView->m_dwStructTag + m_tag[iTag].m_len;
+      //m_pView->m_dwCaret = m_pView->m_dwStructTag + m_tag[iTag].m_len;
+      m_pView->MoveCaretTo(m_pView->m_dwStructTag + m_tag[iTag].m_len);
       if(m_listTag.GetCount() > 1 && m_nTagSelect != -1) {
         m_listTag.SetCurSel(iItem + 1);
       }
@@ -99,24 +104,30 @@ LRESULT CBZFormView::OnDblclkListMember(LPNMHDR pnmh)
     return 0;
   }
 
-LRESULT CBZFormView::OnItemchangedListMember(LPNMHDR pnmh)
+LRESULT CBZFormView::OnMemberSelChanged(LPNMHDR pnmh)
   {
-    LPNMLISTVIEW pnmv = (LPNMLISTVIEW)pnmh;
+    LPNMTREEVIEW pnmtv = (LPNMTREEVIEW)pnmh;
+    HTREEITEM hItem = m_treeMember.GetSelectedItem();
+    if(!hItem)return 0;
 
-    if(pnmv->uNewState == (LVIS_FOCUSED | LVIS_SELECTED)) {
+    //if( == (LVIS_FOCUSED | LVIS_SELECTED)) {
       int iTag = m_listTag.GetItemData(m_listTag.GetCurSel());
       if(iTag >= 0) {	// ### 1.62
-        CStructMember& m = m_tag[iTag].m_member[pnmv->iItem];
+        CAtlArray<CStructMember>& mems = m_tag[iTag].m_member;
+        LPARAM lp = pnmtv->itemNew.lParam;
+        if(lp >= mems.GetCount())return 0;
+        CStructMember& m = mems[lp];
         m_pView->m_nMember = m.m_ofs;
-        m_pView->m_dwCaret = m_pView->m_dwStructTag + m.m_ofs;
+        //m_pView->m_dwCaret = m_pView->m_dwStructTag + m.m_ofs;
         m_pView->m_nBytes = m.m_bytes ? m.m_bytes : 1;
         m_pView->m_nBytesLength = (m.m_bytes && (m.m_bytes != m.m_len)) ? m.m_len / m.m_bytes : 1;
-        m_pView->GotoCaret();
-        m_pView->Invalidate(FALSE);
+        //m_pView->GotoCaret();
+        //m_pView->Invalidate(FALSE);
+        m_pView->MoveCaretTo(m_pView->m_dwStructTag + m.m_ofs);
         m_pView->UpdateStatusInfo();
       }
       //	m_pView->Activate();
-    }	
+    //}	
     return 0;
   }
 
@@ -365,23 +376,21 @@ void CBZFormView::SelectTag()
 
 void CBZFormView::InitListMember(int iTag)
 {
-	m_listMember.DeleteAllItems();
+  m_treeMember.SelectItem(NULL);
+  m_treeMember.DeleteAllItems();
+  
+  CString sRoot;
+  CBZDoc2* pDoc = GetBZDoc2();
+  if(pDoc) sRoot = pDoc->GetDocName();
+  HTREEITEM hRoot = TVI_ROOT;//m_treeMember.InsertItem(sRoot, TVI_ROOT, TVI_LAST);
 
 	for_to(i, m_tag[iTag].m_member.GetCount()) {
 		CStructMember& m = m_tag[iTag].m_member[i];
 		CString s;
 
-		s.Format(_T("+%2X"), m.m_ofs);
-		LV_ITEM lvitem;
-		lvitem.mask = LVIF_TEXT;
-		lvitem.iItem = i;
-		lvitem.iSubItem = MBRCOL_OFFSET;
-		lvitem.pszText = (LPTSTR)(LPCTSTR)s;
-		lvitem.iItem = m_listMember.InsertItem(&lvitem);
-
-		lvitem.pszText =  (LPTSTR)(LPCTSTR)m.m_name;
-		lvitem.iSubItem = MBRCOL_LABEL;
-		m_listMember.SetItem(&lvitem);
+    s.Format(_T("%s (+%2X)"), m.m_name, m.m_ofs);
+    //HTREEITEM hTree = m_treeMember.InsertItem(s, hRoot/*TVI_ROOT*/, TVI_LAST);
+    HTREEITEM hTree = m_treeMember.InsertItem(TVIF_TEXT | TVIF_PARAM, s, 0, 0, 0, 0, i, hRoot, TVI_LAST);
 
 		if(m.m_bytes) {
 //			char* fval[3] = { "%d", "%u", "0x%X" };
@@ -441,9 +450,8 @@ void CBZFormView::InitListMember(int iTag)
 
 			if(m.m_len != m.m_bytes)
 				sVal += _T(" ...");
-			lvitem.pszText =  (LPTSTR)(LPCTSTR)sVal;
-			lvitem.iSubItem = MBRCOL_VALUE;
-			m_listMember.SetItem(&lvitem);
+
+      m_treeListMember.SetSubItemText(hTree, MBRCOL2_VALUE, sVal);
 		}
 	}
 }
@@ -451,8 +459,9 @@ void CBZFormView::InitListMember(int iTag)
 
 void CBZFormView::Activate()
 {
-	if(m_listMember.GetSelectedCount() == 0)
+  HTREEITEM hItem = m_treeMember.GetSelectedItem();
+	if(!hItem)
 		m_listTag.SetFocus();
 	else
-		m_listMember.SetFocus();
+		m_treeMember.SetFocus();
 }

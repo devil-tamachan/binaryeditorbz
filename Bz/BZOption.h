@@ -35,7 +35,8 @@ inline COLORREF GetSystemColor(COLORREF rgb) { return (IsSystemColor(rgb)) ? (CO
 
 enum CharSet { CTYPE_ASCII, CTYPE_SJIS, CTYPE_UNICODE, CTYPE_JIS, CTYPE_EUC, CTYPE_UTF8, CTYPE_EBCDIC, CTYPE_EPWING, CTYPE_COUNT, CTYPE_BINARY = -1 };
 enum TextColor{ TCOLOR_ADDRESS, TCOLOR_ADDRESS2, TCOLOR_TEXT, TCOLOR_SELECT, TCOLOR_MARK, TCOLOR_MISMATCH, TCOLOR_STRUCT, TCOLOR_MEMBER, TCOLOR_OVERBROTHER, TCOLOR_HORIZON, TCOLOR_ADDRESS3, TCOLOR_COUNT };
-enum MemberColumn { MBRCOL_OFFSET, MBRCOL_LABEL, MBRCOL_VALUE, MBRCOL_MAX };
+//enum MemberColumn { MBRCOL_OFFSET, MBRCOL_LABEL, MBRCOL_VALUE, MBRCOL_MAX };
+enum MemberColumn2 { MBRCOL2_LABEL, MBRCOL2_VALUE, MBRCOL2_MAX };
 
 #define BARSTATE_TOOL 1
 #define BARSTATE_STATUS 2
@@ -43,7 +44,8 @@ enum MemberColumn { MBRCOL_OFFSET, MBRCOL_LABEL, MBRCOL_VALUE, MBRCOL_MAX };
 #define BARSTATE_NOFLAT 8
 
 extern COLORREF colorsDefault[TCOLOR_COUNT][2];
-extern int colWidthDefault[MBRCOL_MAX];
+//extern int colWidthDefault[MBRCOL_MAX];
+extern int colWidth2Default[MBRCOL2_MAX];
 extern const TCHAR sRegDefault[];
 extern const TCHAR sRegHistory[];
 
@@ -114,8 +116,10 @@ public:
     GetProfileBinary2(key, _T("Colors"), colors, sizeof colors);
     //	if(!GetProfileBinary("Colors", colors))
     //		memcpy(colors, colorsDefault, sizeof(colorsDefault));
-    if(!GetProfileBinary2(key, _T("MemberColumns"), colWidth, sizeof(colWidth)))
-      memcpy(colWidth, colWidthDefault, sizeof(colWidthDefault));
+ //   if(!GetProfileBinary2(key, _T("MemberColumns"), colWidth, sizeof(colWidth)))
+  //    memcpy(colWidth, colWidthDefault, sizeof(colWidthDefault));
+    if(!GetProfileBinary2(key, _T("MemberColumns2"), colWidth2, sizeof(colWidth2)))
+      memcpy(colWidth2, colWidth2Default, sizeof(colWidth2Default));
     if(!GetProfileBinary2(key, _T("PageMargin"), (LPRECT)rMargin, sizeof(RECT)))
       rMargin.SetRect(2000, 2000, 2000, 2000);
 
@@ -202,7 +206,8 @@ public:
     WriteProfileInt(key, _T("SubCursor"), bSubCursor);
 
     WriteProfileBinary(key, _T("Colors"), (LPBYTE)colors, sizeof(colorsDefault));
-    WriteProfileBinary(key, _T("MemberColumns"), (LPBYTE)colWidth, sizeof(colWidth));
+ //   WriteProfileBinary(key, _T("MemberColumns"), (LPBYTE)colWidth, sizeof(colWidth));
+    WriteProfileBinary(key, _T("MemberColumns2"), (LPBYTE)colWidth2, sizeof(colWidth2));
     WriteProfileBinary(key, _T("PageMargin"), (LPBYTE)(LPRECT)rMargin, sizeof(rMargin));
 
     WriteProfileString(key, _T("DumpHeader"), sDumpHeader);
@@ -240,7 +245,8 @@ public:
 	UINT nSplitView;
 	int nComboHeight;
 	COLORREF colors[TCOLOR_COUNT][2];
-	int  colWidth[MBRCOL_MAX];
+//	int  colWidth[MBRCOL_MAX];
+	int  colWidth2[MBRCOL2_MAX];
 	BOOL bLanguage;
   WTL::CRect rMargin;
 	DWORD dwDetectMax;

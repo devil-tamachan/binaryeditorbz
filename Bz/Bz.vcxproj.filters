@@ -153,5 +153,8 @@
     <ClInclude Include="tamascrlu64v.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TreeListView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -348,7 +348,7 @@ void CTextView::MoveCaret(POINT pt)
 	if(GetFocus() == m_hWnd) {
 		GridToPixel(pt);
     SetCaretPos(pt.x, pt.y);
-		//ATLTRACE("CTextView::MoveCaret(): SetCaretPos x=%d, y=%d\n", pt.x, pt.y);
+		ATLTRACE("CTextView::MoveCaret(): SetCaretPos x=%d, y=%d\n", pt.x, pt.y);
 		if(pt.x >= 0) {
 			HIMC hIMC;
 			if(hIMC = ImmGetContext(m_hWnd)) {
@@ -359,7 +359,10 @@ void CTextView::MoveCaret(POINT pt)
 				ImmReleaseContext(m_hWnd, hIMC);
 			}
 		}
-	}
+	} else {
+    HideCaret();
+    //HideCaret2();
+  }
 }
 
 // Sub caret drawing ### 1.62

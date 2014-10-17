@@ -122,7 +122,7 @@ public:
 };
 
 
-extern TCHAR *s_MemberColLabel[MBRCOL_MAX];
+extern TCHAR *s_MemberColLabel[MBRCOL2_MAX];
 
 class CBZView;
 
@@ -151,22 +151,26 @@ public:
     COMMAND_HANDLER_EX(IDC_LIST_TAG, LBN_SELCHANGE, OnSelchangeListTag)
     MSG_WM_SIZE(OnSize)
     MSG_WM_KEYDOWN(OnKeyDown)
-    NOTIFY_HANDLER_EX(IDC_LIST_MEMBER, NM_DBLCLK, OnDblclkListMember)
-    NOTIFY_HANDLER_EX(IDC_LIST_MEMBER, LVN_ITEMCHANGED, OnItemchangedListMember)
+    NOTIFY_HANDLER_EX(IDC_TREE_MEMBER, NM_DBLCLK, OnDblclkListMember)
+    NOTIFY_HANDLER_EX(IDC_TREE_MEMBER, TVN_SELCHANGED, OnMemberSelChanged)
     COMMAND_ID_HANDLER_EX(IDB_TAGALL, OnClickTagAll)
   END_MSG_MAP()
 
   BEGIN_DDX_MAP(CBZFormView)
     DDX_CONTROL_HANDLE(IDC_LIST_TAG, m_listTag);
-    DDX_CONTROL_HANDLE(IDC_LIST_MEMBER, m_listMember);
+    DDX_CONTROL(IDC_TREE_MEMBER, m_treeListMember);
     DDX_CONTROL_HANDLE(IDC_STATIC_MEMBER, m_statMember);
     DDX_CHECK(IDB_TAGALL, m_bTagAll);
   END_DDX_MAP()
 
 	WTL::CListBox	m_listTag;
-	WTL::CListViewCtrl	m_listMember;
 	WTL::CStatic		m_statMember;
 	BOOL		m_bTagAll;
+
+  
+	CTreeListViewCtrl	m_treeListMember;
+  WTL::CHeaderCtrl m_headerMember;
+  WTL::CTreeViewCtrl m_treeMember;
 
 // Attributes
 private:
@@ -234,16 +238,20 @@ public:
       }
       InitListTag();
 
-      ListView_SetExtendedListViewStyle(m_listMember.m_hWnd, LVS_EX_FULLROWSELECT);
+//      ListView_SetExtendedListViewStyle(m_listMember.m_hWnd, LVS_EX_FULLROWSELECT);
+      m_headerMember = m_treeListMember.GetHeaderControl();
+      m_treeMember = m_treeListMember.GetTreeControl();
 
-      for_to(i, MBRCOL_MAX) {
-        LV_COLUMN lvcol;
-        lvcol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
-        lvcol.fmt = LVCFMT_LEFT;
-        lvcol.pszText = s_MemberColLabel[i];
-        lvcol.cx = options.colWidth[i];
-        if(lvcol.cx<5)lvcol.cx=5;
-        m_listMember.InsertColumn(i, &lvcol);
+      for_to(i, MBRCOL2_MAX)
+      {
+        HDITEM col = { 0 };
+        col.mask = HDI_FORMAT | HDI_TEXT | HDI_WIDTH;
+        col.fmt = HDF_LEFT;
+        col.cxy = 250;
+        col.pszText = s_MemberColLabel[i];
+        col.cxy = options.colWidth2[i];
+        if(col.cxy<5)col.cxy=5;
+        m_headerMember.InsertItem(i, &col);
       }
     }
     m_pView = GetBZView();
@@ -266,9 +274,12 @@ public:
   }*/
 	void OnDestroy()
   {
-    if(!m_bNoDefFile) {
-      for_to(i, MBRCOL_MAX)
-        options.colWidth[i] = m_listMember.GetColumnWidth(i);
+    if(!m_bNoDefFile)
+    {
+      for_to(i, MBRCOL2_MAX)
+      {
+        options.colWidth2[i] = GetHeaderColWidth(i);
+      }
     }
   }
   void OnClickTagAll(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -287,6 +298,20 @@ public:
   void SelchangeListTag();
 
 
+  int GetHeaderColWidth(int nIndex)
+  {
+      WTL::CRect rect;
+      m_headerMember.GetItemRect(nIndex, rect);
+      return rect.Width();
+  }
+  void SetHeaderColWidth(int nIndex, int w)
+  {
+      HDITEM hdi = {0};
+      m_headerMember.GetItem(nIndex, &hdi);
+      hdi.cxy = w;
+      m_headerMember.SetItem(nIndex, &hdi);
+  }
+
   void OnSize(UINT nType, WTL::CSize size)
   {
     //SetScrollSizes(MM_TEXT, size);
@@ -297,7 +322,7 @@ public:
       WTL::CRect rForm, rTag, rMember, rStatic;
       GetWindowRect(rForm);
       m_listTag.GetWindowRect(rTag);
-      m_listMember.GetWindowRect(rMember);
+      m_treeListMember.GetWindowRect(rMember);
       m_statMember.GetWindowRect(rStatic);
       ScreenToClient(rTag);
       ScreenToClient(rMember);
@@ -316,14 +341,14 @@ public:
       rMember.y2 = cy - nMgn;
 
       m_listTag.MoveWindow(rTag);
-      m_listMember.MoveWindow(rMember);
+      m_treeListMember.MoveWindow(rMember);
       m_statMember.MoveWindow(rStatic);
       m_statMember.Invalidate();
 
-      m_listMember.GetClientRect(rMember);
-      int cxLabel = rMember.Width() - m_listMember.GetColumnWidth(MBRCOL_OFFSET) - m_listMember.GetColumnWidth(MBRCOL_VALUE);
+      m_treeListMember.GetClientRect(rMember);
+      int cxLabel = rMember.Width() /*-GetHeaderColWidth(MBRCOL2_OFFSET)*/ - GetHeaderColWidth(MBRCOL2_VALUE);
       if(cxLabel > 0)
-        m_listMember.SetColumnWidth(MBRCOL_LABEL, cxLabel);
+        SetHeaderColWidth(MBRCOL2_LABEL, cxLabel);
 
       WTL::CRect rTagAll;
       CWindow pWndTagAll = GetDlgItem(IDB_TAGALL);
@@ -336,11 +361,11 @@ public:
     }
   }
   LRESULT OnDblclkListMember(LPNMHDR pnmh);
-	LRESULT OnItemchangedListMember(LPNMHDR pnmh);
+	LRESULT OnMemberSelChanged(LPNMHDR pnmh);
 
   int GetWindowIdealWidth()
   {
-    return 260;
+    return 310;
   }
 };
 

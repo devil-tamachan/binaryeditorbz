@@ -44,7 +44,8 @@ COLORREF colorsDefault[TCOLOR_COUNT][2] = {
 	RGB(0xee,0xee,0xee)/*RGB(0xcc,0xcc,0xcc)*/, COLOR_3DLIGHT | SYSCOLOR,
 };
 
-int colWidthDefault[MBRCOL_MAX] = { 26, 80, 60 };
+//int colWidthDefault[MBRCOL_MAX] = { 26, 80, 60 };
+int colWidth2Default[MBRCOL2_MAX] = { 180, 100 };
 
 const TCHAR sRegDefault[] = _T("Settings");
 const TCHAR sRegHistory[] = _T("History");

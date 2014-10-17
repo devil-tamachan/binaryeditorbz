@@ -562,6 +562,7 @@
     <ClInclude Include="tamascrlu64v.h" />
     <ClInclude Include="tamasplit.h" />
     <ClInclude Include="TextView.h" />
+    <ClInclude Include="TreeListView.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

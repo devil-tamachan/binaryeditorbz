@@ -812,7 +812,7 @@ void CBZView::DrawAddress(UINT64 ofs1)
     unsigned int idxAddr = idxHead + lenHide;
     LPCSTR pStr = (LPCSTR)str;
 
-    ATLTRACE("DrawAddr: 0x%s\n", str);
+    //ATLTRACE("DrawAddr: 0x%s\n", str);
 
 		/*if(options.bQWordAddr)
     {
@@ -976,15 +976,15 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 	UINT64 y;
 
 	for(/*int */y = rClipU64V.y1; y <= rClipU64V.y2; y++) {
-    ATLTRACE("DoPaint::Locate 1-1(%016I64X)\n", y);
+    //ATLTRACE("DoPaint::Locate 1-1(%016I64X)\n", y);
 		Locate(0, y);
 		if(ofs > dwTotal) break;
 		if(IsToFile() && options.nDumpPage) {
 			if(y > DUMP_Y && ((y - DUMP_Y) % options.nDumpPage) == 0) {
-    ATLTRACE("DoPaint::Locate 1-2(%016I64X)\n", y);
+    //ATLTRACE("DoPaint::Locate 1-2(%016I64X)\n", y);
 				Locate(0, y); // crlf
 				DrawHeader2File();
-    ATLTRACE("DoPaint::Locate 1-3(%016I64X)\n", y);
+    //ATLTRACE("DoPaint::Locate 1-3(%016I64X)\n", y);
 				Locate(0, y); // crlf
 			}
 		}
@@ -1068,7 +1068,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 		bool fPutSkip = FALSE;
 #endif
 
-      ATLTRACE(" -Line %08X", ofs);
+      //ATLTRACE(" -Line %08X", ofs);
 
     //•`‰æ: ‰E‘¤•¶Žš•\Ž¦
 		for_to_(i,16) {
@@ -1237,7 +1237,7 @@ void CBZView::_OnPaint(WTL::CDCHandle dc, LPRECT lpUpdateRect, BOOL bPrint)
 		if(y <= rClipU64V.y2) {
 			SetColor();
 			for(y; y<=rClipU64V.y2+1; y++) {
-        ATLTRACE("DoPaint::Locate 2(%016I64X)\n", y);
+        //ATLTRACE("DoPaint::Locate 2(%016I64X)\n", y);
 				Locate(0, y);
 				PutChar(' ', VIEWCOLUMNS);
 			}

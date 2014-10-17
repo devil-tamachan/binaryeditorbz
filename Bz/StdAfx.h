@@ -40,6 +40,8 @@ extern WTL::CAppModule _Module;
 #include <atlscrl.h>
 #include <atlprint.h>
 
+#include "TreeListView.h"
+
 #include <shlobj.h>
 
 #include "afxres.h"

@@ -17,7 +17,7 @@
 #define IDD_INPUT                       144
 #define IDR_MENU_POPUP                  145
 #define IDC_LIST_TAG                    1000
-#define IDC_LIST_MEMBER                 1001
+#define IDC_TREE_MEMBER                 1001
 #define IDAPPLY                         1002
 #define IDC_PARTSLIST                   1008
 #define IDC_TEXTCOLOR                   1009
