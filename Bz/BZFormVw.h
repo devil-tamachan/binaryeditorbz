@@ -31,22 +31,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "BZ.h"
 
-extern DWORD g_datasizes[];
+#define NUM_MEMBERS 15
+//extern DWORD g_datasizes[];
 
 class CStructMember
 {
 public:
+  static char* TYPESTR[NUM_MEMBERS];
+  static DWORD SIZES[NUM_MEMBERS];
+
 	CStructMember(LPSTR name = NULL, int type = 0)
 	{
 		m_name = name;
-		m_type = type;
-		m_len = m_bytes = (type == -1) ? 0 : g_datasizes[type];
+    if(type >=-1 && type <NUM_MEMBERS)m_type = type;
+    else {
+      ATLASSERT(false);
+      m_type = -1;
+    }
+		m_len = m_bytes = (m_type == -1) ? 0 : SIZES[m_type];
+    m_hTree = NULL;
 	}
 	CStructMember(CStringA& name, int type = 0)
 	{
 		m_name = name;
-		m_type = type;
-		m_len = m_bytes = (type == -1) ? 0 : g_datasizes[type];
+    if(type >=-1 && type <NUM_MEMBERS)m_type = type;
+    else {
+      ATLASSERT(false);
+      m_type = -1;
+    }
+		m_len = m_bytes = (m_type == -1) ? 0 : SIZES[m_type];
+    m_hTree = NULL;
 	}
 	~CStructMember()
 	{
@@ -58,6 +72,7 @@ public:
 		m_len  = r.m_len;
     m_bytes = r.m_bytes;
     m_ofs = r.m_ofs;
+    m_hTree = NULL;
 	}
 	CStructMember& operator=(const CStructMember& r)
 	{
@@ -73,6 +88,15 @@ public:
 	DWORD	m_len;
 	DWORD	m_bytes;
 	DWORD	m_ofs;
+  HTREEITEM m_hTree;
+
+  CString GetLabelText()
+  {
+    CString s;
+    s.Format(_T("%s (+%2X)"), m_name, m_ofs);
+    return s;
+  }
+  CString GetValText(CBZView *pView);
 };
 
 class CStructTag
@@ -133,6 +157,7 @@ public:
   {
     m_pDefFile = NULL;
     m_bNoDefFile = FALSE;
+    m_iTag = -1;
   }
 
   ~CBZFormView()
@@ -178,7 +203,8 @@ private:
 	BOOL m_bNoDefFile;
 	CAtlArray<CStructTag> m_tag;
 	CBZView* m_pView;
-	int m_nTagSelect;
+	int m_nTagSelect; //ファイル開く後に復帰用？いらないかもｗ
+  int m_iTag;
 
 // Operations
 public:
@@ -201,6 +227,7 @@ protected:
 	BOOL InitStructList();
 	void InitListTag();
 	void InitListMember(int iTag);
+  void UpdateMembers();
 	int AddTag(int iTag);
 
 public:
@@ -282,6 +309,8 @@ public:
       }
     }
   }
+
+
   void OnClickTagAll(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
     DoDataExchange(DDX_SAVE);

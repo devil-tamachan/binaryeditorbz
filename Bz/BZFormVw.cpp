@@ -34,17 +34,85 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BZFormVw.h"
 
 
-#define g_nTypes 15
 
-char* g_datatypes[g_nTypes] = {
-	"char", "byte", "BYTE", "short", "word", "WORD", "long", "dword", "DWORD", "double", "qword", "QWORD", "float", "int64","int"
-};
+//char* g_datatypes[g_nTypes] = {
+//	"char", "byte", "BYTE", "short", "word", "WORD", "long", "dword", "DWORD", "double", "qword", "QWORD", "float", "int64","int"
+//};
 
-DWORD g_datasizes[g_nTypes] = {1,1,1,2,2,2,4,4,4,8,8,8 ,4,8,4
-};
+//DWORD g_datasizes[g_nTypes] = {1,1,1,2,2,2,4,4,4,8,8,8 ,4,8,4
+//};
+
+char* CStructMember::TYPESTR[NUM_MEMBERS] = {"char", "byte", "BYTE", "short", "word", "WORD", "long", "dword", "DWORD", "double", "qword", "QWORD", "float", "int64", "int"};
+DWORD CStructMember::SIZES[NUM_MEMBERS]   = { 1,      1,      1,      2,       2,      2,      4,      4,       4,       8,        8,       8,       4,       8,       4};
 
 TCHAR *s_MemberColLabel[MBRCOL2_MAX] = { _T("Label"), _T("Value") };
 
+
+
+CString CStructMember::GetValText(CBZView *pView)
+{
+  CString sVal;
+
+  if(pView && m_bytes) {
+    //			char* fval[3] = { "%d", "%u", "0x%X" };
+    int val = pView->GetValue(pView->m_dwCaret + m_ofs, m_bytes);
+    ULONGLONG qval = 0;
+
+    switch(m_type)
+    {
+    case 0://char
+      val = (int)(char)val;
+      sVal = SeparateByComma(val, true);
+      break;
+    case 3://short
+      val = (int)(short)val;
+      sVal = SeparateByComma(val, true);
+      break;
+    case 6://long
+    case 14://int
+      sVal = SeparateByComma(val, true);
+      break;
+    case 13://int64
+      qval = pView->GetValue64(pView->m_dwCaret + m_ofs);
+      sVal = SeparateByComma64(qval, true);
+      break;
+    case 12://float
+      sVal.Format(_T("%f"), *((float*)&val));
+      break;
+    case 9://double
+      qval = pView->GetValue64(pView->m_dwCaret + m_ofs);
+      sVal.Format(_T("%f"), qval);
+      break;
+    case 1: // byte(unsigned char)
+    case 4: // word(unsigned short)
+    case 7: // dword(unsigned int)
+      sVal = SeparateByComma(val, false);
+      break;
+    case 10://qword(digit)
+      qval = pView->GetValue64(pView->m_dwCaret + m_ofs);
+      sVal = SeparateByComma64(qval, false);
+      //sVal.Format("%I64u", qval);
+      break;
+    case 2://BYTE(Hex)
+      sVal.Format(_T("0x%02X"), val);
+      break;
+    case 5://WORD(Hex)
+      sVal.Format(_T("0x%04X"), val);
+      break;
+    case 8://DWORD(Hex)
+      sVal.Format(_T("0x%08X"), val);
+      break;
+    case 11://QWORD(hex)
+      qval = pView->GetValue64(pView->m_dwCaret + m_ofs);
+      sVal.Format(_T("0x%016I64X"), qval);
+      break;
+    }
+
+    if(m_len != m_bytes)
+      sVal += _T(" ...");
+  }
+  return sVal;
+}
 
 
 void CBZFormView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
@@ -76,6 +144,7 @@ void CBZFormView::SelchangeListTag()
       m_pView->m_dwStruct = m_pView->m_dwCaret + m_tag[iTag].m_len;
       m_pView->m_nMember = INVALID;
       InitListMember(iTag);
+      m_iTag = iTag;
       m_pView->Invalidate(FALSE);
     }
   }
@@ -96,7 +165,12 @@ LRESULT CBZFormView::OnDblclkListMember(LPNMHDR pnmh)
       if(m_listTag.GetCount() > 1 && m_nTagSelect != -1) {
         m_listTag.SetCurSel(iItem + 1);
       }
-      SelchangeListTag();
+      m_pView->m_dwStructTag = m_pView->m_dwCaret;
+      m_pView->m_dwStruct = m_pView->m_dwCaret + m_tag[m_iTag].m_len;
+      m_pView->m_nMember = INVALID;
+      UpdateMembers();
+      //SelchangeListTag();
+      m_pView->Invalidate(FALSE);
     } else {
       m_pView->Activate();
       PostMessage2MainFrame(WM_COMMAND, ID_EDIT_VALUE);
@@ -193,10 +267,12 @@ HRESULT CBZFormView::ParseMember(CStringA& member, int iTag, int iType, CString&
 }
 int SearchType(const char *type)
 {
-	int i222;
-	for(i222=0; i222<g_nTypes; i222++)
-		if(!strcmp(type, g_datatypes[i222])) break;
-	return i222;
+	int i;
+	for(i=0; i<NUM_MEMBERS; i++)
+  {
+		if(!strcmp(type, CStructMember::TYPESTR[i]))/*ˆê’v*/ return i;
+  }
+	return i;
 }
 HRESULT CBZFormView::ParseMemberLine(CStringA& memberline, int iTag, CString& errMsg)
 {
@@ -207,7 +283,7 @@ HRESULT CBZFormView::ParseMemberLine(CStringA& memberline, int iTag, CString& er
 	CStringA members = memberline.Right(memberline.GetLength() - type.GetLength()).Trim(" \t\r\n");
 
 	int iType = SearchType(type);
-	if(iType == g_nTypes || type.GetLength()==0 || members.GetLength()==0)
+	if(iType == NUM_MEMBERS || type.GetLength()==0 || members.GetLength()==0)
 	{
 		errMsg.Format(_T("Wrong line: %s"), memberline);
 		return E_FAIL;
@@ -386,73 +462,25 @@ void CBZFormView::InitListMember(int iTag)
 
 	for_to(i, m_tag[iTag].m_member.GetCount()) {
 		CStructMember& m = m_tag[iTag].m_member[i];
-		CString s;
 
-    s.Format(_T("%s (+%2X)"), m.m_name, m.m_ofs);
     //HTREEITEM hTree = m_treeMember.InsertItem(s, hRoot/*TVI_ROOT*/, TVI_LAST);
-    HTREEITEM hTree = m_treeMember.InsertItem(TVIF_TEXT | TVIF_PARAM, s, 0, 0, 0, 0, i, hRoot, TVI_LAST);
+    HTREEITEM hTree = m_treeMember.InsertItem(TVIF_TEXT | TVIF_PARAM, m.GetLabelText(), 0, 0, 0, 0, i, hRoot, TVI_LAST);
+    m.m_hTree = hTree;
+    
+    m_treeListMember.SetSubItemText(m.m_hTree, MBRCOL2_VALUE, m.GetValText(m_pView));
+	}
+}
 
-		if(m.m_bytes) {
-//			char* fval[3] = { "%d", "%u", "0x%X" };
-			int val = m_pView->GetValue(m_pView->m_dwCaret + m.m_ofs, m.m_bytes);
-			CString sVal;
-			ULONGLONG qval = 0;
-			
-			switch(m.m_type)
-			{
-			case 0://char
-				val = (int)(char)val;
-				sVal = SeparateByComma(val, true);
-				break;
-			case 3://short
-				val = (int)(short)val;
-				sVal = SeparateByComma(val, true);
-				break;
-			case 6://long
-			case 14://int
-				sVal = SeparateByComma(val, true);
-				break;
-			case 13://int64
-				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
-				sVal = SeparateByComma64(qval, true);
-				break;
-			case 12://float
-				sVal.Format(_T("%f"), *((float*)&val));
-				break;
-			case 9://double
-				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
-				sVal.Format(_T("%f"), qval);
-				break;
-			case 1: // byte(unsigned char)
-			case 4: // word(unsigned short)
-			case 7: // dword(unsigned int)
-				sVal = SeparateByComma(val, false);
-				break;
-			case 10://qword(digit)
-				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
-				sVal = SeparateByComma64(qval, false);
-				//sVal.Format("%I64u", qval);
-				break;
-			case 2://BYTE(Hex)
-				sVal.Format(_T("0x%02X"), val);
-				break;
-			case 5://WORD(Hex)
-				sVal.Format(_T("0x%04X"), val);
-				break;
-			case 8://DWORD(Hex)
-				sVal.Format(_T("0x%08X"), val);
-				break;
-			case 11://QWORD(hex)
-				qval = m_pView->GetValue64(m_pView->m_dwCaret + m.m_ofs);
-				sVal.Format(_T("0x%016I64X"), qval);
-				break;
-			}
+void CBZFormView::UpdateMembers()
+{
+  if(m_iTag==-1)return;
+  CStructTag &tag = m_tag[m_iTag];
 
-			if(m.m_len != m.m_bytes)
-				sVal += _T(" ...");
+	for_to(i, tag.m_member.GetCount()) {
+		CStructMember& m = tag.m_member[i];
 
-      m_treeListMember.SetSubItemText(hTree, MBRCOL2_VALUE, sVal);
-		}
+    m_treeMember.SetItemText(m.m_hTree, m.GetLabelText());
+    m_treeListMember.SetSubItemText(m.m_hTree, MBRCOL2_VALUE, m.GetValText(m_pView));
 	}
 }
 

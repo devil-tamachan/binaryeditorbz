@@ -27,6 +27,7 @@
 //
 // Beware of bugs.
 //
+//若干書き換えた
 
 
 #ifndef __cplusplus
