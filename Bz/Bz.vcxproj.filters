@@ -60,6 +60,9 @@
     <ClCompile Include="TextView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="portableCfg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BZ.rc">
@@ -156,5 +159,16 @@
     <ClInclude Include="TreeListView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PortableCfg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="portableCfg.re">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="portableCfgParser.lemon">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

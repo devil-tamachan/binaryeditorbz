@@ -35,17 +35,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-//char* g_datatypes[g_nTypes] = {
-//	"char", "byte", "BYTE", "short", "word", "WORD", "long", "dword", "DWORD", "double", "qword", "QWORD", "float", "int64","int"
-//};
-
-//DWORD g_datasizes[g_nTypes] = {1,1,1,2,2,2,4,4,4,8,8,8 ,4,8,4
-//};
-
 char* CStructMember::TYPESTR[NUM_MEMBERS] = {"char", "byte", "BYTE", "short", "word", "WORD", "long", "dword", "DWORD", "double", "qword", "QWORD", "float", "int64", "int"};
 DWORD CStructMember::SIZES[NUM_MEMBERS]   = { 1,      1,      1,      2,       2,      2,      4,      4,       4,       8,        8,       8,       4,       8,       4};
 
-TCHAR *s_MemberColLabel[MBRCOL2_MAX] = { _T("Label"), _T("Value") };
+TCHAR *CBZFormView::MEMBER_LABELS_STR[MBRCOL2_MAX] = { _T("Label"), _T("Value") };
 
 
 
@@ -157,11 +150,10 @@ LRESULT CBZFormView::OnDblclkListMember(LPNMHDR pnmh)
     if(!hItem)return 0;
     CString strItem;
     LPARAM lp = m_treeMember.GetItemText(hItem, strItem);
-    if(strItem.Left(9)==_T(" <next> (")) {
+    if(IsValidiTag() && strItem.Left(9)==_T(" <next> (")) {
       int iItem = m_listTag.GetCurSel();
-      int iTag = m_listTag.GetItemData(iItem);
       //m_pView->m_dwCaret = m_pView->m_dwStructTag + m_tag[iTag].m_len;
-      m_pView->MoveCaretTo(m_pView->m_dwStructTag + m_tag[iTag].m_len);
+      m_pView->MoveCaretTo(m_pView->m_dwStructTag + m_tag[m_iTag].m_len);
       if(m_listTag.GetCount() > 1 && m_nTagSelect != -1) {
         m_listTag.SetCurSel(iItem + 1);
       }
@@ -307,7 +299,7 @@ BOOL CBZFormView::InitStructList()
 	RemoveCommentAll(m_pDefFile);
 	ATLTRACE("BZ.def: %s\n", m_pDefFile);
 	char *p = m_pDefFile;
-	const char seps[] = " ;[]\t\r\n\032";
+	const char seps[] = " ;[]\t\r\n\x1a";//\x1a==EOF
 	enum TokeMode { TK_STRUCT, TK_TAG, TK_BEGIN } mode;
 	mode = TK_STRUCT;
 	int iTag = 0;
@@ -473,7 +465,7 @@ void CBZFormView::InitListMember(int iTag)
 
 void CBZFormView::UpdateMembers()
 {
-  if(m_iTag==-1)return;
+  if(!IsValidiTag())return;
   CStructTag &tag = m_tag[m_iTag];
 
 	for_to(i, tag.m_member.GetCount()) {

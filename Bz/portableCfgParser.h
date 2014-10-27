@@ -1,0 +1,12 @@
+#define COMMA                            1
+#define EQ                               2
+#define INTTYPE                          3
+#define STRTYPE                          4
+#define COLORARRTYPE                     5
+#define INTARRTYPE                       6
+#define RECTTYPE                         7
+#define BR1                              8
+#define BR2                              9
+#define COLVAL                          10
+#define INTVAL                          11
+#define STRVAL                          12

@@ -65,6 +65,14 @@ public:
 
   void Load()
   {
+    LoadDefault();
+    if(FAILED(LoadFromFile()))LoadFromRegistry();
+  }
+
+  HRESULT LoadFromFile();
+
+  void LoadFromRegistry()
+  {
     CRegKey key;
     LONG nRet = key.Create(HKEY_CURRENT_USER, _T("Software\\c.mos\\BZ\\Settings"));
     if(nRet!=ERROR_SUCCESS)return;
@@ -106,7 +114,6 @@ public:
     nBmpWidth = GetProfileInt(key, _T("BmpWidth"), 128);
     nBmpZoom =  GetProfileInt(key, _T("BmpZoom"), 1);
     nBmpPallet =  GetProfileInt(key, _T("BmpPallet"), 1);
-    if(nBmpPallet!=0 && nBmpPallet!=1)nBmpPallet = 1;
     dwMaxOnMemory = GetProfileInt(key, _T("MaxOnMemory"), 1024 * 1024);		// ###1.60
     dwMaxMapSize =  GetProfileInt(key, _T("MaxMapSize"), 1024 * 1024 * 64);	// ###1.61
     bTagAll =  GetProfileInt(key, _T("TagAll"), FALSE);
@@ -131,6 +138,69 @@ public:
     bSyncScroll = GetProfileInt(key, _T("SyncScroll"), true);
     iGrid = GetProfileInt(key, _T("Grid"), 0);
     nBmpColorWidth = GetProfileInt(key, _T("BmpColorWidth"), 8);
+
+    bInspectView = GetProfileInt(key, _T("InspectView"), FALSE);
+    bAnalyzerView = GetProfileInt(key, _T("AnalyzerView"), FALSE);
+
+    bAddressTooltip = GetProfileInt(key, _T("BmpAddressTooltip"), TRUE);
+
+    CheckOptions();
+   // key.Flush();
+  }
+
+  void LoadDefault()
+  {
+    charset = CTYPE_ASCII;
+    bAutoDetect = FALSE;
+    bByteOrder= FALSE;
+    sFontName = _T("FixedSys");	// ###1.54
+    fFontStyle= 0;
+    nFontSize = 140;
+    ptFrame.x = 0;
+    ptFrame.y = 0;
+    nCmdShow  = SW_SHOWNORMAL;
+    cyFrame   = 0;
+    cyFrame2  = 0;
+    cxFrame2  = 0;
+    xSplit    = 0;
+    ySplit    = 0;
+    xSplitStruct = 0;
+    bStructView = FALSE;
+    nComboHeight = 15;
+    bLanguage = ::GetThreadLocale() != 0x411;
+    dwDetectMax = 0x10000;
+    barState = BARSTATE_TOOL | BARSTATE_STATUS;
+    bReadOnlyOpen = TRUE;
+    nBmpWidth = 128;
+    nBmpZoom =  1;
+    nBmpPallet = 1;
+    dwMaxOnMemory = 1024 * 1024;		// ###1.60
+    dwMaxMapSize =  1024 * 1024 * 64;	// ###1.61
+    bTagAll =  FALSE;
+    bSubCursor =  TRUE;
+    
+    memcpy(colors, colorsDefault, sizeof(colorsDefault));
+    memcpy(colWidth2, colWidth2Default, sizeof(colWidth2Default));
+    rMargin.SetRect(2000, 2000, 2000, 2000);
+
+    sDumpHeader = _T("DumpHeader");	// ###1.63
+    nDumpPage = 0;
+    bQWordAddr = FALSE;
+    bClearUndoRedoWhenSave = TRUE;
+
+    bSyncScroll = true;
+    iGrid = 0;
+    nBmpColorWidth = 8;
+
+    bInspectView = FALSE;
+    bAnalyzerView = FALSE;
+
+    bAddressTooltip = TRUE;
+  }
+
+  void CheckOptions()
+  {
+    if(nBmpPallet!=0 && nBmpPallet!=1)nBmpPallet = 1;
     switch(nBmpColorWidth)
     {
     case 8:
@@ -142,21 +212,159 @@ public:
       break;
     }
 
-    bInspectView = GetProfileInt(key, _T("InspectView"), FALSE);
-    bAnalyzerView = GetProfileInt(key, _T("AnalyzerView"), FALSE);
-
     if(bInspectView && bStructView && bAnalyzerView)
     {
       bStructView=false;
       bAnalyzerView=false;
     }
+  }
 
-    bAddressTooltip = GetProfileInt(key, _T("BmpAddressTooltip"), TRUE);
+  HRESULT WriteFileInt(CAtlFile &file, LPCSTR name, int val)
+  {
+    CStringA str;
+    str.Format("%s = %ld\n", name, val);
+    return file.Write(((LPVOID)(LPCSTR)(str)), str.GetLength());
+  }
 
-    key.Flush();
+  HRESULT WriteFileString(CAtlFile &file, LPCSTR name, CString& val)
+  {
+    CString t = val;
+    t.Replace(_T("\""), _T("\\\""));
+    t.Replace(_T("\r"), _T("\\r"));
+    t.Replace(_T("\n"), _T("\\n"));
+    CStringA str;
+    str.Format("%s = \"%s\"\n", name, CT2A(val, CP_UTF8));
+    return file.Write(((LPVOID)(LPCSTR)(str)), str.GetLength());
+  }
+
+  HRESULT WriteFileRect(CAtlFile &file, LPCSTR name, LPRECT val)
+  {
+    CStringA str;
+    str.Format("%s = {%d, %d, %d, %d}\n", name, val->left, val->top, val->right, val->bottom);
+    return file.Write(((LPVOID)(LPCSTR)(str)), str.GetLength());
+  }
+
+  HRESULT WriteFileIntArray(CAtlFile &file, LPCSTR name, int *pInt, int count)
+  {
+    CStringA str, t;
+    str.Format("%s = {", name);
+    if(count > 0)
+    {
+      t.Format("%d", pInt[0]);
+      str += t;
+      for(int i=1; i<count; i++)
+      {
+        t.Format(", %d", pInt[i]);
+        str += t;
+      }
+    }
+    str += "}\n";
+    return file.Write(((LPVOID)(LPCSTR)(str)), str.GetLength());
+  }
+
+  HRESULT WriteFileColorArray(CAtlFile &file, LPCSTR name, COLORREF *pCol, int count)
+  {
+#define MyGetGValue(rgb) (LOBYTE(rgb >> 8))
+    CStringA str, t;
+    str.Format("%s = {", name);
+    if(count > 0)
+    {
+      t.Format("#%02X%02X%02X", GetRValue(pCol[0]), MyGetGValue(pCol[0]), GetBValue(pCol[0]));
+      str += t;
+      for(int i=1; i<count; i++)
+      {
+        t.Format(", #%02X%02X%02X", GetRValue(pCol[i]), MyGetGValue(pCol[i]), GetBValue(pCol[i]));
+        str += t;
+      }
+    }
+    str += "}\n";
+    return file.Write(((LPVOID)(LPCSTR)(str)), str.GetLength());
   }
 
   void Save()
+  {
+    if(bPortableMode)SaveToFile();
+    else SaveToRegistry();
+  }
+
+  HRESULT SaveToFile()
+  {
+    CAtlFile file;
+    if(FAILED(file.Create(_T("EnablePortableMode.txt"), GENERIC_WRITE, 0, CREATE_ALWAYS)))return E_FAIL;
+
+    CStringA t = CW2A(_T("/* このファイルがあるとポータブルモードになります。設定はこのファイルへ書きだされます。レジストリには書き込まれません。 */\n\n"), CP_UTF8);
+    file.Write( ((LPCVOID)(LPCSTR)t), t.GetLength());
+    
+    WriteFileInt(file, "CharSet", charset);
+    WriteFileInt(file, "AutoDetect", bAutoDetect);
+    WriteFileInt(file, "ByteOrder", bByteOrder);
+    if(!sFontName.IsEmpty()) {
+      WriteFileString(file, "FontName", sFontName);
+      WriteFileInt(file, "FontStyle", fFontStyle);
+      WriteFileInt(file, "FontSize", nFontSize);
+    }
+    if(g_bFirstInstance) {
+      WriteFileInt(file, "FrameLeft", ptFrame.x);
+      WriteFileInt(file, "FrameTop", ptFrame.y);
+    }
+    WriteFileInt(file, "CmdShow", nCmdShow);
+    switch(nSplitView)
+    {
+    case 0:
+      WriteFileInt(file, "FrameHeight", cyFrame);
+      break;
+    case ID_VIEW_SPLIT_H:
+      WriteFileInt(file, "FrameHeight2", cyFrame2);
+      WriteFileInt(file, "SplitVPos", ySplit);
+      break;
+    case ID_VIEW_SPLIT_V:
+      WriteFileInt(file, "FrameWidth2", cxFrame2);
+      WriteFileInt(file, "SplitHPos", xSplit);
+      break;
+    }
+    WriteFileInt(file, "StructView", bStructView);
+    if(bStructView || bInspectView)
+      WriteFileInt(file, "SplitStruct", xSplitStruct);
+    WriteFileInt(file, "ComboHeight", nComboHeight);
+    WriteFileInt(file, "Language", bLanguage);
+    WriteFileInt(file, "DetectMax", dwDetectMax);
+    WriteFileInt(file, "BarState", barState);
+    WriteFileInt(file, "ReadOnly", bReadOnlyOpen);
+    WriteFileInt(file, "BmpWidth", nBmpWidth);
+    WriteFileInt(file, "BmpZoom", nBmpZoom);
+    WriteFileInt(file, "BmpPallet", nBmpPallet);
+    WriteFileInt(file, "MaxOnMemory", dwMaxOnMemory);
+    WriteFileInt(file, "MaxMapSize", dwMaxMapSize);
+    WriteFileInt(file, "TagAll", bTagAll);
+    WriteFileInt(file, "SubCursor", bSubCursor);
+
+    WriteFileColorArray(file, "Colors", &colors[0][0], TCOLOR_COUNT*2);
+ //   WriteProfileBinary(key, _T("MemberColumns"), (LPBYTE)colWidth, sizeof(colWidth));
+    WriteFileIntArray(file, "MemberColumns2", colWidth2, MBRCOL2_MAX);
+    WriteFileRect(file, "PageMargin", rMargin);
+
+    WriteFileString(file, "DumpHeader", sDumpHeader);
+    WriteFileInt(file, "DumpPage", nDumpPage);
+    WriteFileInt(file, "QWordAddr", bQWordAddr);
+    WriteFileInt(file, "ClearUndoRedoWhenSave", bClearUndoRedoWhenSave);
+
+    WriteFileInt(file, "SyncScroll", bSyncScroll);
+    WriteFileInt(file, "Grid", iGrid);
+    WriteFileInt(file, "BmpColorWidth", nBmpColorWidth);
+
+    WriteFileInt(file, "InspectView", bInspectView);
+    WriteFileInt(file, "AnalyzerView", bAnalyzerView);
+
+    WriteFileInt(file, "BmpAddressTooltip", bAddressTooltip);
+
+
+
+    file.Flush();
+    file.Close();
+    return S_OK;
+  }
+
+  void SaveToRegistry()
   {
     CRegKey key;
     LONG nRet = key.Create(HKEY_CURRENT_USER, _T("Software\\c.mos\\BZ\\Settings"));
@@ -274,8 +482,10 @@ public:
 
 	BOOL bAddressTooltip;
 
+  BOOL bPortableMode;
+
 public:
-  CBZOptions() : m_bModified(FALSE) { }
+  CBZOptions() : m_bModified(FALSE), bPortableMode(FALSE) { }
 
 public:
   void Touch() { m_bModified = TRUE; }

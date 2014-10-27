@@ -203,23 +203,40 @@ CString GetStructFilePath(UINT uID)
 	return retStr;
 }
 
-LPVOID ReadFile(LPCTSTR pPath)
+LPVOID ReadFile(LPCTSTR pPath, DWORD *length /* = NULL */, DWORD spacepadding /* = 0 */, BOOL bEOF /* = FALSE */, BOOL bFailedMsgBox /* = TRUE */)
 {
 	CAtlFile file;
 	if(FAILED(file.Create(pPath, GENERIC_READ, 0, OPEN_EXISTING))) {
-		CString sMsg;
-		sMsg.Format(IDS_ERR_FILENOTFOUND, pPath);
-		MessageBox(NULL, sMsg, _T("ERROR"), MB_OK);
+    if(bFailedMsgBox)
+    {
+      CString sMsg;
+      sMsg.Format(IDS_ERR_FILENOTFOUND, pPath);
+      MessageBox(NULL, sMsg, _T("ERROR"), MB_OK);
+    }
 		return NULL;
 	}
   UINT64 len64 = 0;
   file.GetSize(len64);
   if(len64 > _UI32_MAX)return NULL;
 	DWORD len = (DWORD)len64;
-	LPVOID p = new char[len + 1];
+  DWORD lenPlusSpace = len + spacepadding;
+  if(lenPlusSpace < len)
+  {
+    lenPlusSpace = len;
+    spacepadding = 0;
+  }
+	LPVOID p = new char[lenPlusSpace + 1];
 	file.Read(p, len);
-	*((LPBYTE)p+len) = '\0';
+  LPBYTE sp = ((LPBYTE)p)+lenPlusSpace-1;
+  for(;spacepadding;spacepadding--)
+  {
+    *sp = ' ';
+    sp--;
+  }
+	*((LPBYTE)p+lenPlusSpace) = '\0';
+	if(bEOF)*((LPBYTE)p+len) = 0x1a;
 	file.Close();
+  if(length!=NULL)*length=lenPlusSpace;
 	return p;
 }
 

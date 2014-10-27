@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BZ.h"
 
 #define NUM_MEMBERS 15
-//extern DWORD g_datasizes[];
 
 class CStructMember
 {
@@ -146,8 +145,6 @@ public:
 };
 
 
-extern TCHAR *s_MemberColLabel[MBRCOL2_MAX];
-
 class CBZView;
 
 class CBZFormView : public CDialogImpl<CBZFormView>, public WTL::CWinDataExchange<CBZFormView>
@@ -196,6 +193,8 @@ public:
 	CTreeListViewCtrl	m_treeListMember;
   WTL::CHeaderCtrl m_headerMember;
   WTL::CTreeViewCtrl m_treeMember;
+
+  static TCHAR *MEMBER_LABELS_STR[MBRCOL2_MAX];
 
 // Attributes
 private:
@@ -247,6 +246,21 @@ public:
     return pCoreData->GetSplitterWnd();
   }
 
+  void InitMembersHeader()
+  {
+      for_to(i, MBRCOL2_MAX)
+      {
+        HDITEM col = { 0 };
+        col.mask = HDI_FORMAT | HDI_TEXT | HDI_WIDTH;
+        col.fmt = HDF_LEFT;
+        col.cxy = 250;
+        col.pszText = MEMBER_LABELS_STR[i];
+        col.cxy = options.colWidth2[i];
+        if(col.cxy<5)col.cxy=5;
+        m_headerMember.InsertItem(i, &col);
+      }
+  }
+
 	BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 	{
     m_bTagAll = options.bTagAll;
@@ -269,17 +283,7 @@ public:
       m_headerMember = m_treeListMember.GetHeaderControl();
       m_treeMember = m_treeListMember.GetTreeControl();
 
-      for_to(i, MBRCOL2_MAX)
-      {
-        HDITEM col = { 0 };
-        col.mask = HDI_FORMAT | HDI_TEXT | HDI_WIDTH;
-        col.fmt = HDF_LEFT;
-        col.cxy = 250;
-        col.pszText = s_MemberColLabel[i];
-        col.cxy = options.colWidth2[i];
-        if(col.cxy<5)col.cxy=5;
-        m_headerMember.InsertItem(i, &col);
-      }
+      InitMembersHeader();
     }
     m_pView = GetBZView();
 
@@ -391,6 +395,11 @@ public:
   }
   LRESULT OnDblclkListMember(LPNMHDR pnmh);
 	LRESULT OnMemberSelChanged(LPNMHDR pnmh);
+
+  BOOL IsValidiTag()
+  {
+    return (m_iTag >= 0 && m_iTag < m_tag.GetCount());
+  }
 
   int GetWindowIdealWidth()
   {

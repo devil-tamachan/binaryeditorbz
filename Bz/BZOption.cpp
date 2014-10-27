@@ -49,3 +49,44 @@ int colWidth2Default[MBRCOL2_MAX] = { 180, 100 };
 
 const TCHAR sRegDefault[] = _T("Settings");
 const TCHAR sRegHistory[] = _T("History");
+
+
+#include "PortableCfg.cpp"
+
+
+HRESULT CBZOptions::LoadFromFile()
+{
+  DWORD len=0;
+  uchar *pFile = (uchar *)ReadFile(_T("EnablePortableMode.txt"), &len, 30, TRUE, FALSE);
+  if(pFile==NULL)return E_FAIL;
+  void *pParser = ParseAlloc(malloc);
+  unsigned int type = 0;
+  Scanner s = {0};
+  s.cur = pFile;
+  s.lim = pFile+len;
+
+#ifdef _DEBUG
+//  FILE *fpErr = fopen("err.txt", "w");
+//  ParseTrace(fpErr, (char*)"LP: ");
+#endif
+
+  while(type = scan(&s))
+  {
+    ATLTRACE("type = %d\n", type);
+    Parse(pParser, type, &s);
+  }
+  ATLTRACE("ParseTerminate\n", type);
+  Parse(pParser, 0, &s);
+  ParseFree(pParser, free);
+  delete pFile;
+
+#ifdef _DEBUG
+//  if(fpErr)fclose(fpErr);
+#endif
+
+  CheckOptions();
+
+  bPortableMode = TRUE;
+
+  return S_OK;
+}

@@ -1,0 +1,69 @@
+%token_type {Scanner*}
+
+%type colexpr {CAtlArray<COLORREF>*}
+%destructor colexpr {delete $$;}
+%type colarr {CAtlArray<COLORREF>*}
+%destructor colarr {delete $$;}
+%type colval {COLORREF}
+
+%type intexpr {CAtlArray<int>*}
+%destructor intexpr {delete $$;}
+%type intarr {CAtlArray<int>*}
+%destructor intarr {delete $$;}
+%type intval {int}
+
+%type strval {CString*}
+%destructor strval {delete $$;}
+
+%type inttype {uint}
+%type strtype {uint}
+%type colorarrtype {uint}
+%type intarrtype {uint}
+%type recttype {uint}
+
+%type rectval {int*}
+%destructor rectval {free($$);}
+
+%left COMMA.
+
+%include {
+//#include "stdafx.h"
+#define assert ATLASSERT
+}
+
+%syntax_error {
+  ATLTRACE(_T("Syntax Error!\n"));
+}
+
+%start_symbol program
+
+program ::= expr2.
+
+expr2 ::= expr2 expr.
+expr2 ::= .
+
+expr ::= inttype(B) EQ  intval(C).	{ SetIntOption(B, C); }
+expr ::= strtype(B) EQ  strval(C).  { if(C) { SetStrOption(B, C); } }
+expr ::= colorarrtype(B) EQ colarr(C). { SetColorArrOption(B, C); }
+expr ::= intarrtype(B) EQ  intarr(C). { SetIntArrOption(B, C); }
+expr ::= recttype(B) EQ rectval(C). { SetRectOption(B, C); }
+
+inttype(A) ::= INTTYPE(B). { A = B->type; }
+strtype(A) ::= STRTYPE(B). { A = B->type; }
+colorarrtype(A) ::= COLORARRTYPE(B). { A = B->type; }
+intarrtype(A) ::= INTARRTYPE(B). { A = B->type; }
+recttype(A) ::= RECTTYPE(B). { A = B->type; }
+
+colarr(A)  ::= BR1 colexpr(B) BR2. { A = new CAtlArray<COLORREF>(); A->Copy(*B); }
+colexpr(A)  ::= colexpr(B) COMMA colexpr(C). { A = new CAtlArray<COLORREF>(); A->Copy(*B); A->Append(*C); }
+colexpr(A)  ::= colval(B). { A = new CAtlArray<COLORREF>(); A->Add(B); }
+colval(A) ::= COLVAL(B). { A = B->val.col; }
+
+intarr(A)  ::= BR1 intexpr(B) BR2. { A = new CAtlArray<int>(); A->Copy(*B); }
+intexpr(A)  ::= intexpr(B) COMMA intexpr(C). { A = new CAtlArray<int>(); A->Copy(*B); A->Append(*C); }
+intexpr(A) ::= intval(B). { A = new CAtlArray<int>(); A->Add(B); }
+intval(A) ::= INTVAL(B). { A = B->val.i; }
+
+strval(A) ::= STRVAL(B). { A = B->val.str; B->val.str = NULL; }
+
+rectval(A) ::= BR1 intval(B) COMMA intval(C) COMMA intval(D) COMMA intval(E) BR2. { A = (int *)malloc(sizeof(int)*4); A[0] = B; A[1] = C; A[2] = D; A[3] = E; }
