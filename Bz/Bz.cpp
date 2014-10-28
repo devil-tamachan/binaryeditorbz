@@ -203,7 +203,7 @@ CString GetStructFilePath(UINT uID)
 	return retStr;
 }
 
-LPVOID ReadFile(LPCTSTR pPath, DWORD *length /* = NULL */, DWORD spacepadding /* = 0 */, BOOL bEOF /* = FALSE */, BOOL bFailedMsgBox /* = TRUE */)
+LPVOID ReadFile(LPCTSTR pPath, DWORD *length /* = NULL */, DWORD *lengthPlusSpace /* = NULL */, DWORD spacepadding /* = 0 */, BOOL bEOF /* = FALSE */, BOOL bFailedMsgBox /* = TRUE */)
 {
 	CAtlFile file;
 	if(FAILED(file.Create(pPath, GENERIC_READ, 0, OPEN_EXISTING))) {
@@ -236,7 +236,8 @@ LPVOID ReadFile(LPCTSTR pPath, DWORD *length /* = NULL */, DWORD spacepadding /*
 	*((LPBYTE)p+lenPlusSpace) = '\0';
 	if(bEOF)*((LPBYTE)p+len) = 0x1a;
 	file.Close();
-  if(length!=NULL)*length=lenPlusSpace;
+  if(length!=NULL)*length=len;
+  if(lengthPlusSpace!=NULL)*lengthPlusSpace = lenPlusSpace;
 	return p;
 }
 

@@ -124,12 +124,16 @@ case TYPE_PageMargin: options.rMargin.left = pVal[0]; options.rMargin.top = pVal
 
 COLORREF ReadRGB(uchar *token)
 {
-  return RGB(token[0], token[1], token[2]);
+  COLORREF c=0xFF000000;
+  _snscanf((const char *)token, 6, "%06x", &c);
+  return c;
 }
 
 COLORREF ReadRGBA(uchar *token)
 {
-  return RGB(token[0], token[1], token[2]) | (((DWORD)(BYTE)(token[3])) << 24);
+  COLORREF c=0;
+  _snscanf((const char *)token, 8, "%08x", &c);
+  return c;
 }
 
 CString ReadStr(uchar *token, uint len)
@@ -143,7 +147,7 @@ CString ReadStr(uchar *token, uint len)
   return retStr;
 }
 
-//BOOL fill(int n) { return FALSE; }
+BOOL fill(int n) { return FALSE; }
 
 int scan(Scanner *s){
 	uchar *cursor = s->cur;
@@ -151,10 +155,10 @@ std:
 	s->tok = cursor;
 /*!re2c
 
-//re2c:define:YYFILL:naked = 1;
-//re2c:define:YYFILL@len = #;
-//re2c:define:YYFILL = "if(!fill(#)) { return 0; }";
-re2c:yyfill:enable = 0;
+re2c:define:YYFILL:naked = 1;
+re2c:define:YYFILL@len = #;
+re2c:define:YYFILL = "if(!fill(#)) { return 0; }";
+re2c:yyfill:enable = 1;
 
 any	= [\000-\xFF];
 O	= [0-7];
@@ -222,7 +226,7 @@ RGBA    = [#] (H {8});
 				s->val.i = bMinus ? -atoi(tmp) : atoi(tmp);
 				RET(INTVAL); }
 	
-	RGB			{ s->val.col = ReadRGB(s->tok + 2); RET(COLVAL); }
+	RGB			{ s->val.col = ReadRGB(s->tok + 1); RET(COLVAL); }
 	RGBA			{ s->val.col = ReadRGBA(s->tok + 1); RET(COLVAL); }
 	
 	(["] (ESC|any\[\n\\"])* ["])
@@ -235,41 +239,29 @@ RGBA    = [#] (H {8});
 	[\x1a]			{ RET(0);/*EOF*/ }
 
 
-	[ \t\v\f]+		{ goto std; }
+	[ \t\v\f]+		{ if(cursor == s->eof)RET(0); goto std; }
 
-	"\n"
-	    {
-		if(cursor == s->eof) RET(0);
-		s->pos = cursor; s->line++;
-		goto std;
-	    }
+	[\n] {
+    if(cursor == s->eof)RET(0);
+    s->pos = cursor; s->line++;
+    goto std;
+  }
 
-	any
-	    {
-		printf("unexpected character: %c\n", *s->tok);
-		goto std;
-	    }
+	any {
+    ATLTRACE("unexpected character: %c\n", *s->tok);
+    goto std;
+  }
 */
 
 comment:
 /*!re2c
-	"*/"			{ goto std; }
-	"\n"
-	    {
-		if(cursor == s->eof) RET(0);
-		s->tok = s->pos = cursor; s->line++;
-		goto comment;
-	    }
-        any			{ goto comment; }
+	"*/"  { if(cursor == s->eof || cursor+1 == s->eof)RET(0); goto std; }
+	"\n"  { if(cursor == s->eof) RET(0); s->tok = s->pos = cursor; s->line++; goto comment; }
+  any   { if(cursor == s->eof)RET(0); goto comment; }
 */
 comment2:
 /*!re2c
-	"\n"
-	    {
-		if(cursor == s->eof) RET(0);
-		s->tok = s->pos = cursor; s->line++;
-		goto std;
-	    }
-        any			{ goto comment2; }
+	"\n" { if(cursor == s->eof) RET(0); s->tok = s->pos = cursor; s->line++; goto std; }
+  any  { if(cursor == s->eof)RET(0); goto comment2; }
 */
 }

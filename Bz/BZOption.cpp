@@ -56,14 +56,15 @@ const TCHAR sRegHistory[] = _T("History");
 
 HRESULT CBZOptions::LoadFromFile()
 {
-  DWORD len=0;
-  uchar *pFile = (uchar *)ReadFile(_T("EnablePortableMode.txt"), &len, 30, TRUE, FALSE);
+  DWORD len=0, lenPlusSpace=0;
+  uchar *pFile = (uchar *)ReadFile(_T("EnablePortableMode.txt"), &len, &lenPlusSpace, 30, TRUE, FALSE);
   if(pFile==NULL)return E_FAIL;
   void *pParser = ParseAlloc(malloc);
   unsigned int type = 0;
   Scanner s = {0};
   s.cur = pFile;
-  s.lim = pFile+len;
+  s.lim = pFile+lenPlusSpace;
+  s.eof = pFile+len;
 
 #ifdef _DEBUG
 //  FILE *fpErr = fopen("err.txt", "w");

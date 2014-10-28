@@ -1,0 +1,337 @@
+State 0:
+          program ::= * expr2
+          expr2 ::= * expr2 expr
+      (2) expr2 ::= *
+
+                       program accept
+                         expr2 shift  1
+                     {default} reduce 2
+
+State 1:
+      (0) program ::= expr2 *
+          expr2 ::= expr2 * expr
+          expr ::= * inttype EQ intval
+          expr ::= * strtype EQ strval
+          expr ::= * colorarrtype EQ colarr
+          expr ::= * intarrtype EQ intarr
+          expr ::= * recttype EQ rectval
+          inttype ::= * INTTYPE
+          strtype ::= * STRTYPE
+          colorarrtype ::= * COLORARRTYPE
+          intarrtype ::= * INTARRTYPE
+          recttype ::= * RECTTYPE
+
+                             $ reduce 0
+                       INTTYPE shift  30
+                       STRTYPE shift  29
+                  COLORARRTYPE shift  28
+                    INTARRTYPE shift  27
+                      RECTTYPE shift  26
+                       inttype shift  25
+                       strtype shift  24
+                  colorarrtype shift  23
+                    intarrtype shift  22
+                      recttype shift  21
+                          expr shift  46
+
+State 2:
+          intexpr ::= * intexpr COMMA intexpr
+          intexpr ::= intexpr COMMA * intexpr
+          intexpr ::= * intval
+          intval ::= * INTVAL
+
+                        INTVAL shift  44
+                       intexpr shift  34
+                        intval shift  33
+
+State 3:
+          intarr ::= BR1 * intexpr BR2
+          intexpr ::= * intexpr COMMA intexpr
+          intexpr ::= * intval
+          intval ::= * INTVAL
+
+                        INTVAL shift  44
+                       intexpr shift  15
+                        intval shift  33
+
+State 4:
+          colexpr ::= * colexpr COMMA colexpr
+          colexpr ::= colexpr COMMA * colexpr
+          colexpr ::= * colval
+          colval ::= * COLVAL
+
+                        COLVAL shift  37
+                       colexpr shift  39
+                        colval shift  38
+
+State 5:
+          colarr ::= BR1 * colexpr BR2
+          colexpr ::= * colexpr COMMA colexpr
+          colexpr ::= * colval
+          colval ::= * COLVAL
+
+                        COLVAL shift  37
+                       colexpr shift  16
+                        colval shift  38
+
+State 6:
+          intval ::= * INTVAL
+          rectval ::= BR1 intval COMMA intval COMMA intval COMMA * intval BR2
+
+                        INTVAL shift  44
+                        intval shift  17
+
+State 7:
+          intval ::= * INTVAL
+          rectval ::= BR1 intval COMMA intval COMMA * intval COMMA intval BR2
+
+                        INTVAL shift  44
+                        intval shift  18
+
+State 8:
+          intval ::= * INTVAL
+          rectval ::= BR1 intval COMMA * intval COMMA intval COMMA intval BR2
+
+                        INTVAL shift  44
+                        intval shift  19
+
+State 9:
+          intval ::= * INTVAL
+          rectval ::= BR1 * intval COMMA intval COMMA intval COMMA intval BR2
+
+                        INTVAL shift  44
+                        intval shift  20
+
+State 10:
+          expr ::= recttype EQ * rectval
+          rectval ::= * BR1 intval COMMA intval COMMA intval COMMA intval BR2
+
+                           BR1 shift  9
+                       rectval shift  32
+
+State 11:
+          expr ::= intarrtype EQ * intarr
+          intarr ::= * BR1 intexpr BR2
+
+                           BR1 shift  3
+                        intarr shift  36
+
+State 12:
+          expr ::= colorarrtype EQ * colarr
+          colarr ::= * BR1 colexpr BR2
+
+                           BR1 shift  5
+                        colarr shift  41
+
+State 13:
+          expr ::= strtype EQ * strval
+          strval ::= * STRVAL
+
+                        STRVAL shift  42
+                        strval shift  43
+
+State 14:
+          expr ::= inttype EQ * intval
+          intval ::= * INTVAL
+
+                        INTVAL shift  44
+                        intval shift  45
+
+State 15:
+          intarr ::= BR1 intexpr * BR2
+          intexpr ::= intexpr * COMMA intexpr
+
+                         COMMA shift  2
+                           BR2 shift  35
+
+State 16:
+          colarr ::= BR1 colexpr * BR2
+          colexpr ::= colexpr * COMMA colexpr
+
+                         COMMA shift  4
+                           BR2 shift  40
+
+State 17:
+          rectval ::= BR1 intval COMMA intval COMMA intval COMMA intval * BR2
+
+                           BR2 shift  31
+
+State 18:
+          rectval ::= BR1 intval COMMA intval COMMA intval * COMMA intval BR2
+
+                         COMMA shift  6
+
+State 19:
+          rectval ::= BR1 intval COMMA intval * COMMA intval COMMA intval BR2
+
+                         COMMA shift  7
+
+State 20:
+          rectval ::= BR1 intval * COMMA intval COMMA intval COMMA intval BR2
+
+                         COMMA shift  8
+
+State 21:
+          expr ::= recttype * EQ rectval
+
+                            EQ shift  10
+
+State 22:
+          expr ::= intarrtype * EQ intarr
+
+                            EQ shift  11
+
+State 23:
+          expr ::= colorarrtype * EQ colarr
+
+                            EQ shift  12
+
+State 24:
+          expr ::= strtype * EQ strval
+
+                            EQ shift  13
+
+State 25:
+          expr ::= inttype * EQ intval
+
+                            EQ shift  14
+
+State 26:
+     (12) recttype ::= RECTTYPE *
+
+                     {default} reduce 12
+
+State 27:
+     (11) intarrtype ::= INTARRTYPE *
+
+                     {default} reduce 11
+
+State 28:
+     (10) colorarrtype ::= COLORARRTYPE *
+
+                     {default} reduce 10
+
+State 29:
+      (9) strtype ::= STRTYPE *
+
+                     {default} reduce 9
+
+State 30:
+      (8) inttype ::= INTTYPE *
+
+                     {default} reduce 8
+
+State 31:
+     (22) rectval ::= BR1 intval COMMA intval COMMA intval COMMA intval BR2 *
+
+                     {default} reduce 22
+
+State 32:
+      (7) expr ::= recttype EQ rectval *
+
+                     {default} reduce 7
+
+State 33:
+     (19) intexpr ::= intval *
+
+                     {default} reduce 19
+
+State 34:
+          intexpr ::= intexpr * COMMA intexpr
+     (18) intexpr ::= intexpr COMMA intexpr *
+
+                     {default} reduce 18
+
+State 35:
+     (17) intarr ::= BR1 intexpr BR2 *
+
+                     {default} reduce 17
+
+State 36:
+      (6) expr ::= intarrtype EQ intarr *
+
+                     {default} reduce 6
+
+State 37:
+     (16) colval ::= COLVAL *
+
+                     {default} reduce 16
+
+State 38:
+     (15) colexpr ::= colval *
+
+                     {default} reduce 15
+
+State 39:
+          colexpr ::= colexpr * COMMA colexpr
+     (14) colexpr ::= colexpr COMMA colexpr *
+
+                     {default} reduce 14
+
+State 40:
+     (13) colarr ::= BR1 colexpr BR2 *
+
+                     {default} reduce 13
+
+State 41:
+      (5) expr ::= colorarrtype EQ colarr *
+
+                     {default} reduce 5
+
+State 42:
+     (21) strval ::= STRVAL *
+
+                     {default} reduce 21
+
+State 43:
+      (4) expr ::= strtype EQ strval *
+
+                     {default} reduce 4
+
+State 44:
+     (20) intval ::= INTVAL *
+
+                     {default} reduce 20
+
+State 45:
+      (3) expr ::= inttype EQ intval *
+
+                     {default} reduce 3
+
+State 46:
+      (1) expr2 ::= expr2 expr *
+
+                     {default} reduce 1
+
+----------------------------------------------------
+Symbols:
+    0: $:
+    1: COMMA
+    2: EQ
+    3: INTTYPE
+    4: STRTYPE
+    5: COLORARRTYPE
+    6: INTARRTYPE
+    7: RECTTYPE
+    8: BR1
+    9: BR2
+   10: COLVAL
+   11: INTVAL
+   12: STRVAL
+   13: error:
+   14: colexpr: COLVAL
+   15: colarr: BR1
+   16: colval: COLVAL
+   17: intexpr: INTVAL
+   18: intarr: BR1
+   19: intval: INTVAL
+   20: strval: STRVAL
+   21: inttype: INTTYPE
+   22: strtype: STRTYPE
+   23: colorarrtype: COLORARRTYPE
+   24: intarrtype: INTARRTYPE
+   25: recttype: RECTTYPE
+   26: rectval: BR1
+   27: program: <lambda> INTTYPE STRTYPE COLORARRTYPE INTARRTYPE RECTTYPE
+   28: expr2: <lambda> INTTYPE STRTYPE COLORARRTYPE INTARRTYPE RECTTYPE
+   29: expr: INTTYPE STRTYPE COLORARRTYPE INTARRTYPE RECTTYPE

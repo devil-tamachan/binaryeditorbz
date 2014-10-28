@@ -264,16 +264,15 @@ public:
 
   HRESULT WriteFileColorArray(CAtlFile &file, LPCSTR name, COLORREF *pCol, int count)
   {
-#define MyGetGValue(rgb) (LOBYTE(rgb >> 8))
     CStringA str, t;
     str.Format("%s = {", name);
     if(count > 0)
     {
-      t.Format("#%02X%02X%02X", GetRValue(pCol[0]), MyGetGValue(pCol[0]), GetBValue(pCol[0]));
+      t.Format("#%08X", pCol[0]);
       str += t;
       for(int i=1; i<count; i++)
       {
-        t.Format(", #%02X%02X%02X", GetRValue(pCol[i]), MyGetGValue(pCol[i]), GetBValue(pCol[i]));
+        t.Format(", #%08X", pCol[i]);
         str += t;
       }
     }
