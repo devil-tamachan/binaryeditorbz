@@ -244,6 +244,8 @@ public:
       m_recent.SetMenuHandle(menuRecent);
       m_recent.SetMaxEntries(15);
       m_recent.ReadFromRegistry(_T("Software\\c.mos\\BZ\\Settings"));
+    } else {
+      menuFile.EnableMenuItem(2, MF_GRAYED | MF_BYPOSITION);
     }
 
     {//OnCreateClient
