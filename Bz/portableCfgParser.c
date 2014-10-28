@@ -4,7 +4,7 @@
 /* First off, code is included that follows the "include" declaration
 ** in the input grammar file. */
 #include <stdio.h>
-#line 29 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+#line 25 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
 
 //#include "stdafx.h"
 #define assert ATLASSERT
@@ -59,19 +59,19 @@
 **                       defined, then do no error processing.
 */
 #define YYCODETYPE unsigned char
-#define YYNOCODE 31
+#define YYNOCODE 29
 #define YYACTIONTYPE unsigned char
 #define ParseTOKENTYPE Scanner*
 typedef union {
   int yyinit;
   ParseTOKENTYPE yy0;
-  uint yy1;
-  CAtlArray<int>* yy31;
-  CString* yy33;
-  int* yy46;
-  int yy52;
+  int yy4;
+  CString* yy9;
+  int* yy34;
+  uint yy37;
+  CAtlArray<int>* yy51;
+  COLORREF yy53;
   CAtlArray<COLORREF>* yy56;
-  COLORREF yy57;
 } YYMINORTYPE;
 #ifndef YYSTACKDEPTH
 #define YYSTACKDEPTH 100
@@ -80,8 +80,8 @@ typedef union {
 #define ParseARG_PDECL
 #define ParseARG_FETCH
 #define ParseARG_STORE
-#define YYNSTATE 47
-#define YYNRULE 23
+#define YYNSTATE 45
+#define YYNRULE 21
 #define YY_NO_ACTION      (YYNSTATE+YYNRULE+2)
 #define YY_ACCEPT_ACTION  (YYNSTATE+YYNRULE+1)
 #define YY_ERROR_ACTION   (YYNSTATE+YYNRULE)
@@ -150,46 +150,46 @@ static const YYMINORTYPE yyzerominor = { 0 };
 **                     shifting non-terminals after a reduce.
 **  yy_default[]       Default action for each state.
 */
-#define YY_ACTTAB_COUNT (58)
+#define YY_ACTTAB_COUNT (54)
 static const YYACTIONTYPE yy_action[] = {
- /*     0 */    25,   24,   23,   22,   21,   16,   31,   38,   46,   47,
- /*    10 */    14,    4,   30,   29,   28,   27,   26,    2,   39,   40,
- /*    20 */    38,   13,   15,   12,   33,   35,   71,    1,   11,   34,
- /*    30 */    10,   33,    8,    7,    6,   44,   45,   42,   43,   32,
- /*    40 */    36,   72,   41,    5,    3,    9,   72,   72,   20,   19,
- /*    50 */    37,   72,   72,   18,   72,   72,   72,   17,
+ /*     0 */    25,   24,   23,   21,   19,   45,   14,   37,   44,    8,
+ /*    10 */    30,   29,   28,   27,   26,    4,    2,    7,   39,   35,
+ /*    20 */    38,   37,   12,   13,   33,   34,   33,   67,    1,   11,
+ /*    30 */    22,    6,    5,   20,   43,   42,    3,   41,   31,   10,
+ /*    40 */    18,    9,   32,   17,   40,   68,   68,   68,   68,   36,
+ /*    50 */    68,   68,   16,   15,
 };
 static const YYCODETYPE yy_lookahead[] = {
- /*     0 */    21,   22,   23,   24,   25,   14,    9,   16,   29,    0,
- /*    10 */     2,    1,    3,    4,    5,    6,    7,    1,   14,    9,
- /*    20 */    16,    2,   17,    2,   19,    9,   27,   28,    2,   17,
- /*    30 */     2,   19,    1,    1,    1,   11,   19,   12,   20,   26,
- /*    40 */    18,   30,   15,    8,    8,    8,   30,   30,   19,   19,
- /*    50 */    10,   30,   30,   19,   30,   30,   30,   19,
+ /*     0 */    19,   20,   21,   22,   23,    0,   14,   15,   27,    1,
+ /*    10 */     5,    6,    7,    8,    9,    1,    1,    1,    4,    4,
+ /*    20 */    14,   15,    2,   16,   17,   16,   17,   25,   26,    2,
+ /*    30 */     2,    1,    3,    2,   17,   11,    3,   18,    4,    2,
+ /*    40 */    17,    3,   24,   17,   12,   28,   28,   28,   28,   10,
+ /*    50 */    28,   28,   17,   17,
 };
-#define YY_SHIFT_USE_DFLT (-4)
+#define YY_SHIFT_USE_DFLT (-1)
 #define YY_SHIFT_COUNT (25)
-#define YY_SHIFT_MIN   (-3)
-#define YY_SHIFT_MAX   (40)
+#define YY_SHIFT_MIN   (0)
+#define YY_SHIFT_MAX   (39)
 static const signed char yy_shift_ofst[] = {
- /*     0 */    -4,    9,   24,   24,   40,   40,   24,   24,   24,   24,
- /*    10 */    37,   36,   35,   25,   24,   16,   10,   -3,   33,   32,
- /*    20 */    31,   28,   26,   21,   19,    8,
+ /*     0 */    -1,    5,   24,   24,   39,   39,   24,   24,   24,   24,
+ /*    10 */    38,   32,   24,   15,   14,   34,   30,   16,    8,   37,
+ /*    20 */    33,   31,   29,   28,   27,   20,
 };
-#define YY_REDUCE_USE_DFLT (-22)
-#define YY_REDUCE_COUNT (14)
-#define YY_REDUCE_MIN   (-21)
-#define YY_REDUCE_MAX   (38)
+#define YY_REDUCE_USE_DFLT (-20)
+#define YY_REDUCE_COUNT (12)
+#define YY_REDUCE_MIN   (-19)
+#define YY_REDUCE_MAX   (36)
 static const signed char yy_reduce_ofst[] = {
- /*     0 */    -1,  -21,   12,    5,    4,   -9,   38,   34,   30,   29,
- /*    10 */    13,   22,   27,   18,   17,
+ /*     0 */     2,  -19,    9,    7,    6,   -8,   36,   35,   26,   23,
+ /*    10 */    18,   19,   17,
 };
 static const YYACTIONTYPE yy_default[] = {
- /*     0 */    49,   70,   70,   70,   70,   70,   70,   70,   70,   70,
- /*    10 */    70,   70,   70,   70,   70,   70,   70,   70,   70,   70,
- /*    20 */    70,   70,   70,   70,   70,   70,   59,   58,   57,   56,
- /*    30 */    55,   69,   54,   66,   65,   64,   53,   63,   62,   61,
- /*    40 */    60,   52,   68,   51,   67,   50,   48,
+ /*     0 */    47,   66,   66,   66,   66,   66,   66,   66,   66,   66,
+ /*    10 */    66,   66,   66,   66,   66,   66,   66,   66,   66,   66,
+ /*    20 */    66,   66,   66,   66,   66,   66,   57,   56,   55,   54,
+ /*    30 */    53,   65,   52,   62,   61,   51,   60,   59,   58,   50,
+ /*    40 */    64,   49,   63,   48,   46,
 };
 
 /* The next table maps tokens into fallback tokens.  If a construct
@@ -282,14 +282,13 @@ void ParseTrace(FILE *TraceFILE, char *zTracePrompt){
 /* For tracing shifts, the names of all terminals and nonterminals
 ** are required.  The following table supplies these names */
 static const char *const yyTokenName[] = { 
-  "$",             "COMMA",         "EQ",            "INTTYPE",     
-  "STRTYPE",       "COLORARRTYPE",  "INTARRTYPE",    "RECTTYPE",    
-  "BR1",           "BR2",           "COLVAL",        "INTVAL",      
-  "STRVAL",        "error",         "colexpr",       "colarr",      
-  "colval",        "intexpr",       "intarr",        "intval",      
-  "strval",        "inttype",       "strtype",       "colorarrtype",
-  "intarrtype",    "recttype",      "rectval",       "program",     
-  "expr2",         "expr",        
+  "$",             "COMMA",         "EQ",            "BR1",         
+  "BR2",           "INTTYPE",       "STRTYPE",       "COLORARRTYPE",
+  "INTARRTYPE",    "RECTTYPE",      "COLVAL",        "INTVAL",      
+  "STRVAL",        "error",         "colexpr",       "colval",      
+  "intexpr",       "intval",        "strval",        "inttype",     
+  "strtype",       "colorarrtype",  "intarrtype",    "recttype",    
+  "rectval",       "program",       "expr2",         "expr",        
 };
 #endif /* NDEBUG */
 
@@ -302,24 +301,22 @@ static const char *const yyRuleName[] = {
  /*   2 */ "expr2 ::=",
  /*   3 */ "expr ::= inttype EQ intval",
  /*   4 */ "expr ::= strtype EQ strval",
- /*   5 */ "expr ::= colorarrtype EQ colarr",
- /*   6 */ "expr ::= intarrtype EQ intarr",
+ /*   5 */ "expr ::= colorarrtype EQ BR1 colexpr BR2",
+ /*   6 */ "expr ::= intarrtype EQ BR1 intexpr BR2",
  /*   7 */ "expr ::= recttype EQ rectval",
  /*   8 */ "inttype ::= INTTYPE",
  /*   9 */ "strtype ::= STRTYPE",
  /*  10 */ "colorarrtype ::= COLORARRTYPE",
  /*  11 */ "intarrtype ::= INTARRTYPE",
  /*  12 */ "recttype ::= RECTTYPE",
- /*  13 */ "colarr ::= BR1 colexpr BR2",
- /*  14 */ "colexpr ::= colexpr COMMA colexpr",
- /*  15 */ "colexpr ::= colval",
- /*  16 */ "colval ::= COLVAL",
- /*  17 */ "intarr ::= BR1 intexpr BR2",
- /*  18 */ "intexpr ::= intexpr COMMA intexpr",
- /*  19 */ "intexpr ::= intval",
- /*  20 */ "intval ::= INTVAL",
- /*  21 */ "strval ::= STRVAL",
- /*  22 */ "rectval ::= BR1 intval COMMA intval COMMA intval COMMA intval BR2",
+ /*  13 */ "colexpr ::= colexpr COMMA colexpr",
+ /*  14 */ "colexpr ::= colval",
+ /*  15 */ "colval ::= COLVAL",
+ /*  16 */ "intexpr ::= intexpr COMMA intexpr",
+ /*  17 */ "intexpr ::= intval",
+ /*  18 */ "intval ::= INTVAL",
+ /*  19 */ "strval ::= STRVAL",
+ /*  20 */ "rectval ::= BR1 intval COMMA intval COMMA intval COMMA intval BR2",
 };
 #endif /* NDEBUG */
 
@@ -399,33 +396,31 @@ static void yy_destructor(
     ** inside the C code.
     */
     case 14: /* colexpr */
-    case 15: /* colarr */
 {
 #line 4 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
 delete (yypminor->yy56);
-#line 407 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+#line 403 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
 }
       break;
-    case 17: /* intexpr */
-    case 18: /* intarr */
+    case 16: /* intexpr */
 {
-#line 10 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-delete (yypminor->yy31);
-#line 415 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+#line 8 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+delete (yypminor->yy51);
+#line 410 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
 }
       break;
-    case 20: /* strval */
+    case 18: /* strval */
 {
-#line 16 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-delete (yypminor->yy33);
-#line 422 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+#line 12 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+delete (yypminor->yy9);
+#line 417 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
 }
       break;
-    case 26: /* rectval */
+    case 24: /* rectval */
 {
-#line 25 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-free((yypminor->yy46));
-#line 429 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+#line 21 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+free((yypminor->yy34));
+#line 424 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
 }
       break;
     default:  break;   /* If no destructor action specified: do nothing */
@@ -663,29 +658,27 @@ static const struct {
   YYCODETYPE lhs;         /* Symbol on the left-hand side of the rule */
   unsigned char nrhs;     /* Number of right-hand side symbols in the rule */
 } yyRuleInfo[] = {
-  { 27, 1 },
-  { 28, 2 },
-  { 28, 0 },
-  { 29, 3 },
-  { 29, 3 },
-  { 29, 3 },
-  { 29, 3 },
-  { 29, 3 },
+  { 25, 1 },
+  { 26, 2 },
+  { 26, 0 },
+  { 27, 3 },
+  { 27, 3 },
+  { 27, 5 },
+  { 27, 5 },
+  { 27, 3 },
+  { 19, 1 },
+  { 20, 1 },
   { 21, 1 },
   { 22, 1 },
   { 23, 1 },
-  { 24, 1 },
-  { 25, 1 },
-  { 15, 3 },
   { 14, 3 },
   { 14, 1 },
+  { 15, 1 },
+  { 16, 3 },
   { 16, 1 },
-  { 18, 3 },
-  { 17, 3 },
   { 17, 1 },
-  { 19, 1 },
-  { 20, 1 },
-  { 26, 9 },
+  { 18, 1 },
+  { 24, 9 },
 };
 
 static void yy_accept(yyParser*);  /* Forward Declaration */
@@ -741,88 +734,78 @@ static void yy_reduce(
   **     break;
   */
       case 3: /* expr ::= inttype EQ intval */
-#line 45 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ SetIntOption(yymsp[-2].minor.yy1, yymsp[0].minor.yy52); }
-#line 747 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+#line 41 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+{ SetIntOption(yymsp[-2].minor.yy37, yymsp[0].minor.yy4); }
+#line 740 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       case 4: /* expr ::= strtype EQ strval */
-#line 46 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ if(yymsp[0].minor.yy33) { SetStrOption(yymsp[-2].minor.yy1, yymsp[0].minor.yy33); } }
-#line 752 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+#line 42 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+{ if(yymsp[0].minor.yy9) { SetStrOption(yymsp[-2].minor.yy37, yymsp[0].minor.yy9); } }
+#line 745 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
-      case 5: /* expr ::= colorarrtype EQ colarr */
-#line 47 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ SetColorArrOption(yymsp[-2].minor.yy1, yymsp[0].minor.yy56); }
-#line 757 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+      case 5: /* expr ::= colorarrtype EQ BR1 colexpr BR2 */
+#line 43 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+{ SetColorArrOption(yymsp[-4].minor.yy37, yymsp[-1].minor.yy56); }
+#line 750 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
-      case 6: /* expr ::= intarrtype EQ intarr */
-#line 48 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ SetIntArrOption(yymsp[-2].minor.yy1, yymsp[0].minor.yy31); }
-#line 762 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+      case 6: /* expr ::= intarrtype EQ BR1 intexpr BR2 */
+#line 44 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+{ SetIntArrOption(yymsp[-4].minor.yy37, yymsp[-1].minor.yy51); }
+#line 755 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       case 7: /* expr ::= recttype EQ rectval */
-#line 49 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ SetRectOption(yymsp[-2].minor.yy1, yymsp[0].minor.yy46); }
-#line 767 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+#line 45 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+{ SetRectOption(yymsp[-2].minor.yy37, yymsp[0].minor.yy34); }
+#line 760 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       case 8: /* inttype ::= INTTYPE */
       case 9: /* strtype ::= STRTYPE */ yytestcase(yyruleno==9);
       case 10: /* colorarrtype ::= COLORARRTYPE */ yytestcase(yyruleno==10);
       case 11: /* intarrtype ::= INTARRTYPE */ yytestcase(yyruleno==11);
       case 12: /* recttype ::= RECTTYPE */ yytestcase(yyruleno==12);
-#line 51 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy1 = yymsp[0].minor.yy0->type; }
-#line 776 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+#line 47 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+{ yygotominor.yy37 = yymsp[0].minor.yy0->type; }
+#line 769 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
-      case 13: /* colarr ::= BR1 colexpr BR2 */
-#line 57 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy56 = new CAtlArray<COLORREF>(); yygotominor.yy56->Copy(*yymsp[-1].minor.yy56); }
-#line 781 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
-        break;
-      case 14: /* colexpr ::= colexpr COMMA colexpr */
-#line 58 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+      case 13: /* colexpr ::= colexpr COMMA colexpr */
+#line 53 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
 { yygotominor.yy56 = new CAtlArray<COLORREF>(); yygotominor.yy56->Copy(*yymsp[-2].minor.yy56); yygotominor.yy56->Append(*yymsp[0].minor.yy56); }
-#line 786 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+#line 774 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
-      case 15: /* colexpr ::= colval */
+      case 14: /* colexpr ::= colval */
+#line 54 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+{ yygotominor.yy56 = new CAtlArray<COLORREF>(); yygotominor.yy56->Add(yymsp[0].minor.yy53); }
+#line 779 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+        break;
+      case 15: /* colval ::= COLVAL */
+#line 55 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+{ yygotominor.yy53 = yymsp[0].minor.yy0->val.col; }
+#line 784 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+        break;
+      case 16: /* intexpr ::= intexpr COMMA intexpr */
+#line 57 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+{ yygotominor.yy51 = new CAtlArray<int>(); yygotominor.yy51->Copy(*yymsp[-2].minor.yy51); yygotominor.yy51->Append(*yymsp[0].minor.yy51); }
+#line 789 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+        break;
+      case 17: /* intexpr ::= intval */
+#line 58 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+{ yygotominor.yy51 = new CAtlArray<int>(); yygotominor.yy51->Add(yymsp[0].minor.yy4); }
+#line 794 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+        break;
+      case 18: /* intval ::= INTVAL */
 #line 59 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy56 = new CAtlArray<COLORREF>(); yygotominor.yy56->Add(yymsp[0].minor.yy57); }
-#line 791 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+{ yygotominor.yy4 = yymsp[0].minor.yy0->val.i; }
+#line 799 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
-      case 16: /* colval ::= COLVAL */
-#line 60 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy57 = yymsp[0].minor.yy0->val.col; }
-#line 796 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+      case 19: /* strval ::= STRVAL */
+#line 61 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+{ yygotominor.yy9 = yymsp[0].minor.yy0->val.str; yymsp[0].minor.yy0->val.str = NULL; }
+#line 804 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
-      case 17: /* intarr ::= BR1 intexpr BR2 */
-#line 62 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy31 = new CAtlArray<int>(); yygotominor.yy31->Copy(*yymsp[-1].minor.yy31); }
-#line 801 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
-        break;
-      case 18: /* intexpr ::= intexpr COMMA intexpr */
+      case 20: /* rectval ::= BR1 intval COMMA intval COMMA intval COMMA intval BR2 */
 #line 63 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy31 = new CAtlArray<int>(); yygotominor.yy31->Copy(*yymsp[-2].minor.yy31); yygotominor.yy31->Append(*yymsp[0].minor.yy31); }
-#line 806 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
-        break;
-      case 19: /* intexpr ::= intval */
-#line 64 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy31 = new CAtlArray<int>(); yygotominor.yy31->Add(yymsp[0].minor.yy52); }
-#line 811 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
-        break;
-      case 20: /* intval ::= INTVAL */
-#line 65 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy52 = yymsp[0].minor.yy0->val.i; }
-#line 816 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
-        break;
-      case 21: /* strval ::= STRVAL */
-#line 67 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy33 = yymsp[0].minor.yy0->val.str; yymsp[0].minor.yy0->val.str = NULL; }
-#line 821 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
-        break;
-      case 22: /* rectval ::= BR1 intval COMMA intval COMMA intval COMMA intval BR2 */
-#line 69 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy46 = (int *)malloc(sizeof(int)*4); yygotominor.yy46[0] = yymsp[-7].minor.yy52; yygotominor.yy46[1] = yymsp[-5].minor.yy52; yygotominor.yy46[2] = yymsp[-3].minor.yy52; yygotominor.yy46[3] = yymsp[-1].minor.yy52; }
-#line 826 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+{ yygotominor.yy34 = (int *)malloc(sizeof(int)*4); yygotominor.yy34[0] = yymsp[-7].minor.yy4; yygotominor.yy34[1] = yymsp[-5].minor.yy4; yygotominor.yy34[2] = yymsp[-3].minor.yy4; yygotominor.yy34[3] = yymsp[-1].minor.yy4; }
+#line 809 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       default:
       /* (0) program ::= expr2 */ yytestcase(yyruleno==0);
@@ -887,10 +870,10 @@ static void yy_syntax_error(
 ){
   ParseARG_FETCH;
 #define TOKEN (yyminor.yy0)
-#line 34 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
+#line 30 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
 
   ATLTRACE(_T("Syntax Error!\n"));
-#line 894 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
+#line 877 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
   ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 

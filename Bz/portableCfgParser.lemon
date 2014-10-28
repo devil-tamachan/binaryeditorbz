@@ -2,14 +2,10 @@
 
 %type colexpr {CAtlArray<COLORREF>*}
 %destructor colexpr {delete $$;}
-%type colarr {CAtlArray<COLORREF>*}
-%destructor colarr {delete $$;}
 %type colval {COLORREF}
 
 %type intexpr {CAtlArray<int>*}
 %destructor intexpr {delete $$;}
-%type intarr {CAtlArray<int>*}
-%destructor intarr {delete $$;}
 %type intval {int}
 
 %type strval {CString*}
@@ -44,8 +40,8 @@ expr2 ::= .
 
 expr ::= inttype(B) EQ  intval(C).	{ SetIntOption(B, C); }
 expr ::= strtype(B) EQ  strval(C).  { if(C) { SetStrOption(B, C); } }
-expr ::= colorarrtype(B) EQ colarr(C). { SetColorArrOption(B, C); }
-expr ::= intarrtype(B) EQ  intarr(C). { SetIntArrOption(B, C); }
+expr ::= colorarrtype(B) EQ BR1 colexpr(C) BR2. { SetColorArrOption(B, C); }
+expr ::= intarrtype(B) EQ BR1 intexpr(C) BR2. { SetIntArrOption(B, C); }
 expr ::= recttype(B) EQ rectval(C). { SetRectOption(B, C); }
 
 inttype(A) ::= INTTYPE(B). { A = B->type; }
@@ -54,12 +50,10 @@ colorarrtype(A) ::= COLORARRTYPE(B). { A = B->type; }
 intarrtype(A) ::= INTARRTYPE(B). { A = B->type; }
 recttype(A) ::= RECTTYPE(B). { A = B->type; }
 
-colarr(A)  ::= BR1 colexpr(B) BR2. { A = new CAtlArray<COLORREF>(); A->Copy(*B); }
 colexpr(A)  ::= colexpr(B) COMMA colexpr(C). { A = new CAtlArray<COLORREF>(); A->Copy(*B); A->Append(*C); }
 colexpr(A)  ::= colval(B). { A = new CAtlArray<COLORREF>(); A->Add(B); }
 colval(A) ::= COLVAL(B). { A = B->val.col; }
 
-intarr(A)  ::= BR1 intexpr(B) BR2. { A = new CAtlArray<int>(); A->Copy(*B); }
 intexpr(A)  ::= intexpr(B) COMMA intexpr(C). { A = new CAtlArray<int>(); A->Copy(*B); A->Append(*C); }
 intexpr(A) ::= intval(B). { A = new CAtlArray<int>(); A->Add(B); }
 intval(A) ::= INTVAL(B). { A = B->val.i; }
