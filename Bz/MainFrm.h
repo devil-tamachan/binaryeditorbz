@@ -238,9 +238,13 @@ public:
     WTL::CMenuHandle menu = GetMenu();
     WTL::CMenuHandle menuFile = menu.GetSubMenu(0);
     WTL::CMenuHandle menuRecent = menuFile.GetSubMenu(2);
-    m_recent.SetMenuHandle(menuRecent);
-    m_recent.SetMaxEntries(15);
-    m_recent.ReadFromRegistry(_T("Software\\c.mos\\BZ\\Settings"));
+
+    if(!options.bPortableMode)
+    {
+      m_recent.SetMenuHandle(menuRecent);
+      m_recent.SetMaxEntries(15);
+      m_recent.ReadFromRegistry(_T("Software\\c.mos\\BZ\\Settings"));
+    }
 
     {//OnCreateClient
       m_bStructView = options.bStructView;
@@ -440,8 +444,11 @@ public:
 public:
   void AddRecentList(LPCTSTR path)
   {
-    m_recent.AddToList(path);
-    m_recent.WriteToRegistry(_T("Software\\c.mos\\BZ\\Settings"));
+    if(!options.bPortableMode)
+    {
+      m_recent.AddToList(path);
+      m_recent.WriteToRegistry(_T("Software\\c.mos\\BZ\\Settings"));
+    }
   }
   void AddSubView();
   void AddBZView();
