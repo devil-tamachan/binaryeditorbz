@@ -2365,7 +2365,8 @@ void CBZView::preQuickSearchWI1(LPCWSTR searchTextW, BYTE nSearchTextW, BYTE *sk
 }
 UINT64 CBZView::stristrBinaryW1(LPCWSTR searchTextW, BYTE nSearchTextW, UINT64 dwStart)
 {
-	BYTE skipTable[0x10000];
+	BYTE *skipTable = (BYTE *)malloc(0x10000);
+	if(skipTable==NULL)return _UI64_MAX; //error
 	preQuickSearchWI1(searchTextW, nSearchTextW, skipTable);
 
 	DWORD dwNeedSize = (nSearchTextW+1)*2;
@@ -2395,7 +2396,8 @@ void CBZView::preQuickSearchWI4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD *
 }
 UINT64 CBZView::stristrBinaryW4(LPCWSTR pSearchTextW, DWORD nSearchTextW, UINT64 dwStart)
 {
-	DWORD skipTable[0x10000];
+	DWORD *skipTable = (DWORD *)malloc(0x10000 * sizeof(DWORD));
+	if(skipTable==NULL)return _UI64_MAX; //error
 	preQuickSearchWI4(pSearchTextW, nSearchTextW, skipTable);
 
 	DWORD dwNeedSize = (nSearchTextW+1)*2;
@@ -2432,8 +2434,10 @@ void CBZView::preQuickSearchAI(LPCSTR searchText, DWORD nSearchText, DWORD *skip
 }
 UINT64 CBZView::stristrBinaryA(LPCSTR pSearchText, UINT64 dwStart)
 {
+	DWORD *skipTable = (DWORD *)malloc(0x100 * sizeof(DWORD));
+	if(skipTable==NULL)return _UI64_MAX; //error
+	
 	DWORD nSearchText = strlen(pSearchText);
-	DWORD skipTable[0x100];
 	preQuickSearchAI(pSearchText, nSearchText, skipTable);
 	UINT64 dwCurrent=dwStart;
   m_pDoc->Cache(dwStart);
@@ -2455,7 +2459,9 @@ void CBZView::preQuickSearch(LPBYTE pSearchByte, unsigned int nSearchByte, DWORD
 }
 UINT64 CBZView::strstrBinary(LPBYTE pSearchStr, unsigned int nSearchStr, UINT64 dwStart)
 {
-  DWORD skipTable[0x100];
+	DWORD *skipTable = (DWORD *)malloc(0x100 * sizeof(DWORD));
+	if(skipTable==NULL)return _UI64_MAX; //error
+	
   preQuickSearch(pSearchStr, nSearchStr, skipTable);
   UINT64 dwCurrent=dwStart;
   m_pDoc->Cache(dwStart);
