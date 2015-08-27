@@ -511,6 +511,7 @@ public:
       CBZView* pView1 = GetBrotherView();
       if(pView1)
       {
+       pView1->ScrollToPos(m_ptOffset.x, GetScrollPosU64V());
        // POINT pt = GetScrollPos();
        // pView1->ScrollToPos(pt);
         pView1->Invalidate();
@@ -531,8 +532,7 @@ public:
       CBZView* pView1 = GetBrotherView();
       if(pView1)
       {
-       // POINT pt = GetScrollPos();
-       // pView1->ScrollToPos(pt);
+       pView1->ScrollToPos(m_ptOffset.x, GetScrollPosU64V());
         pView1->Invalidate();
         //pView1->OnVScroll(nSBCode, nPos, NULL);
         //		TRACE("OnVScroll: m_dwCaret=%d\n", m_dwCaret);
