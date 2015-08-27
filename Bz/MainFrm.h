@@ -187,7 +187,7 @@ public:
         int newy = options.ptFrame.y;
         wndpl.rcNormalPosition.top = (newy<0)?0:newy;
       }
-      wndpl.rcNormalPosition.bottom = wndpl.rcNormalPosition.top + options.cyFrame;
+      wndpl.rcNormalPosition.bottom = wndpl.rcNormalPosition.top + (options.nSplitView==ID_VIEW_SPLIT_H && options.cyFrame2 ? options.cyFrame2 : options.cyFrame);
       SetWindowPlacement(&wndpl);
     }
 

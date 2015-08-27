@@ -313,10 +313,12 @@ public:
       WriteFileInt(file, "FrameHeight", cyFrame);
       break;
     case ID_VIEW_SPLIT_H:
+      WriteFileInt(file, "FrameHeight", cyFrame);
       WriteFileInt(file, "FrameHeight2", cyFrame2);
       WriteFileInt(file, "SplitVPos", ySplit);
       break;
     case ID_VIEW_SPLIT_V:
+      WriteFileInt(file, "FrameHeight", cyFrame);
       WriteFileInt(file, "FrameWidth2", cxFrame2);
       WriteFileInt(file, "SplitHPos", xSplit);
       break;
