@@ -74,10 +74,10 @@ HRESULT CBZOptions::LoadFromFile()
   while(type = scan(&s))
   {
     ATLTRACE("type = %d\n", type);
-    Parse(pParser, type, &s);
+    Parse(pParser, type, s.val);
   }
   ATLTRACE("ParseTerminate\n", type);
-  Parse(pParser, 0, &s);
+  Parse(pParser, 0, s.val);
   ParseFree(pParser, free);
   delete pFile;
 

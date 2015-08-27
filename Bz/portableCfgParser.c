@@ -61,7 +61,7 @@
 #define YYCODETYPE unsigned char
 #define YYNOCODE 29
 #define YYACTIONTYPE unsigned char
-#define ParseTOKENTYPE Scanner*
+#define ParseTOKENTYPE PassData
 typedef union {
   int yyinit;
   ParseTOKENTYPE yy0;
@@ -764,7 +764,7 @@ static void yy_reduce(
       case 11: /* intarrtype ::= INTARRTYPE */ yytestcase(yyruleno==11);
       case 12: /* recttype ::= RECTTYPE */ yytestcase(yyruleno==12);
 #line 47 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy37 = yymsp[0].minor.yy0->type; }
+{ yygotominor.yy37 = yymsp[0].minor.yy0.type; }
 #line 769 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       case 13: /* colexpr ::= colexpr COMMA colexpr */
@@ -779,7 +779,7 @@ static void yy_reduce(
         break;
       case 15: /* colval ::= COLVAL */
 #line 55 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy53 = yymsp[0].minor.yy0->val.col; }
+{ yygotominor.yy53 = yymsp[0].minor.yy0.col; }
 #line 784 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       case 16: /* intexpr ::= intexpr COMMA intexpr */
@@ -794,12 +794,12 @@ static void yy_reduce(
         break;
       case 18: /* intval ::= INTVAL */
 #line 59 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy4 = yymsp[0].minor.yy0->val.i; }
+{ yygotominor.yy4 = yymsp[0].minor.yy0.i; }
 #line 799 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       case 19: /* strval ::= STRVAL */
 #line 61 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy9 = yymsp[0].minor.yy0->val.str; yymsp[0].minor.yy0->val.str = NULL; }
+{ yygotominor.yy9 = yymsp[0].minor.yy0.str; yymsp[0].minor.yy0.str = NULL; }
 #line 804 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       case 20: /* rectval ::= BR1 intval COMMA intval COMMA intval COMMA intval BR2 */
