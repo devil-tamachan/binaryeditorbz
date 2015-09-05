@@ -263,7 +263,7 @@ BOOL CBZDoc2::OnFileOpen(LPCTSTR lpszPathName, HWND hWnd)
 
   if(!bRet)
   {
-    MessageBox(hWnd, _T("Open Error"), _T("Error"), MB_OK);
+    //MessageBox(hWnd, _T("Open Error"), _T("Error"), MB_OK);
     return FALSE;
   }
   return TRUE;
