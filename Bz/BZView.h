@@ -506,7 +506,7 @@ public:
     //BOOL ret = CTextView::OnMouseWheel(nFlags, zDelta, pt);
 
     CBZView *pActiveView = GetActiveBZView();
-    if(options.bSyncScroll && pActiveView==this)
+    if(options.bSyncScroll/* && pActiveView==this*/)
     {
       CBZView* pView1 = GetBrotherView();
       if(pView1)
@@ -527,7 +527,7 @@ public:
     //CTextView::OnVScroll(nSBCode, nPos, pScrollBar);
 
     CBZView *pActiveView = GetActiveBZView();
-    if(options.bSyncScroll && pActiveView==this)
+    if(options.bSyncScroll/* && pActiveView==this*/)
     {
       CBZView* pView1 = GetBrotherView();
       if(pView1)
