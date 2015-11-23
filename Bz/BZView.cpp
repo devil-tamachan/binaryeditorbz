@@ -783,7 +783,8 @@ void CBZView::SetColor(TextColor n)
 
 void CBZView::SetHeaderColor()
 {
-	BOOL bNoFocus = GetMainFrame()->m_nSplitView && GetActiveBZDoc2() != m_pDoc;
+  CMainFrame *pMainFrame = GetMainFrame();
+	BOOL bNoFocus = pMainFrame!=NULL && pMainFrame->m_nSplitView && GetActiveBZDoc2() != m_pDoc;
 	SetColor(bNoFocus ? TCOLOR_ADDRESS2 : TCOLOR_ADDRESS);
 }
 
