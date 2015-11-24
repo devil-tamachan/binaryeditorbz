@@ -35,6 +35,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define BORDERWIDTH 4
 
+class CBZCoreData;
+
 class CTamaSplitterWindow : public CWindowImpl<CTamaSplitterWindow>
 {
 public:
@@ -60,6 +62,7 @@ public:
 		MSG_WM_LBUTTONDOWN(OnLButtonDown)
 		MSG_WM_MOUSEMOVE(OnMouseMove)
 		MSG_WM_LBUTTONUP(OnLButtonUp)
+    MSG_WM_SETFOCUS(OnSetFocus)
     END_MSG_MAP()
 
 	CTamaSplitterWindow() : CWindowImpl<CTamaSplitterWindow>()
@@ -111,6 +114,10 @@ public:
 		return y*PANEMAXW+x;
 	}
 	
+
+
+  void OnSetFocus(CWindow wndOld);
+
 	LRESULT OnEraceBkgnd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
 		return TRUE;

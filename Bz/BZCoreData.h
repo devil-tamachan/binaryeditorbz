@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class CBZDoc2;
 class CBZView;
 class CMainFrame;
+class CTamaSplitterWindow;
 
 class CBZCoreData
 {
