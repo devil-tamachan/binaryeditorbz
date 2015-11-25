@@ -187,9 +187,9 @@
     <Link>
       <OutputFile>.\Release64/BZres_us64.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <ProgramDatabaseFile>.\Release/BZres_us.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>.\Release64/BZres_us.pdb</ProgramDatabaseFile>
       <NoEntryPoint>true</NoEntryPoint>
-      <ImportLibrary>.\Release/BZres_us.lib</ImportLibrary>
+      <ImportLibrary>.\Release64/BZres_us.lib</ImportLibrary>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
