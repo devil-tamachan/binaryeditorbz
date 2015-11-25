@@ -57,7 +57,9 @@ const TCHAR sRegHistory[] = _T("History");
 HRESULT CBZOptions::LoadFromFile()
 {
   DWORD len=0, lenPlusSpace=0;
-  uchar *pFile = (uchar *)ReadFile(_T("EnablePortableMode.txt"), &len, &lenPlusSpace, 30, TRUE, FALSE);
+  CString path;
+  path = GetModulePath(_T("EnablePortableMode.txt"));
+  uchar *pFile = (uchar *)ReadFile(path, &len, &lenPlusSpace, 30, TRUE, FALSE);
   if(pFile==NULL)return E_FAIL;
   void *pParser = ParseAlloc(malloc);
   unsigned int type = 0;

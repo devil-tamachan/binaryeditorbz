@@ -288,8 +288,10 @@ public:
 
   HRESULT SaveToFile()
   {
+    CString path;
+    path = GetModulePath(_T("EnablePortableMode.txt"));
     CAtlFile file;
-    if(FAILED(file.Create(_T("EnablePortableMode.txt"), GENERIC_WRITE, 0, CREATE_ALWAYS)))return E_FAIL;
+    if(FAILED(file.Create(path, GENERIC_WRITE, 0, CREATE_ALWAYS)))return E_FAIL;
 
     CStringA t = CW2A(_T("/* このファイルがあるとポータブルモードになります。設定はこのファイルへ書きだされます。レジストリには書き込まれません。 */\n\n"), CP_UTF8);
     file.Write( ((LPCVOID)(LPCSTR)t), t.GetLength());
