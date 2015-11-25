@@ -1,5 +1,23 @@
 ## CHANGELOG
 
+### 1.9.7 2015/11/25 (devil.tamachan@gmail.com)
+ - (修正) Issue 46: 高dpiにすると文字がはみ出る (Special Thanks! RuRuRu)
+ - (修正) Issue 47 検索で表示が真っ白になる (Special Thanks! gnanashi0)
+ - (修正) Issue 47 コンボボックスのフォントをMFC版と同じに戻した (Special Thanks! gnanashi0)
+ - (修正) Issue 47 検索ボックスでキーボードショートカットが使えないバグ (Special Thanks! gnanashi0)
+ - (修正) Issue #48 終了時に動作を停止する (Special Thanks! yu-tang)
+ - (修正) Issue #49 Ctrl-Tabでフォーカスを戻した時のキー入力 (Special Thanks! RuRuRu)
+ - (修正) ファイルの先頭へ移動がバグっていたのを修正
+ - (修正) 高dpiでボケる & .manifestが正しく埋め込まれないバグ
+ - (修正) 64ビットOSだと英語リソースが読み込まれないバグ
+ - (追加) 管理者権限で開く追加
+ - (追加) UAC有効下、タイトルバーで管理者権限で実行しているか判別できるように
+ - (追加) 構造体ビューをリストビューからツリービューへ変更　＋バグ修正
+ - (追加) ポータブルモード
+ - (修正) スタックの使いすぎ修正
+ - (修正) 同期スクロールが効かないバグ
+ - (修正) ファイルを開くのを失敗した時メッセージボックスが２度出る
+
 ### 1.9.6 2014/08/10 (devil.tamachan@gmail.com)
  - (修正) Issue 37 ショートカットキーが効かないバグ (Spetial Thanks! gnanashi0)
  - (修正) Issue 37 ダンプリストの保存時に入力したファイル名が反映されないバグ (Special Thanks! gnanashi0)
