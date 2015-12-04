@@ -9,7 +9,6 @@
 
 CBZDoc2::CBZDoc2()
 {
-  ATLTRACE("+BZDoc2: %08X\n", this);
   m_dwBase = 0;
 
   //ReCreate restore
@@ -20,7 +19,7 @@ CBZDoc2::CBZDoc2()
   DeleteContents();
 }
 
-void CBZDoc2::DeleteContents()
+void CBZDoc2::DeleteContents(BOOL bRecreateSFC)
 {
   m_dwBase = 0;
   m_restoreCaret = 0;
@@ -28,14 +27,16 @@ void CBZDoc2::DeleteContents()
   m_bReadOnly = FALSE;
 
   ReleaseSFC();
-  m_pSFC = new CSuperFileCon();
-  m_pSFC->SetClearUndoRedoWhenSave(options.bClearUndoRedoWhenSave);
+  if(bRecreateSFC)
+  {
+    m_pSFC = new CSuperFileCon();
+    m_pSFC->SetClearUndoRedoWhenSave(options.bClearUndoRedoWhenSave);
+  }
   m_arrMarks.RemoveAll();
 }
 
 CBZDoc2::~CBZDoc2()
 {
-  ATLTRACE("-BZDoc2: %08X\n", this);
   ReleaseSFC();
 }
 
@@ -207,9 +208,10 @@ BOOL CBZDoc2::OpenDocument(LPCTSTR lpszPathName, HWND hWnd)
     CString mes;
     mes.LoadString(AFX_IDP_INVALID_FILENAME);
     MessageBox(hWnd, mes, lpszPathName, MB_OK);
+    if(pSFC)delete pSFC;
     return FALSE;
   }
-  DeleteContents();
+  DeleteContents(FALSE);
   m_bReadOnly = pSFC->IsReadOnly() | options.bReadOnlyOpen;
   m_pSFC = pSFC;
 
