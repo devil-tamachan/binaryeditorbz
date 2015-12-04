@@ -740,22 +740,22 @@ static void yy_reduce(
         break;
       case 4: /* expr ::= strtype EQ strval */
 #line 42 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ if(yymsp[0].minor.yy9) { SetStrOption(yymsp[-2].minor.yy37, yymsp[0].minor.yy9); } }
+{ if(yymsp[0].minor.yy9) { SetStrOption(yymsp[-2].minor.yy37, yymsp[0].minor.yy9); delete yymsp[0].minor.yy9; } }
 #line 745 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       case 5: /* expr ::= colorarrtype EQ BR1 colexpr BR2 */
 #line 43 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ SetColorArrOption(yymsp[-4].minor.yy37, yymsp[-1].minor.yy56); }
+{ SetColorArrOption(yymsp[-4].minor.yy37, yymsp[-1].minor.yy56);delete yymsp[-1].minor.yy56; }
 #line 750 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       case 6: /* expr ::= intarrtype EQ BR1 intexpr BR2 */
 #line 44 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ SetIntArrOption(yymsp[-4].minor.yy37, yymsp[-1].minor.yy51); }
+{ SetIntArrOption(yymsp[-4].minor.yy37, yymsp[-1].minor.yy51);delete yymsp[-1].minor.yy51; }
 #line 755 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       case 7: /* expr ::= recttype EQ rectval */
 #line 45 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ SetRectOption(yymsp[-2].minor.yy37, yymsp[0].minor.yy34); }
+{ SetRectOption(yymsp[-2].minor.yy37, yymsp[0].minor.yy34);free(yymsp[0].minor.yy34); }
 #line 760 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       case 8: /* inttype ::= INTTYPE */
@@ -769,7 +769,7 @@ static void yy_reduce(
         break;
       case 13: /* colexpr ::= colexpr COMMA colexpr */
 #line 53 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy56 = new CAtlArray<COLORREF>(); yygotominor.yy56->Copy(*yymsp[-2].minor.yy56); yygotominor.yy56->Append(*yymsp[0].minor.yy56); }
+{ yygotominor.yy56 = new CAtlArray<COLORREF>(); yygotominor.yy56->Copy(*yymsp[-2].minor.yy56); yygotominor.yy56->Append(*yymsp[0].minor.yy56);delete yymsp[-2].minor.yy56;delete yymsp[0].minor.yy56; }
 #line 774 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       case 14: /* colexpr ::= colval */
@@ -784,7 +784,7 @@ static void yy_reduce(
         break;
       case 16: /* intexpr ::= intexpr COMMA intexpr */
 #line 57 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.lemon"
-{ yygotominor.yy51 = new CAtlArray<int>(); yygotominor.yy51->Copy(*yymsp[-2].minor.yy51); yygotominor.yy51->Append(*yymsp[0].minor.yy51); }
+{ yygotominor.yy51 = new CAtlArray<int>(); yygotominor.yy51->Copy(*yymsp[-2].minor.yy51); yygotominor.yy51->Append(*yymsp[0].minor.yy51);delete yymsp[-2].minor.yy51;delete yymsp[0].minor.yy51; }
 #line 789 "C:\\Projects\\Bz_src\\Bz\\portableCfgParser.c"
         break;
       case 17: /* intexpr ::= intval */

@@ -12,7 +12,12 @@
 
 #define ISOLATION_AWARE_ENABLED 1
 
+#include <stdio.h>
 #include <windows.h>
+
+#ifdef _DEBUG
+#include "vld.h" // https://vld.codeplex.com/
+#endif
 
 #define _WTL_NO_AUTOMATIC_NAMESPACE
 
@@ -51,11 +56,6 @@ extern WTL::CAppModule _Module;
 #include <imagehlp.h>
 
 //#include "MemDC.h"
-
-#ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
 
 #include "Bz.h"
 

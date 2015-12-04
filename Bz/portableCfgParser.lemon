@@ -39,10 +39,10 @@ expr2 ::= expr2 expr.
 expr2 ::= .
 
 expr ::= inttype(B) EQ  intval(C).	{ SetIntOption(B, C); }
-expr ::= strtype(B) EQ  strval(C).  { if(C) { SetStrOption(B, C); } }
-expr ::= colorarrtype(B) EQ BR1 colexpr(C) BR2. { SetColorArrOption(B, C); }
-expr ::= intarrtype(B) EQ BR1 intexpr(C) BR2. { SetIntArrOption(B, C); }
-expr ::= recttype(B) EQ rectval(C). { SetRectOption(B, C); }
+expr ::= strtype(B) EQ  strval(C).  { if(C) { SetStrOption(B, C); delete C; } }
+expr ::= colorarrtype(B) EQ BR1 colexpr(C) BR2. { SetColorArrOption(B, C);delete C; }
+expr ::= intarrtype(B) EQ BR1 intexpr(C) BR2. { SetIntArrOption(B, C);delete C; }
+expr ::= recttype(B) EQ rectval(C). { SetRectOption(B, C);free(C); }
 
 inttype(A) ::= INTTYPE(B). { A = B.type; }
 strtype(A) ::= STRTYPE(B). { A = B.type; }
@@ -50,11 +50,11 @@ colorarrtype(A) ::= COLORARRTYPE(B). { A = B.type; }
 intarrtype(A) ::= INTARRTYPE(B). { A = B.type; }
 recttype(A) ::= RECTTYPE(B). { A = B.type; }
 
-colexpr(A)  ::= colexpr(B) COMMA colexpr(C). { A = new CAtlArray<COLORREF>(); A->Copy(*B); A->Append(*C); }
+colexpr(A)  ::= colexpr(B) COMMA colexpr(C). { A = new CAtlArray<COLORREF>(); A->Copy(*B); A->Append(*C);delete B;delete C; }
 colexpr(A)  ::= colval(B). { A = new CAtlArray<COLORREF>(); A->Add(B); }
 colval(A) ::= COLVAL(B). { A = B.col; }
 
-intexpr(A)  ::= intexpr(B) COMMA intexpr(C). { A = new CAtlArray<int>(); A->Copy(*B); A->Append(*C); }
+intexpr(A)  ::= intexpr(B) COMMA intexpr(C). { A = new CAtlArray<int>(); A->Copy(*B); A->Append(*C);delete B;delete C; }
 intexpr(A) ::= intval(B). { A = new CAtlArray<int>(); A->Add(B); }
 intval(A) ::= INTVAL(B). { A = B.i; }
 
