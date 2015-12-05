@@ -2378,9 +2378,14 @@ UINT64 CBZView::stristrBinaryW1(LPCWSTR searchTextW, BYTE nSearchTextW, UINT64 d
 	{
     LPBYTE p = m_pDoc->CacheForce(dwCurrent, dwNeedSize);
     if(!p)break;//err
-    if(wcsnicmp(searchTextW, (const wchar_t*)p, nSearchTextW)==0)return dwCurrent;
+    if(wcsnicmp(searchTextW, (const wchar_t*)p, nSearchTextW)==0)
+    {
+      free(skipTable);
+      return dwCurrent;
+    }
 		dwCurrent += skipTable[p[nSearchTextW]]*2;
 	}
+  free(skipTable);
 	return _UI64_MAX; // error
 }
 void CBZView::preQuickSearchWI4(LPCWSTR searchTextW, DWORD nSearchTextW, DWORD *skipTable)
@@ -2409,9 +2414,14 @@ UINT64 CBZView::stristrBinaryW4(LPCWSTR pSearchTextW, DWORD nSearchTextW, UINT64
 	{
     LPBYTE p = m_pDoc->CacheForce(dwCurrent, dwNeedSize);
     if(!p)break;//err
-		if(wcsnicmp(pSearchTextW, (const wchar_t*)p, nSearchTextW)==0)return dwCurrent;
+		if(wcsnicmp(pSearchTextW, (const wchar_t*)p, nSearchTextW)==0)
+		{
+      free(skipTable);
+      return dwCurrent;
+    }
 		dwCurrent += skipTable[p[nSearchTextW]]*2;
 	}
+  free(skipTable);
   return _UI64_MAX; // error
 }
 UINT64 CBZView::stristrBinaryW(LPCWSTR searchTextW, DWORD nSearchTextW, UINT64 dwStart)
@@ -2448,9 +2458,14 @@ UINT64 CBZView::stristrBinaryA(LPCSTR pSearchText, UINT64 dwStart)
     LPBYTE p = m_pDoc->CacheForce(dwCurrent, nSearchText+1); //なんで+1なのかな？？？保留
     if(!p)break;//err
 
-		if(strnicmp(pSearchText, (const char*)p, nSearchText)==0)return dwCurrent;
+		if(strnicmp(pSearchText, (const char*)p, nSearchText)==0)
+		{
+      free(skipTable);
+      return dwCurrent;
+    }
 		dwCurrent += skipTable[p[nSearchText]];
 	}
+  free(skipTable);
 	return _UI64_MAX; // error
 }
 void CBZView::preQuickSearch(LPBYTE pSearchByte, unsigned int nSearchByte, DWORD* skipTable)
@@ -2472,9 +2487,14 @@ UINT64 CBZView::strstrBinary(LPBYTE pSearchStr, unsigned int nSearchStr, UINT64 
     LPBYTE p = m_pDoc->CacheForce(dwCurrent, nSearchStr+1); //なんで+1なのかな？？？保留
     if(!p)break;//err
 
-    if(memcmp(pSearchStr, p, nSearchStr)==0)return dwCurrent;
+    if(memcmp(pSearchStr, p, nSearchStr)==0)
+    {
+      free(skipTable);
+      return dwCurrent;
+    }
     dwCurrent += skipTable[p[nSearchStr]];
   }
+  free(skipTable);
   return _UI64_MAX; // error
 }
 
