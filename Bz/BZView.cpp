@@ -420,7 +420,7 @@ void CBZView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
       return ;
     }
     if(bShift && GetMainFrame()->m_bStructView) {
-      CBZFormView* pView = (CBZFormView*)(GetSubView());
+      CBZFormView* pView = dynamic_cast<CBZFormView*>(GetSubView());
       if(pView)pView->Activate();
       UpdateStatusBar();
       return;
@@ -696,17 +696,17 @@ void CBZView::Update()
 	if(pMainFrame)
 	{
 		if(pMainFrame->m_bStructView) {
-			CBZFormView* pView = (CBZFormView*)GetSubView();
+			CBZFormView* pView = dynamic_cast<CBZFormView*>(GetSubView());
 			if(pView!=NULL)
 				pView->SelectTag();
 		}
 		if(pMainFrame->m_bAnalyzerView) {
-			CBZAnalyzerView* pView = (CBZAnalyzerView*)GetSubView();
+			CBZAnalyzerView* pView = dynamic_cast<CBZAnalyzerView*>(GetSubView());
 			if(pView!=NULL)
 				pView->Clear();
 		}
     if(pMainFrame->m_bBmpView) {
-			CBZBmpView2* pView = (CBZBmpView2*)GetSubView();
+			CBZBmpView2* pView = dynamic_cast<CBZBmpView2*>(GetSubView());
 			if(pView!=NULL)
 				pView->OnInitialUpdate();
 		}
@@ -1402,7 +1402,7 @@ BOOL CBZView::DrawCaret(int *pScrolldy /*=NULL*/)
 	MoveCaret2(pt);
 	
 	if(GetMainFrame() && GetMainFrame()->m_bInspectView) {
-		CBZInspectView* pView = (CBZInspectView*)GetSubView();
+		CBZInspectView* pView = dynamic_cast<CBZInspectView*>(GetSubView());
 		pView->Update();
 	}
 
@@ -1465,7 +1465,7 @@ BOOL CBZView::GotoCaret()
 void CBZView::OnDoubleClick()	// ### 1.62
 {
 	if(m_dwStruct) {
-		CBZFormView* pView = (CBZFormView*)GetSubView();
+		CBZFormView* pView = dynamic_cast<CBZFormView*>(GetSubView());
 		pView->SelchangeListTag();
 	} else {
 		OnStatusInfo();
@@ -1893,7 +1893,7 @@ _inline UINT64 CBZView::GetRemainFromCurret() { return GetFileSize() - m_dwCaret
 
 CBZView* CBZView::GetBrotherView()
 {
-	return (CBZView*)GetMainFrame()->GetBrotherView(this);
+	return GetMainFrame()->GetBrotherView(this);
 }
 
 CBZDoc2* CBZView::GetBrotherDoc()

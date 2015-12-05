@@ -30,8 +30,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 class CMainFrame;
+#include "BZSubView.h"
 
-class CBZInspectView : public CDialogImpl<CBZInspectView>, public WTL::CWinDataExchange<CBZInspectView>
+class CBZInspectView : public CDialogImpl<CBZInspectView>, public WTL::CWinDataExchange<CBZInspectView>, public CBZSubView
 {
 public:
   CBZInspectView() : m_bSigned(true), m_pView(NULL), bInit(FALSE) { }

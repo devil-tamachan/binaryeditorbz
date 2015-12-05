@@ -144,10 +144,11 @@ public:
 	CAtlArray<CString> m_sarrFileExt;		// ###1.61
 };
 
+#include "BZSubView.h"
 
 class CBZView;
 
-class CBZFormView : public CDialogImpl<CBZFormView>, public WTL::CWinDataExchange<CBZFormView>
+class CBZFormView : public CDialogImpl<CBZFormView>, public WTL::CWinDataExchange<CBZFormView>, public CBZSubView
 {
 public:
   CBZFormView()
@@ -157,7 +158,7 @@ public:
     m_iTag = -1;
   }
 
-  ~CBZFormView()
+  virtual ~CBZFormView()
   {
     if(m_pDefFile)
       delete m_pDefFile;	// ##1.5

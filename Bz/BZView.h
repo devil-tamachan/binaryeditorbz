@@ -585,7 +585,7 @@ public:
     CBZCoreData *pCoreData = CBZCoreData::GetInstance();
     return pCoreData->GetSplitterWnd();
   }
-  ATL::CWindow* GetSubView()
+  CBZSubView* GetSubView()
   {
     CBZCoreData *pCoreData = CBZCoreData::GetInstance();
     return pCoreData->GetSubViewFromBZView(this);

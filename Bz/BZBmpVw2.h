@@ -43,7 +43,9 @@ void Make8bitBITMAPINFOHEADER(LPBITMAPINFOHEADER lpbi, LONG w, LONG h);
 //#include "tamascrlu64v.h"
 
 
-class CBZBmpView2 : public CTamaScrollWindowU64VImpl<CBZBmpView2>
+#include "BZSubView.h"
+
+class CBZBmpView2 : public CTamaScrollWindowU64VImpl<CBZBmpView2>, public CBZSubView
 {
 public:
   DECLARE_WND_CLASS(NULL)

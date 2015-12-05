@@ -56,25 +56,25 @@ private:
 public:
   CSimpleArray<CBZDoc2*> m_arrDoc;
   CSimpleArray<CBZView*> m_arrView;
-  CSimpleArray<ATL::CWindow *> m_arrSubView;
+  CSimpleArray<CBZSubView *> m_arrSubView;
   CTamaSplitterWindow* m_pSplitter;
   CMainFrame *m_pMainFrame;
   DWORD m_dwActive;
 
 public:
-  CBZView* GetBZViewFromSubView(ATL::CWindow *pSubWin)
+  CBZView* GetBZViewFromSubView(CBZSubView *pSubWin)
   {
     int i = m_arrSubView.Find(pSubWin);
     if(i>=0)return m_arrView[i];
     return NULL;
   }
-  CBZDoc2* GetBZDoc2FromSubView(ATL::CWindow *pSubWin)
+  CBZDoc2* GetBZDoc2FromSubView(CBZSubView *pSubWin)
   {
     int i = m_arrSubView.Find(pSubWin);
     if(i>=0)return m_arrDoc[i];
     return NULL;
   }
-  ATL::CWindow* GetSubViewFromBZView(CBZView *pBZView)
+  CBZSubView* GetSubViewFromBZView(CBZView *pBZView)
   {
     int i = m_arrView.Find(pBZView);
     if(i>=0)return m_arrSubView[i];
@@ -117,7 +117,7 @@ public:
   {
     return m_arrView[dwIndex];
   }
-  ATL::CWindow* GetSubView(DWORD dwIndex)
+  CBZSubView* GetSubView(DWORD dwIndex)
   {
     return m_arrSubView[dwIndex];
   }
@@ -146,7 +146,7 @@ public:
   {
     m_arrView.Add(pView);
   }
-  void AddSubView(ATL::CWindow *pSubView)
+  void AddSubView(CBZSubView *pSubView)
   {
     m_arrSubView.Add(pSubView);
   }

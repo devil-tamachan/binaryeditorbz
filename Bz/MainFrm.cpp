@@ -473,13 +473,13 @@ void CMainFrame::UpdateInspectViewChecks()
   DWORD dwBZViews = pCoreData->GetCountBZView();
   if(m_bInspectView && dwBZViews >= 2)
   {
-    CBZInspectView *pInsView0 = (CBZInspectView*)pCoreData->GetSubView(0);
+    CBZInspectView *pInsView0 = dynamic_cast<CBZInspectView*>(pCoreData->GetSubView(0));
     if(pInsView0)
     {
       pInsView0->_UpdateChecks();
       pInsView0->Update();
     }
-    CBZInspectView *pInsView1 = (CBZInspectView*)pCoreData->GetSubView(1);
+    CBZInspectView *pInsView1 = dynamic_cast<CBZInspectView*>(pCoreData->GetSubView(1));
     if(pInsView1)
     {
       pInsView1->_UpdateChecks();
@@ -659,7 +659,7 @@ BOOL CMainFrame::ResetSplitter()
     {
       if(bSubView)
       {
-        ATL::CWindow *pSubView = pCoreData->GetSubView(i);
+        ATL::CWindow *pSubView = dynamic_cast<ATL::CWindow *>(pCoreData->GetSubView(i));
         m_pWndSplitter->SetSplitterPane(pSubView->m_hWnd, iBZX++, iBZY);
       }
       CBZView *pBZView = pCoreData->GetBZView(i);
@@ -794,7 +794,7 @@ CBZView *CMainFrame::GetBrotherView(CBZView* pView)
 int CMainFrame::GetSubViewIdealWidth(DWORD idx)
 {
   CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-  ATL::CWindow *pSub0 = pCoreData->GetSubView(idx);
+  CBZSubView *pSub0 = pCoreData->GetSubView(idx);
   if(pSub0==NULL)
   {
     ATLASSERT(FALSE);
@@ -802,16 +802,16 @@ int CMainFrame::GetSubViewIdealWidth(DWORD idx)
   }
   if(m_bBmpView)
   {
-    CBZBmpView2 *pBmpView = (CBZBmpView2*)pSub0;
+    CBZBmpView2 *pBmpView = dynamic_cast<CBZBmpView2*>(pSub0);
     return pBmpView->GetWindowIdealWidth();
   } else if(m_bStructView) {
-    CBZFormView *pFormView = (CBZFormView*)pSub0;
+    CBZFormView *pFormView = dynamic_cast<CBZFormView*>(pSub0);
     return pFormView->GetWindowIdealWidth();
   } else if(m_bInspectView) {
-    CBZInspectView *pInsView = (CBZInspectView*)pSub0;
+    CBZInspectView *pInsView = dynamic_cast<CBZInspectView*>(pSub0);
     return pInsView->GetWindowIdealWidth();
   } else if(m_bAnalyzerView) {
-    CBZAnalyzerView *pAnaView = (CBZAnalyzerView*)pSub0;
+    CBZAnalyzerView *pAnaView = dynamic_cast<CBZAnalyzerView*>(pSub0);
     return pAnaView->GetWindowIdealWidth();
   }
   return 0;

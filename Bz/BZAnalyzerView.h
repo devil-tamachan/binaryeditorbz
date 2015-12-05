@@ -32,10 +32,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "zlib.h"
 
+#include "BZSubView.h"
 
 extern __inline BOOL IsZlibDeflate(unsigned char firstChar, unsigned char secondChar);
 
-class CBZAnalyzerView : public CDialogImpl<CBZAnalyzerView>, public WTL::CWinDataExchange<CBZAnalyzerView>
+class CBZAnalyzerView : public CDialogImpl<CBZAnalyzerView>, public WTL::CWinDataExchange<CBZAnalyzerView>, public CBZSubView
 {
 
 public:

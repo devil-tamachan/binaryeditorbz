@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BZView.h"
 #include "MainFrm.h"
 #include "BZDoc2.h"
+#include "BZSubView.h"
 
 //class CBZDoc2;
 class CBZView;
@@ -61,9 +62,10 @@ void CBZCoreData::DeleteSubView(DWORD dwIndex)
 {
   if(m_arrSubView.GetSize()>dwIndex)
   {
-    ATL::CWindow *pSubView = m_arrSubView[dwIndex];
+    CBZSubView *pBZSubView = m_arrSubView[dwIndex];
+    ATL::CWindow *pSubView = dynamic_cast<ATL::CWindow *>(pBZSubView);
     pSubView->DestroyWindow();
-    delete *pSubView;
+    delete pBZSubView;
     m_arrSubView.RemoveAt(dwIndex);
   }
 }

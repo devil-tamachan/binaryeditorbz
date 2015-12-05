@@ -62,6 +62,8 @@ extern WTL::CAppModule _Module;
 //#define SFC_EASYDEBUG
 #include "SuperFileCon.h"
 
+#include "BZSubView.h"
+
 #include "tamascrlu64v.h"
 #include "tamasplit.h"
 #include "BZCoreData.h"

@@ -577,6 +577,7 @@
     <ClInclude Include="BZFormVw.h" />
     <ClInclude Include="BZInspectView.h" />
     <ClInclude Include="BZOption.h" />
+    <ClInclude Include="BZSubView.h" />
     <ClInclude Include="BZView.h" />
     <ClInclude Include="ColorCombo.h" />
     <ClInclude Include="ColorDlg.h" />
