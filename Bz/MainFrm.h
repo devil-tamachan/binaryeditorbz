@@ -266,6 +266,7 @@ public:
   void OnClose();
   void OnDestroy()
   {
+    DestroyAllChildWnd();
     WTL::CMessageLoop* pLoop = _Module.GetMessageLoop();
     pLoop->RemoveMessageFilter(this);
     pLoop->RemoveIdleHandler(this);
@@ -509,19 +510,20 @@ public:
       | options.barState & (BARSTATE_FULLPATH | BARSTATE_NOFLAT);
   }
   void UpdateInspectViewChecks();
-  //void DestroyAllChildWnd(BOOL bDelDoc)
-  //{
-  //  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-  //  pCoreData->DeleteAllViews(FALSE/*bDelDoc*/);
+  
+  void DestroyAllChildWnd()
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    pCoreData->DeleteAllViews(FALSE/*bDelDoc*/);
 
-  //  if(m_pWndSplitter)
-  //  {
-  //    m_pWndSplitter->DestroyWindow();
-  //    delete m_pWndSplitter;
-  //    m_pWndSplitter = NULL;
-  //    pCoreData->SetSplitterWnd(NULL);
-  //  }
-  //}
+    if(m_pWndSplitter)
+    {
+      m_pWndSplitter->DestroyWindow();
+      delete m_pWndSplitter;
+      m_pWndSplitter = NULL;
+      pCoreData->SetSplitterWnd(NULL);
+    }
+  }
 
   int GetSubViewIdealWidth(DWORD idx);
   void ResetWindowWidth();
