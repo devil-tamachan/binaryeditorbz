@@ -90,6 +90,7 @@ public:
 	{
 		ATLASSERT(x < PANEMAXW);
 		ATLASSERT(y < PANEMAXH);
+		ATLASSERT(::IsWindow(hWndPane));
 		unsigned int idx = CalcSplitIndex(x,y);
 		m_hWndPane[idx] = hWndPane;
     WTL::CRect rect;
