@@ -86,7 +86,11 @@ private:
 public:
   void DuplicateDoc(CBZDoc2* pDstDoc)
   {
-    if(m_pSFC && m_pSFC->AddRef())pDstDoc->m_pSFC = m_pSFC;
+    if(m_pSFC && m_pSFC->AddRef())
+    {
+      pDstDoc->ReleaseSFC();
+      pDstDoc->m_pSFC = m_pSFC;
+    }
     pDstDoc->m_bReadOnly = m_bReadOnly;
     pDstDoc->m_dwBase = m_dwBase;
     //pDstDoc->SetTitle(GetTitle());
