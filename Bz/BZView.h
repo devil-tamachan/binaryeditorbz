@@ -502,8 +502,9 @@ public:
   }
   BOOL OnMouseWheel(UINT nFlags, short zDelta, WTL::CPoint pt)
   {
-    SetMsgHandled(false);
+    //SetMsgHandled(false);
     //BOOL ret = CTextView::OnMouseWheel(nFlags, zDelta, pt);
+    DoScroll(SB_VERT, zDelta > 0 ? SB_WHEELUP : SB_WHEELDOWN, (int&)m_ptOffset.y, m_sizeAll.cy, m_sizePage.cy, m_sizeLine.cy);
 
     CBZView *pActiveView = GetActiveBZView();
     if(options.bSyncScroll/* && pActiveView==this*/)
@@ -523,8 +524,9 @@ public:
   }
   void OnVScroll(UINT nSBCode, UINT nPos, WTL::CScrollBar pScrollBar)
   {
-    SetMsgHandled(false);
+    //SetMsgHandled(false);
     //CTextView::OnVScroll(nSBCode, nPos, pScrollBar);
+		DoScroll(SB_VERT, nSBCode, (int&)m_ptOffset.y, m_sizeAll.cy, m_sizePage.cy, m_sizeLine.cy);
 
     CBZView *pActiveView = GetActiveBZView();
     if(options.bSyncScroll/* && pActiveView==this*/)
