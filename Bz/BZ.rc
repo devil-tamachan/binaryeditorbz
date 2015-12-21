@@ -147,6 +147,15 @@ BEGIN
     LTEXT           "解析中",IDC_STATIC,70,19,22,8
 END
 
+IDD_MINITOOLBAR DIALOGEX 0, 0, 360, 13
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_MINI_ENCODING,311,0,48,130,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "ReadOnly",IDC_MINI_READONLY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,261,2,47,10
+    EDITTEXT        IDE_MINI_PATH,0,0,257,13,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -219,6 +228,11 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 52
     END
+
+    IDD_MINITOOLBAR, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 12
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -290,6 +304,8 @@ BEGIN
         MENUITEM "構造体表示(&U)",                   ID_VIEW_STRUCT
         MENUITEM "インスペクタ表示(&I)",                ID_VIEW_INSPECT
         MENUITEM "アナライザー表示(&A)",                ID_VIEW_ANALYZER
+        MENUITEM SEPARATOR
+        MENUITEM "ミニツールバー",                     ID_VIEW_MINITOOLBAR
         MENUITEM SEPARATOR
         MENUITEM "上下に分割(&H)",                   ID_VIEW_SPLIT_H
         MENUITEM "左右に分割(&V)",                   ID_VIEW_SPLIT_V

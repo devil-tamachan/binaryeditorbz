@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "MainFrm.h"
 #include "BZDoc2.h"
 #include "BZSubView.h"
+#include "MiniToolbarView.h"
 
 //class CBZDoc2;
 class CBZView;
@@ -48,6 +49,13 @@ void CBZCoreData::DeleteView(DWORD dwIndex, BOOL bDelDoc)
     pBZView->DestroyWindow();
     delete pBZView;
     m_arrView.RemoveAt(dwIndex);
+  }
+  if(m_arrMiniToolbarView.GetSize()>dwIndex)
+  {
+    CMiniToolbarView *pMiniView = m_arrMiniToolbarView[dwIndex];
+    pMiniView->DestroyWindow();
+    delete pMiniView;
+    m_arrMiniToolbarView.RemoveAt(dwIndex);
   }
   if(bDelDoc)
   {
@@ -67,6 +75,26 @@ void CBZCoreData::DeleteSubView(DWORD dwIndex)
     pSubView->DestroyWindow();
     delete pBZSubView;
     m_arrSubView.RemoveAt(dwIndex);
+  }
+}
+void CBZCoreData::DeleteMiniToolbar(DWORD dwIndex)
+{
+  if(m_arrMiniToolbarView.GetSize()>dwIndex)
+  {
+    CMiniToolbarView *pMiniView = m_arrMiniToolbarView[dwIndex];
+    pMiniView->DestroyWindow();
+    delete pMiniView;
+    m_arrMiniToolbarView.RemoveAt(dwIndex);
+  }
+}
+void CBZCoreData::CreateMiniToolbar(HWND hWndParent)
+{
+  for(int i = m_arrView.GetSize();i>0;i--)
+  {
+    CMiniToolbarView *pMiniToolbar = new CMiniToolbarView;
+    pMiniToolbar->Create(hWndParent);
+    pMiniToolbar->ShowWindow(SW_SHOW);
+    AddMiniToolbar(pMiniToolbar);
   }
 }
 

@@ -16,7 +16,7 @@
 #include <windows.h>
 
 #ifdef _DEBUG
-#include "vld.h" // https://vld.codeplex.com/
+//#include "vld.h" // https://vld.codeplex.com/
 #endif
 
 #define _WTL_NO_AUTOMATIC_NAMESPACE

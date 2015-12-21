@@ -30,7 +30,7 @@ typedef struct Scanner
     PassData val;
 } Scanner;
 
-enum {TYPE_CharSet=0, TYPE_AutoDetect, TYPE_ByteOrder, TYPE_FontName, TYPE_FontStyle, TYPE_FontSize, TYPE_FrameLeft, TYPE_FrameTop, TYPE_CmdShow, TYPE_FrameHeight, TYPE_FrameHeight2, TYPE_FrameWidth2, TYPE_SplitHPos, TYPE_SplitVPos, TYPE_SplitStruct, TYPE_StructView, TYPE_ComboHeight, TYPE_Language, TYPE_DetectMax, TYPE_BarState, TYPE_ReadOnly, TYPE_BmpWidth, TYPE_BmpZoom, TYPE_BmpPallet, TYPE_MaxOnMemory, TYPE_MaxMapSize, TYPE_TagAll, TYPE_SubCursor, TYPE_Colors, TYPE_MemberColumns2, TYPE_PageMargin, TYPE_DumpHeader, TYPE_DumpPage, TYPE_QWordAddr, TYPE_ClearUndoRedoWhenSave, TYPE_SyncScroll, TYPE_Grid, TYPE_BmpColorWidth, TYPE_InspectView, TYPE_AnalyzerView, TYPE_BmpAddressTooltip};
+enum {TYPE_CharSet=0, TYPE_AutoDetect, TYPE_ByteOrder, TYPE_FontName, TYPE_FontStyle, TYPE_FontSize, TYPE_FrameLeft, TYPE_FrameTop, TYPE_CmdShow, TYPE_FrameHeight, TYPE_FrameHeight2, TYPE_FrameWidth2, TYPE_SplitHPos, TYPE_SplitVPos, TYPE_SplitStruct, TYPE_StructView, TYPE_ComboHeight, TYPE_Language, TYPE_DetectMax, TYPE_BarState, TYPE_ReadOnly, TYPE_BmpWidth, TYPE_BmpZoom, TYPE_BmpPallet, TYPE_MaxOnMemory, TYPE_MaxMapSize, TYPE_TagAll, TYPE_SubCursor, TYPE_Colors, TYPE_MemberColumns2, TYPE_PageMargin, TYPE_DumpHeader, TYPE_DumpPage, TYPE_QWordAddr, TYPE_ClearUndoRedoWhenSave, TYPE_SyncScroll, TYPE_Grid, TYPE_BmpColorWidth, TYPE_InspectView, TYPE_AnalyzerView, TYPE_BmpAddressTooltip, TYPE_MiniToolbar};
 
 void SetIntOption(uint type, int val)
 {
@@ -72,6 +72,7 @@ case TYPE_BmpColorWidth: options.nBmpColorWidth = val; break;
 case TYPE_InspectView: options.bInspectView = val; break;
 case TYPE_AnalyzerView: options.bAnalyzerView = val; break;
 case TYPE_BmpAddressTooltip: options.bAddressTooltip = val; break;
+case TYPE_MiniToolbar: options.bMiniToolbar = val; break;
 	}
 }
 
@@ -220,6 +221,7 @@ RGBA    = [#] (H {8});
 	"InspectView"			{ RETT(INTTYPE, TYPE_InspectView); }
 	"AnalyzerView"			{ RETT(INTTYPE, TYPE_AnalyzerView); }
 	"BmpAddressTooltip"		{ RETT(INTTYPE, TYPE_BmpAddressTooltip); }
+	"MiniToolbar"		{ RETT(INTTYPE, TYPE_MiniToolbar); }
 	
 	
 	[+-]? [ \t]* (D+)	{ uchar *start = s->tok;

@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BZFormVw.h"
 #include "BZInspectView.h"
 #include "BZAnalyzerView.h"
+#include "MiniToolbarView.h"
 #include "SettingDlg.h"
 
 
@@ -308,6 +309,7 @@ void CMainFrame::_OnInitMenuPopup()
   OnUpdateViewFullpath();
   OnUpdateViewSubCursor();
   OnUpdateViewSyncScroll();
+  OnUpdateViewMiniToolbar();
   OnUpdateViewInspect();
   OnUpdateViewAnalyzer();
   OnUpdateViewSplitH();
@@ -388,6 +390,19 @@ void CMainFrame::OnViewAnalyzer(UINT uNotifyCode, int nID, CWindow wndCtl)
   if(m_bAnalyzerView)CreateSubView();
   else pCoreData->DeleteAllSubViews();
   ResetSplitter();
+}
+void CMainFrame::OnViewMiniToolbar(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  options.bMiniToolbar = !(options.bMiniToolbar);
+  if(options.bMiniToolbar)
+  {
+    pCoreData->CreateMiniToolbar(m_pWndSplitter==NULL ? m_hWnd : m_pWndSplitter->m_hWnd);
+    ResetSplitter();
+  } else {
+    pCoreData->DeleteAllMiniToolbar();
+    ResetSplitter();
+  }
 }
 
 void CMainFrame::OnViewSplit(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -582,6 +597,13 @@ void CMainFrame::AddBZView()
   CBZView *pBZView = new CBZView;
   pBZView->Create(m_pWndSplitter==NULL ? m_hWnd : m_pWndSplitter->m_hWnd);
   pCoreData->AddBZView(pBZView);
+  if(options.bMiniToolbar)
+  {
+    CMiniToolbarView *pMiniToolbar = new CMiniToolbarView;
+    pMiniToolbar->Create(m_pWndSplitter==NULL ? m_hWnd : m_pWndSplitter->m_hWnd);
+    pMiniToolbar->ShowWindow(SW_SHOW);
+    pCoreData->AddMiniToolbar(pMiniToolbar);
+  }
 }
 
 BOOL CMainFrame::CreateSubView()
@@ -606,6 +628,7 @@ BOOL CMainFrame::PreparaSplitter()
       if(m_pWndSplitter==NULL)
       {
         m_pWndSplitter = new CTamaSplitterWindow;
+        m_pWndSplitter->SetHeaderMode(options.bMiniToolbar, GetHeaderMode(), bSubView ? 2 : 1);
         m_pWndSplitter->CreateStatic(m_hWnd, x, y);
         pCoreData->SetSplitterWnd(m_pWndSplitter);
       } else {
@@ -613,6 +636,17 @@ BOOL CMainFrame::PreparaSplitter()
     }
   }
   return TRUE;
+}
+
+unsigned int CMainFrame::GetHeaderMode()
+{
+  unsigned int headermode = CTamaSplitterWindow::SPLITMODE::NOSPLIT;
+  if(options.bMiniToolbar)
+  {
+    if(m_nSplitView==ID_VIEW_SPLIT_V)headermode = CTamaSplitterWindow::SPLITMODE::YOKO;
+    else if(m_nSplitView==ID_VIEW_SPLIT_H)headermode = CTamaSplitterWindow::SPLITMODE::TATE;
+  }
+  return headermode;
 }
 
 
@@ -647,6 +681,7 @@ BOOL CMainFrame::ResetSplitter()
   ATLASSERT(m_pWndSplitter);
   if(m_pWndSplitter!=NULL)
   {
+        m_pWndSplitter->SetHeaderMode(options.bMiniToolbar, GetHeaderMode(), bSubView ? 2 : 1);
     int iBZX = 0, iBZY = 0;
     int iBZShiftX = 0;
     if(m_nSplitView==ID_VIEW_SPLIT_V)
@@ -661,6 +696,11 @@ BOOL CMainFrame::ResetSplitter()
       {
         ATL::CWindow *pSubView = dynamic_cast<ATL::CWindow *>(pCoreData->GetSubView(i));
         m_pWndSplitter->SetSplitterPane(pSubView->m_hWnd, iBZX++, iBZY);
+      }
+      if(options.bMiniToolbar)
+      {
+        CMiniToolbarView *pMiniView = pCoreData->GetMiniToolbar(i);
+        m_pWndSplitter->SetHeader(pMiniView->m_hWnd, i);
       }
       CBZView *pBZView = pCoreData->GetBZView(i);
       m_pWndSplitter->SetSplitterPane(pBZView->m_hWnd, iBZX, iBZY);

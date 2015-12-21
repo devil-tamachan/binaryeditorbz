@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BZInspectView.h"
 #include "BZAnalyzerView.h"
 #include "BZBmpVw2.h"
+#include "MiniToolbarView.h"
 #include "MainFrm.h"
 #include "ColorDlg.h"
 #include "SettingDlg.h"
@@ -44,7 +45,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include  <mbstring.h>
 
 class cBZBmpView2;
-
 
 //static const UINT nMsgFindReplace = ::RegisterWindowMessage(FINDMSGSTRING);
 
@@ -710,11 +710,25 @@ void CBZView::Update()
 			if(pView!=NULL)
 				pView->OnInitialUpdate();
 		}
+    UpdateMiniToolbar();
 	}
 	Invalidate(FALSE);
 	InitCaret();
 	DrawCaret();
   if(pMainFrame)pMainFrame->ResetWindowWidth();
+}
+
+void CBZView::UpdateMiniToolbar()
+{
+  if(options.bMiniToolbar) {
+    CMiniToolbarView *pMiniToolbar = GetMiniToolbar();
+    if(pMiniToolbar!=NULL)
+    {
+      pMiniToolbar->SetFilePath(m_pDoc->GetFilePath());
+      pMiniToolbar->SetReadOnly(m_pDoc->IsReadOnly());
+      pMiniToolbar->SetEncoding(m_charset);
+    }
+  }
 }
 
 

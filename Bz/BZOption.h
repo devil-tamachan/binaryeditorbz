@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 inline BOOL IsSystemColor(COLORREF rgb) { return (rgb & SYSCOLOR) != 0; }
 inline COLORREF GetSystemColor(COLORREF rgb) { return (IsSystemColor(rgb)) ? (COLORREF)::GetSysColor(rgb & ~SYSCOLOR) : rgb; }
 
-enum CharSet { CTYPE_ASCII, CTYPE_SJIS, CTYPE_UNICODE, CTYPE_JIS, CTYPE_EUC, CTYPE_UTF8, CTYPE_EBCDIC, CTYPE_EPWING, CTYPE_COUNT, CTYPE_BINARY = -1 };
+enum CharSet { CTYPE_ASCII = 0, CTYPE_SJIS, CTYPE_UNICODE, CTYPE_JIS, CTYPE_EUC, CTYPE_UTF8, CTYPE_EBCDIC, CTYPE_EPWING, CTYPE_COUNT, CTYPE_BINARY = -1 };
 enum TextColor{ TCOLOR_ADDRESS, TCOLOR_ADDRESS2, TCOLOR_TEXT, TCOLOR_SELECT, TCOLOR_MARK, TCOLOR_MISMATCH, TCOLOR_STRUCT, TCOLOR_MEMBER, TCOLOR_OVERBROTHER, TCOLOR_HORIZON, TCOLOR_ADDRESS3, TCOLOR_COUNT };
 //enum MemberColumn { MBRCOL_OFFSET, MBRCOL_LABEL, MBRCOL_VALUE, MBRCOL_MAX };
 enum MemberColumn2 { MBRCOL2_LABEL, MBRCOL2_VALUE, MBRCOL2_MAX };
@@ -144,6 +144,8 @@ public:
 
     bAddressTooltip = GetProfileInt(key, _T("BmpAddressTooltip"), TRUE);
 
+    bMiniToolbar = GetProfileInt(key, _T("MiniToolbar"), TRUE);
+
     CheckOptions();
    // key.Flush();
   }
@@ -196,6 +198,8 @@ public:
     bAnalyzerView = FALSE;
 
     bAddressTooltip = TRUE;
+
+    bMiniToolbar = TRUE;
   }
 
   void CheckOptions()
@@ -360,6 +364,7 @@ public:
 
     WriteFileInt(file, "BmpAddressTooltip", bAddressTooltip);
 
+    WriteFileInt(file, "MiniToolbar", bMiniToolbar);
 
 
     file.Flush();
@@ -435,6 +440,8 @@ public:
 
     WriteProfileInt(key, _T("BmpAddressTooltip"), bAddressTooltip);
 
+    WriteProfileInt(key, _T("MiniToolbar"), bMiniToolbar);
+
     key.Flush();
   }
 
@@ -486,6 +493,8 @@ public:
 	BOOL bAddressTooltip;
 
   BOOL bPortableMode;
+
+  BOOL bMiniToolbar;
 
 public:
   CBZOptions() : m_bModified(FALSE), bPortableMode(FALSE) { }

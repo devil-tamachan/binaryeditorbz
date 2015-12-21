@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class CBZDoc2;
 class CMainFrame;
 class CInputDlg;
+class CMiniToolbarView;
 
 //static DWORD  MemCompByte2(LPCVOID p1, LPCVOID p2, DWORD len);
 
@@ -364,6 +365,11 @@ public:
     if(m_charset >= CTYPE_COUNT) m_charset = CTYPE_ASCII;
     OnCharMode(0, m_charset + ID_CHAR_ASCII);
   }
+  void ChangeCharSet(CharSet charset)
+  {
+    m_charset = charset;
+    OnCharMode(0, m_charset + ID_CHAR_ASCII);
+  }
   void OnByteOrder(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnViewGrid1(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
@@ -602,6 +608,11 @@ public:
     CBZCoreData *pCoreData = CBZCoreData::GetInstance();
     return pCoreData->GetActiveBZDoc2();
   }
+  CMiniToolbarView* GetMiniToolbar()
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    return pCoreData->GetMiniToolbarFromBZView(this);
+  }
 
 public:
 	UINT64	m_dwCaret;
@@ -756,6 +767,8 @@ public:
   {
     return m_sizeAll.cx;// * m_cell.cx;
   }
+
+  void UpdateMiniToolbar();
 };
 
 

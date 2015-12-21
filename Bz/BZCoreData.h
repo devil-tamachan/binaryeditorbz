@@ -34,6 +34,7 @@ class CBZDoc2;
 class CBZView;
 class CMainFrame;
 class CTamaSplitterWindow;
+class CMiniToolbarView;
 
 class CBZCoreData
 {
@@ -57,6 +58,7 @@ public:
   CSimpleArray<CBZDoc2*> m_arrDoc;
   CSimpleArray<CBZView*> m_arrView;
   CSimpleArray<CBZSubView *> m_arrSubView;
+  CSimpleArray<CMiniToolbarView *> m_arrMiniToolbarView;
   CTamaSplitterWindow* m_pSplitter;
   CMainFrame *m_pMainFrame;
   DWORD m_dwActive;
@@ -84,6 +86,24 @@ public:
   {
     int i = m_arrView.Find(pBZView);
     if(i>=0)return m_arrDoc[i];
+    return NULL;
+  }
+  CBZView* GetBZViewFromMiniToolbar(CMiniToolbarView *pMiniToolbar)
+  {
+    int i = m_arrMiniToolbarView.Find(pMiniToolbar);
+    if(i>=0)return m_arrView[i];
+    return NULL;
+  }
+  CBZDoc2* GetBZDoc2FromMiniToolbar(CMiniToolbarView *pMiniToolbar)
+  {
+    int i = m_arrMiniToolbarView.Find(pMiniToolbar);
+    if(i>=0)return m_arrDoc[i];
+    return NULL;
+  }
+  CMiniToolbarView* GetMiniToolbarFromBZView(CBZView *pBZView)
+  {
+    int i = m_arrView.Find(pBZView);
+    if(i>=0 && m_arrMiniToolbarView.GetSize() > i)return m_arrMiniToolbarView[i];
     return NULL;
   }
   CBZView* GetActiveBZView()
@@ -121,6 +141,10 @@ public:
   {
     return m_arrSubView[dwIndex];
   }
+  CMiniToolbarView* GetMiniToolbar(DWORD dwIndex)
+  {
+    return m_arrMiniToolbarView[dwIndex];
+  }
 
   CTamaSplitterWindow* GetSplitterWnd() { return m_pSplitter; }
   void SetSplitterWnd(CTamaSplitterWindow *pSplitter) { m_pSplitter = pSplitter; }
@@ -128,6 +152,8 @@ public:
 
   void DeleteView(DWORD dwIndex, BOOL bDelDoc = TRUE);
   void DeleteSubView(DWORD dwIndex);
+  void DeleteMiniToolbar(DWORD dwIndex);
+  void CreateMiniToolbar(HWND hWndParent);
   void DeleteAllSubViews()
   {
     while(m_arrSubView.GetSize()>0)DeleteSubView(0);
@@ -135,6 +161,10 @@ public:
   void DeleteAllViews(BOOL bDelDoc = TRUE)
   {
     while(GetCountBZView()>0)DeleteView(0, bDelDoc);
+  }
+  void DeleteAllMiniToolbar()
+  {
+    while(m_arrMiniToolbarView.GetSize()>0)DeleteMiniToolbar(0);
   }
   void RemoveAllDocs();
 
@@ -145,6 +175,10 @@ public:
   void AddBZView(CBZView *pView)
   {
     m_arrView.Add(pView);
+  }
+  void AddMiniToolbar(CMiniToolbarView *pMiniToolbar)
+  {
+    m_arrMiniToolbarView.Add(pMiniToolbar);
   }
   void AddSubView(CBZSubView *pSubView)
   {

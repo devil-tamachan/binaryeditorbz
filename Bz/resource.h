@@ -16,6 +16,7 @@
 #define IDD_SETTING                     143
 #define IDD_INPUT                       144
 #define IDR_MENU_POPUP                  145
+#define IDD_MINITOOLBAR                 146
 #define IDC_LIST_TAG                    1000
 #define IDC_TREE_MEMBER                 1001
 #define IDAPPLY                         1002
@@ -57,6 +58,9 @@
 #define IDC_COMBO_TOOLBAR               1043
 #define IDC_CLEARUNDOREDOWHENSAVE       1044
 #define IDB_RESETSETTINGS               1045
+#define IDC_MINI_ENCODING               1046
+#define IDC_MINI_READONLY               1048
+#define IDE_MINI_PATH                   1049
 #define IDS_COLOR_ADDRESS               3000
 #define IDS_COLOR_ADDRESS2              3001
 #define IDS_COLOR_TEXT                  3002
@@ -97,6 +101,7 @@
 #define ID_VIEW_COLOR                   32801
 #define ID_VIEW_FULLPATH                32802
 #define ID_VIEW_SUBCURSOR               32803
+#define ID_VIEW_MINITOOLBAR             32804
 #define ID_JUMP_FIND                    32810
 #define ID_JUMP_FINDNEXT                32811
 #define ID_JUMP_COMPARE                 32812
@@ -156,9 +161,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        146
+#define _APS_NEXT_RESOURCE_VALUE        147
 #define _APS_NEXT_COMMAND_VALUE         32860
-#define _APS_NEXT_CONTROL_VALUE         1046
+#define _APS_NEXT_CONTROL_VALUE         1050
 #define _APS_NEXT_SYMED_VALUE           107
 #endif
 #endif

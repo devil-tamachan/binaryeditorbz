@@ -106,6 +106,7 @@ public:
     COMMAND_ID_HANDLER_EX(ID_VIEW_SUBCURSOR, OnViewSubCursor)
     COMMAND_ID_HANDLER_EX(ID_VIEW_SYNCSCROLL, OnViewSyncScroll)
     COMMAND_ID_HANDLER_EX(ID_VIEW_ANALYZER, OnViewAnalyzer)
+    COMMAND_ID_HANDLER_EX(ID_VIEW_MINITOOLBAR, OnViewMiniToolbar)
     COMMAND_ID_HANDLER_EX(ID_HELP_INDEX, OnHelpIndex)
     COMMAND_ID_HANDLER_EX(ID_APP_ABOUT, OnAppAbout)
     COMMAND_RANGE_HANDLER_EX(ID_VIEW_SPLIT_H, ID_VIEW_SPLIT_V, OnViewSplit)
@@ -140,6 +141,7 @@ public:
     UPDATE_ELEMENT(ID_VIEW_FULLPATH, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_SUBCURSOR, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_SYNCSCROLL, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_VIEW_MINITOOLBAR, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_INSPECT, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_ANALYZER, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_SPLIT_H, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
@@ -160,6 +162,7 @@ public:
   void OnUpdateViewFullpath()  { UISetCheck(ID_VIEW_FULLPATH, (options.barState & BARSTATE_FULLPATH)!=0); }
   void OnUpdateViewSubCursor() { UISetCheck(ID_VIEW_SUBCURSOR, options.bSubCursor); }
   void OnUpdateViewSyncScroll(){ UISetCheck(ID_VIEW_SYNCSCROLL, options.bSyncScroll); }
+  void OnUpdateViewMiniToolbar(){UISetCheck(ID_VIEW_MINITOOLBAR, options.bMiniToolbar); }
   void OnUpdateViewInspect()   { UISetCheck(ID_VIEW_INSPECT, m_bInspectView); }
   void OnUpdateViewAnalyzer()  { UISetCheck(ID_VIEW_ANALYZER, m_bAnalyzerView); }
   void OnUpdateViewSplitH()     { UISetCheck(ID_VIEW_SPLIT_H, m_nSplitView == ID_VIEW_SPLIT_H);/*pCmdUI->Enable(!m_bBmpView && !m_bStructView);*/ }
@@ -283,6 +286,7 @@ public:
   void OnViewStruct(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnViewInspect(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnViewAnalyzer(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void OnViewMiniToolbar(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnJumpTo(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
     m_combo_toolbar.SetFocus();
@@ -537,6 +541,8 @@ public:
     editSearchbox.SetSel(pos, pos, FALSE);
     editSearchbox.Detach();
   }
+
+  unsigned int GetHeaderMode();
 };
 
 
