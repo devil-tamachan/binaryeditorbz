@@ -1,5 +1,12 @@
 ## CHANGELOG
 
+### 1.9.8 2015/12/22 (devil.tamachan@gmail.com)
+ - (追加) ミニツールバー
+ - (修正) 同期スクロールが有効時、ホイールスクロールだとズレる
+ - (修正) 画面分割/サブビューの(非)表示するとカーソル位置/ホイール位置などがリセットされる
+ - (修正) XP Visual Styleが効かない
+ - (修正) メモリリーク修正
+
 ### 1.9.7 2015/11/25 (devil.tamachan@gmail.com)
  - (修正) Issue 46: 高dpiにすると文字がはみ出る (Special Thanks! RuRuRu)
  - (修正) Issue 47 検索で表示が真っ白になる (Special Thanks! gnanashi0)
