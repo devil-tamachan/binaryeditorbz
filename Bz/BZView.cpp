@@ -2519,3 +2519,12 @@ UINT64 CBZView::strstrBinary(LPBYTE pSearchStr, unsigned int nSearchStr, UINT64 
 }
 
 UINT64 CBZView::GetFileSize() { return m_pDoc ? m_pDoc->GetDocSize() : 0; }
+
+int CBZView::GetWindowIdealWidth()
+{
+  if(m_pDoc)
+  {
+    return (CalcDUMP_X(GetFileSize())+66) * m_cell.cx;
+  }
+  return m_cell.cx*77;//m_sizeAll.cx;// * m_cell.cx;
+}

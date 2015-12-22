@@ -763,10 +763,7 @@ public:
   void RedrawSamefileBrotherView();
   CString FormatAddress(UINT64 ofs);
 
-  int GetWindowIdealWidth()
-  {
-    return m_sizeAll.cx;// * m_cell.cx;
-  }
+  int GetWindowIdealWidth();
 
   void UpdateSubView();
   void UpdateMiniToolbar();
