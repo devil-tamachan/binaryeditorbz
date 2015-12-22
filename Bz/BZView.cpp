@@ -691,7 +691,7 @@ void CBZView::Update()
 	m_charset = (options.bAutoDetect) ? AutoDetectCharSet() : options.charset;
 	if(m_charset == CTYPE_EBCDIC)
 		LoadEbcDicTable();
-
+  
   UpdateSubView();
   UpdateMiniToolbar();
 	Invalidate(FALSE);
@@ -704,8 +704,15 @@ void CBZView::Update()
 void CBZView::UpdateSubView()
 {
 	CMainFrame *pMainFrame = GetMainFrame();
-  CBZSubView *pSubView = GetSubView();
-  if(pSubView)pSubView->InitSubView();
+  if(pMainFrame)
+  {
+    BOOL bSubView = (pMainFrame->m_bBmpView || pMainFrame->m_bStructView || pMainFrame->m_bInspectView || pMainFrame->m_bAnalyzerView);
+    if(bSubView)
+    {
+      CBZSubView *pSubView = GetSubView();
+      if(pSubView)pSubView->InitSubView();
+    }
+  }
 }
 
 void CBZView::UpdateMiniToolbar()

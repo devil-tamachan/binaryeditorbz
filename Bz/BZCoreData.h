@@ -67,37 +67,37 @@ public:
   CBZView* GetBZViewFromSubView(CBZSubView *pSubWin)
   {
     int i = m_arrSubView.Find(pSubWin);
-    if(i>=0)return m_arrView[i];
+    if(i>=0 && m_arrView.GetSize()>i)return m_arrView[i];
     return NULL;
   }
   CBZDoc2* GetBZDoc2FromSubView(CBZSubView *pSubWin)
   {
     int i = m_arrSubView.Find(pSubWin);
-    if(i>=0)return m_arrDoc[i];
+    if(i>=0 && m_arrDoc.GetSize()>i)return m_arrDoc[i];
     return NULL;
   }
   CBZSubView* GetSubViewFromBZView(CBZView *pBZView)
   {
     int i = m_arrView.Find(pBZView);
-    if(i>=0)return m_arrSubView[i];
+    if(i>=0 && m_arrSubView.GetSize()>i)return m_arrSubView[i];
     return NULL;
   }
   CBZDoc2* GetBZDoc2FromBZView(CBZView *pBZView)
   {
     int i = m_arrView.Find(pBZView);
-    if(i>=0)return m_arrDoc[i];
+    if(i>=0 && m_arrDoc.GetSize()>i)return m_arrDoc[i];
     return NULL;
   }
   CBZView* GetBZViewFromMiniToolbar(CMiniToolbarView *pMiniToolbar)
   {
     int i = m_arrMiniToolbarView.Find(pMiniToolbar);
-    if(i>=0)return m_arrView[i];
+    if(i>=0 && m_arrView.GetSize()>i)return m_arrView[i];
     return NULL;
   }
   CBZDoc2* GetBZDoc2FromMiniToolbar(CMiniToolbarView *pMiniToolbar)
   {
     int i = m_arrMiniToolbarView.Find(pMiniToolbar);
-    if(i>=0)return m_arrDoc[i];
+    if(i>=0 && m_arrDoc.GetSize()>i)return m_arrDoc[i];
     return NULL;
   }
   CMiniToolbarView* GetMiniToolbarFromBZView(CBZView *pBZView)
