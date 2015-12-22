@@ -692,6 +692,17 @@ void CBZView::Update()
 	if(m_charset == CTYPE_EBCDIC)
 		LoadEbcDicTable();
 
+  UpdateSubView();
+  UpdateMiniToolbar();
+	Invalidate(FALSE);
+	InitCaret();
+	DrawCaret();
+	CMainFrame *pMainFrame = GetMainFrame();
+  if(pMainFrame)pMainFrame->ResetWindowWidth();
+}
+
+void CBZView::UpdateSubView()
+{
 	CMainFrame *pMainFrame = GetMainFrame();
 	if(pMainFrame)
 	{
@@ -712,10 +723,6 @@ void CBZView::Update()
 		}
     UpdateMiniToolbar();
 	}
-	Invalidate(FALSE);
-	InitCaret();
-	DrawCaret();
-  if(pMainFrame)pMainFrame->ResetWindowWidth();
 }
 
 void CBZView::UpdateMiniToolbar()

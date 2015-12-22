@@ -611,7 +611,12 @@ BOOL CMainFrame::CreateSubView()
   CBZCoreData *pCoreData = CBZCoreData::GetInstance();
   pCoreData->DeleteAllSubViews();
   AddSubView();
-  if(m_nSplitView)AddSubView();
+  pCoreData->GetBZView(0)->UpdateSubView();
+  if(m_nSplitView)
+  {
+    AddSubView();
+    pCoreData->GetBZView(1)->UpdateSubView();
+  }
   return TRUE;
 }
 
@@ -726,7 +731,7 @@ BOOL CMainFrame::ResetSplitter()
   ::SetFocus(pCoreData->GetBZView(0)->m_hWnd);//SetActiveWindow
   pCoreData->SetActive(0);
 
-  pCoreData->GetBZView(0)->Update();
+//  pCoreData->GetBZView(0)->Update();
   if(m_pWndSplitter!=NULL)
   {
     m_hWndClient = m_pWndSplitter->m_hWnd;
@@ -757,6 +762,7 @@ BOOL CMainFrame::CreateClient()
 
     AddBZView();
     if(bSubView)AddSubView();
+    pCoreData->GetBZView(0)->Update();
   } else if(!m_nSplitView0 &&  m_nSplitView)
   {
     //dup doc
@@ -777,6 +783,9 @@ BOOL CMainFrame::CreateClient()
     DWORD dwActive = pCoreData->GetActive();
     DWORD dwDelViewIdx = dwActive==0 ? 1:0;
     pCoreData->DeleteView(dwDelViewIdx, TRUE/*bDelDoc*/);
+
+    ::SetFocus(pCoreData->GetBZView(0)->m_hWnd);//SetActiveWindow
+    pCoreData->SetActive(0);
   }
 
 

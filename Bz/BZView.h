@@ -768,6 +768,7 @@ public:
     return m_sizeAll.cx;// * m_cell.cx;
   }
 
+  void UpdateSubView();
   void UpdateMiniToolbar();
 };
 
