@@ -34,7 +34,7 @@ c.mosさんのご好意でソースが頂けました。それをtamachanが改造しました。
 
 </p>
 
-<img src="https://raw.githubusercontent.com/devil-tamachan/binaryeditorbz/master/HP/scr20131108.png">
+<img src="https://raw.githubusercontent.com/devil-tamachan/binaryeditorbz/master/HP/bzscr20151222.png">
 
 <p>
 MacOSX版のスクリーンショット20130606
