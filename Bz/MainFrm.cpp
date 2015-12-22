@@ -351,6 +351,7 @@ void CMainFrame::OnViewBitmap(UINT uNotifyCode, int nID, CWindow wndCtl)
   if(m_bBmpView)CreateSubView();
   else pCoreData->DeleteAllSubViews();
   ResetSplitter();
+  ResetWindowWidth();
   //CreateClient();
 }
 void CMainFrame::OnViewStruct(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -364,6 +365,7 @@ void CMainFrame::OnViewStruct(UINT uNotifyCode, int nID, CWindow wndCtl)
   if(m_bStructView)CreateSubView();
   else pCoreData->DeleteAllSubViews();
   ResetSplitter();
+  ResetWindowWidth();
   //CreateClient();
 }
 void CMainFrame::OnViewInspect(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -377,6 +379,7 @@ void CMainFrame::OnViewInspect(UINT uNotifyCode, int nID, CWindow wndCtl)
   if(m_bInspectView)CreateSubView();
   else pCoreData->DeleteAllSubViews();
   ResetSplitter();
+  ResetWindowWidth();
   //CreateClient();
 }
 void CMainFrame::OnViewAnalyzer(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -390,6 +393,7 @@ void CMainFrame::OnViewAnalyzer(UINT uNotifyCode, int nID, CWindow wndCtl)
   if(m_bAnalyzerView)CreateSubView();
   else pCoreData->DeleteAllSubViews();
   ResetSplitter();
+  ResetWindowWidth();
 }
 void CMainFrame::OnViewMiniToolbar(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
@@ -428,6 +432,7 @@ void CMainFrame::OnViewSplit(UINT uNotifyCode, int nID, CWindow wndCtl)
   m_nSplitView0 = m_nSplitView;
 
   SwitchActiveBZView();
+  ResetWindowWidth();
 }
 
 LRESULT CMainFrame::OnStatusBarClicked(LPNMHDR pnmh)

@@ -721,7 +721,6 @@ void CBZView::UpdateSubView()
 			if(pView!=NULL)
 				pView->OnInitialUpdate();
 		}
-    UpdateMiniToolbar();
 	}
 }
 
