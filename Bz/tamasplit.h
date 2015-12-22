@@ -297,7 +297,10 @@ public:
         }
         if(m_headermode==SPLITMODE::YOKO && x%m_numHeaderPaneX==0)
         {
-          ::MoveWindow(m_hWndHeader[idxHeader], m_borderRealX[x], m_borderRealY[y], GetPaneWidth(x)+GetPaneWidth(x+1)+BORDERWIDTH, HEADERHEIGHT, TRUE);
+          int newW=0;
+          for(int i=0;i<m_numHeaderPaneX;i++)newW+=GetPaneWidth(x+i)+BORDERWIDTH;
+          newW-=BORDERWIDTH;
+          ::MoveWindow(m_hWndHeader[idxHeader], m_borderRealX[x], m_borderRealY[y], newW, HEADERHEIGHT, TRUE);
           idxHeader++;
         }
 			}
@@ -394,9 +397,11 @@ public:
           }
           if(m_headermode==SPLITMODE::YOKO)
           {
-            int XAmari = x%m_numHeaderPaneX;
-            int XPaneStart = x-XAmari;
-            ::MoveWindow(m_hWndHeader[XAmari], m_borderRealX[XPaneStart], m_borderRealY[y], GetPaneWidth(XPaneStart)+GetPaneWidth(XPaneStart+1)+BORDERWIDTH, HEADERHEIGHT, TRUE);
+            int XPaneStart = x-x%m_numHeaderPaneX;
+            int newW=0;
+            for(int i=0;i<m_numHeaderPaneX;i++)newW+=GetPaneWidth(XPaneStart+i)+BORDERWIDTH;
+            newW-=BORDERWIDTH;
+            ::MoveWindow(m_hWndHeader[x/m_numHeaderPaneX], m_borderRealX[XPaneStart], m_borderRealY[y], newW, HEADERHEIGHT, TRUE);
           }
 				}
 			}
