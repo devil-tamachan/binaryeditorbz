@@ -106,6 +106,12 @@ void CBZCoreData::ReplaceBZDoc2(int index, CBZDoc2 *doc, BOOL bDeleteDoc)
   if(bDeleteDoc)delete pOldDoc;
 }
 
+void CBZCoreData::SetFocus2ActiveBZView()
+{
+  CBZView* pActiveBZView = GetActiveBZView();
+  if(pActiveBZView)::SetFocus(pActiveBZView->m_hWnd);
+}
+
 void CBZCoreData::Invalidate(BOOL bErase)
 {
   if(m_pMainFrame)m_pMainFrame->Invalidate(bErase);

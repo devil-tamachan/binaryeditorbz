@@ -202,5 +202,7 @@ public:
     int i = m_arrView.Find(pBZView);
     if(i>=0)m_dwActive = i;
   }
+
+  void SetFocus2ActiveBZView();
   void Invalidate(BOOL bErase = TRUE);
 };

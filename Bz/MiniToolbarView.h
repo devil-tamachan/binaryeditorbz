@@ -133,9 +133,7 @@ public:
   void SetFocus2ActiveBZView()
   {
     CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-    if(pCoreData==NULL)return;
-    CBZView* pActiveBZView = pCoreData->GetActiveBZView();
-    if(pActiveBZView)::SetFocus(pActiveBZView->m_hWnd);
+    if(pCoreData)pCoreData->SetFocus2ActiveBZView();
   }
 
   CBZDoc2* GetBZDoc2()
