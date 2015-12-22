@@ -534,7 +534,7 @@ public:
 
   int GetWindowIdealWidth()
   {
-    return m_sizeAll.cx + BMPSPACE*2 + GetSystemMetrics(SM_CXVSCROLL);
+    return m_sizeAll.cx + BMPSPACE + GetSystemMetrics(SM_CXVSCROLL);
   }
 };
 
