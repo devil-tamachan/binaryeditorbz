@@ -68,6 +68,8 @@ public:
     if(!pBZDoc)return;
 
     pBZDoc->OnEditReadOnly();
+    
+    SetFocus2ActiveBZView();
   }
 
   void OnCbnSelChangeEncoding(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -76,6 +78,8 @@ public:
     if(!pBZView)return;
 
     pBZView->ChangeCharSet((CharSet)(m_combo_encoding.GetCurSel()));
+
+    SetFocus2ActiveBZView();
   }
 
 	BOOL OnEraseBkGnd(WTL::CDCHandle dc)
@@ -124,6 +128,14 @@ public:
   {
     CBZCoreData *pCoreData = CBZCoreData::GetInstance();
     return pCoreData->GetBZViewFromMiniToolbar(this);
+  }
+
+  void SetFocus2ActiveBZView()
+  {
+    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+    if(pCoreData==NULL)return;
+    CBZView* pActiveBZView = pCoreData->GetActiveBZView();
+    if(pActiveBZView)::SetFocus(pActiveBZView->m_hWnd);
   }
 
   CBZDoc2* GetBZDoc2()
