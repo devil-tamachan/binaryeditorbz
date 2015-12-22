@@ -95,6 +95,7 @@ void CBZCoreData::CreateMiniToolbar(HWND hWndParent)
     pMiniToolbar->Create(hWndParent);
     pMiniToolbar->ShowWindow(SW_SHOW);
     AddMiniToolbar(pMiniToolbar);
+    m_arrView[i]->UpdateMiniToolbar();
   }
 }
 
