@@ -110,6 +110,11 @@ public:
 		return TRUE;
   }
 
+  void InitSubView()
+  {
+    Clear();
+  }
+
   void Clear()
   {
     ATLTRACE("AnalyzerClear!\n");

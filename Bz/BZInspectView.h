@@ -130,6 +130,10 @@ public:
     return TRUE;
   }
 
+  void InitSubView()
+  {
+  }
+
   void OnBnClickedInsIntel(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
     options.bByteOrder = !options.bByteOrder;

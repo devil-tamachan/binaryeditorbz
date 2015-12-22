@@ -704,24 +704,8 @@ void CBZView::Update()
 void CBZView::UpdateSubView()
 {
 	CMainFrame *pMainFrame = GetMainFrame();
-	if(pMainFrame)
-	{
-		if(pMainFrame->m_bStructView) {
-			CBZFormView* pView = dynamic_cast<CBZFormView*>(GetSubView());
-			if(pView!=NULL)
-				pView->SelectTag();
-		}
-		if(pMainFrame->m_bAnalyzerView) {
-			CBZAnalyzerView* pView = dynamic_cast<CBZAnalyzerView*>(GetSubView());
-			if(pView!=NULL)
-				pView->Clear();
-		}
-    if(pMainFrame->m_bBmpView) {
-			CBZBmpView2* pView = dynamic_cast<CBZBmpView2*>(GetSubView());
-			if(pView!=NULL)
-				pView->OnInitialUpdate();
-		}
-	}
+  CBZSubView *pSubView = GetSubView();
+  if(pSubView)pSubView->InitSubView();
 }
 
 void CBZView::UpdateMiniToolbar()

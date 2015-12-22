@@ -389,6 +389,11 @@ public:
     return pCoreData->GetSplitterWnd();
   }
 
+  void InitSubView()
+  {
+    OnInitialUpdate();
+  }
+
   void OnInitialUpdate()
   {
     CBZDoc2* pDoc = GetBZDoc2();

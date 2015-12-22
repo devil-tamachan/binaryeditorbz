@@ -11,5 +11,9 @@ public:
   virtual ~CBZSubView(void)
   {
   }
+
+  virtual int GetWindowIdealWidth() = 0;
+
+  virtual void InitSubView() = 0;
 };
 

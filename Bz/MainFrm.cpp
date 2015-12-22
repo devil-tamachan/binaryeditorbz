@@ -848,27 +848,13 @@ CBZView *CMainFrame::GetBrotherView(CBZView* pView)
 int CMainFrame::GetSubViewIdealWidth(DWORD idx)
 {
   CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-  CBZSubView *pSub0 = pCoreData->GetSubView(idx);
-  if(pSub0==NULL)
+  CBZSubView *pSubView = pCoreData->GetSubView(idx);
+  if(pSubView==NULL)
   {
     ATLASSERT(FALSE);
     return 0;
   }
-  if(m_bBmpView)
-  {
-    CBZBmpView2 *pBmpView = dynamic_cast<CBZBmpView2*>(pSub0);
-    return pBmpView->GetWindowIdealWidth();
-  } else if(m_bStructView) {
-    CBZFormView *pFormView = dynamic_cast<CBZFormView*>(pSub0);
-    return pFormView->GetWindowIdealWidth();
-  } else if(m_bInspectView) {
-    CBZInspectView *pInsView = dynamic_cast<CBZInspectView*>(pSub0);
-    return pInsView->GetWindowIdealWidth();
-  } else if(m_bAnalyzerView) {
-    CBZAnalyzerView *pAnaView = dynamic_cast<CBZAnalyzerView*>(pSub0);
-    return pAnaView->GetWindowIdealWidth();
-  }
-  return 0;
+  return pSubView->GetWindowIdealWidth();
 }
 
 

@@ -297,6 +297,11 @@ public:
     return TRUE;
   }
 
+  void InitSubView()
+  {
+    SelectTag();
+  }
+
   /*int OnCreate(LPCREATESTRUCT lpCreateStruct)
   {
     if(options.xSplitStruct == 0)
