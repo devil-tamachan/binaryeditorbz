@@ -243,7 +243,7 @@ CAPTION "About BZ"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "Binary Editor BZ Version 1.9.8.1",IDC_STATIC,40,10,119,8,SS_NOPREFIX
+    LTEXT           "Binary Editor BZ Version 1.9.8.2",IDC_STATIC,40,10,119,8,SS_NOPREFIX
     LTEXT           "Copyright (c) 1996-2004 by c.mos",IDC_STATIC,40,25,119,8
     DEFPUSHBUTTON   "OK",IDOK,178,7,32,14,WS_GROUP
     LTEXT           "2012-2015 Mod by devil.tamachan@gmail.com",IDC_STATIC,66,36,144,8
@@ -503,8 +503,8 @@ IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,9,8,1
- PRODUCTVERSION 1,9,8,1
+ FILEVERSION 1,9,8,2
+ PRODUCTVERSION 1,9,8,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -520,12 +520,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "Binary Editor BZ"
-            VALUE "FileVersion", "1, 9, 8, 1"
+            VALUE "FileVersion", "1, 9, 8, 2"
             VALUE "InternalName", "BZ"
             VALUE "LegalCopyright", "Copyright (c) 1996-2015 by c.mos & tamachan"
             VALUE "OriginalFilename", "BZ.EXE"
             VALUE "ProductName", "Binary Editor BZ"
-            VALUE "ProductVersion", "1, 9, 8, 1"
+            VALUE "ProductVersion", "1, 9, 8, 2"
         END
     END
     BLOCK "VarFileInfo"
