@@ -4,7 +4,8 @@ c.mosさんのご好意でソースが頂けました。それをtamachanが改造しました。
 
 <a href="http://polopoloaria.blogspot.jp/2013/11/blog-post.html">![](http://devil-tamachan.github.io/BZDoc/image/bzscratch6.png)</a>
 
-<h2><a href="http://devil-tamachan.github.io/BZDoc/">ヘルプ→</a></h2>
+<h3><a href="https://github.com/devil-tamachan/binaryeditorbz/releases">ダウンロードへ移動→</a></h3>
+<h3><a href="http://devil-tamachan.github.io/BZDoc/">ヘルプへ移動→</a></h3>
 
 
 今後のアップデート予定：
