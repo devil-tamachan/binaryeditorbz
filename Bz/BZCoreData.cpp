@@ -95,7 +95,10 @@ void CBZCoreData::CreateMiniToolbar(HWND hWndParent)
     pMiniToolbar->Create(hWndParent);
     pMiniToolbar->ShowWindow(SW_SHOW);
     AddMiniToolbar(pMiniToolbar);
-    m_arrView[i]->UpdateMiniToolbar();
+  }
+  for(int i = m_arrView.GetSize();i>0;i--)
+  {
+    m_arrView[i-1]->UpdateMiniToolbar();
   }
 }
 
