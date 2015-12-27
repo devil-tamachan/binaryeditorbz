@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PANEMAXH 4
 #define PANEMAX (PANEMAXW*PANEMAXH)
 
-#define HEADERHEIGHT 13+7
+#define HEADERHEIGHT 13+7+1
 #define BORDERWIDTH 4
 
 class CBZCoreData;
@@ -60,6 +60,7 @@ public:
   unsigned int m_bHeader;
   unsigned int m_headermode;
   unsigned int m_numHeaderPaneX;
+  int m_headerHeight;
   WTL::CBrush m_halftoneBrush;
   WTL::CBrush m_borderBrush;
 
@@ -87,6 +88,7 @@ public:
 		m_bPressLButton = FALSE;
     m_bHeader = FALSE;
     m_headermode = SPLITMODE::NOSPLIT;
+    m_headerHeight = (((float)HEADERHEIGHT) * CBZDpi::ScaleY());
     m_numHeaderPaneX = 1;
     m_halftoneBrush = WTL::CDCHandle::GetHalftoneBrush();
     InitBorderBrush();
@@ -233,7 +235,7 @@ public:
 
     unsigned int yParam = 0;
     if(y != m_paneH-1)yParam += BORDERWIDTH;
-    if(m_bHeader)yParam += HEADERHEIGHT;
+    if(m_bHeader)yParam += m_headerHeight;
 
 		if(ret>yParam)ret-=yParam;
 		else ret=0;
@@ -270,7 +272,7 @@ public:
 		{
       unsigned int yParam = 0;
       if(y!=m_paneH-1)yParam = BORDERWIDTH;
-      if(m_bHeader)yParam += HEADERHEIGHT;
+      if(m_bHeader)yParam += m_headerHeight;
 
 			if(m_borderIdealY[y] > m_borderRealY[y+1]-yParam)
 			{
@@ -282,7 +284,7 @@ public:
     {
       if(m_headermode==SPLITMODE::NOSPLIT || m_headermode==SPLITMODE::TATE)
       {
-        ::MoveWindow(m_hWndHeader[idxHeader], 0, m_borderRealY[y], rect.Width(), HEADERHEIGHT, TRUE);
+        ::MoveWindow(m_hWndHeader[idxHeader], 0, m_borderRealY[y], rect.Width(), m_headerHeight, TRUE);
         idxHeader++;
       }
 			for(int x=0;x<m_paneW;x++)
@@ -292,7 +294,7 @@ public:
         ATLASSERT(wnd.m_hWnd);
 				if(wnd.m_hWnd)
 				{
-					wnd.MoveWindow(m_borderRealX[x], m_borderRealY[y]+(m_bHeader?HEADERHEIGHT:0), GetPaneWidth(x), GetPaneHeight(y), TRUE);
+					wnd.MoveWindow(m_borderRealX[x], m_borderRealY[y]+(m_bHeader?m_headerHeight:0), GetPaneWidth(x), GetPaneHeight(y), TRUE);
 					ATLTRACE("PaneA(%d,%d)(%d,%d %d,%d)\n", x, y, m_borderIdealX[x], m_borderIdealY[y], GetPaneWidth(x), GetPaneHeight(y));
         }
         if(m_headermode==SPLITMODE::YOKO && x%m_numHeaderPaneX==0)
@@ -300,7 +302,7 @@ public:
           int newW=0;
           for(int i=0;i<m_numHeaderPaneX;i++)newW+=GetPaneWidth(x+i)+BORDERWIDTH;
           newW-=BORDERWIDTH;
-          ::MoveWindow(m_hWndHeader[idxHeader], m_borderRealX[x], m_borderRealY[y], newW, HEADERHEIGHT, TRUE);
+          ::MoveWindow(m_hWndHeader[idxHeader], m_borderRealX[x], m_borderRealY[y], newW, m_headerHeight, TRUE);
           idxHeader++;
         }
 			}
@@ -375,7 +377,7 @@ public:
 			}
 			if(m_selectBorderY!=-1)
 			{
-				m_borderIdealY[m_selectBorderY]=m_borderRealY[m_selectBorderY]=min((long)(m_borderRealY[m_selectBorderY+1]-BORDERWIDTH*2), max(point.y, (long)(m_borderRealY[m_selectBorderY-1]+BORDERWIDTH*2+(m_bHeader?HEADERHEIGHT:0))));
+				m_borderIdealY[m_selectBorderY]=m_borderRealY[m_selectBorderY]=min((long)(m_borderRealY[m_selectBorderY+1]-BORDERWIDTH*2), max(point.y, (long)(m_borderRealY[m_selectBorderY-1]+BORDERWIDTH*2+(m_bHeader?m_headerHeight:0))));
 				y3=m_selectBorderY-1;
 				y2 = x3+2;
 			}
@@ -384,7 +386,7 @@ public:
       {
         if(m_headermode==SPLITMODE::TATE)
         {
-          ::MoveWindow(m_hWndHeader[y], 0, m_borderRealY[y], rect.Width(), HEADERHEIGHT, TRUE);
+          ::MoveWindow(m_hWndHeader[y], 0, m_borderRealY[y], rect.Width(), m_headerHeight, TRUE);
         }
 				for(int x=x3;x<x2;x++)
 				{
@@ -392,7 +394,7 @@ public:
 					ATL::CWindow wnd = ATL::CWindow(m_hWndPane[idx]);
 					if(wnd.m_hWnd)
 					{
-						wnd.MoveWindow(m_borderRealX[x], m_borderRealY[y]+(m_bHeader?HEADERHEIGHT:0), GetPaneWidth(x), GetPaneHeight(y), TRUE);
+						wnd.MoveWindow(m_borderRealX[x], m_borderRealY[y]+(m_bHeader?m_headerHeight:0), GetPaneWidth(x), GetPaneHeight(y), TRUE);
 						//ATLTRACE("Move(%d,%d)(%d,%d %d,%d)\n", x, y, m_borderIdealX[x], m_borderIdealY[y], GetPaneWidth(x), GetPaneHeight(y));
           }
           if(m_headermode==SPLITMODE::YOKO)
@@ -401,7 +403,7 @@ public:
             int newW=0;
             for(int i=0;i<m_numHeaderPaneX;i++)newW+=GetPaneWidth(XPaneStart+i)+BORDERWIDTH;
             newW-=BORDERWIDTH;
-            ::MoveWindow(m_hWndHeader[x/m_numHeaderPaneX], m_borderRealX[XPaneStart], m_borderRealY[y], newW, HEADERHEIGHT, TRUE);
+            ::MoveWindow(m_hWndHeader[x/m_numHeaderPaneX], m_borderRealX[XPaneStart], m_borderRealY[y], newW, m_headerHeight, TRUE);
           }
 				}
 			}

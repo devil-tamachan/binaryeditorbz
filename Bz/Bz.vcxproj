@@ -449,6 +449,7 @@
     </ClCompile>
     <ClCompile Include="BZCoreData.cpp" />
     <ClCompile Include="BZDoc2.cpp" />
+    <ClCompile Include="BZDpi.cpp" />
     <ClCompile Include="BZFormVw.cpp">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -575,6 +576,7 @@
     <ClInclude Include="BZBmpVw2.h" />
     <ClInclude Include="BZCoreData.h" />
     <ClInclude Include="BZDoc2.h" />
+    <ClInclude Include="BZDpi.h" />
     <ClInclude Include="BZFormVw.h" />
     <ClInclude Include="BZInspectView.h" />
     <ClInclude Include="BZOption.h" />

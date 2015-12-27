@@ -16,7 +16,7 @@
 #include <windows.h>
 
 #ifdef _DEBUG
-//#include "vld.h" // https://vld.codeplex.com/
+#include "vld.h" // https://vld.codeplex.com/
 #endif
 
 #define _WTL_NO_AUTOMATIC_NAMESPACE
@@ -58,6 +58,7 @@ extern WTL::CAppModule _Module;
 //#include "MemDC.h"
 
 #include "Bz.h"
+#include "BZDpi.h"
 
 //#define SFC_EASYDEBUG
 #include "SuperFileCon.h"

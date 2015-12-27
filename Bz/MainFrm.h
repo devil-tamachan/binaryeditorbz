@@ -178,6 +178,8 @@ public:
     CBZCoreData *pCoreData = CBZCoreData::GetInstance();
     pCoreData->m_pMainFrame = this;
 
+    CBZDpi::Init(m_hWnd);
+
     m_acc.LoadAccelerators(IDR_MAINFRAME);
 
     if(options.ptFrame.x && options.ptFrame.y)
