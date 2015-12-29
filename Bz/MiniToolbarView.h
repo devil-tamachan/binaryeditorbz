@@ -67,7 +67,7 @@ public:
     CBZDoc2 *pBZDoc = GetBZDoc2();
     if(!pBZDoc)return;
 
-    pBZDoc->OnEditReadOnly();
+    pBZDoc->ToggleReadOnly();
     
     SetFocus2ActiveBZView();
   }
@@ -122,6 +122,16 @@ public:
   void SetEncoding(int encoding)
   {
     m_combo_encoding.SetCurSel(encoding);
+  }
+
+  void Update()
+  {
+    CBZView *pBZView = GetBZView();
+    if(!pBZView)return;
+
+    SetFilePath(pBZView->m_pDoc->GetFilePath());
+    SetReadOnly(pBZView->m_pDoc->IsReadOnly());
+    SetEncoding(pBZView->m_charset);
   }
 
   CBZView* GetBZView()

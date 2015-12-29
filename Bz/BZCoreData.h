@@ -117,6 +117,8 @@ public:
     return NULL;
   }
 
+  void UpdateMiniToolbar();
+
   DWORD GetCountBZDoc2()
   {
     return m_arrDoc.GetSize();

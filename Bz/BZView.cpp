@@ -719,12 +719,7 @@ void CBZView::UpdateMiniToolbar()
 {
   if(options.bMiniToolbar) {
     CMiniToolbarView *pMiniToolbar = GetMiniToolbar();
-    if(pMiniToolbar!=NULL)
-    {
-      pMiniToolbar->SetFilePath(m_pDoc->GetFilePath());
-      pMiniToolbar->SetReadOnly(m_pDoc->IsReadOnly());
-      pMiniToolbar->SetEncoding(m_charset);
-    }
+    if(pMiniToolbar!=NULL)pMiniToolbar->Update();
   }
 }
 

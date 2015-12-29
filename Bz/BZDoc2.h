@@ -154,5 +154,5 @@ public:
   BOOL OnFileOpen(LPCTSTR lpszPathName = NULL, HWND hWnd = NULL);
   BOOL OnFileSave(HWND hWnd = NULL);
   void OnFileSaveAs(HWND hWnd = NULL);
-  void OnEditReadOnly();
+  void ToggleReadOnly();
 };

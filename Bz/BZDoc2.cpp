@@ -58,7 +58,7 @@ void CBZDoc2::PreCloseFrame(CFrameWnd* pFrameArg)
 }*/
 
 
-void CBZDoc2::OnEditReadOnly()
+void CBZDoc2::ToggleReadOnly()
 {
   if(m_pSFC && !m_pSFC->IsReadOnly()) m_bReadOnly = !m_bReadOnly;	
 }

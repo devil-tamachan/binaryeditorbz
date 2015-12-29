@@ -630,8 +630,8 @@ private:
 public:
 	CBZDoc2*	m_pDoc;
 	int		m_nPageLen;
-private:
 	CharSet m_charset;
+private:
 	static BOOL m_bHexSize;
 	int		m_nColAddr;		// ###1.60
 	static LPSTR m_pEbcDic;	// ###1.63

@@ -163,7 +163,8 @@ void CMainFrame::_OnEditReadOnly()
 {
   CBZCoreData *pCoreData = CBZCoreData::GetInstance();
   CBZDoc2 *pDoc = pCoreData->GetActiveBZDoc2();
-  if(pDoc)pDoc->OnEditReadOnly();
+  if(pDoc)pDoc->ToggleReadOnly();
+  pCoreData->UpdateMiniToolbar();
 }
 void CMainFrame::OnEditReadOnlyOpen(UINT uNotifyCode, int nID, CWindow wndCtl)
 {

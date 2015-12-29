@@ -102,6 +102,15 @@ void CBZCoreData::CreateMiniToolbar(HWND hWndParent)
   }
 }
 
+void CBZCoreData::UpdateMiniToolbar()
+{
+  for(int i=0;i<m_arrMiniToolbarView.GetSize();i++)
+  {
+    CMiniToolbarView *pMiniToolbar = m_arrMiniToolbarView[i];
+    if(pMiniToolbar)pMiniToolbar->Update();
+  }
+}
+
 void CBZCoreData::ReplaceBZDoc2(int index, CBZDoc2 *doc, BOOL bDeleteDoc)
 {
   CBZDoc2 *pOldDoc = GetBZDoc2(index);
