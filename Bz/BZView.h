@@ -346,16 +346,10 @@ public:
   void JumpToMark(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnCharMode(UINT uNotifyCode = 0, int nID = 0, CWindow wndCtl = NULL)
   {
-    m_charset = options.charset = (CharSet)(nID - ID_CHAR_ASCII);
-    if(m_charset == CTYPE_EBCDIC)
-      LoadEbcDicTable();
-    options.Touch();
-    Invalidate(TRUE);
-    CBZView* pView = GetBrotherView();
-    if(pView) {
-      pView->m_charset = options.charset;
-      pView->Invalidate(TRUE);
-    }
+    options.charset = (CharSet)(nID - ID_CHAR_ASCII);
+    ChangeCharSet(options.charset);
+    CBZView* pBroView = GetBrotherView();
+    if(pBroView)pBroView->ChangeCharSet(options.charset);
   }
   void OnStatusInfo(UINT uNotifyCode=0, int nID=0, CWindow wndCtl=NULL) { if((m_nBytes*=2) == 8) m_nBytes = 1; }
   void OnStatusSize(UINT /*uNotifyCode*/=0, int /*nID*/=0, CWindow /*wndCtl*/=NULL) { m_bHexSize = !m_bHexSize; }
@@ -368,7 +362,11 @@ public:
   void ChangeCharSet(CharSet charset)
   {
     m_charset = charset;
-    OnCharMode(0, m_charset + ID_CHAR_ASCII);
+    if(m_charset == CTYPE_EBCDIC)
+      LoadEbcDicTable();
+    options.Touch();
+    Invalidate(TRUE);
+    UpdateMiniToolbar();
   }
   void OnByteOrder(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnViewGrid1(UINT uNotifyCode, int nID, CWindow wndCtl)
