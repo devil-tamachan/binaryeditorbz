@@ -319,6 +319,7 @@ public:
     aboutDlg.DoModal();
   }
   void OnViewSplit(UINT uNotifyCode, int nID, CWindow wndCtl);
+  void _OnViewSplit(int nID);
   void OnFilePageSetup(UINT uNotifyCode, int nID, CWindow wndCtl) 
   {
 /*    CPageSetupDialog dlg;

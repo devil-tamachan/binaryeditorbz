@@ -59,23 +59,34 @@ int Run(LPTSTR lpstrCmdLine = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	}
 
 	wndMain.ShowWindow(nCmdShow);
-
-  if(_tcslen(lpstrCmdLine) > 0)
+  
+  CBZCoreData *pCoreData = CBZCoreData::GetInstance();
+  int argc = 0;
+  LPWSTR *argv = CommandLineToArgvW(lpstrCmdLine, &argc);
+  if(argc>=2)
   {
-    CBZCoreData *pCoreData = CBZCoreData::GetInstance();
-    CBZView *pBZView = pCoreData->GetActiveBZView();
-    if(pBZView)
+    CMainFrame *pMainFrame = pCoreData->GetMainFrame();
+    if(pMainFrame!=NULL)
     {
-      CBZDoc2 *pDoc = pBZView->GetBZDoc();
-      CString filename = lpstrCmdLine;
-      LPTSTR pFilename = filename.GetBuffer();
-      PathUnquoteSpaces(pFilename);
-      filename.ReleaseBuffer();
-      if(pDoc)pDoc->OnFileOpen(filename, wndMain.m_hWnd);
-      pBZView->Update();
+      pMainFrame->_OnViewSplit(ID_VIEW_SPLIT_H);
     }
-    wndMain.UpdateFrameTitle();
   }
+  for(int i=0;i<argc;i++)
+  {
+    if(i>=2)break;
+    CBZView *pBZView = pCoreData->GetBZView(i);
+    if(pBZView==NULL)break;
+    CBZDoc2 *pDoc = pBZView->m_pDoc;
+    if(pDoc==NULL)break;
+
+    CString filename = argv[i];
+    LPTSTR pFilename = filename.GetBuffer();
+    PathUnquoteSpaces(pFilename);
+    filename.ReleaseBuffer();
+    pDoc->OnFileOpen(filename, wndMain.m_hWnd);
+    pBZView->Update();
+  }
+  wndMain.UpdateFrameTitle();
 
 	int nRet = theLoop.Run();
 

@@ -412,6 +412,10 @@ void CMainFrame::OnViewMiniToolbar(UINT uNotifyCode, int nID, CWindow wndCtl)
 
 void CMainFrame::OnViewSplit(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+  _OnViewSplit(nID);
+}
+void CMainFrame::_OnViewSplit(int nID)
+{
   /* 最大化していると最大化状態のままウィンドウサイズが調整されて変なウィンドウ（最大化できない＆サイズ変更不可）になってしまうバグの対策 */
   options.nCmdShow=SW_SHOWNORMAL;
   ShowWindow(options.nCmdShow);

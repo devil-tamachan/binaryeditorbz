@@ -133,19 +133,23 @@ public:
   }
   CBZDoc2* GetBZDoc2(DWORD dwIndex)
   {
-    return m_arrDoc[dwIndex];
+    if(m_arrDoc.GetSize() > dwIndex)return m_arrDoc[dwIndex];
+    return NULL;
   }
   CBZView* GetBZView(DWORD dwIndex)
   {
-    return m_arrView[dwIndex];
+    if(m_arrView.GetSize() > dwIndex)return m_arrView[dwIndex];
+    return NULL;
   }
   CBZSubView* GetSubView(DWORD dwIndex)
   {
-    return m_arrSubView[dwIndex];
+    if(m_arrSubView.GetSize() > dwIndex)return m_arrSubView[dwIndex];
+    return NULL;
   }
   CMiniToolbarView* GetMiniToolbar(DWORD dwIndex)
   {
-    return m_arrMiniToolbarView[dwIndex];
+    if(m_arrMiniToolbarView.GetSize() > dwIndex)return m_arrMiniToolbarView[dwIndex];
+    return NULL;
   }
 
   CTamaSplitterWindow* GetSplitterWnd() { return m_pSplitter; }
