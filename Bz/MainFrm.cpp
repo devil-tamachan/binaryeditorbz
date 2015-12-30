@@ -680,8 +680,11 @@ BOOL CMainFrame::ResetSplitter()
     if(m_nSplitView==ID_VIEW_SPLIT_V)paneW*=2;
     else if(m_nSplitView==ID_VIEW_SPLIT_H)paneH=2;
     ATLTRACE("RecalcPaneSize: w=%d, h=%d\n", paneW, paneH);
-    m_pWndSplitter->m_paneW = paneW;
-    m_pWndSplitter->m_paneH = paneH;
+    if(m_pWndSplitter!=NULL)
+    {
+      m_pWndSplitter->m_paneW = paneW;
+      m_pWndSplitter->m_paneH = paneH;
+    }
     paneCnt = paneW*paneH;
   }
 
@@ -696,7 +699,7 @@ BOOL CMainFrame::ResetSplitter()
   ATLASSERT(m_pWndSplitter);
   if(m_pWndSplitter!=NULL)
   {
-        m_pWndSplitter->SetHeaderMode(options.bMiniToolbar, GetHeaderMode(), bSubView ? 2 : 1);
+    m_pWndSplitter->SetHeaderMode(options.bMiniToolbar, GetHeaderMode(), bSubView ? 2 : 1);
     int iBZX = 0, iBZY = 0;
     int iBZShiftX = 0;
     if(m_nSplitView==ID_VIEW_SPLIT_V)
@@ -732,7 +735,12 @@ BOOL CMainFrame::ResetSplitter()
     } else {
       if(bSubView)m_pWndSplitter->SetSplitterPosX(1, 200);
       else if(m_nSplitView==ID_VIEW_SPLIT_V)m_pWndSplitter->SetSplitterPosX(1, 620);
-      if(m_nSplitView==ID_VIEW_SPLIT_H)m_pWndSplitter->SetSplitterPosY(1, 200);
+      if(m_nSplitView==ID_VIEW_SPLIT_H)
+      {
+        WTL::CRect r;
+        if(m_pWndSplitter->GetWindowRect(&r))m_pWndSplitter->SetSplitterPosY(1, r.Height()/2);
+        else m_pWndSplitter->SetSplitterPosY(1, 200);
+      }
     }
     }
     m_pWndSplitter->InitSplitLayout();

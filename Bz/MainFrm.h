@@ -93,6 +93,7 @@ public:
     MSG_WM_SHOWWINDOW(OnShowWindow)
     MSG_WM_INITMENUPOPUP(OnInitMenuPopup)
     //MSG_WM_SETMESSAGESTRING(WM_SETMESSAGESTRING, OnSetMessageString)MFCの独自メッセージ
+    MSG_WM_SIZE(OnSize)
 
     COMMAND_ID_HANDLER_EX(ID_APP_EXIT, OnFileExit)
     COMMAND_ID_HANDLER_EX(ID_JUMP_FIND, OnJumpFind)
@@ -278,6 +279,23 @@ public:
     SetMsgHandled(FALSE);
   }
   void OnShowWindow(BOOL bShow, UINT nStatus);
+  
+  void OnSize(UINT nType, WTL::CSize size)
+  {
+    static UINT lastType = 0;
+		//SetMsgHandled(FALSE);
+		if(nType != SIZE_MINIMIZED)
+		{
+      UpdateLayout();
+		}
+    if(m_pWndSplitter!=NULL && (nType==SIZE_MAXIMIZED || (lastType==SIZE_MAXIMIZED && nType==SIZE_RESTORED)))
+    {
+      ResetSplitter();
+      ResetWindowWidth();
+    }
+    lastType = nType;
+  }
+
 
   void OnFileExit(UINT uNotifyCode, int nID, CWindow wndCtl) { PostMessage(WM_CLOSE); }
   void OnJumpFind(UINT uNotifyCode, int nID, CWindow wndCtl)
