@@ -36,6 +36,8 @@ public:
 
   BEGIN_DLGRESIZE_MAP(CMiniToolbarView)
     DLGRESIZE_CONTROL(IDE_MINI_PATH, DLSZ_SIZE_X | DLSZ_REPAINT)
+    DLGRESIZE_CONTROL(IDE_MINI_SIZE, DLSZ_MOVE_X | DLSZ_REPAINT)
+ //   DLGRESIZE_CONTROL(IDE_MINI_DATE, DLSZ_MOVE_X | DLSZ_REPAINT)
     DLGRESIZE_CONTROL(IDC_MINI_READONLY, DLSZ_MOVE_X | DLSZ_REPAINT)
     DLGRESIZE_CONTROL(IDC_MINI_ENCODING, DLSZ_MOVE_X | DLSZ_REPAINT)
   END_DLGRESIZE_MAP()
@@ -114,6 +116,43 @@ public:
     ::SetWindowText(GetDlgItem(IDE_MINI_PATH), path);
   }
 
+  void SetSize(UINT64 size)
+  {
+    //UINT64: 0 - 18,446,744,073,709,551,615
+    LPCTSTR arrUnit[] = {_T(""), _T("k"), _T("M"), _T("G"), _T("T"), _T("P"), _T("E")};
+    UINT64 prev = 0;
+    int k=0;
+    for(;size>=1000;k++)
+    {
+      prev=size;
+      size/=1000;
+    }
+    if(prev!=0)prev%=1000;
+    if(prev!=0 && (prev%10) >= 5)prev+=10;
+    if(prev>=1000)
+    {
+      prev-=1000;
+      size+=1;
+    }
+    if(prev!=0)prev/=10;
+    CString syosu;
+    syosu.Format(_T("%02I64u"), prev);
+    for(int i=1;i>=0;i--)
+    {
+      if(syosu[i]!=L'0')break;
+      syosu.Delete(i,1);
+    }
+    if(syosu.GetLength()>0)syosu.Insert(0, _T("."));
+    CString str;
+    str.Format(_T("%I64u%s %sB"), size, syosu, arrUnit[k]);
+    ::SetWindowText(GetDlgItem(IDE_MINI_SIZE), str);
+  }
+
+/*  void SetDate(LPCTSTR str)
+  {
+    ::SetWindowText(GetDlgItem(IDE_MINI_DATE), str);
+  }*/
+
   void SetReadOnly(BOOL bReadOnly)
   {
     CheckDlgButton(IDC_MINI_READONLY, bReadOnly?BST_CHECKED:BST_UNCHECKED);
@@ -129,8 +168,10 @@ public:
     CBZView *pBZView = GetBZView();
     if(!pBZView)return;
 
-    SetFilePath(pBZView->m_pDoc->GetFilePath());
-    SetReadOnly(pBZView->m_pDoc->IsReadOnly());
+    CBZDoc2 *pDoc = pBZView->m_pDoc;
+    SetFilePath(pDoc->GetFilePath());
+    SetSize(pDoc->GetDocSize());
+    SetReadOnly(pDoc->IsReadOnly());
     SetEncoding(pBZView->m_charset);
   }
 

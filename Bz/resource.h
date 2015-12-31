@@ -61,6 +61,8 @@
 #define IDC_MINI_ENCODING               1046
 #define IDC_MINI_READONLY               1048
 #define IDE_MINI_PATH                   1049
+#define IDE_MINI_SIZE                   1050
+#define IDE_MINI_DATE                   1051
 #define IDS_COLOR_ADDRESS               3000
 #define IDS_COLOR_ADDRESS2              3001
 #define IDS_COLOR_TEXT                  3002
@@ -163,7 +165,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        147
 #define _APS_NEXT_COMMAND_VALUE         32860
-#define _APS_NEXT_CONTROL_VALUE         1050
+#define _APS_NEXT_CONTROL_VALUE         1051
 #define _APS_NEXT_SYMED_VALUE           107
 #endif
 #endif
