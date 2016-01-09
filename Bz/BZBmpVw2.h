@@ -42,6 +42,7 @@ void Make8bitBITMAPINFOHEADER(LPBITMAPINFOHEADER lpbi, LONG w, LONG h);
 
 //#include "tamascrlu64v.h"
 
+#define CUSTOMPALLET 10
 
 #include "BZSubView.h"
 
@@ -64,6 +65,7 @@ public:
     COMMAND_RANGE_HANDLER_EX(ID_BMPVIEW_8BITCOLOR, ID_BMPVIEW_32BITCOLOR, OnBmpViewColorWidth)
     COMMAND_ID_HANDLER_EX(ID_BMPVIEW_ADDRESSTOOLTIP, OnBmpViewAddressTooltip)
     COMMAND_RANGE_HANDLER_EX(ID_BMPVIEW_PALETTE_BZ, ID_BMPVIEW_PALETTE_SAFETY, OnPalletMode)
+    COMMAND_RANGE_HANDLER_EX(ID_BMPVIEW_CUSTOMPALETTE_START, ID_BMPVIEW_CUSTOMPALETTE_END, OnPalletModeCustom)
     CHAIN_MSG_MAP(CTamaScrollWindowU64VImpl<CBZBmpView2>)
   END_MSG_MAP()
 
@@ -164,6 +166,21 @@ public:
     }
     if(options.bAddressTooltip)
       pMenu.CheckMenuItem(ID_BMPVIEW_ADDRESSTOOLTIP, MF_BYCOMMAND | MF_CHECKED);
+
+    int i=0;
+    pallets.RemoveAll();
+    WTL::CFindFile find;
+    if(find.FindFile(GetModulePath(_T("Pallets\\*.apl"))))
+    {
+      do
+      {
+        if(find.IsDots() || find.IsDirectory())continue;
+        //if(i==0)pMenu.AppendMenu(MF_SEPARATOR);
+        pMenu.AppendMenu(options.lastPalletName==find.GetFileName() && options.nBmpPallet>=CUSTOMPALLET ? MF_STRING | MF_CHECKED : MF_STRING, ID_BMPVIEW_CUSTOMPALETTE_START+i, find.GetFileName());
+        i++;
+        pallets.Add(find.GetFilePath());
+      } while(find.FindNextFile());
+    }
 
     WTL::CPoint pt;
     GetCursorPos(&pt);
@@ -344,6 +361,43 @@ public:
     UpdateWindow();
   }
 
+  void OnPalletModeCustom(UINT uNotifyCode, int nID, CWindow wndCtl)
+  {
+    int i = nID - ID_BMPVIEW_CUSTOMPALETTE_START;
+    if(i<pallets.GetCount())
+    {
+      options.nBmpPallet = i+CUSTOMPALLET;
+      options.nBmpColorWidth = 8;
+    }
+    //GetMainFrame()->CreateClient();
+    OnInitialUpdate();
+    Invalidate();
+    UpdateWindow();
+  }
+  
+  void LoadAplPallet256(DWORD *pRGB, LPCTSTR path)
+  {
+    FILE *fp = _wfopen(path, L"rb");
+    if(fp==NULL)return;
+    char sig[16];
+    if(fread(sig, 1, 6, fp)!=6)goto err_LoadAplPallet256;
+    sig[6]=NULL;
+    if(strcmp(sig, "AZPPAL")!=0)goto err_LoadAplPallet256;
+    WORD w=0;
+    if(fread(&w, 1, 1, fp)!=1 || w!=0)goto err_LoadAplPallet256;
+    w=0;
+    if(fread(&w, 1, 2, fp)!=2 || w<256)goto err_LoadAplPallet256;
+    for(int i=0;i<w && i<256;i++)
+    {
+      if(fread(pRGB, 1, 4, fp)!=4)goto err_LoadAplPallet256;
+      pRGB++;
+    }
+    options.lastPalletName=PathFindFileName(path);
+
+err_LoadAplPallet256:
+    fclose(fp);
+  }
+
   CBZBmpView2()
   {
     m_lpbi = NULL;
@@ -368,6 +422,8 @@ private:
 
   BOOL bFirst;//for OnInitialUpdate
   BOOL bEnable;
+
+  CAtlArray<CString> pallets;
 
 public:
 
@@ -418,11 +474,37 @@ public:
     ATLTRACE("cBmpY64(%I64u) = dwTotal(%I64u) / (UINT64)(options.nBmpWidth(%d) * (options.nBmpColorWidth(%d)/8))\n", m_cBmpY64, dwTotal, options.nBmpWidth, options.nBmpColorWidth);
     Make8bitBITMAPINFOHEADER(m_lpbi, options.nBmpWidth, 1/*top-down DIB*/);
 
-
+    if(options.nBmpPallet>=CUSTOMPALLET && pallets.GetCount()==0)
+    {
+      pallets.RemoveAll();
+      WTL::CFindFile find;
+      if(find.FindFile(GetModulePath(_T("Pallets\\*.apl"))))
+      {
+        do
+        {
+          if(find.IsDots() || find.IsDirectory())continue;
+          pallets.Add(find.GetFilePath());
+        } while(find.FindNextFile());
+      }
+    }
     DWORD* pRGB = (DWORD*)(m_lpbi+1);
-    if(options.nBmpPallet==0)MakeBzPallet256(pRGB);
-    else MakeSafetyPallet256(pRGB);
-    //	MakeRedPallet256(pRGB);
+    switch(options.nBmpPallet)
+    {
+    case 0:
+      MakeBzPallet256(pRGB);
+      break;
+    case 1:
+      MakeSafetyPallet256(pRGB);
+      break;
+    default:
+      if(options.nBmpPallet>=CUSTOMPALLET && pallets.GetCount()+CUSTOMPALLET > options.nBmpPallet)LoadAplPallet256(pRGB, pallets[options.nBmpPallet-CUSTOMPALLET]);
+      else {
+        MakeBzPallet256(pRGB);
+        options.nBmpPallet=0;
+        options.nBmpColorWidth = 8;
+      }
+      break;
+    }
 
     // TODO: calculate the total size of this view
     int cViewX = options.nBmpWidth * options.nBmpZoom + BMPSPACE*2;

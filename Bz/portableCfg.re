@@ -30,7 +30,7 @@ typedef struct Scanner
     PassData val;
 } Scanner;
 
-enum {TYPE_CharSet=0, TYPE_AutoDetect, TYPE_ByteOrder, TYPE_FontName, TYPE_FontStyle, TYPE_FontSize, TYPE_FrameLeft, TYPE_FrameTop, TYPE_CmdShow, TYPE_FrameHeight, TYPE_FrameHeight2, TYPE_FrameWidth2, TYPE_SplitHPos, TYPE_SplitVPos, TYPE_SplitStruct, TYPE_StructView, TYPE_ComboHeight, TYPE_Language, TYPE_DetectMax, TYPE_BarState, TYPE_ReadOnly, TYPE_BmpWidth, TYPE_BmpZoom, TYPE_BmpPallet, TYPE_MaxOnMemory, TYPE_MaxMapSize, TYPE_TagAll, TYPE_SubCursor, TYPE_Colors, TYPE_MemberColumns2, TYPE_PageMargin, TYPE_DumpHeader, TYPE_DumpPage, TYPE_QWordAddr, TYPE_ClearUndoRedoWhenSave, TYPE_SyncScroll, TYPE_Grid, TYPE_BmpColorWidth, TYPE_InspectView, TYPE_AnalyzerView, TYPE_BmpAddressTooltip, TYPE_MiniToolbar};
+enum {TYPE_CharSet=0, TYPE_AutoDetect, TYPE_ByteOrder, TYPE_FontName, TYPE_FontStyle, TYPE_FontSize, TYPE_FrameLeft, TYPE_FrameTop, TYPE_CmdShow, TYPE_FrameHeight, TYPE_FrameHeight2, TYPE_FrameWidth2, TYPE_SplitHPos, TYPE_SplitVPos, TYPE_SplitStruct, TYPE_StructView, TYPE_ComboHeight, TYPE_Language, TYPE_DetectMax, TYPE_BarState, TYPE_ReadOnly, TYPE_BmpWidth, TYPE_BmpZoom, TYPE_BmpPallet, TYPE_MaxOnMemory, TYPE_MaxMapSize, TYPE_TagAll, TYPE_SubCursor, TYPE_Colors, TYPE_MemberColumns2, TYPE_PageMargin, TYPE_DumpHeader, TYPE_DumpPage, TYPE_QWordAddr, TYPE_ClearUndoRedoWhenSave, TYPE_SyncScroll, TYPE_Grid, TYPE_BmpColorWidth, TYPE_InspectView, TYPE_AnalyzerView, TYPE_BmpAddressTooltip, TYPE_MiniToolbar, TYPE_lastPalletName};
 
 void SetIntOption(uint type, int val)
 {
@@ -82,6 +82,7 @@ void SetStrOption(uint type, CString *pVal)
   {
 case TYPE_FontName: options.sFontName = *pVal; break;
 case TYPE_DumpHeader: options.sDumpHeader = *pVal; break;
+case TYPE_lastPalletName: options.lastPalletName = *pVal; break;
 	}
 }
 
@@ -222,6 +223,7 @@ RGBA    = [#] (H {8});
 	"AnalyzerView"			{ RETT(INTTYPE, TYPE_AnalyzerView); }
 	"BmpAddressTooltip"		{ RETT(INTTYPE, TYPE_BmpAddressTooltip); }
 	"MiniToolbar"		{ RETT(INTTYPE, TYPE_MiniToolbar); }
+	"lastPalletName"			{ RETT(STRTYPE, TYPE_lastPalletName); }
 	
 	
 	[+-]? [ \t]* (D+)	{ uchar *start = s->tok;

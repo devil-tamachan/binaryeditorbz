@@ -136,6 +136,8 @@
 #define ID_BMPVIEW_PALETTE_SAFETY       32855
 #define ID_VIEW_ANALYZER                32858
 #define ID_BMP                          32859
+#define ID_BMPVIEW_CUSTOMPALETTE_START  35000
+#define ID_BMPVIEW_CUSTOMPALETTE_END    35100
 #define ID_INDICATOR_INFO               0xE710
 #define ID_INDICATOR_SIZE               0xE711
 #define ID_INDICATOR_CHAR               0xE712

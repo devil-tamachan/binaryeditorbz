@@ -145,6 +145,7 @@ public:
     bAddressTooltip = GetProfileInt(key, _T("BmpAddressTooltip"), TRUE);
 
     bMiniToolbar = GetProfileInt(key, _T("MiniToolbar"), TRUE);
+    lastPalletName = GetProfileString(key, _T("lastPalletName"));
 
     CheckOptions();
    // key.Flush();
@@ -204,7 +205,7 @@ public:
 
   void CheckOptions()
   {
-    if(nBmpPallet!=0 && nBmpPallet!=1)nBmpPallet = 1;
+    //if(nBmpPallet!=0 && nBmpPallet!=1)nBmpPallet = 1;
     switch(nBmpColorWidth)
     {
     case 8:
@@ -365,6 +366,7 @@ public:
     WriteFileInt(file, "BmpAddressTooltip", bAddressTooltip);
 
     WriteFileInt(file, "MiniToolbar", bMiniToolbar);
+    WriteFileString(file, "lastPalletName", lastPalletName);
 
 
     file.Flush();
@@ -441,6 +443,7 @@ public:
     WriteProfileInt(key, _T("BmpAddressTooltip"), bAddressTooltip);
 
     WriteProfileInt(key, _T("MiniToolbar"), bMiniToolbar);
+    WriteProfileString(key, _T("lastPalletName"), lastPalletName);
 
     key.Flush();
   }
@@ -495,6 +498,8 @@ public:
   BOOL bPortableMode;
 
   BOOL bMiniToolbar;
+
+  CString lastPalletName;
 
 public:
   CBZOptions() : m_bModified(FALSE), bPortableMode(FALSE) { }
