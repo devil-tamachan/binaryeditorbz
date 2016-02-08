@@ -131,15 +131,16 @@ case TYPE_PageMargin: options.rMargin.left = pVal[0]; options.rMargin.top = pVal
 
 COLORREF ReadRGB(uchar *token)
 {
-  COLORREF c=0xFF000000;
-  _snscanf((const char *)token, 6, "%06x", &c);
+  COLORREF c=0;
+  _snscanf((const char *)token, 6, "%x", &c);
+  c |= 0xFF000000;
   return c;
 }
 
 COLORREF ReadRGBA(uchar *token)
 {
   COLORREF c=0;
-  _snscanf((const char *)token, 8, "%08x", &c);
+  _snscanf((const char *)token, 8, "%x", &c);
   return c;
 }
 
