@@ -87,7 +87,7 @@ public:
 		m_selectBorderX = m_selectBorderY = -1;
 		m_bPressLButton = FALSE;
     m_bHeader = FALSE;
-    m_headermode = SPLITMODE::NOSPLIT;
+    m_headermode = SPLITMODE_NOSPLIT;
     m_headerHeight = (((float)HEADERHEIGHT) * CBZDpi::ScaleY());
     m_numHeaderPaneX = 1;
     m_halftoneBrush = WTL::CDCHandle::GetHalftoneBrush();
@@ -108,17 +108,17 @@ public:
 
   enum SPLITMODE
   {
-    NOSPLIT = 0,
-    TATE = 1,
-    YOKO = 2
+    SPLITMODE_NOSPLIT = 0,
+    SPLITMODE_TATE = 1,
+    SPLITMODE_YOKO = 2
   };
 
-  void SetHeaderMode(BOOL bEnable, unsigned int headermode = SPLITMODE::NOSPLIT, unsigned int numHeaderPaneX=1)
+  void SetHeaderMode(BOOL bEnable, unsigned int headermode = SPLITMODE_NOSPLIT, unsigned int numHeaderPaneX=1)
   {
     m_bHeader = bEnable;
-    m_headermode = bEnable ? headermode : SPLITMODE::NOSPLIT;
+    m_headermode = bEnable ? headermode : SPLITMODE_NOSPLIT;
     m_numHeaderPaneX = numHeaderPaneX;
-    ATLTRACE("SetHeaderMode: %s\n", headermode==SPLITMODE::TATE?"tate":headermode==SPLITMODE::YOKO?"yoko":"no");
+    ATLTRACE("SetHeaderMode: %s\n", headermode==SPLITMODE_TATE?"tate":headermode==SPLITMODE_YOKO?"yoko":"no");
   }
   void SetHeader(HWND hWnd, unsigned int idx)
   {
@@ -282,7 +282,7 @@ public:
     unsigned int idxHeader=0;
 		for(int y=0;y<m_paneH;y++)
     {
-      if(m_headermode==SPLITMODE::NOSPLIT || m_headermode==SPLITMODE::TATE)
+      if(m_headermode==SPLITMODE_NOSPLIT || m_headermode==SPLITMODE_TATE)
       {
         ::MoveWindow(m_hWndHeader[idxHeader], 0, m_borderRealY[y], rect.Width(), m_headerHeight, TRUE);
         idxHeader++;
@@ -297,7 +297,7 @@ public:
 					wnd.MoveWindow(m_borderRealX[x], m_borderRealY[y]+(m_bHeader?m_headerHeight:0), GetPaneWidth(x), GetPaneHeight(y), TRUE);
 					ATLTRACE("PaneA(%d,%d)(%d,%d %d,%d)\n", x, y, m_borderIdealX[x], m_borderIdealY[y], GetPaneWidth(x), GetPaneHeight(y));
         }
-        if(m_headermode==SPLITMODE::YOKO && x%m_numHeaderPaneX==0)
+        if(m_headermode==SPLITMODE_YOKO && x%m_numHeaderPaneX==0)
         {
           int newW=0;
           for(int i=0;i<m_numHeaderPaneX;i++)newW+=GetPaneWidth(x+i)+BORDERWIDTH;
@@ -384,7 +384,7 @@ public:
 			//ATLTRACE("MoveStart:\n");
 			for(int y=y3;y<y2;y++)
       {
-        if(m_headermode==SPLITMODE::TATE)
+        if(m_headermode==SPLITMODE_TATE)
         {
           ::MoveWindow(m_hWndHeader[y], 0, m_borderRealY[y], rect.Width(), m_headerHeight, TRUE);
         }
@@ -397,7 +397,7 @@ public:
 						wnd.MoveWindow(m_borderRealX[x], m_borderRealY[y]+(m_bHeader?m_headerHeight:0), GetPaneWidth(x), GetPaneHeight(y), TRUE);
 						//ATLTRACE("Move(%d,%d)(%d,%d %d,%d)\n", x, y, m_borderIdealX[x], m_borderIdealY[y], GetPaneWidth(x), GetPaneHeight(y));
           }
-          if(m_headermode==SPLITMODE::YOKO)
+          if(m_headermode==SPLITMODE_YOKO)
           {
             int XPaneStart = x-x%m_numHeaderPaneX;
             int newW=0;

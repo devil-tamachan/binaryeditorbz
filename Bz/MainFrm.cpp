@@ -655,11 +655,11 @@ BOOL CMainFrame::PreparaSplitter()
 
 unsigned int CMainFrame::GetHeaderMode()
 {
-  unsigned int headermode = CTamaSplitterWindow::SPLITMODE::NOSPLIT;
+  unsigned int headermode = CTamaSplitterWindow::SPLITMODE_NOSPLIT;
   if(options.bMiniToolbar)
   {
-    if(m_nSplitView==ID_VIEW_SPLIT_V)headermode = CTamaSplitterWindow::SPLITMODE::YOKO;
-    else if(m_nSplitView==ID_VIEW_SPLIT_H)headermode = CTamaSplitterWindow::SPLITMODE::TATE;
+    if(m_nSplitView==ID_VIEW_SPLIT_V)headermode = CTamaSplitterWindow::SPLITMODE_YOKO;
+    else if(m_nSplitView==ID_VIEW_SPLIT_H)headermode = CTamaSplitterWindow::SPLITMODE_TATE;
   }
   return headermode;
 }
