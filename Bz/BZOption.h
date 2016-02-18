@@ -273,11 +273,11 @@ public:
     str.Format("%s = {", name);
     if(count > 0)
     {
-      t.Format("#%08X", pCol[0]);
+      t.Format("#%08X", _byteswap_ulong(pCol[0]));
       str += t;
       for(int i=1; i<count; i++)
       {
-        t.Format(", #%08X", pCol[i]);
+        t.Format(", #%08X", _byteswap_ulong(pCol[i]));
         str += t;
       }
     }
@@ -301,6 +301,7 @@ public:
     CStringA t = CW2A(_T("/* このファイルがあるとポータブルモードになります。設定はこのファイルへ書きだされます。レジストリには書き込まれません。 */\n\n"), CP_UTF8);
     file.Write( ((LPCVOID)(LPCSTR)t), t.GetLength());
     
+    WriteFileInt(file, "PortableVersion", 1);
     WriteFileInt(file, "CharSet", charset);
     WriteFileInt(file, "AutoDetect", bAutoDetect);
     WriteFileInt(file, "ByteOrder", bByteOrder);

@@ -30,7 +30,10 @@ typedef struct Scanner
     PassData val;
 } Scanner;
 
-enum {TYPE_CharSet=0, TYPE_AutoDetect, TYPE_ByteOrder, TYPE_FontName, TYPE_FontStyle, TYPE_FontSize, TYPE_FrameLeft, TYPE_FrameTop, TYPE_CmdShow, TYPE_FrameHeight, TYPE_FrameHeight2, TYPE_FrameWidth2, TYPE_SplitHPos, TYPE_SplitVPos, TYPE_SplitStruct, TYPE_StructView, TYPE_ComboHeight, TYPE_Language, TYPE_DetectMax, TYPE_BarState, TYPE_ReadOnly, TYPE_BmpWidth, TYPE_BmpZoom, TYPE_BmpPallet, TYPE_MaxOnMemory, TYPE_MaxMapSize, TYPE_TagAll, TYPE_SubCursor, TYPE_Colors, TYPE_MemberColumns2, TYPE_PageMargin, TYPE_DumpHeader, TYPE_DumpPage, TYPE_QWordAddr, TYPE_ClearUndoRedoWhenSave, TYPE_SyncScroll, TYPE_Grid, TYPE_BmpColorWidth, TYPE_InspectView, TYPE_AnalyzerView, TYPE_BmpAddressTooltip, TYPE_MiniToolbar, TYPE_lastPalletName};
+enum {TYPE_CharSet=0, TYPE_AutoDetect, TYPE_ByteOrder, TYPE_FontName, TYPE_FontStyle, TYPE_FontSize, TYPE_FrameLeft, TYPE_FrameTop, TYPE_CmdShow, TYPE_FrameHeight, TYPE_FrameHeight2, TYPE_FrameWidth2, TYPE_SplitHPos, TYPE_SplitVPos, TYPE_SplitStruct, TYPE_StructView, TYPE_ComboHeight, TYPE_Language, TYPE_DetectMax, TYPE_BarState, TYPE_ReadOnly, TYPE_BmpWidth, TYPE_BmpZoom, TYPE_BmpPallet, TYPE_MaxOnMemory, TYPE_MaxMapSize, TYPE_TagAll, TYPE_SubCursor, TYPE_Colors, TYPE_MemberColumns2, TYPE_PageMargin, TYPE_DumpHeader, TYPE_DumpPage, TYPE_QWordAddr, TYPE_ClearUndoRedoWhenSave, TYPE_SyncScroll, TYPE_Grid, TYPE_BmpColorWidth, TYPE_InspectView, TYPE_AnalyzerView, TYPE_BmpAddressTooltip, TYPE_MiniToolbar, TYPE_lastPalletName, TYPE_PortableVersion};
+
+static int g_cfgVer = 0;
+static int g_numReadColors = 0;
 
 void SetIntOption(uint type, int val)
 {
@@ -73,6 +76,7 @@ case TYPE_InspectView: options.bInspectView = val; break;
 case TYPE_AnalyzerView: options.bAnalyzerView = val; break;
 case TYPE_BmpAddressTooltip: options.bAddressTooltip = val; break;
 case TYPE_MiniToolbar: options.bMiniToolbar = val; break;
+case TYPE_PortableVersion: g_cfgVer = val; break;
 	}
 }
 
@@ -93,10 +97,12 @@ void SetColorArrOption(uint type, CAtlArray<COLORREF> *pVal)
 		case TYPE_Colors:
 		{
 			COLORREF *col = &(options.colors[0][0]);
-			for(int i=0;i < TCOLOR_COUNT*2 && i < pVal->GetCount();i++)
+			int n = min(TCOLOR_COUNT*2, pVal->GetCount());
+			for(int i=0;i < n;i++)
 			{
 			  col[i] = (*pVal)[i];
 			}
+			g_numReadColors = max(g_numReadColors, n);
 			break;
 		}
 	}
@@ -131,16 +137,37 @@ case TYPE_PageMargin: options.rMargin.left = pVal[0]; options.rMargin.top = pVal
 
 COLORREF ReadRGB(uchar *token)
 {
+  COLORREF c;
+  DWORD r=0, g=0, b=0;
+  _snscanf((const char *)token, 6, "%2x%2x%2x", &r, &g, &b);
+  c = 0xFF000000 | (r&0xFF) | ((g&0xFF)<<8) | ((b&0xFF)<<16);
+  ATLTRACE("ReadRGB: %08X\n", c);
+  return c;
+}
+COLORREF ReadRGBOld(uchar *token)
+{
   COLORREF c=0;
   _snscanf((const char *)token, 6, "%x", &c);
   c |= 0xFF000000;
+  ATLTRACE("ReadRGBOld: %08X\n", c);
   return c;
 }
 
 COLORREF ReadRGBA(uchar *token)
 {
   COLORREF c=0;
+  DWORD a=0, g=0, b=0;
+  _snscanf((const char *)token, 8, "%2x%2x%2x%2x", &c, &g, &b, &a);
+  c &= 0xFF;
+  c |= ((g&0xFF)<<8) | ((b&0xFF)<<16) | ((a&0xFF)<<24);
+  ATLTRACE("ReadRGBA: %08X\n", c);
+  return c;
+}
+COLORREF ReadRGBAOld(uchar *token)
+{
+  COLORREF c=0;
   _snscanf((const char *)token, 8, "%x", &c);
+  ATLTRACE("ReadRGBAOld: %08X\n", c);
   return c;
 }
 
@@ -182,6 +209,7 @@ RGBA    = [#] (H {8});
 	"/*"			{ goto comment; }
 	"//"			{ goto comment2; }
 	
+	"PortableVersion" 	{ RETT(INTTYPE, TYPE_PortableVersion); }
 	"CharSet"			{ RETT(INTTYPE, TYPE_CharSet); }
 	"AutoDetect"			{ RETT(INTTYPE, TYPE_AutoDetect); }
 	"ByteOrder"			{ RETT(INTTYPE, TYPE_ByteOrder); }
@@ -251,7 +279,7 @@ RGBA    = [#] (H {8});
 
 	[ \t\v\f]+		{ if(cursor == s->eof)RET(0); goto std; }
 
-	[\n] {
+	("\r\n" | "\n" | "\r") {
     if(cursor == s->eof)RET(0);
     s->pos = cursor; s->line++;
     goto std;

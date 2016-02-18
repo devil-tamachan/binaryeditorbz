@@ -53,6 +53,14 @@ const TCHAR sRegHistory[] = _T("History");
 
 #include "PortableCfg.cpp"
 
+void SwapColors()
+{
+  COLORREF *col = &(options.colors[0][0]);
+  for(int i=0;i < g_numReadColors;i++)
+  {
+    col[i] = _byteswap_ulong(col[i]);
+  }
+}
 
 HRESULT CBZOptions::LoadFromFile()
 {
@@ -67,6 +75,8 @@ HRESULT CBZOptions::LoadFromFile()
   s.cur = pFile;
   s.lim = pFile+lenPlusSpace;
   s.eof = pFile+len;
+  g_cfgVer = 0;
+  g_numReadColors = 0;
 
 #ifdef _DEBUG
 //  FILE *fpErr = fopen("err.txt", "w");
@@ -87,6 +97,7 @@ HRESULT CBZOptions::LoadFromFile()
 //  if(fpErr)fclose(fpErr);
 #endif
 
+  if(g_cfgVer==0)SwapColors();
   CheckOptions();
 
   bPortableMode = TRUE;
