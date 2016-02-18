@@ -1,0 +1,369 @@
+State 0:
+          program ::= * expr2
+          expr2 ::= * expr2 expr
+      (2) expr2 ::= *
+
+                         expr2 shift  4
+                       program accept
+                     {default} reduce 2
+
+State 1:
+          expr ::= intexpr * colexpr
+          colexpr ::= * colexpr MINUS colval
+          colexpr ::= * colval
+          colval ::= * rgbaval
+          colval ::= * hsvaval
+          rgbaval ::= * COLVAL
+          intexpr ::= intexpr * MINUS intval
+          rgbaval ::= * TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          rgbaval ::= * TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= * TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= * TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                         MINUS shift  8
+                        COLVAL shift  40
+                       TAG_RGB shift  26
+                       TAG_HSV shift  18
+                       colexpr shift  27
+                        colval shift  35
+                       rgbaval shift  42
+                       hsvaval shift  41
+
+State 2:
+          expr ::= TAG_DEFAULT * colval
+          expr ::= TAG_DEFAULT * EQ colval
+          colval ::= * rgbaval
+          colval ::= * hsvaval
+          rgbaval ::= * COLVAL
+          rgbaval ::= * TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          rgbaval ::= * TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= * TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= * TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                            EQ shift  5
+                        COLVAL shift  40
+                       TAG_RGB shift  26
+                       TAG_HSV shift  18
+                        colval shift  30
+                       rgbaval shift  42
+                       hsvaval shift  41
+
+State 3:
+          expr ::= TAG_BG * EQ colval
+          expr ::= TAG_BG * colval
+          colval ::= * rgbaval
+          colval ::= * hsvaval
+          rgbaval ::= * COLVAL
+          rgbaval ::= * TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          rgbaval ::= * TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= * TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= * TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                            EQ shift  6
+                        COLVAL shift  40
+                       TAG_RGB shift  26
+                       TAG_HSV shift  18
+                        colval shift  31
+                       rgbaval shift  42
+                       hsvaval shift  41
+
+State 4:
+      (0) program ::= expr2 *
+          expr2 ::= expr2 * expr
+          expr ::= * intexpr colexpr
+          expr ::= * TAG_BG EQ colval
+          expr ::= * TAG_BG colval
+          expr ::= * TAG_DEFAULT colval
+          expr ::= * TAG_DEFAULT EQ colval
+          intexpr ::= * intexpr MINUS intval
+          intexpr ::= * intval
+          intval ::= * INTVAL
+
+                             $ reduce 0
+                        TAG_BG shift  3
+                   TAG_DEFAULT shift  2
+                        INTVAL shift  33
+                       intexpr shift  1
+                        intval shift  28
+                          expr shift  44
+
+State 5:
+          expr ::= TAG_DEFAULT EQ * colval
+          colval ::= * rgbaval
+          colval ::= * hsvaval
+          rgbaval ::= * COLVAL
+          rgbaval ::= * TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          rgbaval ::= * TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= * TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= * TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                        COLVAL shift  40
+                       TAG_RGB shift  26
+                       TAG_HSV shift  18
+                        colval shift  29
+                       rgbaval shift  42
+                       hsvaval shift  41
+
+State 6:
+          expr ::= TAG_BG EQ * colval
+          colval ::= * rgbaval
+          colval ::= * hsvaval
+          rgbaval ::= * COLVAL
+          rgbaval ::= * TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          rgbaval ::= * TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= * TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= * TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                        COLVAL shift  40
+                       TAG_RGB shift  26
+                       TAG_HSV shift  18
+                        colval shift  32
+                       rgbaval shift  42
+                       hsvaval shift  41
+
+State 7:
+          colexpr ::= colexpr MINUS * colval
+          colval ::= * rgbaval
+          colval ::= * hsvaval
+          rgbaval ::= * COLVAL
+          rgbaval ::= * TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          rgbaval ::= * TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= * TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= * TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                        COLVAL shift  40
+                       TAG_RGB shift  26
+                       TAG_HSV shift  18
+                        colval shift  43
+                       rgbaval shift  42
+                       hsvaval shift  41
+
+State 8:
+          intexpr ::= intexpr MINUS * intval
+          intval ::= * INTVAL
+
+                        INTVAL shift  33
+                        intval shift  34
+
+State 9:
+          hsvaval ::= TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL * BR4
+          hsvaval ::= TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL * COMMA INTVAL BR4
+
+                         COMMA shift  12
+                           BR4 shift  37
+
+State 10:
+          rgbaval ::= TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL * BR4
+          rgbaval ::= TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL * COMMA INTVAL BR4
+
+                         COMMA shift  20
+                           BR4 shift  39
+
+State 11:
+          hsvaval ::= TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL * BR4
+
+                           BR4 shift  36
+
+State 12:
+          hsvaval ::= TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA * INTVAL BR4
+
+                        INTVAL shift  11
+
+State 13:
+          hsvaval ::= TAG_HSV BR3 INTVAL COMMA INTVAL COMMA * INTVAL BR4
+          hsvaval ::= TAG_HSV BR3 INTVAL COMMA INTVAL COMMA * INTVAL COMMA INTVAL BR4
+
+                        INTVAL shift  9
+
+State 14:
+          hsvaval ::= TAG_HSV BR3 INTVAL COMMA INTVAL * COMMA INTVAL BR4
+          hsvaval ::= TAG_HSV BR3 INTVAL COMMA INTVAL * COMMA INTVAL COMMA INTVAL BR4
+
+                         COMMA shift  13
+
+State 15:
+          hsvaval ::= TAG_HSV BR3 INTVAL COMMA * INTVAL COMMA INTVAL BR4
+          hsvaval ::= TAG_HSV BR3 INTVAL COMMA * INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                        INTVAL shift  14
+
+State 16:
+          hsvaval ::= TAG_HSV BR3 INTVAL * COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= TAG_HSV BR3 INTVAL * COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                         COMMA shift  15
+
+State 17:
+          hsvaval ::= TAG_HSV BR3 * INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= TAG_HSV BR3 * INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                        INTVAL shift  16
+
+State 18:
+          hsvaval ::= TAG_HSV * BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          hsvaval ::= TAG_HSV * BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                           BR3 shift  17
+
+State 19:
+          rgbaval ::= TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL * BR4
+
+                           BR4 shift  38
+
+State 20:
+          rgbaval ::= TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA * INTVAL BR4
+
+                        INTVAL shift  19
+
+State 21:
+          rgbaval ::= TAG_RGB BR3 INTVAL COMMA INTVAL COMMA * INTVAL BR4
+          rgbaval ::= TAG_RGB BR3 INTVAL COMMA INTVAL COMMA * INTVAL COMMA INTVAL BR4
+
+                        INTVAL shift  10
+
+State 22:
+          rgbaval ::= TAG_RGB BR3 INTVAL COMMA INTVAL * COMMA INTVAL BR4
+          rgbaval ::= TAG_RGB BR3 INTVAL COMMA INTVAL * COMMA INTVAL COMMA INTVAL BR4
+
+                         COMMA shift  21
+
+State 23:
+          rgbaval ::= TAG_RGB BR3 INTVAL COMMA * INTVAL COMMA INTVAL BR4
+          rgbaval ::= TAG_RGB BR3 INTVAL COMMA * INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                        INTVAL shift  22
+
+State 24:
+          rgbaval ::= TAG_RGB BR3 INTVAL * COMMA INTVAL COMMA INTVAL BR4
+          rgbaval ::= TAG_RGB BR3 INTVAL * COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                         COMMA shift  23
+
+State 25:
+          rgbaval ::= TAG_RGB BR3 * INTVAL COMMA INTVAL COMMA INTVAL BR4
+          rgbaval ::= TAG_RGB BR3 * INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                        INTVAL shift  24
+
+State 26:
+          rgbaval ::= TAG_RGB * BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4
+          rgbaval ::= TAG_RGB * BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4
+
+                           BR3 shift  25
+
+State 27:
+      (3) expr ::= intexpr colexpr *
+          colexpr ::= colexpr * MINUS colval
+
+                         MINUS shift  7
+                     {default} reduce 3
+
+State 28:
+     (14) intexpr ::= intval *
+
+                     {default} reduce 14
+
+State 29:
+      (7) expr ::= TAG_DEFAULT EQ colval *
+
+                     {default} reduce 7
+
+State 30:
+      (6) expr ::= TAG_DEFAULT colval *
+
+                     {default} reduce 6
+
+State 31:
+      (5) expr ::= TAG_BG colval *
+
+                     {default} reduce 5
+
+State 32:
+      (4) expr ::= TAG_BG EQ colval *
+
+                     {default} reduce 4
+
+State 33:
+     (15) intval ::= INTVAL *
+
+                     {default} reduce 15
+
+State 34:
+     (13) intexpr ::= intexpr MINUS intval *
+
+                     {default} reduce 13
+
+State 35:
+      (9) colexpr ::= colval *
+
+                     {default} reduce 9
+
+State 36:
+     (19) hsvaval ::= TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4 *
+
+                     {default} reduce 19
+
+State 37:
+     (18) hsvaval ::= TAG_HSV BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4 *
+
+                     {default} reduce 18
+
+State 38:
+     (17) rgbaval ::= TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL COMMA INTVAL BR4 *
+
+                     {default} reduce 17
+
+State 39:
+     (16) rgbaval ::= TAG_RGB BR3 INTVAL COMMA INTVAL COMMA INTVAL BR4 *
+
+                     {default} reduce 16
+
+State 40:
+     (12) rgbaval ::= COLVAL *
+
+                     {default} reduce 12
+
+State 41:
+     (11) colval ::= hsvaval *
+
+                     {default} reduce 11
+
+State 42:
+     (10) colval ::= rgbaval *
+
+                     {default} reduce 10
+
+State 43:
+      (8) colexpr ::= colexpr MINUS colval *
+
+                     {default} reduce 8
+
+State 44:
+      (1) expr2 ::= expr2 expr *
+
+                     {default} reduce 1
+
+----------------------------------------------------
+Symbols:
+    0: $:
+    1: COMMA
+    2: TAG_BG
+    3: EQ
+    4: TAG_DEFAULT
+    5: MINUS
+    6: COLVAL
+    7: INTVAL
+    8: TAG_RGB
+    9: BR3
+   10: BR4
+   11: TAG_HSV
+   12: error:
+   13: colexpr: COLVAL TAG_RGB TAG_HSV
+   14: colval: COLVAL TAG_RGB TAG_HSV
+   15: rgbaval: COLVAL TAG_RGB
+   16: hsvaval: TAG_HSV
+   17: intexpr: INTVAL
+   18: intval: INTVAL
+   19: expr2: <lambda> TAG_BG TAG_DEFAULT INTVAL
+   20: expr: TAG_BG TAG_DEFAULT INTVAL
+   21: program: <lambda> TAG_BG TAG_DEFAULT INTVAL

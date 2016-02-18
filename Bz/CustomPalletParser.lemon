@@ -1,0 +1,59 @@
+%token_type {PassData}
+
+%name ParsePalletTxt
+
+%type colexpr {CAtlArray<color_t>*}
+%destructor colexpr {delete $$;}
+%type colval {color_t}
+%type rgbaval {COLORREF}
+%type hsvaval {hsva_t}
+
+%type intexpr {CAtlArray<int>*}
+%destructor intexpr {delete $$;}
+%type intval {int}
+
+%type expr2 {CAtlArray<palletcmd_t>*}
+%destructor expr2 {ReleasePalletCmdArr($$);}
+
+%type expr {palletcmd_t}
+%destructor expr {ReleasePalletCmd($$);}
+
+%left COMMA .
+
+%include {
+//#include "stdafx.h"
+#define assert ATLASSERT
+}
+
+%syntax_error {
+  ATLTRACE(_T("Syntax Error!\n"));
+}
+
+%start_symbol program
+
+program ::= expr2(B). { ProcPalletCmdArr(B); ReleasePalletCmdArr(B); }
+
+expr2(A) ::= expr2(B) expr(C). { A = B; A->Add(C); }
+expr2(A) ::= . { A = new CAtlArray<palletcmd_t>(); }
+
+expr(A) ::= intexpr(B) colexpr(C). { A.type = palletcmd_t::PCMD_COLORARR; A.iArr = B; A.cArr = C; }
+expr(A) ::= TAG_BG EQ colval(B). { A.type = palletcmd_t::PCMD_BG; A.c = B; }
+expr(A) ::= TAG_BG colval(B). { A.type = palletcmd_t::PCMD_BG; A.c = B; }
+expr(A) ::= TAG_DEFAULT colval(B). { A.type = palletcmd_t::PCMD_DEF; A.c = B; }
+expr(A) ::= TAG_DEFAULT EQ colval(B). { A.type = palletcmd_t::PCMD_DEF; A.c = B; }
+
+colexpr(A)  ::= colexpr(B) MINUS colval(C). { A = B; A->Add(C); }
+colexpr(A)  ::= colval(B). { A = new CAtlArray<color_t>(); A->Add(B); }
+colval(A) ::= rgbaval(B). { A.type = color_t::RGBA; A.rgba = B; }
+colval(A) ::= hsvaval(B). { A.type = color_t::HSVA; A.hsva = B; }
+rgbaval(A) ::= COLVAL(B). { A = B.col; }
+
+intexpr(A)  ::= intexpr(B) MINUS intval(C). { A = B; A->Add(C); }
+intexpr(A) ::= intval(B). { A = new CAtlArray<int>(); A->Add(B); }
+intval(A) ::= INTVAL(B). { A = B.i; }
+
+rgbaval(A) ::= TAG_RGB BR3 INTVAL(B) COMMA INTVAL(C) COMMA INTVAL(D) BR4. { A=SetRGB(B.i, C.i, D.i); }
+rgbaval(A) ::= TAG_RGB BR3 INTVAL(B) COMMA INTVAL(C) COMMA INTVAL(D) COMMA INTVAL(E) BR4. { A=SetRGBA(B.i, C.i, D.i, E.i); }
+hsvaval(A) ::= TAG_HSV BR3 INTVAL(B) COMMA INTVAL(C) COMMA INTVAL(D) BR4. { A=SetHSV(B.i, C.i, D.i); }
+hsvaval(A) ::= TAG_HSV BR3 INTVAL(B) COMMA INTVAL(C) COMMA INTVAL(D) COMMA INTVAL(E) BR4. { A=SetHSVA(B.i, C.i, D.i, E.i); }
+

@@ -1,0 +1,11 @@
+#define COMMA                            1
+#define TAG_BG                           2
+#define EQ                               3
+#define TAG_DEFAULT                      4
+#define MINUS                            5
+#define COLVAL                           6
+#define INTVAL                           7
+#define TAG_RGB                          8
+#define BR3                              9
+#define BR4                             10
+#define TAG_HSV                         11

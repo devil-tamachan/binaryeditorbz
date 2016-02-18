@@ -39,6 +39,7 @@ void MakeBzPallet256(DWORD *pRGB);
 void MakeRedPallet256(DWORD *pRGB);
 void MakeSafetyPallet256(DWORD *pRGB);
 void Make8bitBITMAPINFOHEADER(LPBITMAPINFOHEADER lpbi, LONG w, LONG h);
+CString GetCustomPalletFilePath();
 
 //#include "tamascrlu64v.h"
 
@@ -104,25 +105,31 @@ public:
     return false;
   }
 
-  void OnLButtonDown(UINT nFlags, WTL::CPoint point)
+  void OnLButtonDown(UINT nFlags, WTL::CPoint point);
+  
+  void ReloadCustomPallets()
   {
-    if(!bEnable)return;
-
-    m_isLButtonDown = true;
-    
-    UINT64 yVS = ConvYRealSpace2VirtualSpace(point.y);
-    yVS += GetScrollPosU64V();
-    yVS = CalcY(yVS);
-    UINT64 currentAddress = CalcAddress(yVS);
-    point.x += m_ptOffset.x;
-    point.x -= BMPSPACE;
-    if(point.x<=0)point.x = 0;
-    else point.x /= options.nBmpZoom;
-    if(point.x >= 0 && point.x < options.nBmpWidth && point.y >= BMPSPACE) {
-      currentAddress += (((UINT64)point.x) * (options.nBmpColorWidth/8));
-      CBZView* pView = GetBZView();
-      if(pView)pView->MoveCaretTo(currentAddress);
-    }
+      pallets.RemoveAll();
+      WTL::CFindFile find;
+      if(find.FindFile(GetCustomPalletFilePath()))
+      {
+        do
+        {
+          if(find.IsDots() || find.IsDirectory())continue;
+          CPath path(find.GetFilePath());
+          CString ext = path.GetExtension();
+          cpallet_t cp;
+          cp.path = find.GetFilePath();
+          if(ext==".txt")
+          {
+            cp.type = cpallet_t::CP_TXT;
+            pallets.Add(cp);
+          } else if(ext==".apl") {
+            cp.type = cpallet_t::CP_APL;
+            pallets.Add(cp);
+          }
+        } while(find.FindNextFile());
+      }
   }
 
   void OnRButtonDown(UINT nFlags, WTL::CPoint point)
@@ -167,19 +174,12 @@ public:
     if(options.bAddressTooltip)
       pMenu.CheckMenuItem(ID_BMPVIEW_ADDRESSTOOLTIP, MF_BYCOMMAND | MF_CHECKED);
 
-    int i=0;
-    pallets.RemoveAll();
-    WTL::CFindFile find;
-    if(find.FindFile(GetModulePath(_T("Pallets\\*.apl"))))
+    ReloadCustomPallets();
+    int iPallets = pallets.GetCount();
+    for(int i=0;i<iPallets;i++)
     {
-      do
-      {
-        if(find.IsDots() || find.IsDirectory())continue;
-        //if(i==0)pMenu.AppendMenu(MF_SEPARATOR);
-        pMenu.AppendMenu(options.lastPalletName==find.GetFileName() && options.nBmpPallet>=CUSTOMPALLET ? MF_STRING | MF_CHECKED : MF_STRING, ID_BMPVIEW_CUSTOMPALETTE_START+i, find.GetFileName());
-        i++;
-        pallets.Add(find.GetFilePath());
-      } while(find.FindNextFile());
+      CString fileName(PathFindFileName(pallets[i].path));
+      pMenu.AppendMenu(options.lastPalletName==fileName && options.nBmpPallet>=CUSTOMPALLET ? MF_STRING | MF_CHECKED : MF_STRING, ID_BMPVIEW_CUSTOMPALETTE_START+i, fileName);
     }
 
     WTL::CPoint pt;
@@ -189,54 +189,7 @@ public:
     SetMsgHandled(FALSE);//CScrollView::OnRButtonDown(nFlags, point);
   }
 
-  void OnMouseMove(UINT nFlags, WTL::CPoint point)
-  {
-    if(!bEnable)return;
-
-    UINT64 yVS = ConvYRealSpace2VirtualSpace(point.y);
-    yVS += GetScrollPosU64V();
-    yVS = CalcY(yVS);
-    UINT64 currentAddress = CalcAddress(yVS);
-    point.x += m_ptOffset.x;
-    point.x -= BMPSPACE;
-    if(point.x<=0)point.x = 0;
-    else point.x /= options.nBmpZoom;
-    if(point.x >= 0 && point.x < options.nBmpWidth && point.y >= BMPSPACE) {
-      currentAddress += (((UINT64)point.x) * (options.nBmpColorWidth/8));
-      if(currentAddress != m_tooltipLastAddress)
-      {
-        CBZView* pView = GetBZView();
-        if(currentAddress < pView->GetFileSize()) {
-          if(m_isLButtonDown)
-          {
-            pView->MoveCaretTo(currentAddress);
-          } else if(options.bAddressTooltip) {
-            TCHAR tmp[22];
-#ifdef _DEBUG
-            wsprintf(tmp, _T("0x%016I64X, %d"), currentAddress, point.y);
-#else
-            wsprintf(tmp, _T("0x%016I64X"), currentAddress);
-#endif
-            WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, tmp);
-            m_tooltip.UpdateTipText(toolinfo);
-            ATLTRACE(_T("UpdateTooltip: %016I64X, %016I64X\n"), currentAddress, m_tooltipLastAddress);
-            m_tooltipLastAddress = currentAddress;
-            m_tooltip.Activate(true);
-            m_tooltip.Popup();
-            return;
-          }
-        }
-      } else {
-        ATLTRACE(_T("!!!UpdateTooltip: %016I64X, %016I64X\n"), currentAddress, m_tooltipLastAddress);
-        return;
-      }
-    }
-
-    m_tooltipLastAddress = _UI64_MAX;
-    m_tooltip.Activate(false);
-    m_tooltip.Pop();
-    //CScrollView::OnMouseMove(nFlags, point);
-  }
+  void OnMouseMove(UINT nFlags, WTL::CPoint point);
 
   void OnLButtonUp(UINT nFlags, WTL::CPoint point)
   {
@@ -295,25 +248,7 @@ public:
   }
 
 
-  void OnBmpViewMode(UINT uNotifyCode, int nID, CWindow wndCtl)
-  {
-    switch(nID)
-    {
-    case ID_BMPVIEW_WIDTH128:
-      options.nBmpWidth = 128;
-      break;
-    case ID_BMPVIEW_WIDTH256:
-      options.nBmpWidth = 256;
-      break;
-    case ID_BMPVIEW_ZOOM:
-      options.nBmpZoom = (options.nBmpZoom == 1) ? 2 : 1;
-      break;
-    }
-    //GetMainFrame()->CreateClient();
-    OnInitialUpdate();
-    Invalidate();
-    GetMainFrame()->ResetWindowWidth();
-  }
+  void OnBmpViewMode(UINT uNotifyCode, int nID, CWindow wndCtl);
 
 
   void OnBmpViewColorWidth(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -397,6 +332,27 @@ public:
 err_LoadAplPallet256:
     fclose(fp);
   }
+  
+  struct cpallet_tag
+  {
+    enum {CP_APL=0, CP_TXT} type;
+    CString path;
+  };
+  typedef struct cpallet_tag cpallet_t;
+  HRESULT LoadTxtPallet256(DWORD *pRGB, LPCTSTR path);
+  
+  void LoadCustomPallet256(DWORD *pRGB, cpallet_t cp)
+  {
+    switch(cp.type)
+    {
+      case cpallet_t::CP_APL:
+        LoadAplPallet256(pRGB, cp.path);
+        break;
+      case cpallet_t::CP_TXT:
+        LoadTxtPallet256(pRGB, cp.path);
+        break;
+    }
+  }
 
   CBZBmpView2()
   {
@@ -423,7 +379,7 @@ private:
   BOOL bFirst;//for OnInitialUpdate
   BOOL bEnable;
 
-  CAtlArray<CString> pallets;
+  CAtlArray<cpallet_t> pallets;
 
 public:
 
@@ -450,87 +406,7 @@ public:
     OnInitialUpdate();
   }
 
-  void OnInitialUpdate()
-  {
-    CBZDoc2* pDoc = GetBZDoc2();
-    UINT64 dwTotal = pDoc->GetDocSize();
-    if(dwTotal < (DWORD)options.nBmpWidth)
-    {
-      bEnable = FALSE;
-      SetScrollSizeU64V(1, 1);
-      SetScrollPage(100,150);
-      SetScrollLine(10,20);
-      ScrollTop();
-      ScrollAllLeft();
-      return;
-    }
-    bEnable = TRUE;
-
-    if(!m_lpbi) 
-      m_lpbi = (LPBITMAPINFOHEADER)MemAlloc(sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*256/*256pallet*/);
-
-    m_lpbi->biSize = sizeof(BITMAPINFOHEADER);
-    m_cBmpY64 = dwTotal / (UINT64)(options.nBmpWidth * (options.nBmpColorWidth/8));
-    ATLTRACE("cBmpY64(%I64u) = dwTotal(%I64u) / (UINT64)(options.nBmpWidth(%d) * (options.nBmpColorWidth(%d)/8))\n", m_cBmpY64, dwTotal, options.nBmpWidth, options.nBmpColorWidth);
-    Make8bitBITMAPINFOHEADER(m_lpbi, options.nBmpWidth, 1/*top-down DIB*/);
-
-    if(options.nBmpPallet>=CUSTOMPALLET && pallets.GetCount()==0)
-    {
-      pallets.RemoveAll();
-      WTL::CFindFile find;
-      if(find.FindFile(GetModulePath(_T("Pallets\\*.apl"))))
-      {
-        do
-        {
-          if(find.IsDots() || find.IsDirectory())continue;
-          pallets.Add(find.GetFilePath());
-        } while(find.FindNextFile());
-      }
-    }
-    DWORD* pRGB = (DWORD*)(m_lpbi+1);
-    switch(options.nBmpPallet)
-    {
-    case 0:
-      MakeBzPallet256(pRGB);
-      break;
-    case 1:
-      MakeSafetyPallet256(pRGB);
-      break;
-    default:
-      if(options.nBmpPallet>=CUSTOMPALLET && pallets.GetCount()+CUSTOMPALLET > options.nBmpPallet)LoadAplPallet256(pRGB, pallets[options.nBmpPallet-CUSTOMPALLET]);
-      else {
-        MakeBzPallet256(pRGB);
-        options.nBmpPallet=0;
-        options.nBmpColorWidth = 8;
-      }
-      break;
-    }
-
-    // TODO: calculate the total size of this view
-    int cViewX = options.nBmpWidth * options.nBmpZoom + BMPSPACE*2;
-    UINT64 cViewY = m_cBmpY64 * options.nBmpZoom + BMPSPACE*2;
-    SetScrollSizeU64V(cViewX, cViewY);
-    SetScrollPage(100,150);
-    SetScrollLine(10,20);
-    ScrollTop();
-    ScrollAllLeft();
-
-    //TRACE("cView.cy=%X\n", GetTotalSize().cy);
-
-    //CTamaSplitterWindow* pSplit = GetSplitter();
-    //int cSplitViewX = options.nBmpWidth * options.nBmpZoom + BMPSPACE*2 + GetSystemMetrics(SM_CXVSCROLL)+1;
-    //pSplit->SetColumnInfo(0, cSplitViewX, 0);
-    // MemFree(lpbi);
-
-    if(m_tooltip.m_hWnd!=NULL)m_tooltip.DestroyWindow();
-    m_tooltip.Create(m_hWnd, NULL, NULL, TTS_BALLOON|TTS_NOFADE|TTS_NOANIMATE|TTS_ALWAYSTIP);
-    m_tooltip.SetDelayTime(TTDT_RESHOW, 0);
-    m_tooltip.SetDelayTime(TTDT_AUTOPOP, 0xffff);
-    m_tooltip.SetDelayTime(TTDT_INITIAL, 0);
-    m_tooltip.Activate(TRUE);
-    WTL::CToolInfo toolinfo(TTF_SUBCLASS|TTF_TRANSPARENT, m_hWnd, 0, 0, _T(""));
-    m_tooltip.AddTool(toolinfo);
-  }
+  void OnInitialUpdate();
   
   UINT64 CalcY(UINT64 yVS)
   {
@@ -547,72 +423,7 @@ public:
     return qwOffset;
   }
 
-  void DoPaint(WTL::CDCHandle dc)
-  {
-    WTL::CRect rClipOrig;
-    dc.GetClipBox(rClipOrig);
-    dc.FillSolidRect(rClipOrig, RGB(0xFF, 0xFF, 0xFF));
-
-    if(!bEnable)return;
-    
-    UINT64 topVS = ConvYRealSpace2VirtualSpace(rClipOrig.top);
-    topVS = CalcY(topVS);
-    
-    UINT64 bottomVS = ConvYRealSpace2VirtualSpace(rClipOrig.bottom);
-    bottomVS = CalcY(bottomVS);
-    if(m_cBmpY64==0)return;
-    if(bottomVS >= m_cBmpY64)bottomVS = m_cBmpY64-1;
-    
-    if(topVS > bottomVS)return;
-
-    CBZDoc2* pDoc = GetBZDoc2();
-    ATLASSERT(pDoc);
-    if(!pDoc->IsOpen())return;
-
-    int nBmpHeight;
-    {
-      UINT64 qwBmpHeight = bottomVS - topVS + 1;
-      nBmpHeight = qwBmpHeight > INT_MAX ? INT_MAX : qwBmpHeight;
-    }
-    m_lpbi->biHeight = -nBmpHeight;
-
-    UINT64 qwOffset = CalcAddress(topVS);
-
-    long topRS = ConvYVirtualSpace2RealSpace(topVS*options.nBmpZoom+BMPSPACE);
-
-    //ATLTRACE("dst: %d, %d, %d x %d\nsrc: %d, %d, %d x %d\n", BMPSPACE/*dstX*/, topRS/*dstY*/
-    //    , options.nBmpWidth * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
-    //    , 0/*srcX*/, 0/*srcY*/, options.nBmpWidth/*srcW*/, nBmpHeight/*srcH*/);
-    //ATLTRACE("ADDR: UINT64 qwOffset(%016I64X) = CalcAddress(%016I64X)\n", qwOffset, topVS);
-
-    DWORD dwReadSize = options.nBmpWidth * nBmpHeight * (options.nBmpColorWidth/8);
-    if(dwReadSize<=pDoc->GetMaxCacheSize())
-    {
-      LPBYTE lpBits = pDoc->CacheForce(qwOffset, dwReadSize);
-      if(lpBits)
-        ::StretchDIBits(dc.m_hDC, BMPSPACE/*dstX*/, topRS/*dstY*/
-        , options.nBmpWidth * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
-        , 0/*srcX*/, 0/*srcY*/, options.nBmpWidth/*srcW*/, nBmpHeight/*srcH*/
-        , lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
-      else 
-      {
-        ATLASSERT(FALSE);
-      }
-    } else {
-      LPBYTE lpBits = (LPBYTE)malloc(dwReadSize);
-      if(!lpBits)return;
-      if(pDoc->Read(lpBits, qwOffset, dwReadSize))
-      {
-        ::StretchDIBits(dc.m_hDC, BMPSPACE/*dstX*/, topRS/*dstY*/
-          , options.nBmpWidth * options.nBmpZoom/*dstW*/, nBmpHeight * options.nBmpZoom/*dstH*/
-          , 0/*srcX*/, 0/*srcY*/, options.nBmpWidth/*srcW*/, nBmpHeight/*srcH*/
-          , lpBits/*srcPointer*/ , (LPBITMAPINFO)m_lpbi, DIB_RGB_COLORS, SRCCOPY);
-      } else {
-        ATLASSERT(FALSE);
-      }
-      free(lpBits);
-    }
-  }
+  void DoPaint(WTL::CDCHandle dc);
 
   int GetWindowIdealWidth()
   {

@@ -217,6 +217,17 @@ CString GetStructFilePath(UINT uID)
 	return retStr;
 }
 
+CString GetCustomPalletFilePath()
+{
+	TCHAR szAppData[_MAX_PATH];
+  if(options.bPortableMode)return GetModulePath(_T("Pallets\\*.*"));
+  else {
+    SHGetFolderPath(NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE, NULL, 0, szAppData);
+		PathAppend(szAppData, _T("\\BzEditor\\Pallets\\*.*"));
+		return szAppData;
+	}
+}
+
 LPVOID ReadFile(LPCTSTR pPath, DWORD *length /* = NULL */, DWORD *lengthPlusSpace /* = NULL */, DWORD spacepadding /* = 0 */, BOOL bEOF /* = FALSE */, BOOL bFailedMsgBox /* = TRUE */)
 {
 	CAtlFile file;
