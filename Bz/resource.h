@@ -118,6 +118,7 @@
 #define ID_LANG_JPN                     32831
 #define ID_LANG_ENU                     32832
 #define ID_TOOLS_EDITDEF                32833
+#define ID_TOOLS_EDITPALLET             32834
 #define ID_BMPVIEW_WIDTH128             32836
 #define ID_BMPVIEW_WIDTH256             32837
 #define ID_BMPVIEW_ZOOM                 32838

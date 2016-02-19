@@ -344,6 +344,7 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "BZ.DEFの編集(&E)",               ID_TOOLS_EDITDEF
+        MENUITEM "カスタムパレットの編集",               ID_TOOLS_EDITPALLET
     END
     POPUP "ヘルプ(&H)"
     BEGIN

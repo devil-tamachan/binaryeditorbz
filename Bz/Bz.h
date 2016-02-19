@@ -70,6 +70,8 @@ CString SeparateByComma(int num, BOOL bSigned = FALSE);
 CString SeparateByComma64(ULONGLONG num, BOOL bSigned = FALSE);
 CString GetModulePath(LPCTSTR pFileName);
 CString GetStructFilePath(UINT uID);
+CString GetCustomPalletDirPath();
+CString GetCustomPalletFilePath();
 LPVOID ReadFile(LPCTSTR pPath, DWORD *length = NULL, DWORD *lengthPlusSpace = NULL, DWORD spacepadding = 0, BOOL bEOF = FALSE, BOOL bFailedMsgBox = TRUE);
 void ErrorMessageBox(HWND hWnd = NULL);	// ###1.61
 void ErrorResMessageBox(UINT nID, HWND hWnd = NULL);

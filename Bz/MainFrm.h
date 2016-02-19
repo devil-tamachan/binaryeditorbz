@@ -112,6 +112,7 @@ public:
     COMMAND_ID_HANDLER_EX(ID_APP_ABOUT, OnAppAbout)
     COMMAND_RANGE_HANDLER_EX(ID_VIEW_SPLIT_H, ID_VIEW_SPLIT_V, OnViewSplit)
     COMMAND_ID_HANDLER_EX(ID_TOOLS_EDITDEF, OnToolsEditBZDef)
+    COMMAND_ID_HANDLER_EX(ID_TOOLS_EDITPALLET, OnToolsEditPallet)
     COMMAND_ID_HANDLER_EX(ID_FILE_SAVE_DUMPLIST, OnFileSaveDumpList)
     //ON_COMMAND( ID_HELP_INDEX, OnHelpIndex )
     COMMAND_RANGE_HANDLER_EX(ID_LANG_JPN, ID_LANG_ENU, OnLanguage)
@@ -364,6 +365,12 @@ public:
     sEditorPath.ReleaseBuffer();
     if(sEditorPath.IsEmpty()) ::ShellExecute(m_hWnd, _T("edit") , sPath, NULL, NULL, SW_SHOWNORMAL);
     else                      ::ShellExecute(m_hWnd, _T("open") , sEditorPath, sPath, NULL, SW_SHOWNORMAL);
+  }
+  void OnToolsEditPallet(UINT uNotifyCode, int nID, CWindow wndCtl) 
+  {
+    CString path = GetCustomPalletDirPath();
+    MakeSureDirectoryPathExists(CW2A(path));
+    ::ShellExecute(m_hWnd, _T("open") , path, NULL, NULL, SW_SHOWNORMAL);
   }
   void OnFileSaveDumpList(UINT uNotifyCode, int nID, CWindow wndCtl);
   void OnLanguage(UINT uNotifyCode, int nID, CWindow wndCtl)

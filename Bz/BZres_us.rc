@@ -182,6 +182,7 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "&Edit BZ.DEF",                ID_TOOLS_EDITDEF
+        MENUITEM "Edit Custom Pallets",               ID_TOOLS_EDITPALLET
     END
     POPUP "&Help"
     BEGIN
