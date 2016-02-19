@@ -84,6 +84,11 @@ int lerpAndLimitInt(double a, double b, double t, int min, int max)
   return limitInt(floor(lerp(a, b, t)+0.5), min, max);
 }
 
+int roundAndLimitInt(double x, int min, int max)
+{
+  return limitInt(floor(x+0.5), min, max);
+}
+
 COLORREF SetRGB(int r, int g, int b)
 {
   r = limitInt(r, 0, 255);
@@ -120,7 +125,7 @@ hsva_t SetHSVA(int h, int s, int v, int a)
   return c;
 }
 
-RGBQUAD COLORREF2RGBQUAD(COLORREF cr)
+RGBQUAD COLORREF2RGBQUAD(const COLORREF cr)
 {
   RGBQUAD rq = {0};
   rq.rgbRed = (cr & 0xFF);
@@ -147,7 +152,7 @@ COLORREF GetCOLORREF(color_t *ct)
   }
 }
 
-RGBQUAD GetRGBQUAD(color_t *ct) //BGRA (!! RGBA‚Å‚Í‚È‚¢‚Ì‚Å’ˆÓ !!)
+RGBQUAD GetRGBQUAD(const color_t *ct) //BGRA (!! RGBA‚Å‚Í‚È‚¢‚Ì‚Å’ˆÓ !!)
 {
   switch(ct->type)
   {
@@ -234,6 +239,57 @@ RGBQUAD _HSVAInterpolation(color_t col1, color_t col2, double t)
   return COLORREF2RGBQUAD(hsv2rgb(&hsv) | ((a & 0xFF)<<24) );
 }
 
+double GetAlpha(COLORREF c)
+{
+  double a1 = ((c & 0xFF000000) >> 24);
+  return a1 / 255.0;
+}
+
+COLORREF alphaBlendCOLORREF(COLORREF c1, COLORREF c2)
+{
+  COLORREF n = 0;
+  double a1 = GetAlpha(c1);
+  double a2 = GetAlpha(c2);
+  double a3 = a2 + (1.0-a2) * a1;
+  
+  double x1 = ((1.0-a2)*a1)/a3;
+  double x2 = a2/a3;
+  double r1 = c1 & 0xFF;
+  double r2 = c2 & 0xFF;
+  double g1 = (c1 & 0xFF00) >>8;
+  double g2 = (c2 & 0xFF00) >>8;
+  double b1 = (c1 & 0xFF0000) >>16;
+  double b2 = (c2 & 0xFF0000) >>16;
+  n = roundAndLimitInt(r1*x1 + r2*x2, 0, 255) & 0xFF;
+  n |= (roundAndLimitInt(g1*x1 + g2*x2, 0, 255) & 0xFF)<<8;
+  n |= (roundAndLimitInt(b1*x1 + b2*x2, 0, 255) & 0xFF)<<16;
+  n |= (roundAndLimitInt(a3*255.0, 0, 255) & 0xFF)<<24;
+  return n;
+}
+RGBQUAD alphaBlendRGBQUAD(RGBQUAD c1, RGBQUAD c2)
+{
+  RGBQUAD n;
+  double a1 = c1.rgbReserved;
+  a1/=255.0;
+  double a2 = c2.rgbReserved;
+  a2/=255.0;
+  double a3 = a2 + (1.0-a2) * a1;
+  
+  double x1 = ((1.0-a2)*a1)/a3;
+  double x2 = a2/a3;
+  double r1 = c1.rgbRed;
+  double r2 = c2.rgbRed;
+  double g1 = c1.rgbGreen;
+  double g2 = c2.rgbGreen;
+  double b1 = c1.rgbBlue;
+  double b2 = c2.rgbBlue;
+  n.rgbRed = roundAndLimitInt(r1*x1 + r2*x2, 0, 255) & 0xFF;
+  n.rgbGreen = roundAndLimitInt(g1*x1 + g2*x2, 0, 255) & 0xFF;
+  n.rgbBlue = roundAndLimitInt(b1*x1 + b2*x2, 0, 255) & 0xFF;
+  n.rgbReserved = roundAndLimitInt(a3*255.0, 0, 255) & 0xFF;
+  return n;
+}
+
 void ColorInterpolation(RGBQUAD *pRGB, int idx1, int idx2, color_t col1, color_t col2)
 {
   idx1 = limitInt(idx1, 0, 255);
@@ -264,13 +320,14 @@ void ColorInterpolation(RGBQUAD *pRGB, int idx1, int idx2, color_t col1, color_t
   {
     double t = i-idx1;
     if(0<t)t /= m;
-    if(bRGB)pRGB[i]=_RGBAInterpolation(col1, col2, t);
-    else pRGB[i]=_HSVAInterpolation(col1, col2, t);
+    if(bRGB)pRGB[i]=alphaBlendRGBQUAD(pRGB[i], _RGBAInterpolation(col1, col2, t));
+    else pRGB[i]=alphaBlendRGBQUAD(pRGB[i], _HSVAInterpolation(col1, col2, t));
   }
 }
 
 void ProcPalletCmdArr(CAtlArray<palletcmd_t> *pCmdArr)
 {
+  COLORREF bg = 0xFFFFFFFF;
   color_t def = {color_t::RGBA, 0xFF000000};
   ATLTRACE("\nProcPalletCmdArr\n");
   RGBQUAD *pRGB = (RGBQUAD *)pPalletTxt256;
@@ -281,7 +338,7 @@ void ProcPalletCmdArr(CAtlArray<palletcmd_t> *pCmdArr)
     switch(pc->type)
     {
     case palletcmd_t::PCMD_BG:
-      g_bgBmpView = GetCOLORREF(&(pc->c));
+      g_bgBmpView = bg = GetCOLORREF(&(pc->c));
       break;
     case palletcmd_t::PCMD_DEF:
       def = pc->c;
@@ -292,8 +349,7 @@ void ProcPalletCmdArr(CAtlArray<palletcmd_t> *pCmdArr)
   ATLTRACE("default color: %08X\n", defcol);
   for(int i=0;i<256;i++)
   {
-    memcpy(pRGB, &defcol, 4);
-    pRGB++;
+    pRGB[i] = alphaBlendRGBQUAD(pRGB[i], defcol);
   }
   
   pRGB = (RGBQUAD *)pPalletTxt256;
@@ -309,7 +365,7 @@ void ProcPalletCmdArr(CAtlArray<palletcmd_t> *pCmdArr)
       if(n==1)
       {
         int idx = iArr[0];
-        if(idx>=0 && idx<256)pRGB[idx]=GetRGBQUAD(&(cArr[0]));
+        if(idx>=0 && idx<256)pRGB[idx]=alphaBlendRGBQUAD(pRGB[idx], GetRGBQUAD(&(cArr[0])));
       } else {
         for(int i=1;i<n;i++)
         {
@@ -317,6 +373,10 @@ void ProcPalletCmdArr(CAtlArray<palletcmd_t> *pCmdArr)
         }
       }
     }
+  }
+  for(int i=0;i<256;i++)
+  {
+    pPalletTxt256[i] &= 0xFFFFFF;
   }
 }
 
