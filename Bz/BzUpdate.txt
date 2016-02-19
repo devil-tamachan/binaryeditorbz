@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+### 1.9.8.5 2016/02/19 (devil.tamachan@gmail.com)
+ - (追加) カスタムパレット(.txt形式) http://imgur.com/wQJuX1w
+ - (修正) ポータブル版設定ファイルの色表記を#AABBGGRR→#RRGGBBAAにバグ修正
+
 ### 1.9.8.4 2016/01/09 (devil.tamachan@gmail.com)
  - (修正) 引数なしだとエラー
  - (追加) ビットマップビューのカスタムパレット機能（AzPainter2パレット(.apl)ファイル対応）
