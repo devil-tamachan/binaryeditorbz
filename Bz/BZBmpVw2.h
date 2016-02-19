@@ -179,7 +179,7 @@ public:
     for(int i=0;i<iPallets;i++)
     {
       CString fileName(PathFindFileName(pallets[i].path));
-      pMenu.AppendMenu(options.lastPalletName==fileName && options.nBmpPallet>=CUSTOMPALLET ? MF_STRING | MF_CHECKED : MF_STRING, ID_BMPVIEW_CUSTOMPALETTE_START+i, fileName);
+      pMenu.AppendMenu(options.lastPalletName==fileName && options.nBmpPallet>=CUSTOMPALLET && options.nBmpColorWidth==8 ? MF_STRING | MF_CHECKED : MF_STRING, ID_BMPVIEW_CUSTOMPALETTE_START+i, fileName);
     }
 
     WTL::CPoint pt;
