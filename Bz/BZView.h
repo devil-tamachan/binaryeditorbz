@@ -323,23 +323,34 @@ public:
   }
   void OnEditCopyDump(UINT uNotifyCode, int nID, CWindow wndCtl)
   {
-    /*
-    CMemFile memFile(MEMFILE_GROWBY);
-    DrawToFile(&memFile);
+    CAtlStringA str;
+    DrawToString(&str);
 
-    ULONGLONG ulSize = memFile.GetLength();
-    DWORD dwSize = (ulSize>0xffffffff) ? 0xffffffff : ulSize;
+    DWORD dwSize = str.GetLength();
     HGLOBAL hMemTxt = ::GlobalAlloc(GMEM_MOVEABLE, dwSize + 1);
+    if(!hMemTxt)
+    {
+      goto OnEditCopyDump_ERR2;
+    }
     LPBYTE pMemTxt  = (LPBYTE)::GlobalLock(hMemTxt);
-    memFile.SeekToBegin();
-    memFile.Read(pMemTxt, dwSize);
+    if(!hMemTxt)
+    {
+      goto OnEditCopyDump_ERR1;
+    }
+    memcpy(pMemTxt, str.GetBuffer(), dwSize);
     *(pMemTxt + dwSize) = '\0';
     ::GlobalUnlock(hMemTxt);
-    AfxGetMainWnd()->OpenClipboard();
+    ::OpenClipboard(NULL);
     ::EmptyClipboard();
     ::SetClipboardData(CF_TEXT, hMemTxt);
     ::CloseClipboard();
-    return;*/
+    return;
+    
+OnEditCopyDump_ERR1:
+    ::GlobalUnlock(hMemTxt);
+OnEditCopyDump_ERR2:
+    ::GlobalFree(hMemTxt);
+    return;
   }
   void OnJumpBase(UINT uNotifyCode, int nID, CWindow wndCtl);
   void SetMark(UINT uNotifyCode, int nID, CWindow wndCtl);
@@ -656,6 +667,7 @@ public:
 	void	Activate();
 	void	UpdateStatusInfo();
 	void	DrawToFile(CAtlFile* pFile);	// ###1.63
+	void  DrawToString(CAtlStringA* pStr);
   CBZDoc2* GetBZDoc() { return m_pDoc; }
 
 // Implementation

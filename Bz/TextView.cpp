@@ -412,7 +412,10 @@ void CTextView::Locate(int x, UINT64 y)
 	m_yLoc = y;
 	if(IsToFile()) {
 		if(y)
-			m_pFile->Write("\r\n", 2);
+    {
+			if(m_pFile)m_pFile->Write("\r\n", 2);
+      if(m_pStr)*m_pStr += "\r\n";
+    }
 		if(x) {
 			PutChar(' ', x);
 		}
@@ -481,7 +484,8 @@ void CTextView::PutFlush()
 {
 	if(m_nText) {
 		if(IsToFile()) {
-			m_pFile->Write(m_pVText, m_nText);
+			if(m_pFile)m_pFile->Write(m_pVText, m_nText);
+      if(m_pStr)m_pStr->Append(m_pVText, m_nText);
 			m_nText = 0;
 			return;
 		}

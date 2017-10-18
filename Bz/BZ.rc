@@ -382,6 +382,8 @@ BEGIN
         MENUITEM "コピー(&C)\tCtrl+C",             ID_EDIT_COPY
         MENUITEM "貼り付け(&P)\tCtrl+V",            ID_EDIT_PASTE
         MENUITEM SEPARATOR
+        MENUITEM "ダンプリストをコピー(&D)\tCtrl+D",      ID_EDIT_COPY_DUMP
+        MENUITEM SEPARATOR
         MENUITEM "すべて選択(&A)\tCtrl+A",           ID_EDIT_SELECT_ALL
     END
 END

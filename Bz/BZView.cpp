@@ -805,6 +805,13 @@ void CBZView::DrawToFile(CAtlFile* pFile) 	// ###1.63
 	m_pFile = NULL;
 }
 
+void CBZView::DrawToString(CAtlStringA* pStr)
+{
+	m_pStr = pStr;
+	OnPaint(NULL);
+	m_pStr = NULL;
+}
+
 //•`‰æ: æ“ª‚ÌƒAƒhƒŒƒX
 void CBZView::DrawAddress(UINT64 ofs1)
 {
@@ -1299,7 +1306,8 @@ void CBZView::PutUnicodeChar(WORD w)
 void CBZView::DrawHeader2File()
 {
 	if(IsToFile() && !options.sDumpHeader.IsEmpty()) {
-		m_pFile->Write(options.sDumpHeader, options.sDumpHeader.GetLength());
+    if(m_pFile)m_pFile->Write(options.sDumpHeader, options.sDumpHeader.GetLength());
+    if(m_pStr)*m_pStr += options.sDumpHeader;
 	}
 }
 

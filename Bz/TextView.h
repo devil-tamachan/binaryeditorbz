@@ -67,6 +67,7 @@ public:
     m_bShowCaret2 = FALSE;
     //m_bOnSize = FALSE;
     m_pFile = NULL;
+    m_pStr = NULL;
     m_cTotalX = 0;
   }
 
@@ -148,7 +149,8 @@ public:
 protected:
 
 	CAtlFile*	m_pFile;		// ### 1.63
-	BOOL	IsToFile() { return m_pFile != NULL; }
+  CAtlStringA* m_pStr;
+	BOOL	IsToFile() { return m_pFile != NULL || m_pStr != NULL; }
 
 // Operations
 private:
