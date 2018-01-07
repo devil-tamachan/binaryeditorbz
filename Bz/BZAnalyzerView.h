@@ -160,7 +160,8 @@ public:
 
         for(DWORD i=0; i<dwLoopInc; i++)
         {
-          if(dwReadSize < 2 || !IsZlibDeflate(*pInputBuf, *(pInputBuf+1)))continue;
+          LPBYTE pNext = pInputBuf+i;
+          if(dwReadSize-i < 2 || !IsZlibDeflate(*pNext, *(pNext+1)))continue;
 
           z_stream z = {0};
           z.next_out = pOutBuf;
@@ -169,14 +170,14 @@ public:
           if(inflateInit(&z)!=Z_OK)continue;
 
           DWORD dwDecodeSize = min(dwReadSize-i, dwDecodeMax);
-          z.next_in = pInputBuf+i;
+          z.next_in = pNext;
           z.avail_in = dwDecodeSize;
           inflateStatus = inflate(&z, Z_NO_FLUSH);
 
           if(inflateStatus==Z_OK||inflateStatus==Z_STREAM_END)
           {
             CString str;
-            str.Format(_T("0x%08X"), ofs_inflateStart);
+            str.Format(_T("0x%08X"), ofs_inflateStart+i);
             m_resultList.InsertItem(++iListIndex, str);
             //	m_resultList.SetItemText(0, 1, "5000");
           }
