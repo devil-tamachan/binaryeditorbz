@@ -1,4 +1,4 @@
-<h3><a href="https://bitbucket.org/tamachan/binaryeditorbz/src/master/">Mirror (bitbucket)→</a></h3>
+<h3><a href="https://gitlab.com/devill.tamachan/binaryeditorbz/">Mirror (gitlab)→</a></h3>
 <br />
 <h3><a href="https://github.com/devil-tamachan/binaryeditorbz/releases">ダウンロードへ移動→</a></h3>
 <h3><a href="http://devil-tamachan.github.io/BZDoc/">ヘルプへ移動→</a></h3>
